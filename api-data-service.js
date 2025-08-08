@@ -309,7 +309,7 @@ const getAPIBaseURL = () => {
     return 'http://localhost:3000/api';
   }
   // URL de producción en Render (reemplazar con tu URL real)
-  return 'https://tu-app-en-render.onrender.com/api';
+  return 'https://playtest-backend.onrender.com/api';
 };
 
 // Instancia global del servicio
