@@ -2188,7 +2188,10 @@
         const handleLogin = (user, remember) => {
           setCurrentUser(user);
           if (remember) {
-            localStorage.setItem('playtest_session', JSON.stringify({ userId: user.id }));
+            localStorage.setItem('playtest_session', JSON.stringify({
+              userId: user.id,
+              nickname: user.nickname
+            }));
           }
         };
 
