@@ -303,6 +303,89 @@ class APIDataService {
   }
 }
 
+  // === LEGACY COMPATIBILITY FUNCTIONS ===
+  // These functions provide compatibility with the existing frontend
+  
+  async registerUser(userData) {
+    return this.register(userData.nickname, userData.password, userData.email);
+  }
+
+  async fetchBlocksForUser(userId) {
+    return this.fetchAllBlocks();
+  }
+
+  async fetchAllUsers() {
+    const users = await this.apiCall('/users');
+    return this.simulateDelay(users);
+  }
+
+  async fetchAllUserProfiles() {
+    const profiles = await this.apiCall('/users/profiles');
+    return this.simulateDelay(profiles);
+  }
+
+  async fetchAllUsersWithStats() {
+    const users = await this.apiCall('/users/stats');
+    return this.simulateDelay(users);
+  }
+
+  async fetchChallengesForUser(userId) {
+    const challenges = await this.apiCall('/games/challenges');
+    return this.simulateDelay(challenges);
+  }
+
+  async fetchGameHistory(userId) {
+    const history = await this.apiCall('/games/history');
+    return this.simulateDelay(history);
+  }
+
+  async createGameForUser(userId, nickname, gameConfig) {
+    return this.createGame(gameConfig);
+  }
+
+  async addBlockToUser(userId, blockId) {
+    const response = await this.apiCall(`/users/blocks/${blockId}`, {
+      method: 'POST'
+    });
+    return this.simulateDelay(response);
+  }
+
+  async deleteBlockForUser(userId, blockId) {
+    return this.deleteBlock(blockId);
+  }
+
+  async createChallenge(currentUser, challengedUser, gameConfig) {
+    const response = await this.apiCall('/games/challenges', {
+      method: 'POST',
+      body: JSON.stringify({
+        challengedUserId: challengedUser.id,
+        gameConfig
+      })
+    });
+    return this.simulateDelay(response);
+  }
+
+  async acceptChallenge(userId, gameId) {
+    const response = await this.apiCall(`/games/challenges/${gameId}/accept`, {
+      method: 'POST'
+    });
+    return this.simulateDelay(response);
+  }
+
+  async declineChallenge(userId, gameId) {
+    const response = await this.apiCall(`/games/challenges/${gameId}/decline`, {
+      method: 'POST'
+    });
+    return this.simulateDelay(response);
+  }
+
+  async fetchDetailedHistoryForBlock(userId, blockId) {
+    const history = await this.apiCall(`/blocks/${blockId}/history`);
+    return this.simulateDelay(history);
+  }
+}
+
+
 // Configuración de la URL base según el entorno
 const getAPIBaseURL = () => {
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
