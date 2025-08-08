@@ -1,0 +1,617 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>PLAYTEST Admin - All Blocks</title>
+
+    <!-- Embedded Global Stylesheet -->
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      }
+      .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: #1B263B; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb { background: #415A77; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: #778DA9; }
+      * { scrollbar-width: thin; scrollbar-color: #415A77 #1B263B; }
+      input[type='range'] { -webkit-appearance: none; appearance: none; background-color: transparent; cursor: pointer; width: 100%; }
+      input[type='range']::-webkit-slider-runnable-track { height: 0.5rem; background: #415A77; border-radius: 0.5rem; }
+      input[type='range']::-moz-range-track { height: 0.5rem; background: #415A77; border-radius: 0.5rem; }
+      input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; margin-top: -6px; background-color: #3b82f6; height: 20px; width: 20px; border-radius: 50%; }
+      input[type='range']::-moz-range-thumb { border: none; background-color: #3b82f6; height: 20px; width: 20px; border-radius: 50%; }
+    </style>
+
+    <!-- Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-primary': '#0D1B2A',
+              'brand-secondary': '#1B263B',
+              'brand-tertiary': '#415A77',
+              'brand-accent': '#778DA9',
+              'brand-light': '#E0E1DD',
+              'brand-cta': '#3B82F6',
+              'brand-cta-hover': '#2563EB',
+              'brand-success': '#10B981',
+              'brand-danger': '#EF4444',
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Import Map to resolve bare module specifiers for React -->
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+    "react/": "https://esm.sh/react@18.2.0/"
+  }
+}
+</script>
+  </head>
+  <body class="bg-brand-primary text-brand-light">
+    <div id="root"></div>
+
+    <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Main application script -->
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
+      import ReactDOM from 'react-dom/client';
+
+      // --- INLINED: i18n ---
+      const translations = {
+        es: {
+          header_title: 'Aplicación PLAYTEST', header_subtitle: 'La forma más divertida de estudiar', language: 'Idioma', english: 'Inglés', spanish: 'Español',
+          block_management_questions: '{count} preguntas',
+          all_blocks_return: 'Volver', all_blocks_title: 'Todos los Bloques', my_blocks_title: 'Mis Bloques', all_blocks_total: '{count} Bloques en Total', all_blocks_header_block: 'Bloque', all_blocks_header_type: 'Tipo', all_blocks_header_questions: 'Preguntas', all_blocks_header_players: 'Jugadores Activos', all_blocks_header_actions: 'Acciones', all_blocks_header_owner: 'Propietario', all_blocks_topics_summary: 'Resumen de Temas', all_blocks_topic: 'Tema', all_blocks_no_topics: 'Este bloque no contiene temas.', all_blocks_edit_topic_name: 'Editar nombre del tema',
+          edit_block_title: 'Editar Bloque: {blockName}', edit_block_name_short: 'Nombre Corto', edit_block_name_long: 'Nombre Largo', edit_block_type: 'Tipo de Bloque',
+          delete_block_confirm: '¿Estás seguro de que quieres eliminar este bloque? Todas sus preguntas serán borradas permanentemente. Esta acción no se puede deshacer.', delete_block_prompt_title: 'Borrar Bloque',
+          delete_topic_confirm: '¿Estás seguro de que quieres eliminar el tema "{topicName}"? Todas sus preguntas serán borradas permanentemente. Esta acción no se puede deshacer.', delete_topic_prompt_title: 'Borrar Tema',
+          delete_question_confirm: '¿Estás seguro de que quieres eliminar esta pregunta? Esta acción no se puede deshacer.', delete_question_prompt_title: 'Borrar la pregunta',
+          delete_question_prompt_confirm: 'SI', delete_question_prompt_cancel: 'NO',
+          generic_cancel: 'Cancelar', delete: 'Eliminar', error: 'Error', loading: 'Cargando...',
+          block_questions_button_save: 'Guardar',
+          uploader_button_edit: 'Editar', uploader_question_text: 'Texto de la Pregunta', uploader_answers: 'Respuestas', generator_explanation: 'Explicación', generator_difficulty: 'Dificultad',
+          footer_text: '© 2024 PLAYTEST. Todos los derechos reservados.',
+          tooltip_expand_topics: 'Desplegar temas',
+          tooltip_collapse_topics: 'Replegar temas',
+          tooltip_add_question_block: 'Añadir pregunta a {blockName}',
+          tooltip_edit_block: 'Editar bloque {blockName}',
+          tooltip_delete_block: 'Eliminar bloque {blockName}',
+          tooltip_add_question_topic: 'Añadir pregunta al tema {topicName}',
+          tooltip_edit_topic: 'Editar nombre del tema {topicName}',
+          tooltip_delete_topic: 'Eliminar tema {topicName}',
+          admin_blocks_general: 'Bloques Generales',
+          admin_blocks_public: 'Bloques Públicos de Usuarios',
+          admin_blocks_private: 'Bloques Privados de Usuarios',
+        },
+        en: {
+          header_title: 'PLAYTEST App', header_subtitle: 'The most fun way to study', language: 'Language', english: 'English', spanish: 'Spanish',
+          block_management_questions: '{count} questions',
+          all_blocks_return: 'Return', all_blocks_title: 'All Blocks', my_blocks_title: 'My Blocks', all_blocks_total: '{count} Total Blocks', all_blocks_header_block: 'Block', all_blocks_header_type: 'Type', all_blocks_header_questions: 'Questions', all_blocks_header_players: 'Active Players', all_blocks_header_actions: 'Actions', all_blocks_header_owner: 'Owner', all_blocks_topics_summary: 'Topics Summary', all_blocks_topic: 'Topic', all_blocks_no_topics: 'This block contains no topics.', all_blocks_edit_topic_name: 'Edit topic name',
+          edit_block_title: 'Edit Block: {blockName}', edit_block_name_short: 'Short Name', edit_block_name_long: 'Long Name', edit_block_type: 'Block Type',
+          delete_block_confirm: 'Are you sure you want to delete this block? All of its questions will be permanently deleted. This action cannot be undone.', delete_block_prompt_title: 'Delete Block',
+          delete_topic_confirm: 'Are you sure you want to delete the topic "{topicName}"? All of its questions will be permanently deleted. This action cannot be undone.', delete_topic_prompt_title: 'Delete Topic',
+          delete_question_confirm: 'Are you sure you want to delete this question? This action cannot be undone.', delete_question_prompt_title: 'Delete Question',
+          delete_question_prompt_confirm: 'YES', delete_question_prompt_cancel: 'NO',
+          generic_cancel: 'Cancel', delete: 'Delete', error: 'Error', loading: 'Loading...',
+          block_questions_button_save: 'Save',
+          uploader_button_edit: 'Edit', uploader_question_text: 'Question Text', uploader_answers: 'Answers', generator_explanation: 'Explanation', generator_difficulty: 'Difficulty',
+          footer_text: '© 2024 PLAYTEST. All rights reserved.',
+          tooltip_expand_topics: 'Expand topics',
+          tooltip_collapse_topics: 'Collapse topics',
+          tooltip_add_question_block: 'Add question to {blockName}',
+          tooltip_edit_block: 'Edit block {blockName}',
+          tooltip_delete_block: 'Delete block {blockName}',
+          tooltip_add_question_topic: 'Add question to topic {topicName}',
+          tooltip_edit_topic: 'Edit topic name {topicName}',
+          tooltip_delete_topic: 'Delete topic {topicName}',
+          admin_blocks_general: 'General Blocks',
+          admin_blocks_public: 'Public User Blocks',
+          admin_blocks_private: 'Private User Blocks',
+        }
+      };
+      const LanguageContext = createContext();
+      const UserContext = createContext();
+
+      const LanguageProvider = ({ children }) => {
+        const [language, setLanguage] = useState(() => localStorage.getItem('playtest_lang') || 'es');
+        useEffect(() => { localStorage.setItem('playtest_lang', language); }, [language]);
+        const t = useCallback((key, replacements = {}) => {
+            let translation = translations[language][key] || translations['en'][key] || key;
+            Object.keys(replacements).forEach(placeholder => {
+                translation = translation.replace(`{${placeholder}}`, replacements[placeholder]);
+            });
+            return translation;
+        }, [language]);
+        return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>;
+      };
+      const useLanguage = () => useContext(LanguageContext);
+      const useUser = () => useContext(UserContext);
+
+      // --- INLINED: types.ts ---
+      const BlockType = { GENERAL: 'TEMARIO GENERAL', COMPLETE: 'TEMARIO COMPLETO', EXTERNAL: 'EXTERNO' };
+      
+      // --- INLINED: components/icons.tsx ---
+      const CheckCircleIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" {...props}> <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /> </svg> );
+      const XCircleIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" {...props}> <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /> </svg> );
+      const PlusCircleIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /> </svg> );
+      const MinusCircleIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /> </svg> );
+      const ArrowLeftIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /> </svg> );
+      const PencilIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /> </svg> );
+      const TrashIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /> </svg> );
+      const ChevronUpDownIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" /> </svg> );
+      const XMarkIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /> </svg> );
+      const SaveIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /> </svg> );
+
+      // --- INLINED: services/dataService.ts (Full version) ---
+      const DB_KEY = 'playtest_db_v3';
+      const DB_INITIALIZED_KEY = 'playtest_db_v3_initialized';
+      
+      const getDatabase = () => {
+          const dbString = localStorage.getItem(DB_KEY);
+          return dbString ? JSON.parse(dbString) : { users: [], globalBlocks: [], globalQuestions: [], userProfiles: {} };
+      };
+      
+      const saveDatabase = (db) => {
+          localStorage.setItem(DB_KEY, JSON.stringify(db));
+      };
+      
+      const initializeDatabase = () => {
+          if (!localStorage.getItem(DB_INITIALIZED_KEY)) {
+              console.log("Initializing user-based database in localStorage...");
+              const initialDb = { users: [], globalBlocks: [], globalQuestions: [], userProfiles: {} };
+              localStorage.setItem(DB_INITIALIZED_KEY, 'true');
+          }
+      };
+      
+      initializeDatabase();
+
+      const simulateDelay = (data, delay = 50) => 
+        new Promise(resolve => setTimeout(() => resolve(JSON.parse(JSON.stringify(data))), delay));
+
+      const dataService = {
+        fetchAllBlocksWithPlayerCount: async () => {
+          const db = getDatabase();
+          const playerCountMap = {};
+          const userMap = (db.users || []).reduce((acc, user) => {
+              acc[user.id] = user.nickname;
+              return acc;
+          }, {});
+          
+          (db.globalBlocks || []).forEach(block => {
+              playerCountMap[block.id] = 0;
+          });
+
+          Object.values(db.userProfiles || {}).forEach(profile => {
+              (profile.loadedBlockIds || []).forEach(blockId => {
+                  if (playerCountMap.hasOwnProperty(blockId)) {
+                      playerCountMap[blockId]++;
+                  }
+              });
+          });
+
+          const blocksWithCounts = (db.globalBlocks || []).map(block => ({
+              ...block,
+              playerCount: playerCountMap[block.id] || 0,
+              questions: (db.globalQuestions || []).filter(q => q.bloqueId === block.id),
+              totalPreguntas: (db.globalQuestions || []).filter(q => q.bloqueId === block.id).length,
+              creatorNickname: userMap[block.creatorId] || 'Unknown',
+          })).sort((a, b) => a.nombreCorto.localeCompare(b.nombreCorto));
+          
+          return simulateDelay(blocksWithCounts);
+        },
+        fetchAllUsers: async () => {
+          const db = getDatabase();
+          return simulateDelay(db.users || []);
+        },
+        updateGlobalBlock: async (updatedBlockData) => {
+            const db = getDatabase();
+            const blockIndex = db.globalBlocks.findIndex(b => b.id === updatedBlockData.id);
+            if (blockIndex > -1) {
+                const { questions, ...blockInfo } = updatedBlockData;
+                db.globalBlocks[blockIndex] = { ...db.globalBlocks[blockIndex], ...blockInfo };
+                saveDatabase(db);
+                return simulateDelay(db.globalBlocks[blockIndex]);
+            }
+            throw new Error("Block not found");
+        },
+        deleteGlobalBlock: async (blockId) => {
+            const db = getDatabase();
+            db.globalBlocks = db.globalBlocks.filter(b => b.id !== blockId);
+            db.globalQuestions = db.globalQuestions.filter(q => q.bloqueId !== blockId);
+            Object.values(db.userProfiles).forEach(profile => {
+                profile.loadedBlockIds = (profile.loadedBlockIds || []).filter(id => id !== blockId);
+                profile.games = (profile.games || []).filter(game => !game.config[blockId]);
+            });
+            saveDatabase(db);
+            return simulateDelay({ message: 'Block deleted successfully.' });
+        },
+        renameTopicInBlock: async (blockId, oldName, newName) => {
+            const db = getDatabase();
+            db.globalQuestions.forEach(q => {
+                if (q.bloqueId === blockId && q.tema === oldName) {
+                    q.tema = newName;
+                }
+            });
+            saveDatabase(db);
+            return simulateDelay({ message: 'Topic renamed successfully.' });
+        },
+        deleteTopicFromBlock: async (blockId, topicName) => {
+            const db = getDatabase();
+            db.globalQuestions = db.globalQuestions.filter(q => !(q.bloqueId === blockId && q.tema === topicName));
+            saveDatabase(db);
+            return simulateDelay({ message: 'Topic deleted successfully.' });
+        },
+        updateGlobalQuestion: async (updatedQuestion) => {
+            const db = getDatabase();
+            if (!updatedQuestion.id) throw new Error('Question ID is required.');
+            const qIndex = db.globalQuestions.findIndex(q => q.id === updatedQuestion.id);
+            if (qIndex === -1) throw new Error('Question not found.');
+            db.globalQuestions[qIndex] = { ...db.globalQuestions[qIndex], ...updatedQuestion };
+            saveDatabase(db);
+            return simulateDelay(db.globalQuestions[qIndex]);
+        },
+        deleteGlobalQuestion: async (questionId) => {
+            const db = getDatabase();
+            db.globalQuestions = db.globalQuestions.filter(q => q.id !== questionId);
+            saveDatabase(db);
+            return simulateDelay({ message: 'Question deleted successfully.' });
+        },
+      };
+
+      const UserProvider = ({ children }) => {
+        const [currentUser, setCurrentUser] = useState(null);
+        const [isLoading, setIsLoading] = useState(true);
+
+        useEffect(() => {
+          try {
+            const sessionString = localStorage.getItem('playtest_session');
+            if (sessionString) {
+              const session = JSON.parse(sessionString);
+              if (session && session.userId) {
+                const db = getDatabase();
+                const user = (db.users || []).find(u => u.id === session.userId);
+                if (user) { setCurrentUser(user); } 
+                else { localStorage.removeItem('playtest_session'); }
+              }
+            }
+          } catch (e) {
+            console.error("Failed to parse session, clearing it.", e);
+            localStorage.removeItem('playtest_session');
+          }
+          setIsLoading(false);
+        }, []);
+
+        if (isLoading) {
+          return (
+             <div className="flex justify-center items-center h-screen"> <svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle> <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> </div>
+          )
+        }
+
+        if (!currentUser) {
+           window.location.href = 'index.html';
+           return null;
+        }
+
+        return (
+          <UserContext.Provider value={{ currentUser }}>
+            {children}
+          </UserContext.Provider>
+        );
+      }
+
+
+      // --- INLINED: components ---
+      const ConfirmationDialog = ({ title, message, confirmText, cancelText, onConfirm, onCancel, danger = false }) => (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={onCancel}>
+          <div className={`bg-brand-secondary rounded-xl shadow-2xl w-full max-w-sm m-4 border ${danger ? 'border-brand-danger/50' : 'border-brand-tertiary'} p-6 text-center`} onClick={e => e.stopPropagation()}>
+              <h4 className="text-xl font-bold text-brand-light">{title}</h4>
+              <p className="text-brand-accent my-4">{message}</p>
+              <div className="flex justify-center gap-4 mt-6">
+                  <button onClick={onCancel} className="py-2 px-6 rounded-lg bg-brand-tertiary hover:bg-brand-accent text-brand-light font-bold transition-colors">{cancelText}</button>
+                  <button onClick={onConfirm} className={`py-2 px-6 rounded-lg font-bold transition-colors text-white ${danger ? 'bg-brand-danger hover:bg-red-500' : 'bg-brand-cta hover:bg-brand-cta-hover'}`}>{confirmText}</button>
+              </div>
+          </div>
+        </div>
+      );
+      const EditBlockModal = ({ block, onSave, onClose }) => {
+          const { t } = useLanguage();
+          const [editedData, setEditedData] = useState(block ? { ...block } : null);
+          useEffect(() => { setEditedData(block ? { ...block } : null); }, [block]);
+          if (!editedData) return null;
+          const handleChange = (e) => { const { name, value } = e.target; setEditedData(prev => ({ ...prev, [name]: value })); };
+          return (
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={onClose}>
+                  <div className="bg-brand-secondary rounded-xl shadow-2xl w-full max-w-lg m-4 border border-brand-tertiary" onClick={e => e.stopPropagation()}>
+                      <div className="p-6 border-b border-brand-tertiary"><h4 className="text-xl font-bold text-brand-light">{t('edit_block_title', { blockName: block.nombreCorto })}</h4></div>
+                      <div className="p-6 space-y-4">
+                          <div><label htmlFor="nombreCorto" className="block text-sm font-medium text-brand-accent mb-1">{t('edit_block_name_short')}</label><input type="text" name="nombreCorto" id="nombreCorto" value={editedData.nombreCorto} onChange={handleChange} className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" /></div>
+                          <div><label htmlFor="nombreLargo" className="block text-sm font-medium text-brand-accent mb-1">{t('edit_block_name_long')}</label><input type="text" name="nombreLargo" id="nombreLargo" value={editedData.nombreLargo} onChange={handleChange} className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" /></div>
+                          <div><label htmlFor="tipoBloque" className="block text-sm font-medium text-brand-accent mb-1">{t('edit_block_type')}</label><select name="tipoBloque" id="tipoBloque" value={editedData.tipoBloque} onChange={handleChange} className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none">{Object.values(BlockType).map(type => (<option key={type} value={type}>{type}</option>))}</select></div>
+                      </div>
+                      <div className="p-4 bg-brand-primary/50 flex justify-end gap-3 rounded-b-xl">
+                          <button onClick={onClose} className="py-2 px-4 rounded-lg bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold transition-colors">{t('generic_cancel')}</button>
+                          <button onClick={() => onSave(editedData)} className="py-2 px-4 rounded-lg bg-brand-cta hover:bg-brand-cta-hover text-white font-bold transition-colors">{t('block_questions_button_save')}</button>
+                      </div>
+                  </div>
+              </div>
+          );
+      };
+      
+      const AllBlocks = ({ currentUser, blocks, users, pageTitle, onUpdateBlock, onDeleteBlock, onRenameTopic, onDeleteTopic, onUpdateQuestion, onDeleteQuestion }) => {
+        const { t } = useLanguage();
+        const [confirmingDelete, setConfirmingDelete] = useState({ type: null, id: null, extra: null });
+        const [editingBlock, setEditingBlock] = useState(null);
+        const [expandedBlockId, setExpandedBlockId] = useState(null);
+        const [editingTopic, setEditingTopic] = useState(null);
+        const [newTopicName, setNewTopicName] = useState('');
+        const [expandedTopics, setExpandedTopics] = useState({});
+        const [editingQuestion, setEditingQuestion] = useState(null);
+        const [confirmingDeleteQuestion, setConfirmingDeleteQuestion] = useState(null);
+
+        const { generalBlocks, publicUserBlocks, privateUserBlocks } = useMemo(() => {
+            if (!currentUser.isAdmin || !users || users.length === 0) return { generalBlocks: [], publicUserBlocks: [], privateUserBlocks: [] };
+            const adminUser = users.find(u => u.isAdmin);
+            if (!adminUser) return { generalBlocks: [], publicUserBlocks: [], privateUserBlocks: blocks };
+            
+            const general = blocks.filter(b => b.creatorId === adminUser.id);
+            const publicUser = blocks.filter(b => b.creatorId !== adminUser.id && b.isPublic);
+            const privateUser = blocks.filter(b => b.creatorId !== adminUser.id && !b.isPublic);
+            return { generalBlocks: general, publicUserBlocks: publicUser, privateUserBlocks: privateUser };
+        }, [blocks, users, currentUser.isAdmin]);
+
+        const topicsByBlock = useMemo(() => {
+            const result = {};
+            if (expandedBlockId) {
+                const block = blocks.find(b => b.id === expandedBlockId);
+                if (block && block.questions) {
+                    result[expandedBlockId] = block.questions.reduce((acc, q) => {
+                        const topic = q.tema || 'Uncategorized';
+                        if (!acc[topic]) acc[topic] = { count: 0, questions: [] };
+                        acc[topic].count++;
+                        acc[topic].questions.push(q);
+                        return acc;
+                    }, {});
+                }
+            }
+            return result;
+        }, [expandedBlockId, blocks]);
+
+        const handleToggleTopicExpansion = (blockId, topicName) => { const key = `${blockId}-${topicName}`; setExpandedTopics(prev => ({...prev, [key]: !prev[key]})); };
+        const getBlockTypeColor = (type) => { switch (type) { case BlockType.EXTERNAL: return 'bg-indigo-500/20 text-indigo-400'; case BlockType.COMPLETE: return 'bg-amber-500/20 text-amber-400'; case BlockType.GENERAL: default: return 'bg-teal-500/20 text-teal-400'; } };
+        const handleSaveTopic = () => { if (editingTopic && newTopicName.trim() && newTopicName.trim() !== editingTopic.oldName) { onRenameTopic(editingTopic.blockId, editingTopic.oldName, newTopicName.trim()); } setEditingTopic(null); setNewTopicName(''); };
+        const handleSaveQuestion = () => { if(editingQuestion) { onUpdateQuestion(editingQuestion); setEditingQuestion(null); }};
+        const handleQuestionFormChange = (e) => { if (!editingQuestion) return; const { name, value } = e.target; setEditingQuestion({ ...editingQuestion, [name]: name === 'dificultad' ? parseInt(value, 10) : value }); };
+        const handleAnswerTextChange = (index, text) => { if (!editingQuestion) return; const newAnswers = [...editingQuestion.respuestas]; newAnswers[index].textoRespuesta = text; setEditingQuestion({ ...editingQuestion, respuestas: newAnswers }); };
+        const handleCorrectAnswerChange = (index) => { if (!editingQuestion) return; const newAnswers = editingQuestion.respuestas.map((ans, i) => ({ ...ans, esCorrecta: i === index, })); setEditingQuestion({ ...editingQuestion, respuestas: newAnswers }); };
+
+        const BlockTable = ({ categoryBlocks }) => {
+            if (!categoryBlocks || categoryBlocks.length === 0) return null;
+            return (
+              <div className="overflow-x-auto rounded-lg border border-brand-tertiary">
+                <table className="w-full min-w-max text-sm text-left text-brand-accent">
+                  <thead className="text-xs text-brand-light uppercase bg-brand-primary/50">
+                    <tr>
+                      <th scope="col" className="px-2 py-3 w-12 text-center"></th>
+                      <th scope="col" className="px-6 py-3">{t('all_blocks_header_block')}</th>
+                      <th scope="col" className="px-6 py-3">{t('all_blocks_header_type')}</th>
+                      {currentUser.isAdmin && <th scope="col" className="px-6 py-3">{t('all_blocks_header_owner')}</th>}
+                      <th scope="col" className="px-6 py-3">{t('all_blocks_header_questions')}</th>
+                      <th scope="col" className="px-6 py-3">{t('all_blocks_header_players')}</th>
+                      <th scope="col" className="px-6 py-3 text-center">{t('all_blocks_header_actions')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categoryBlocks.map((block) => (
+                      <React.Fragment key={block.id}>
+                        <tr className="bg-brand-secondary border-b border-brand-tertiary hover:bg-brand-tertiary/20">
+                          <td className="px-2 py-4 text-center"><button title={expandedBlockId === block.id ? t('tooltip_collapse_topics') : t('tooltip_expand_topics')} onClick={() => setExpandedBlockId(p => p === block.id ? null : block.id)} className="p-1 rounded-full hover:bg-brand-tertiary">{expandedBlockId === block.id ? <MinusCircleIcon className="h-5 w-5 text-brand-accent"/> : <PlusCircleIcon className="h-5 w-5 text-brand-accent"/>}</button></td>
+                          <td className="px-6 py-4 font-medium text-brand-light whitespace-nowrap"> <div className="flex items-center gap-3"> <img className="h-10 w-16 rounded object-cover" src={block.urlImagenBloque} alt={block.nombreCorto} /> <div> <div className="font-bold">{block.nombreCorto}</div> <div className="text-xs text-brand-accent">{block.nombreLargo}</div> </div> </div> </td>
+                          <td className="px-6 py-4"> <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getBlockTypeColor(block.tipoBloque)}`}>{block.tipoBloque}</span> </td>
+                          {currentUser.isAdmin && <td className="px-6 py-4">{block.creatorNickname}</td>}
+                          <td className="px-6 py-4">{block.totalPreguntas}</td>
+                          <td className="px-6 py-4">{block.playerCount}</td>
+                          <td className="px-6 py-4 text-center"> <div className="flex items-center justify-center gap-3"> <a href={`add-question.html?blockId=${block.id}&returnUrl=all-blocks.html`} title={t('tooltip_add_question_block', {blockName: block.nombreCorto})} className="text-brand-cta/80 hover:text-brand-cta transition-colors"> <PlusCircleIcon className="h-5 w-5"/> </a> <button onClick={() => setEditingBlock(block)} title={t('tooltip_edit_block', {blockName: block.nombreCorto})} className="text-brand-cta/80 hover:text-brand-cta transition-colors"> <PencilIcon className="h-5 w-5"/> </button> <button onClick={() => setConfirmingDelete({type: 'block', id: block.id})} title={t('tooltip_delete_block', {blockName: block.nombreCorto})} className="text-brand-danger/80 hover:text-brand-danger transition-colors"> <TrashIcon className="h-5 w-5"/> </button> </div> </td>
+                        </tr>
+                        {expandedBlockId === block.id && (
+                           <tr><td colSpan={currentUser.isAdmin ? 7 : 6} className="p-0"><div className="bg-brand-primary p-4 m-2 rounded-lg">
+                              <h4 className="font-semibold text-brand-light mb-3">{t('all_blocks_topics_summary')}</h4>
+                              {topicsByBlock[block.id] && Object.keys(topicsByBlock[block.id]).length > 0 ? (
+                                  <div className="space-y-2">{Object.entries(topicsByBlock[block.id]).map(([topicName, data]) => {
+                                    const isTopicExpanded = expandedTopics[`${block.id}-${topicName}`];
+                                    return (
+                                      <React.Fragment key={topicName}>
+                                        <div className="flex items-center justify-between p-2 bg-brand-secondary rounded-md group">
+                                            {editingTopic?.blockId === block.id && editingTopic?.oldName === topicName ? (<><input type="text" value={newTopicName} onChange={(e) => setNewTopicName(e.target.value)} autoFocus className="bg-brand-tertiary border border-brand-accent rounded-md px-2 py-1 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" /><div className="flex items-center gap-2"><button onClick={() => { setEditingTopic(null); setNewTopicName(''); }} className="p-1 text-brand-light hover:text-brand-danger"><XMarkIcon className="h-5 w-5"/></button><button onClick={handleSaveTopic} className="p-1 text-brand-light hover:text-brand-success"><CheckCircleIcon className="h-5 w-5"/></button></div></>) : (
+                                            <>
+                                              <div className="flex-grow flex items-center cursor-pointer" onClick={() => handleToggleTopicExpansion(block.id, topicName)}>
+                                                <span className="text-brand-accent hover:text-brand-light"> {isTopicExpanded ? <MinusCircleIcon className="h-5 w-5" /> : <PlusCircleIcon className="h-5 w-5" />} </span>
+                                                <span className="text-brand-light font-medium ml-2">{topicName}</span>
+                                                <span className="text-brand-accent text-xs ml-2">({t('block_management_questions', {count: data.count})})</span>
+                                              </div>
+                                              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <a href={`add-question.html?blockId=${block.id}&topicName=${encodeURIComponent(topicName)}&returnUrl=all-blocks.html`} title={t('tooltip_add_question_topic', {topicName})} className="p-1 text-brand-accent hover:text-brand-cta"><PlusCircleIcon className="h-4 w-4"/></a>
+                                                <button onClick={() => { setEditingTopic({ blockId: block.id, oldName: topicName }); setNewTopicName(topicName); }} title={t('tooltip_edit_topic', {topicName})} className="p-1 text-brand-accent hover:text-brand-cta"><PencilIcon className="h-4 w-4"/></button>
+                                                <button onClick={() => setConfirmingDelete({ type: 'topic', id: block.id, extra: { topicName }})} title={t('tooltip_delete_topic', {topicName})} className="p-1 text-brand-accent hover:text-brand-danger"><TrashIcon className="h-4 w-4"/></button>
+                                              </div>
+                                            </>)}
+                                        </div>
+                                        {isTopicExpanded && (
+                                          <div className="pl-8 pt-2 pb-2 animate-fade-in space-y-3">
+                                            {data.questions.map(q => (
+                                                <div key={q.id}>
+                                                  {editingQuestion?.id === q.id ? (
+                                                    <div className="bg-brand-primary p-4 rounded-lg border-2 border-brand-cta animate-fade-in"> <div className="space-y-4"> <div> <label className="text-sm font-medium text-brand-accent">{t('uploader_question_text')}</label> <textarea name="textoPregunta" value={editingQuestion?.textoPregunta} onChange={handleQuestionFormChange} rows={3} className="mt-1 w-full bg-brand-secondary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" /> </div> <div> <label className="text-sm font-medium text-brand-accent">{t('uploader_answers')}</label> <div className="mt-1 space-y-2"> {editingQuestion?.respuestas.map((ans, idx) => ( <div key={idx} className="flex items-center gap-2"> <input type="radio" name={`correctAnswer-${q.id}`} checked={ans.esCorrecta} onChange={() => handleCorrectAnswerChange(idx)} className="h-4 w-4 text-brand-cta bg-brand-tertiary border-brand-tertiary focus:ring-brand-cta"/><input type="text" value={ans.textoRespuesta} onChange={(e) => handleAnswerTextChange(idx, e.target.value)} className="w-full bg-brand-secondary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"/> </div> ))} </div> </div> <div> <label className="text-sm font-medium text-brand-accent">{t('generator_explanation')}</label> <textarea name="explicacionRespuesta" value={editingQuestion?.explicacionRespuesta} onChange={handleQuestionFormChange} rows={2} className="mt-1 w-full bg-brand-secondary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" /> </div> <div className="grid grid-cols-2 gap-4"> <div> <label className="text-sm font-medium text-brand-accent">{t('all_blocks_topic')}</label> <input name="tema" type="text" value={editingQuestion?.tema} onChange={handleQuestionFormChange} className="mt-1 w-full bg-brand-secondary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" /> </div> <div> <label className="text-sm font-medium text-brand-accent">{t('generator_difficulty')} ({editingQuestion?.dificultad}/5)</label> <input name="dificultad" type="range" min="1" max="5" value={editingQuestion?.dificultad} onChange={handleQuestionFormChange} className="mt-1 w-full h-2 bg-brand-tertiary rounded-lg appearance-none cursor-pointer" /> </div> </div> <div className="flex justify-end gap-3 mt-4"> <button onClick={() => setEditingQuestion(null)} className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold py-2 px-4 rounded-lg transition-colors"><XMarkIcon className="h-5 w-5"/>{t('generic_cancel')}</button> <button onClick={handleSaveQuestion} className="flex items-center gap-2 bg-brand-cta hover:bg-brand-cta-hover text-white font-semibold py-2 px-4 rounded-lg transition-colors"><SaveIcon className="h-5 w-5"/>{t('block_questions_button_save')}</button> </div> </div> </div>
+                                                  ) : (
+                                                      <div className="bg-brand-primary/50 p-3 rounded-md"> <div className="flex items-start justify-between gap-4"> <div className="flex-grow"> <p className="font-semibold text-sm text-brand-light">{q.textoPregunta}</p> </div> <div className="flex-shrink-0 flex items-center gap-2"> <button onClick={() => setEditingQuestion(q)} className="flex items-center gap-2 bg-brand-tertiary/50 hover:bg-brand-tertiary text-brand-light font-semibold py-1.5 px-3 rounded-lg transition-colors text-sm"><PencilIcon className="h-4 w-4"/> {t('uploader_button_edit')}</button> <button onClick={() => setConfirmingDeleteQuestion(q)} className="flex items-center gap-2 bg-brand-danger/20 hover:bg-brand-danger/40 text-brand-danger font-semibold py-1.5 px-3 rounded-lg transition-colors text-sm"><TrashIcon className="h-4 w-4"/> {t('delete')}</button> </div> </div> <div className="mt-2 space-y-1 pl-1"> {q.respuestas.map((r, rIndex) => ( <div key={rIndex} className={`flex items-center text-xs ${r.esCorrecta ? 'text-brand-success' : 'text-brand-accent'}`}> {r.esCorrecta ? <CheckCircleIcon className="h-4 w-4 mr-2 flex-shrink-0" /> : <XCircleIcon className="h-4 w-4 mr-2 flex-shrink-0 text-brand-tertiary" />} <span>{r.textoRespuesta}</span> </div> ))} </div> {q.explicacionRespuesta && ( <p className="mt-2 text-xs italic text-brand-accent pl-1"> {q.explicacionRespuesta} </p> )} </div>
+                                                  )}
+                                                </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </React.Fragment>
+                                    )
+                                  })}</div>
+                              ) : <p className="text-sm text-brand-accent text-center py-4">{t('all_blocks_no_topics')}</p>}
+                          </div></td></tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+        };
+
+        const BlockCategoryTable = ({ title, categoryBlocks }) => {
+            if (!categoryBlocks || categoryBlocks.length === 0) {
+                return null;
+            }
+            return (
+                <div>
+                    <h3 className="text-xl font-semibold text-brand-light mb-3">{title}</h3>
+                    <BlockTable categoryBlocks={categoryBlocks} />
+                </div>
+            );
+        };
+
+        return (
+          <div className="bg-brand-secondary p-6 rounded-xl shadow-lg animate-fade-in">
+            {confirmingDelete.id && (<ConfirmationDialog title={confirmingDelete.type === 'block' ? t('delete_block_prompt_title') : t('delete_topic_prompt_title')} message={confirmingDelete.type === 'block' ? t('delete_block_confirm') : t('delete_topic_confirm', { topicName: confirmingDelete.extra.topicName })} confirmText={t('delete_question_prompt_confirm')} cancelText={t('delete_question_prompt_cancel')} onConfirm={() => { if (confirmingDelete.type === 'block') onDeleteBlock(confirmingDelete.id); else if (confirmingDelete.type === 'topic') onDeleteTopic(confirmingDelete.id, confirmingDelete.extra.topicName); setConfirmingDelete({ type: null, id: null, extra: null }); }} onCancel={() => setConfirmingDelete({ type: null, id: null, extra: null })} danger={true} />)}
+            {confirmingDeleteQuestion && (<ConfirmationDialog title={t('delete_question_prompt_title')} message={t('delete_question_confirm')} confirmText={t('delete_question_prompt_confirm')} cancelText={t('delete_question_prompt_cancel')} onConfirm={() => { onDeleteQuestion(confirmingDeleteQuestion.id); setConfirmingDeleteQuestion(null); }} onCancel={() => setConfirmingDeleteQuestion(null)} danger={true} />)}
+            {editingBlock && (<EditBlockModal block={editingBlock} onSave={(b) => { onUpdateBlock(b); setEditingBlock(null); }} onClose={() => setEditingBlock(null)} />)}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <a href='index.html' className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold py-2 px-4 rounded-lg transition-colors" aria-label="Return to Dashboard">
+                  <ArrowLeftIcon className="h-5 w-5" />
+                  <span>{t('all_blocks_return')}</span>
+                </a>
+                <div className="flex items-center gap-3">
+                  {!currentUser.isAdmin && <img src="./Imagenes/Creados.png" alt={t('my_blocks_title')} className="h-8 w-8" />}
+                  <h2 className="text-2xl font-bold text-brand-light">{pageTitle}</h2>
+                </div>
+              </div>
+              <span className="text-sm font-medium text-brand-accent bg-brand-primary px-3 py-1 rounded-full">{t('all_blocks_total', {count: blocks.length})}</span>
+            </div>
+            <div className="space-y-8">
+              {currentUser.isAdmin ? (
+                <>
+                  <BlockCategoryTable title={`${t('admin_blocks_general')} (${generalBlocks.length})`} categoryBlocks={generalBlocks} />
+                  <BlockCategoryTable title={`${t('admin_blocks_public')} (${publicUserBlocks.length})`} categoryBlocks={publicUserBlocks} />
+                  <BlockCategoryTable title={`${t('admin_blocks_private')} (${privateUserBlocks.length})`} categoryBlocks={privateUserBlocks} />
+                </>
+              ) : (
+                <BlockTable categoryBlocks={blocks} />
+              )}
+            </div>
+          </div>
+        );
+      };
+      const Header = () => {
+        const { language, setLanguage, t } = useLanguage();
+        const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+        const dropdownRef = useRef(null);
+        useEffect(() => { const handleClickOutside = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setIsDropdownOpen(false); }; document.addEventListener("mousedown", handleClickOutside); return () => document.removeEventListener("mousedown", handleClickOutside); }, [dropdownRef]);
+        return (
+          <header className="bg-brand-secondary shadow-lg"><div className="container mx-auto px-4 sm:px-6 lg:px-8"><div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-3"><img src="./Imagenes/Playtest.png" alt="Playtest Logo" className="h-16 w-16" /><h1 className="text-xl md:text-2xl font-bold tracking-wider text-brand-light">{t('header_title')} <span className="font-light text-brand-accent hidden sm:inline">{t('header_subtitle')}</span></h1></div>
+              <div className="relative" ref={dropdownRef}><button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center gap-2 text-brand-accent hover:text-brand-light transition-colors p-2 rounded-md"><span className="font-semibold">{language.toUpperCase()}</span><ChevronUpDownIcon className="h-5 w-5" /></button>
+                {isDropdownOpen && (<div className="absolute right-0 mt-2 w-32 bg-brand-primary rounded-md shadow-lg z-20 ring-1 ring-black ring-opacity-5"><div className="py-1"><a href="#" onClick={(e)=>{e.preventDefault();setLanguage('es');setIsDropdownOpen(false);}} className="block px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">{t('spanish')}</a><a href="#" onClick={(e)=>{e.preventDefault();setLanguage('en');setIsDropdownOpen(false);}} className="block px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">{t('english')}</a></div></div>)}
+              </div>
+          </div></div></header>
+        );
+      };
+
+      // --- Main Page Component ---
+      const AllBlocksPageContent = () => {
+          const { t } = useLanguage();
+          const { currentUser } = useUser();
+          const [blocks, setBlocks] = useState([]);
+          const [users, setUsers] = useState([]);
+          const [isLoading, setIsLoading] = useState(true);
+          const [error, setError] = useState(null);
+          
+          const loadData = useCallback(async () => {
+              try {
+                  setError(null);
+                  setIsLoading(true);
+                  const [fetchedBlocks, fetchedUsers] = await Promise.all([
+                      dataService.fetchAllBlocksWithPlayerCount(),
+                      dataService.fetchAllUsers()
+                  ]);
+                  setBlocks(fetchedBlocks);
+                  setUsers(fetchedUsers);
+              } catch (err) {
+                  setError("Failed to load data.");
+              } finally {
+                  setIsLoading(false);
+              }
+          }, []);
+
+          useEffect(() => { loadData(); }, [loadData]);
+          
+          const handleUpdateBlock = async (block) => { try { await dataService.updateGlobalBlock(block); await loadData(); } catch (err) { setError('Failed to update block.'); } };
+          const handleDeleteBlock = async (blockId) => { try { await dataService.deleteGlobalBlock(blockId); await loadData(); } catch (err) { setError('Failed to delete block.'); } };
+          const handleRenameTopic = async (blockId, oldName, newName) => { try { await dataService.renameTopicInBlock(blockId, oldName, newName); await loadData(); } catch (err) { setError('Failed to rename topic.'); } };
+          const handleDeleteTopic = async (blockId, topicName) => { try { await dataService.deleteTopicFromBlock(blockId, topicName); await loadData(); } catch (err) { setError('Failed to delete topic.'); } };
+          const handleUpdateQuestion = async (question) => { try { await dataService.updateGlobalQuestion(question); await loadData(); } catch (err) { setError('Failed to update question.'); } };
+          const handleDeleteQuestion = async (questionId) => { try { await dataService.deleteGlobalQuestion(questionId); await loadData(); } catch (err) { setError('Failed to delete question.'); } };
+
+          const blocksToDisplay = useMemo(() => {
+              if (!currentUser) return [];
+              return currentUser.isAdmin ? blocks : blocks.filter(b => b.creatorId === currentUser.id);
+          }, [blocks, currentUser]);
+
+          const pageTitle = currentUser?.isAdmin ? t('all_blocks_title') : t('my_blocks_title');
+
+          const renderContent = () => {
+              if (isLoading) { return <div className="flex justify-center items-center h-64"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>; }
+              if (error) { return <div className="text-center text-brand-danger bg-red-500/10 p-4 rounded-lg">{t('error')}: {error}</div>; }
+              return <AllBlocks currentUser={currentUser} blocks={blocksToDisplay} users={users} pageTitle={pageTitle} onDeleteBlock={handleDeleteBlock} onUpdateBlock={handleUpdateBlock} onRenameTopic={handleRenameTopic} onDeleteTopic={handleDeleteTopic} onUpdateQuestion={handleUpdateQuestion} onDeleteQuestion={handleDeleteQuestion} />;
+          };
+          return (
+              <div className="min-h-screen flex flex-col">
+                  <Header />
+                  <main className="flex-grow p-4 sm:p-6 lg:p-8">{renderContent()}</main>
+                  <footer className="text-center p-4 text-xs text-brand-accent"><p>{t('footer_text')}</p></footer>
+              </div>
+          );
+      };
+      
+      const AllBlocksPage = () => (
+          <UserProvider>
+            <AllBlocksPageContent />
+          </UserProvider>
+      );
+
+      // --- App Entry Point ---
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(
+        <React.StrictMode>
+          <LanguageProvider><AllBlocksPage /></LanguageProvider>
+        </React.StrictMode>
+      );
+    </script>
+    <noscript>This application requires JavaScript to run.</noscript>
+  </body>
+</html>

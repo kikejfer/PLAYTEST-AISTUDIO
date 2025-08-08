@@ -1,0 +1,6 @@
+{
+  "name": "PLAYTEST_V20",
+  "description": "Web para practicar test creados por el usuario. Cada página se encuentra en un archivo. Juegos implementados. Creación de página de acceso. Lógica de estadística y consolidación de temario. Implementación de modalidades de competición. Se incorporan imágenes al juego correctamente. Agregamos un ranking para cada modalidad de juego. Implementación del modo Trivial.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}

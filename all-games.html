@@ -1,0 +1,440 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>PLAYTEST Admin - All Games</title>
+
+    <!-- Embedded Global Stylesheet -->
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      }
+      .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: #1B263B; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb { background: #415A77; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: #778DA9; }
+      * { scrollbar-width: thin; scrollbar-color: #415A77 #1B263B; }
+    </style>
+
+    <!-- Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-primary': '#0D1B2A',
+              'brand-secondary': '#1B263B',
+              'brand-tertiary': '#415A77',
+              'brand-accent': '#778DA9',
+              'brand-light': '#E0E1DD',
+              'brand-cta': '#3B82F6',
+              'brand-cta-hover': '#2563EB',
+              'brand-success': '#10B981',
+              'brand-danger': '#EF4444',
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Import Map to resolve bare module specifiers for React -->
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+    "react/": "https://esm.sh/react@18.2.0/"
+  }
+}
+</script>
+  </head>
+  <body class="bg-brand-primary text-brand-light">
+    <div id="root"></div>
+
+    <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Main application script -->
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
+      import ReactDOM from 'react-dom/client';
+
+      // --- INLINED: i18n ---
+      const translations = {
+        es: {
+          header_title: 'Aplicación PLAYTEST', header_subtitle: 'La forma más divertida de estudiar', language: 'Idioma', english: 'Inglés', spanish: 'Español',
+          all_blocks_return: 'Volver',
+          all_games_title: 'Todas las Partidas Activas', all_games_total: '{count} Partidas en Total', all_games_header_mode: 'Modo', all_games_header_config: 'Configuración', all_games_header_created: 'Creada el', all_games_header_actions: 'Acciones',
+          active_games_none: 'No hay partidas activas.',
+          game_setup_all_topics: 'Todos los temas', game_setup_topics_selected: '{count} tema(s) seleccionado(s)',
+          delete_game_confirm: '¿Estás seguro de que quieres eliminar esta partida? Esta acción no se puede deshacer.', delete_game_prompt_title: 'Borrar Partida',
+          delete_question_prompt_confirm: 'SI', delete_question_prompt_cancel: 'NO',
+          generic_cancel: 'Cancelar', delete: 'Eliminar', error: 'Error', loading: 'Cargando...',
+          footer_text: '© 2024 PLAYTEST. Todos los derechos reservados.',
+          admin_blocks_by: 'de',
+          game_status_your_turn: 'Tu turno',
+          game_status_opponent_turn: 'Turno de {nickname}',
+          game_status_pending: 'Esperando aceptación',
+        },
+        en: {
+          header_title: 'PLAYTEST App', header_subtitle: 'The most fun way to study', language: 'Language', english: 'English', spanish: 'Spanish',
+          all_blocks_return: 'Return',
+          all_games_title: 'All Active Games', all_games_total: '{count} Total Games', all_games_header_mode: 'Mode', all_games_header_config: 'Configuration', all_games_header_created: 'Created At', all_games_header_actions: 'Actions',
+          active_games_none: 'There are no active games.',
+          game_setup_all_topics: 'All Topics', game_setup_topics_selected: '{count} topic(s) selected',
+          delete_game_confirm: 'Are you sure you want to delete this game? This action cannot be undone.', delete_game_prompt_title: 'Delete Game',
+          delete_question_prompt_confirm: 'YES', delete_question_prompt_cancel: 'NO',
+          generic_cancel: 'Cancel', delete: 'Delete', error: 'Error', loading: 'Loading...',
+          footer_text: '© 2024 PLAYTEST. All rights reserved.',
+          admin_blocks_by: 'by',
+          game_status_your_turn: 'Your turn',
+          game_status_opponent_turn: "{nickname}'s turn",
+          game_status_pending: 'Awaiting acceptance',
+        }
+      };
+      const LanguageContext = createContext();
+      const LanguageProvider = ({ children }) => {
+        const [language, setLanguage] = useState(() => localStorage.getItem('playtest_lang') || 'es');
+        useEffect(() => { localStorage.setItem('playtest_lang', language); }, [language]);
+        const t = useCallback((key, replacements = {}) => {
+            let translation = translations[language][key] || translations['en'][key] || key;
+            Object.keys(replacements).forEach(placeholder => {
+                translation = translation.replace(`{${placeholder}}`, replacements[placeholder]);
+            });
+            return translation;
+        }, [language]);
+        return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>;
+      };
+      const useLanguage = () => useContext(LanguageContext);
+
+      // --- INLINED: components/icons.tsx ---
+      const ArrowLeftIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /> </svg> );
+      const TrashIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /> </svg> );
+      const ChevronUpDownIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" /> </svg> );
+
+      // --- INLINED: services/dataService.ts ---
+      const DB_KEY = 'playtest_db_v3';
+      const getDatabase = () => {
+          const dbString = localStorage.getItem(DB_KEY);
+          return dbString ? JSON.parse(dbString) : { users: [], globalBlocks: [], globalQuestions: [], userProfiles: {} };
+      };
+      const saveDatabase = (db) => localStorage.setItem(DB_KEY, JSON.stringify(db));
+      const simulateDelay = (data, delay = 50) => new Promise(resolve => setTimeout(() => resolve(JSON.parse(JSON.stringify(data))), delay));
+
+      const dataService = {
+          fetchGamesForUser: async (userId) => {
+              const db = getDatabase();
+              const userGames = (db.globalGames || []).filter(game => game.players.some(p => p.userId === userId));
+              return simulateDelay(userGames);
+          },
+          deleteGameForUser: async (userId, gameId) => {
+              const db = getDatabase();
+              db.globalGames = (db.globalGames || []).filter(g => g.id !== gameId);
+              saveDatabase(db);
+              return simulateDelay({ message: 'Game deleted' });
+          },
+          fetchAllBlocks: async () => {
+            const db = getDatabase();
+            const userMap = (db.users || []).reduce((acc, user) => {
+                acc[user.id] = user.nickname;
+                return acc;
+            }, {});
+            return simulateDelay((db.globalBlocks || []).map(b => ({
+                ...b,
+                creatorNickname: userMap[b.creatorId] || 'Unknown',
+            })));
+          },
+      };
+
+      // --- INLINED: auth ---
+      const UserContext = createContext();
+      const useUser = () => useContext(UserContext);
+
+      const UserProvider = ({ children }) => {
+        const [currentUser, setCurrentUser] = useState(null);
+        const [isLoading, setIsLoading] = useState(true);
+
+        useEffect(() => {
+          try {
+            const sessionString = localStorage.getItem('playtest_session');
+            if (sessionString) {
+              const session = JSON.parse(sessionString);
+              if (session && session.userId) {
+                const db = getDatabase();
+                const user = (db.users || []).find(u => u.id === session.userId);
+                if (user) {
+                  setCurrentUser(user);
+                } else {
+                  localStorage.removeItem('playtest_session');
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Failed to parse session, clearing it.", e);
+            localStorage.removeItem('playtest_session');
+          }
+          setIsLoading(false);
+        }, []);
+
+        if (isLoading) {
+          return (
+             <div className="flex justify-center items-center h-screen"> <svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle> <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> </div>
+          )
+        }
+
+        if (!currentUser) {
+          return <div className="text-center p-8 text-xl text-brand-accent">Please log in to view this page. <a href="index.html" className="text-brand-cta">Go to login</a></div>
+        }
+
+        return (
+          <UserContext.Provider value={{ currentUser }}>
+            {children}
+          </UserContext.Provider>
+        );
+      }
+
+      // --- INLINED: components ---
+      const ConfirmationDialog = ({ title, message, confirmText, cancelText, onConfirm, onCancel, danger = false }) => (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={onCancel}>
+          <div className={`bg-brand-secondary rounded-xl shadow-2xl w-full max-w-sm m-4 border ${danger ? 'border-brand-danger/50' : 'border-brand-tertiary'} p-6 text-center`} onClick={e => e.stopPropagation()}>
+              <h4 className="text-xl font-bold text-brand-light">{title}</h4>
+              <p className="text-brand-accent my-4">{message}</p>
+              <div className="flex justify-center gap-4 mt-6">
+                  <button onClick={onCancel} className="py-2 px-6 rounded-lg bg-brand-tertiary hover:bg-brand-accent text-brand-light font-bold transition-colors">{cancelText}</button>
+                  <button onClick={onConfirm} className={`py-2 px-6 rounded-lg font-bold transition-colors text-white ${danger ? 'bg-brand-danger hover:bg-red-500' : 'bg-brand-cta hover:bg-brand-cta-hover'}`}>{confirmText}</button>
+              </div>
+          </div>
+        </div>
+      );
+      
+      const AllGamesView = ({ games, blocks, onDeleteGame }) => {
+        const { t, language } = useLanguage();
+        const { currentUser } = useUser();
+        const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+        
+        const getGameStatusText = (game) => {
+            if (game.status === 'pending') {
+                return t('game_status_pending');
+            }
+            if (game.status !== 'active') {
+                return '';
+            }
+    
+            if (game.mode === 'Duelo' || game.mode === 'Trivial') {
+                const myPlayerIndex = game.players.findIndex(p => p.userId === currentUser.id);
+                if (myPlayerIndex === -1) return '';
+    
+                const isMyTurn = (game.mode === 'Duelo' && game.turnState?.startsWith(`p${myPlayerIndex + 1}`)) ||
+                                 (game.mode === 'Trivial' && game.turn === myPlayerIndex);
+    
+                if (isMyTurn) {
+                    return t('game_status_your_turn');
+                } else {
+                    const opponentIndex = (game.mode === 'Duelo') ? (1 - myPlayerIndex) : (game.turn || 0);
+                    const opponent = game.players[opponentIndex];
+                    if (opponent && opponent.userId !== currentUser.id) {
+                        return t('game_status_opponent_turn', { nickname: opponent.nickname });
+                    }
+                }
+            }
+            return '';
+        };
+
+        const handleDeleteClick = (gameId) => {
+          setConfirmingDeleteId(gameId);
+        };
+        
+        const handleConfirmDelete = () => {
+          if (confirmingDeleteId) {
+              onDeleteGame(confirmingDeleteId);
+              setConfirmingDeleteId(null);
+          }
+        };
+
+        const onNavigateToGame = (game) => {
+           window.location.href = `active-game.html?gameId=${game.id}`;
+        };
+
+        const getGameConfigDetails = useCallback((config) => {
+            if (!config || Object.keys(config).length === 0) return 'No blocks configured';
+            return Object.entries(config).map(([blockId, blockConfig]) => {
+                const block = (blocks || []).find(b => b.id === blockId);
+                const blockName = block ? `${block.nombreCorto} (${t('admin_blocks_by')} ${block.creatorNickname})` : 'Unknown Block';
+                const topicInfo = blockConfig.topics === 'all' 
+                    ? `(${t('game_setup_all_topics')})` 
+                    : `(${t('game_setup_topics_selected', {count: blockConfig.topics.length})})`;
+                return `${blockName} ${topicInfo}`;
+            }).join(', ');
+        }, [blocks, t]);
+
+        const formatDate = useCallback((dateString) => {
+          return new Date(dateString).toLocaleDateString(language, {
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+          });
+        }, [language]);
+
+        return (
+          <div className="bg-brand-secondary p-6 rounded-xl shadow-lg animate-fade-in">
+            {confirmingDeleteId && (
+              <ConfirmationDialog
+                title={t('delete_game_prompt_title')}
+                message={t('delete_game_confirm')}
+                confirmText={t('delete_question_prompt_confirm')}
+                cancelText={t('delete_question_prompt_cancel')}
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setConfirmingDeleteId(null)}
+                danger={true}
+              />
+            )}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <a href="index.html" className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold py-2 px-4 rounded-lg transition-colors" aria-label={t('all_blocks_return')}>
+                  <ArrowLeftIcon className="h-5 w-5" />
+                  <span>{t('all_blocks_return')}</span>
+                </a>
+                <h2 className="text-2xl font-bold text-brand-light">{t('all_games_title')}</h2>
+              </div>
+              <span className="text-sm font-medium text-brand-accent bg-brand-primary px-3 py-1 rounded-full">{t('all_games_total', {count: games.length})}</span>
+            </div>
+            <div className="overflow-x-auto rounded-lg border border-brand-tertiary">
+              <table className="w-full min-w-max text-sm text-left text-brand-accent">
+                <thead className="text-xs text-brand-light uppercase bg-brand-primary/50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3">{t('all_games_header_mode')}</th>
+                    <th scope="col" className="px-6 py-3">{t('all_games_header_config')}</th>
+                    <th scope="col" className="px-6 py-3">{t('all_games_header_created')}</th>
+                    <th scope="col" className="px-6 py-3 text-center">{t('all_games_header_actions')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {games.map(game => {
+                    const statusText = getGameStatusText(game);
+                    return (
+                      <tr key={game.id} className="bg-brand-secondary border-b border-brand-tertiary hover:bg-brand-tertiary/20 cursor-pointer" onClick={() => onNavigateToGame(game)}>
+                        <td className="px-6 py-4 font-medium text-brand-light whitespace-nowrap">
+                          <div>{game.mode}</div>
+                          {statusText && <div className="text-xs font-bold text-amber-400 mt-1">{statusText}</div>}
+                        </td>
+                        <td className="px-6 py-4 text-xs max-w-sm truncate" title={getGameConfigDetails(game.config)}>{getGameConfigDetails(game.config)}</td>
+                        <td className="px-6 py-4">{formatDate(game.createdAt)}</td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                            <button onClick={() => handleDeleteClick(game.id)} className="text-brand-danger hover:text-red-500 transition-colors p-2 rounded-full hover:bg-brand-danger/20" aria-label={`Delete game ${game.id}`}>
+                              <TrashIcon className="h-5 w-5"/>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {games.length === 0 && <p className="text-center py-10 text-brand-accent">{t('active_games_none')}</p>}
+          </div>
+        );
+      };
+
+      const Header = () => {
+        const { language, setLanguage, t } = useLanguage();
+        const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+        const dropdownRef = useRef(null);
+        useEffect(() => { const handleClickOutside = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setIsDropdownOpen(false); }; document.addEventListener("mousedown", handleClickOutside); return () => document.removeEventListener("mousedown", handleClickOutside); }, [dropdownRef]);
+        return (
+          <header className="bg-brand-secondary shadow-lg"><div className="container mx-auto px-4 sm:px-6 lg:px-8"><div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-3"><img src="./Imagenes/Playtest.png" alt="Playtest Logo" className="h-16 w-16" /><h1 className="text-xl md:text-2xl font-bold tracking-wider text-brand-light">{t('header_title')} <span className="font-light text-brand-accent hidden sm:inline">{t('header_subtitle')}</span></h1></div>
+              <div className="relative" ref={dropdownRef}><button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center gap-2 text-brand-accent hover:text-brand-light transition-colors p-2 rounded-md"><span className="font-semibold">{language.toUpperCase()}</span><ChevronUpDownIcon className="h-5 w-5" /></button>
+                {isDropdownOpen && (<div className="absolute right-0 mt-2 w-32 bg-brand-primary rounded-md shadow-lg z-20 ring-1 ring-black ring-opacity-5"><div className="py-1"><a href="#" onClick={(e)=>{e.preventDefault();setLanguage('es');setIsDropdownOpen(false);}} className="block px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">{t('spanish')}</a><a href="#" onClick={(e)=>{e.preventDefault();setLanguage('en');setIsDropdownOpen(false);}} className="block px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">{t('english')}</a></div></div>)}
+              </div>
+          </div></div></header>
+        );
+      };
+      
+      const AllGamesPageContent = () => {
+          const { t } = useLanguage();
+          const { currentUser } = useUser();
+          const [games, setGames] = useState([]);
+          const [blocks, setBlocks] = useState([]);
+          const [isLoading, setIsLoading] = useState(true);
+          const [error, setError] = useState(null);
+
+          const loadData = useCallback(async () => {
+              if (!currentUser) return;
+              try {
+                  setIsLoading(true);
+                  setError(null);
+                  const [fetchedGames, fetchedBlocks] = await Promise.all([
+                    dataService.fetchGamesForUser(currentUser.id), 
+                    dataService.fetchAllBlocks()
+                  ]);
+                  setGames(fetchedGames);
+                  setBlocks(fetchedBlocks);
+              } catch(err) {
+                  setError("Failed to load game data.");
+                  console.error(err);
+              } finally {
+                  setIsLoading(false);
+              }
+          }, [currentUser]);
+
+          useEffect(() => {
+              loadData();
+          }, [loadData]);
+
+          const handleDeleteGame = async (gameId) => {
+            if (!currentUser) return;
+            try {
+              await dataService.deleteGameForUser(currentUser.id, gameId);
+              await loadData(); // Reload data to reflect the deletion
+            } catch (err) {
+              setError("Failed to delete game.");
+              console.error(err);
+            }
+          };
+
+          const renderContent = () => {
+              if (isLoading) { return <div className="flex justify-center items-center h-64"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>; }
+              if (error) { return <div className="text-center text-brand-danger bg-red-500/10 p-4 rounded-lg">{t('error')}: {error}</div>; }
+              return <AllGamesView games={games} blocks={blocks} onDeleteGame={handleDeleteGame} />;
+          };
+
+          return (
+              <div className="min-h-screen flex flex-col">
+                  <Header />
+                  <main className="flex-grow p-4 sm:p-6 lg:p-8">{renderContent()}</main>
+                  <footer className="text-center p-4 text-xs text-brand-accent"><p>{t('footer_text')}</p></footer>
+              </div>
+          );
+      };
+
+      const AllGamesPage = () => (
+          <UserProvider>
+            <AllGamesPageContent />
+          </UserProvider>
+      );
+
+      // --- App Entry Point ---
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(
+        <React.StrictMode>
+          <LanguageProvider><AllGamesPage /></LanguageProvider>
+        </React.StrictMode>
+      );
+    </script>
+    <noscript>This application requires JavaScript to run.</noscript>
+  </body>
+</html>

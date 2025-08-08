@@ -1,0 +1,630 @@
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>PLAYTEST - Exam Mode</title>
+
+    <!-- Embedded Global Stylesheet -->
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      }
+      .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+      .animate-pop-in { animation: popIn 0.3s ease-out; }
+      @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: #1B263B; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb { background: #415A77; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: #778DA9; }
+      * { scrollbar-width: thin; scrollbar-color: #415A77 #1B263B; }
+    </style>
+
+    <!-- Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-primary': '#0D1B2A',
+              'brand-secondary': '#1B263B',
+              'brand-tertiary': '#415A77',
+              'brand-accent': '#778DA9',
+              'brand-light': '#E0E1DD',
+              'brand-cta': '#3B82F6',
+              'brand-cta-hover': '#2563EB',
+              'brand-success': '#10B981',
+              'brand-danger': '#EF4444',
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Import Map to resolve bare module specifiers for React -->
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+    "react/": "https://esm.sh/react@18.2.0/"
+  }
+}
+</script>
+  </head>
+  <body class="bg-brand-primary text-brand-light">
+    <div id="root"></div>
+
+    <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Main application script -->
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
+      import ReactDOM from 'react-dom/client';
+
+      // --- INLINED: i18n ---
+      const translations = {
+        es: {
+          header_title: 'Aplicación PLAYTEST', header_subtitle: 'La forma más divertida de estudiar', language: 'Idioma', english: 'Inglés', spanish: 'Español',
+          all_blocks_return: 'Volver',
+          generic_cancel: 'Cancelar', error: 'Error', loading: 'Cargando...', delete: 'Eliminar',
+          footer_text: '© 2024 PLAYTEST. Todos los derechos reservados.',
+          game_question: 'Pregunta', game_of: 'de', game_final_score: 'Nota Final',
+          game_results_title: '¡Examen Terminado!', game_results_summary: 'Respondiste {answered} de {total} preguntas.',
+          game_button_next: 'Siguiente', game_button_prev: 'Anterior', game_button_finish: 'Finalizar Examen', game_button_play_again: 'Hacer Otro Examen',
+          game_button_dashboard: 'Volver al Panel', game_review_answers: 'Revisar Examen', game_your_answer: 'Tu respuesta',
+          game_correct_answer: 'Respuesta correcta', game_unanswered: 'Sin responder',
+          game_select_answer: 'Selecciona una respuesta', game_setup_all_topics: 'Todos los temas',
+          game_finish_confirm_title: '¿Finalizar Examen?', game_finish_confirm_message: '¿Seguro que quieres terminar el examen? Se calculará tu nota con las respuestas actuales.',
+          game_included_content: 'Contenido de la Partida', game_timer: 'Tiempo restante',
+          game_exam_desc: 'Simula un examen real con tiempo límite y un número fijo de preguntas. No hay feedback hasta el final. ¡Buena suerte!',
+          delete_question_prompt_confirm: 'SI', delete_question_prompt_cancel: 'NO',
+        },
+        en: {
+          header_title: 'PLAYTEST App', header_subtitle: 'The most fun way to study', language: 'Language', english: 'English', spanish: 'Spanish',
+          all_blocks_return: 'Return',
+          generic_cancel: 'Cancel', error: 'Error', loading: 'Loading...', delete: 'Delete',
+          footer_text: '© 2024 PLAYTEST. All rights reserved.',
+          game_question: 'Question', game_of: 'of', game_final_score: 'Final Score',
+          game_results_title: 'Exam Finished!', game_results_summary: 'You answered {answered} of {total} questions.',
+          game_button_next: 'Next', game_button_prev: 'Previous', game_button_finish: 'Finish Exam', game_button_play_again: 'Take Another Exam',
+          game_button_dashboard: 'Back to Dashboard', game_review_answers: 'Review Exam', game_your_answer: 'Your answer',
+          game_correct_answer: 'Correct answer', game_unanswered: 'Unanswered',
+          game_select_answer: 'Select an answer', game_setup_all_topics: 'All Topics',
+          game_finish_confirm_title: 'Finish Exam?', game_finish_confirm_message: 'Are you sure you want to finish the exam? Your score will be calculated based on your current answers.',
+          game_included_content: 'Game Content', game_timer: 'Time remaining',
+          game_exam_desc: 'Simulate a real exam with a time limit and a fixed number of questions. No feedback until the end. Good luck!',
+          delete_question_prompt_confirm: 'YES', delete_question_prompt_cancel: 'NO',
+        }
+      };
+      const LanguageContext = createContext();
+      const LanguageProvider = ({ children }) => {
+        const [language, setLanguage] = useState(() => localStorage.getItem('playtest_lang') || 'es');
+        useEffect(() => { localStorage.setItem('playtest_lang', language); }, [language]);
+        const t = useCallback((key, replacements = {}) => {
+            let translation = translations[language][key] || translations['en'][key] || key;
+            Object.keys(replacements).forEach(placeholder => {
+                translation = translation.replace(`{${placeholder}}`, replacements[placeholder]);
+            });
+            return translation;
+        }, [language]);
+        return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>;
+      };
+      const useLanguage = () => useContext(LanguageContext);
+
+      // --- INLINED: components/icons.tsx ---
+      const BrainSalutingIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}> <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.5 14.5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3-4c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm2.5-1.5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm1-5.5H11v-1h3.5c.83 0 1.5.67 1.5 1.5v1zM9.5 11c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/> </svg> );
+      const ChevronUpDownIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" /> </svg> );
+      const CheckCircleIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" {...props}> <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /> </svg> );
+      const XCircleIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" {...props}> <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /> </svg> );
+      const ArrowUturnLeftIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /> </svg> );
+      const ArrowPathIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-11.667-11.667a8.25 8.25 0 0111.667 0l3.181 3.183m-14.85-3.183L2.985 16.24z" /> </svg> );
+      const FlagIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 4.5v.75m0 10.5v.75m18-11.25v.75m0 10.5v.75M4.5 10.5a1.5 1.5 0 113 0v3a1.5 1.5 0 01-3 0v-3z" /></svg>);
+      
+      // --- INLINED: services/dataService.ts ---
+      const DB_KEY = 'playtest_db_v3';
+      const getDatabase = () => {
+          const dbString = localStorage.getItem(DB_KEY);
+          return dbString ? JSON.parse(dbString) : { users: [], globalBlocks: [], globalQuestions: [], userProfiles: {} };
+      };
+      const saveDatabase = (db) => localStorage.setItem(DB_KEY, JSON.stringify(db));
+      const simulateDelay = (data, delay = 50) => new Promise(resolve => setTimeout(() => resolve(JSON.parse(JSON.stringify(data))), delay));
+      const dataService = {
+          fetchAllBlocks: async () => {
+              const db = getDatabase();
+              return simulateDelay((db.globalBlocks || []).map(b => ({
+                  ...b,
+                  questions: (db.globalQuestions || []).filter(q => q.bloqueId === b.id),
+              })));
+          },
+          fetchGame: async (gameId) => {
+              const db = getDatabase();
+              const game = (db.globalGames || []).find(g => g.id === gameId);
+              return simulateDelay(game);
+          },
+          updateUserStats: async (userId, gameId, gameResults, gameModeName) => {
+              const db = getDatabase();
+              const profile = db.userProfiles[userId];
+              if (!profile) return;
+      
+              if (!profile.stats) profile.stats = {};
+              if (!profile.answerHistory) profile.answerHistory = [];
+              if (!profile.stats.consolidation) {
+                  profile.stats.consolidation = { byQuestion: {}, byTopic: {}, byBlock: {} };
+              }
+              
+              for (const answer of gameResults.answers) {
+                  const { blockId, questionId, topicName, result, responseTime } = answer;
+                  if (!blockId || !questionId) continue;
+                  
+                  profile.answerHistory.unshift({
+                      gameId, questionId, blockId, topicName, result,
+                      responseTime, timestamp: new Date().toISOString(),
+                  });
+              }
+
+              const allGlobalQuestions = db.globalQuestions || [];
+              const blockIdsInGame = new Set(gameResults.answers.map(a => a.blockId).filter(Boolean));
+
+              for (const blockId of blockIdsInGame) {
+                  const questionsInBlock = allGlobalQuestions.filter(q => q.bloqueId === blockId);
+                  if (questionsInBlock.length === 0) continue;
+
+                  const correctlyAnsweredIdsInBlock = new Set(
+                      profile.answerHistory
+                          .filter(h => h.blockId === blockId && h.result === 'ACIERTO')
+                          .map(h => h.questionId)
+                  );
+                  const blockConsolidation = (correctlyAnsweredIdsInBlock.size / questionsInBlock.length) * 100;
+                  profile.stats.consolidation.byBlock[blockId] = blockConsolidation;
+
+                  const topicsInBlock = [...new Set(questionsInBlock.map(q => q.tema).filter(Boolean))];
+                  
+                  for (const topicName of topicsInBlock) {
+                      const questionsInTopic = questionsInBlock.filter(q => q.tema === topicName);
+                      if (questionsInTopic.length === 0) continue;
+
+                      const correctlyAnsweredIdsInTopic = new Set(
+                          profile.answerHistory
+                              .filter(h => h.blockId === blockId && h.topicName === topicName && h.result === 'ACIERTO')
+                              .map(h => h.questionId)
+                      );
+                      const topicConsolidation = (correctlyAnsweredIdsInTopic.size / questionsInTopic.length) * 100;
+                      const topicKey = `${blockId}_${topicName}`;
+                      profile.stats.consolidation.byTopic[topicKey] = topicConsolidation;
+                  }
+              }
+
+              if (!profile.gameHistory) {
+                  profile.gameHistory = [];
+              }
+              const correct = gameResults.answers.filter(a => a.result === 'ACIERTO' || a.isCorrect === true).length;
+              const incorrect = gameResults.answers.filter(a => a.result === 'FALLO' || a.isCorrect === false).length;
+              
+              const blockIds = [...new Set(gameResults.answers.map(a => a.blockId))];
+              const blockNames = (db.globalBlocks || [])
+                  .filter(b => blockIds.includes(b.id))
+                  .map(b => b.nombreCorto)
+                  .join(', ');
+
+              const historyEntry = {
+                  gameId,
+                  blockName: blockNames || 'N/A',
+                  mode: gameModeName,
+                  correct,
+                  incorrect,
+                  date: new Date().toISOString(),
+              };
+
+              if(gameResults.opponent) historyEntry.opponent = gameResults.opponent;
+              if(gameResults.score !== undefined) historyEntry.score = gameResults.score;
+
+              profile.gameHistory.unshift(historyEntry);
+              if (profile.gameHistory.length > 10) {
+                  profile.gameHistory = profile.gameHistory.slice(0, 10);
+              }
+      
+              saveDatabase(db);
+              return simulateDelay({ success: true });
+          },
+      };
+
+      // --- INLINED: auth ---
+      const UserContext = createContext();
+      const useUser = () => useContext(UserContext);
+
+      const UserProvider = ({ children }) => {
+        const [currentUser, setCurrentUser] = useState(null);
+        const [isLoading, setIsLoading] = useState(true);
+
+        useEffect(() => {
+          try {
+            const sessionString = localStorage.getItem('playtest_session');
+            if (sessionString) {
+              const session = JSON.parse(sessionString);
+              if (session && session.userId) {
+                const db = getDatabase();
+                const user = (db.users || []).find(u => u.id === session.userId);
+                if (user) {
+                  setCurrentUser(user);
+                } else {
+                  localStorage.removeItem('playtest_session');
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Failed to parse session, clearing it.", e);
+            localStorage.removeItem('playtest_session');
+          }
+          setIsLoading(false);
+        }, []);
+
+        if (isLoading) {
+          return (
+             <div className="flex justify-center items-center h-screen"> <svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle> <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> </div>
+          )
+        }
+
+        if (!currentUser) {
+           window.location.href = 'index.html';
+           return null;
+        }
+
+        return (
+          <UserContext.Provider value={{ currentUser }}>
+            {children}
+          </UserContext.Provider>
+        );
+      }
+
+      // --- INLINED: components ---
+       const ConfirmationDialog = ({ title, message, confirmText, cancelText, onConfirm, onCancel, danger = false }) => (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={onCancel}>
+          <div className={`bg-brand-secondary rounded-xl shadow-2xl w-full max-w-sm m-4 border ${danger ? 'border-brand-danger/50' : 'border-brand-tertiary'} p-6 text-center`} onClick={e => e.stopPropagation()}>
+              <h4 className="text-xl font-bold text-brand-light">{title}</h4>
+              <p className="text-brand-accent my-4">{message}</p>
+              <div className="flex justify-center gap-4 mt-6">
+                  <button onClick={onCancel} className="py-2 px-6 rounded-lg bg-brand-tertiary hover:bg-brand-accent text-brand-light font-bold transition-colors">{cancelText}</button>
+                  <button onClick={onConfirm} className={`py-2 px-6 rounded-lg font-bold transition-colors text-white ${danger ? 'bg-brand-danger hover:bg-red-500' : 'bg-brand-cta hover:bg-brand-cta-hover'}`}>{confirmText}</button>
+              </div>
+          </div>
+        </div>
+      );
+      
+      const Header = () => {
+        const { t } = useLanguage();
+        return (
+          <header className="bg-brand-secondary shadow-lg"><div className="container mx-auto px-4 sm:px-6 lg:px-8"><div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-3"><BrainSalutingIcon className="h-8 w-8 text-brand-cta" /><h1 className="text-xl md:text-2xl font-bold tracking-wider text-brand-light">{t('header_title')}</h1></div>
+          </div></div></header>
+        );
+      };
+
+      const ExamGameComponent = ({ questions, game, blocks, examSettings }) => {
+          const { t } = useLanguage();
+          const { currentUser } = useUser();
+          const EXAM_DURATION = examSettings.numQuestions * 30;
+          const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+          const [userAnswers, setUserAnswers] = useState(new Map());
+          const [gameState, setGameState] = useState('playing'); // playing | review | finished
+          const [timeLeft, setTimeLeft] = useState(EXAM_DURATION);
+          const [isConfirmingFinish, setIsConfirmingFinish] = useState(false);
+          const questionTimers = useRef(new Map());
+          
+          const examQuestions = useMemo(() => {
+              return questions.slice(0, examSettings.numQuestions);
+          }, [questions, examSettings.numQuestions]);
+
+          const currentQuestion = examQuestions[currentQuestionIndex];
+
+          useEffect(() => {
+              if (gameState === 'playing' && timeLeft <= 0) {
+                  handleFinish();
+              }
+              if (gameState !== 'playing') return;
+              const timerId = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+              return () => clearInterval(timerId);
+          }, [gameState, timeLeft]);
+
+          const handleAnswerSelect = (answerIndex) => {
+              setUserAnswers(prev => new Map(prev).set(currentQuestionIndex, answerIndex));
+          };
+          
+          const handleNextQuestion = () => {
+              if (currentQuestionIndex < examQuestions.length - 1) {
+                  setCurrentQuestionIndex(prev => prev + 1);
+              }
+          };
+          const handlePrevQuestion = () => {
+              if (currentQuestionIndex > 0) {
+                  setCurrentQuestionIndex(prev => prev - 1);
+              }
+          };
+          
+          const handleFinish = useCallback(async () => {
+              setIsConfirmingFinish(false);
+              setGameState('finished');
+
+              const correctAnswers = Array.from(userAnswers.entries()).filter(([qIndex, aIndex]) => examQuestions[qIndex].respuestas[aIndex].esCorrecta).length;
+              const wrongAnswers = userAnswers.size - correctAnswers;
+              const penaltyValue = examSettings.penalty;
+              const penaltyDeduction = penaltyValue > 0 ? wrongAnswers / penaltyValue : 0;
+              const finalScore = Math.max(0, (correctAnswers - penaltyDeduction) / examSettings.numQuestions * 10).toFixed(2);
+
+              const scoreData = {
+                  score: parseFloat(finalScore),
+                  correct: correctAnswers,
+                  incorrect: wrongAnswers,
+                  numQuestions: examSettings.numQuestions,
+                  date: new Date().toISOString()
+              };
+
+              const historyKey = `playtest_exam_scores_${game.id}`;
+              try {
+                  const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+                  history.push(scoreData);
+                  history.sort((a, b) => b.score - a.score);
+                  localStorage.setItem(historyKey, JSON.stringify(history.slice(0, 10)));
+              } catch (e) {
+                  console.error("Failed to save exam score", e);
+              }
+              
+              if (currentUser) {
+                  const answersForStats = [];
+                  for(let i=0; i<examQuestions.length; i++) {
+                      const question = examQuestions[i];
+                      const answerIndex = userAnswers.get(i);
+                      
+                      if (answerIndex !== undefined) {
+                           const isCorrect = question.respuestas[answerIndex].esCorrecta;
+                           answersForStats.push({
+                                questionId: question.id,
+                                result: isCorrect ? 'ACIERTO' : 'FALLO',
+                                blockId: question.blockId,
+                                topicName: question.tema,
+                                responseTime: 15, // Dummy time for now
+                           });
+                      } else {
+                           answersForStats.push({
+                                questionId: question.id,
+                                result: 'BLANCO',
+                                blockId: question.blockId,
+                                topicName: question.tema,
+                                responseTime: EXAM_DURATION / examQuestions.length,
+                           });
+                      }
+                  }
+                  
+                  const gameResults = { answers: answersForStats, score: parseFloat(finalScore) };
+                  await dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
+              }
+          }, [currentUser, game.id, game.mode, examQuestions, userAnswers, examSettings]);
+
+          const formatTime = (seconds) => {
+              const minutes = Math.floor(seconds / 60);
+              const remainingSeconds = seconds % 60;
+              return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+          };
+
+          if (gameState === 'finished' || gameState === 'review') {
+            const correctAnswers = Array.from(userAnswers.entries()).filter(([qIndex, aIndex]) => examQuestions[qIndex].respuestas[aIndex].esCorrecta).length;
+            const wrongAnswers = userAnswers.size - correctAnswers;
+            const penaltyValue = examSettings.penalty;
+            const penaltyDeduction = penaltyValue > 0 ? wrongAnswers / penaltyValue : 0;
+            const finalScore = Math.max(0, (correctAnswers - penaltyDeduction) / examSettings.numQuestions * 10).toFixed(2);
+            const scorePercentage = Math.max(0, parseFloat(finalScore) * 10);
+            const circumference = 2 * Math.PI * 54;
+             
+             if (gameState === 'finished') {
+                return (
+                  <div className="max-w-2xl mx-auto text-center animate-fade-in p-8 bg-brand-secondary rounded-xl">
+                      <h2 className="text-4xl font-bold text-brand-light mb-2">{t('game_results_title')}</h2>
+                      <p className="text-brand-accent mb-6">{t('game_results_summary', { answered: userAnswers.size, total: examQuestions.length })}</p>
+                       <div className="relative w-48 h-48 mx-auto mb-6 flex items-center justify-center">
+                          <svg className="transform -rotate-90" width="100%" height="100%" viewBox="0 0 120 120">
+                              <circle cx="60" cy="60" r="54" fill="none" strokeWidth="12" className="text-brand-primary" />
+                              <circle cx="60" cy="60" r="54" fill="none" strokeWidth="12" className={scorePercentage >= 50 ? "text-brand-success" : "text-brand-danger"} strokeDasharray={circumference} strokeDashoffset={circumference - (scorePercentage / 100) * circumference} strokeLinecap="round" />
+                          </svg>
+                          <div className="absolute text-center">
+                            <span className="text-xs text-brand-accent">{t('game_final_score')}</span>
+                            <span className="block text-4xl font-bold text-brand-light">{finalScore}</span>
+                          </div>
+                      </div>
+                       <div className="flex justify-center gap-4">
+                          <button onClick={() => setGameState('review')} className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-bold py-3 px-6 rounded-lg transition-colors">{t('game_review_answers')}</button>
+                          <button onClick={() => window.location.href = `active-game.html?gameId=${game.id}`} className="flex items-center gap-2 bg-brand-cta hover:bg-brand-cta-hover text-white font-bold py-3 px-6 rounded-lg transition-colors"><ArrowUturnLeftIcon className="h-5 w-5" />{t('game_button_dashboard')}</button>
+                      </div>
+                  </div>
+                );
+             }
+             
+             return (
+                <div className="max-w-4xl mx-auto animate-fade-in">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-2xl font-bold text-brand-light">{t('game_review_answers')}</h2>
+                        <button onClick={() => setGameState('finished')} className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold py-2 px-4 rounded-lg transition-colors">{t('all_blocks_return')}</button>
+                    </div>
+                    <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                        {examQuestions.map((q, qIndex) => {
+                            const userAnswerIndex = userAnswers.get(qIndex);
+                            const correctAnswerIndex = q.respuestas.findIndex(r => r.esCorrecta);
+                            return (
+                                <div key={qIndex} className="bg-brand-secondary p-4 rounded-lg">
+                                    <p className="font-semibold text-brand-light">{qIndex + 1}. {q.textoPregunta}</p>
+                                    <div className="mt-3 space-y-2 pl-4">
+                                        {q.respuestas.map((r, rIndex) => {
+                                            const isUserAnswer = userAnswerIndex === rIndex;
+                                            const isCorrectAnswer = r.esCorrecta;
+                                            return (
+                                                <div key={rIndex} className={`flex items-start gap-3 p-2 rounded-md text-sm ${isCorrectAnswer ? 'bg-brand-success/10' : ''} ${isUserAnswer && !isCorrectAnswer ? 'bg-brand-danger/10' : ''}`}>
+                                                    <div>
+                                                        {isCorrectAnswer ? <CheckCircleIcon className="h-5 w-5 text-brand-success flex-shrink-0" /> : <XCircleIcon className="h-5 w-5 text-brand-tertiary flex-shrink-0" />}
+                                                    </div>
+                                                    <div className="flex-grow">
+                                                      <span className={isCorrectAnswer ? 'text-brand-success' : 'text-brand-light'}>{r.textoRespuesta}</span>
+                                                      {isUserAnswer && <span className={`ml-2 text-xs font-bold p-1 rounded ${isCorrectAnswer ? 'bg-brand-success/20 text-brand-success' : 'bg-brand-danger/20 text-brand-danger'}`}>{t('game_your_answer')}</span>}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    {q.explicacionRespuesta && <p className="mt-3 text-xs italic text-brand-accent pl-4 border-l-2 border-brand-tertiary ml-2"><strong>{t('game_correct_answer')}:</strong> {q.explicacionRespuesta}</p>}
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+             )
+          }
+
+          if (!currentQuestion) return <div className="text-center p-8">{t('loading')}</div>
+
+          return (
+              <div className="max-w-4xl mx-auto animate-fade-in">
+                  {isConfirmingFinish && ( <ConfirmationDialog title={t('game_finish_confirm_title')} message={t('game_finish_confirm_message')} confirmText={t('game_button_finish')} cancelText={t('generic_cancel')} onConfirm={handleFinish} onCancel={() => setIsConfirmingFinish(false)} danger={true}/> )}
+                  <div className="mb-4 p-4 bg-brand-secondary/50 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <h2 className="text-xl font-bold text-brand-light">{game.mode}</h2>
+                        <div className="text-center">
+                            <p className="text-sm font-semibold text-brand-accent">{t('game_timer')}</p>
+                            <p className="font-mono text-xl font-bold text-brand-light">{formatTime(timeLeft)}</p>
+                        </div>
+                      </div>
+                  </div>
+
+                  <div className="bg-brand-secondary p-6 rounded-xl shadow-2xl">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-bold text-brand-light">{t('game_question')} {currentQuestionIndex + 1}/{examQuestions.length}</h3>
+                      <div className="flex items-center gap-2">
+                          <button onClick={handlePrevQuestion} disabled={currentQuestionIndex === 0} className="px-4 py-2 text-sm font-medium rounded-lg bg-brand-tertiary hover:bg-brand-accent disabled:opacity-50 disabled:cursor-not-allowed">{t('game_button_prev')}</button>
+                          <button onClick={handleNextQuestion} disabled={currentQuestionIndex === examQuestions.length - 1} className="px-4 py-2 text-sm font-medium rounded-lg bg-brand-tertiary hover:bg-brand-accent disabled:opacity-50 disabled:cursor-not-allowed">{t('game_button_next')}</button>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-brand-primary p-6 rounded-lg mb-6 min-h-[150px] flex items-center justify-center">
+                      <p className="text-xl font-semibold text-center text-brand-light">{currentQuestion.textoPregunta}</p>
+                    </div>
+
+                    <fieldset className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <legend className="sr-only">{t('game_select_answer')}</legend>
+                        {currentQuestion.respuestas.map((ans, i) => (
+                            <label key={i} className={`flex items-center p-4 rounded-lg cursor-pointer transition-colors ${userAnswers.get(currentQuestionIndex) === i ? 'bg-brand-cta ring-2 ring-brand-cta-hover' : 'bg-brand-tertiary hover:bg-brand-accent'}`}>
+                                <input type="radio" name={`q_${currentQuestionIndex}`} value={i} checked={userAnswers.get(currentQuestionIndex) === i} onChange={() => handleAnswerSelect(i)} className="sr-only" />
+                                <span className="text-brand-light font-medium">{ans.textoRespuesta}</span>
+                            </label>
+                        ))}
+                    </fieldset>
+
+                    <div className="mt-8 flex justify-end">
+                        <button onClick={() => setIsConfirmingFinish(true)} className="flex items-center gap-2 bg-brand-success hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                            <FlagIcon className="h-5 w-5" /> {t('game_button_finish')}
+                        </button>
+                    </div>
+                  </div>
+              </div>
+          );
+      };
+
+      const ExamGamePageContent = () => {
+          const { t } = useLanguage();
+          const [game, setGame] = useState(null);
+          const [blocks, setBlocks] = useState([]);
+          const [isLoading, setIsLoading] = useState(true);
+          const [error, setError] = useState(null);
+          const [gameId, setGameId] = useState(null);
+          const [examSettings, setExamSettings] = useState({ numQuestions: 60, penalty: 3 });
+
+          useEffect(() => {
+              const params = new URLSearchParams(window.location.search);
+              const id = params.get('gameId');
+              if (id) setGameId(id);
+              else { setError("No game ID provided."); setIsLoading(false); }
+
+              const numQuestions = parseInt(params.get('numQuestions'), 10) || 60;
+              const penalty = parseInt(params.get('penalty'), 10); // can be 0, so no default fallback needed like numQ
+              setExamSettings({ numQuestions, penalty: isNaN(penalty) ? 3 : penalty });
+          }, []);
+          
+          useEffect(() => {
+              if (!gameId) return;
+              const loadData = async () => {
+                  try {
+                       const [fetchedGame, fetchedBlocks] = await Promise.all([ 
+                          dataService.fetchGame(gameId), 
+                          dataService.fetchAllBlocks() 
+                        ]);
+                      if (!fetchedGame) throw new Error("Game not found.");
+                      setGame(fetchedGame);
+                      setBlocks(fetchedBlocks);
+                  } catch (err) { setError(err.message);
+                  } finally { setIsLoading(false); }
+              };
+              loadData();
+          }, [gameId]);
+          
+          const gameQuestions = useMemo(() => {
+              if (!game || !game.config || !blocks || blocks.length === 0) return [];
+              let questions = [];
+              for (const [blockId, blockConfig] of Object.entries(game.config)) {
+                  const block = blocks.find(b => b.id === blockId);
+                  if (!block || !block.questions) continue;
+                  
+                  const questionsWithMeta = block.questions.map(q => ({...q, blockId: block.id }));
+
+                  if (blockConfig.topics === 'all') {
+                    questions.push(...questionsWithMeta);
+                  } else if (Array.isArray(blockConfig.topics)) {
+                    questions.push(...questionsWithMeta.filter(q => blockConfig.topics.includes(q.tema)));
+                  }
+              }
+              return questions.sort(() => Math.random() - 0.5);
+          }, [game, blocks]);
+
+          const renderContent = () => {
+              if (isLoading) { return <div className="flex justify-center items-center h-64"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>; }
+              if (error) { return <div className="text-center text-brand-danger bg-red-500/10 p-4 rounded-lg">{t('error')}: {error}</div>; }
+              if (gameQuestions.length === 0) { return <div className="text-center text-brand-accent p-8">No questions found for this game configuration.</div> }
+              return <ExamGameComponent questions={gameQuestions} game={game} blocks={blocks} examSettings={examSettings} />;
+          };
+
+          return (
+              <div className="min-h-screen flex flex-col">
+                  <Header />
+                  <main className="flex-grow p-4 sm:p-6 lg:p-8">{renderContent()}</main>
+                  <footer className="text-center p-4 text-xs text-brand-accent"><p>{t('footer_text')}</p></footer>
+              </div>
+          );
+      };
+
+      const ExamGamePage = () => (
+          <UserProvider>
+            <ExamGamePageContent />
+          </UserProvider>
+      );
+
+      // --- App Entry Point ---
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(
+        <React.StrictMode>
+          <LanguageProvider><ExamGamePage /></LanguageProvider>
+        </React.StrictMode>
+      );
+    </script>
+    <noscript>This application requires JavaScript to run.</noscript>
+  </body>
+</html>

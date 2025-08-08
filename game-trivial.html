@@ -1,0 +1,880 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>PLAYTEST - Trivial Mode</title>
+
+    <!-- Embedded Global Stylesheet -->
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      }
+      .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+      .animate-pop-in { animation: popIn 0.3s ease-out; }
+      @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: #1B263B; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb { background: #415A77; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: #778DA9; }
+      * { scrollbar-width: thin; scrollbar-color: #415A77 #1B263B; }
+      
+      .roulette-container {
+        position: relative;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 8px solid #415A77;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      }
+      .roulette-wheel {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        position: relative;
+        overflow: hidden;
+        transition: transform 5s cubic-bezier(0.25, 0.1, 0.25, 1);
+      }
+      .roulette-slice {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        clip-path: polygon(50% 50%, 50% 0%, 100% 0);
+        transform-origin: 50% 50%;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding-top: 1rem;
+      }
+      .slice-text {
+        transform: rotate(calc(var(--slice-angle) / 2));
+        color: white;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        font-size: 14px;
+        letter-spacing: 1px;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+      }
+      .roulette-pointer {
+        position: absolute;
+        top: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 15px solid transparent;
+        border-right: 15px solid transparent;
+        border-top: 25px solid #E0E1DD;
+        z-index: 10;
+        filter: drop-shadow(0 -2px 2px rgba(0,0,0,0.4));
+      }
+    </style>
+
+    <!-- Tailwind CSS from CDN -->
+    <script>
+      // Suppress Tailwind CSS production warning
+      if (typeof window !== 'undefined') {
+        window.__TAILWIND_DISABLE_WARN__ = true;
+      }
+      
+      // Suppress chrome extension runtime.lastError warnings
+      if (typeof chrome !== 'undefined' && chrome.runtime) {
+        const originalAddListener = chrome.runtime.onMessage.addListener;
+        chrome.runtime.onMessage.addListener = function(callback) {
+          return originalAddListener.call(this, function(request, sender, sendResponse) {
+            try {
+              return callback(request, sender, sendResponse);
+            } catch (e) {
+              // Silently handle extension errors
+              return false;
+            }
+          });
+        };
+      }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-primary': '#0D1B2A',
+              'brand-secondary': '#1B263B',
+              'brand-tertiary': '#415A77',
+              'brand-accent': '#778DA9',
+              'brand-light': '#E0E1DD',
+              'brand-cta': '#3B82F6',
+              'brand-cta-hover': '#2563EB',
+              'brand-success': '#10B981',
+              'brand-danger': '#EF4444',
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Import Map to resolve bare module specifiers for React -->
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+    "react/": "https://esm.sh/react@18.2.0/"
+  }
+}
+</script>
+  </head>
+  <body class="bg-brand-primary text-brand-light">
+    <div id="root"></div>
+
+    <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
+    <script>
+      // Suppress Babel development warning
+      window.__BABEL_DISABLE_DEV_WARNING__ = true;
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Main application script -->
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
+      import ReactDOM from 'react-dom/client';
+
+      // --- INLINED: i18n ---
+      const translations = {
+        es: {
+          header_title: 'Aplicación PLAYTEST', header_subtitle: 'La forma más divertida de estudiar', language: 'Idioma', english: 'Inglés', spanish: 'Español',
+          all_blocks_return: 'Volver a inicio',
+          generic_cancel: 'Cancelar', error: 'Error', loading: 'Cargando...',
+          footer_text: '© 2024 PLAYTEST. Todos los derechos reservados.',
+          game_select_answer: 'Selecciona una respuesta',
+          game_finish_confirm_title: '¿Finalizar Partida?', game_finish_confirm_message: '¿Seguro que quieres terminar la partida? Tu progreso actual se mostrará en la pantalla de resultados.',
+          game_button_finish: 'Finalizar', game_button_play_again: 'Jugar de Nuevo', game_button_dashboard: 'Volver al Panel',
+          delete_question_prompt_confirm: 'SI', delete_question_prompt_cancel: 'NO',
+          game_trivial_desc: 'Los jugadores eligen temas para ganar "fichas". Gana el primero que consiga una ficha de cada tema.',
+          game_player_turn: 'Turno de {playerNickname}',
+          game_wedge_earned: '¡Ficha Conseguida!', game_turn_again: '¡Te toca otra vez!', game_turn_ends: 'Fin del turno.',
+          game_winner_announcement: '¡{nickname} ha ganado!',
+          game_results_title: '¡Partida Terminada!',
+          game_stats_wedges: 'Fichas', game_stats_turns: 'Turnos', game_stats_rounds: 'Rondas',
+          game_feedback_correct: '¡Correcto!', game_feedback_incorrect: '¡Incorrecto!',
+          game_time_expired: 'Tiempo Agotado',
+          game_your_turn: '¡Tu Turno!',
+          game_waiting_for_player: 'Esperando a que {playerName} juegue...',
+          game_waiting_turn: 'Esperando turno...',
+          game_continue_button: 'Continuar', game_no_more_questions: 'No quedan preguntas en este tema. El turno pasa al siguiente jugador.',
+          game_spin_button: 'Girar',
+          game_spun_topic: 'Tema: {topic}',
+          game_spin_again: 'Repetir Tirada',
+        },
+        en: {
+          header_title: 'PLAYTEST App', header_subtitle: 'The most fun way to study', language: 'Language', english: 'English', spanish: 'Spanish',
+          all_blocks_return: 'Return to Home',
+          generic_cancel: 'Cancel', error: 'Error', loading: 'Loading...',
+          footer_text: '© 2024 PLAYTEST. All rights reserved.',
+          game_select_answer: 'Select an answer',
+          game_finish_confirm_title: 'Finish Game?', game_finish_confirm_message: 'Are you sure you want to end the game? Your current progress will be shown on the results screen.',
+          game_button_finish: 'Finish', game_button_play_again: 'Play Again', game_button_dashboard: 'Back to Dashboard',
+          delete_question_prompt_confirm: 'YES', delete_question_prompt_cancel: 'NO',
+          game_trivial_desc: 'Players choose topics to win "wedges". The first to collect a wedge from every topic wins.',
+          game_player_turn: "{playerNickname}'s Turn",
+          game_wedge_earned: 'Wedge Earned!', game_turn_again: 'You get another turn!', game_turn_ends: 'Turn ends.',
+          game_winner_announcement: '{nickname} wins!',
+          game_results_title: 'Game Over!',
+          game_stats_wedges: 'Wedges', game_stats_turns: 'Turns', game_stats_rounds: 'Rounds',
+          game_feedback_correct: 'Correct!', game_feedback_incorrect: 'Incorrect!',
+          game_time_expired: 'Time Expired',
+          game_your_turn: 'Your Turn!',
+          game_waiting_for_player: 'Waiting for {playerName} to play...',
+          game_waiting_turn: 'Waiting for turn...',
+          game_continue_button: 'Continue', game_no_more_questions: 'No questions left in this topic. Turn passes to the next player.',
+          game_spin_button: 'Spin',
+          game_spun_topic: 'Topic: {topic}',
+          game_spin_again: 'Spin Again',
+        }
+      };
+      const LanguageContext = createContext();
+      const LanguageProvider = ({ children }) => {
+        const [language, setLanguage] = useState(() => localStorage.getItem('playtest_lang') || 'es');
+        useEffect(() => { localStorage.setItem('playtest_lang', language); }, [language]);
+        const t = useCallback((key, replacements = {}) => {
+            let translation = translations[language]?.[key] || translations['en']?.[key] || key;
+            Object.keys(replacements).forEach(placeholder => {
+                translation = translation.replace(`{${placeholder}}`, replacements[placeholder]);
+            });
+            return translation;
+        }, [language]);
+        return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>;
+      };
+      const useLanguage = () => useContext(LanguageContext);
+
+      // --- INLINED: components/icons.tsx ---
+      const BrainSalutingIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}> <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.5 14.5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3-4c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm2.5-1.5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm1-5.5H11v-1h3.5c.83 0 1.5.67 1.5 1.5v1zM9.5 11c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/> </svg> );
+      const FlagIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 4.5v.75m0 10.5v.75m18-11.25v.75m0 10.5v.75M4.5 10.5a1.5 1.5 0 113 0v3a1.5 1.5 0 01-3 0v-3z" /></svg>);
+      const ArrowPathIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-11.667-11.667a8.25 8.25 0 0111.667 0l3.181 3.183m-14.85-3.183L2.985 16.24z" /> </svg> );
+      const ArrowUturnLeftIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /> </svg> );
+      const TrophyIcon = (props) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}><path fillRule="evenodd" d="M4.5 2.25a.75.75 0 000 1.5v1.125a.75.75 0 00.75.75H6v.14L4.22 8.358a.75.75 0 00.22 1.03l.22.105a2.25 2.25 0 011.632 2.958 2.25 2.25 0 01-1.632 2.958l-.22.105a.75.75 0 00-.22 1.03l1.78 2.894v.14h-.75a.75.75 0 00-.75.75v1.125a.75.75 0 001.5 0V21h12v.75a.75.75 0 001.5 0v-1.125a.75.75 0 00-.75-.75h-.75v-.14l1.78-2.894a.75.75 0 00-.22-1.03l-.22-.105a2.25 2.25 0 01-1.632-2.958 2.25 2.25 0 011.632-2.958l.22-.105a.75.75 0 00.22-1.03L18 5.265v-.14h.75a.75.75 0 00.75-.75V3.75a.75.75 0 000-1.5h-15zM9 6a.75.75 0 000 1.5h6A.75.75 0 0015 6H9z" clipRule="evenodd" /></svg>);
+      
+      // --- INLINED: services/dataService.ts ---
+      const DB_KEY = 'playtest_db_v3';
+      const getDatabase = () => JSON.parse(localStorage.getItem(DB_KEY) || '{}');
+      const saveDatabase = (db) => localStorage.setItem(DB_KEY, JSON.stringify(db));
+      const simulateDelay = (data, delay = 50) => new Promise(resolve => setTimeout(() => resolve(JSON.parse(JSON.stringify(data))), delay));
+      const dataService = {
+          fetchAllBlocks: async () => simulateDelay((getDatabase().globalBlocks || []).map(b => ({...b, questions: (getDatabase().globalQuestions || []).filter(q => q.bloqueId === b.id)}))),
+          fetchGame: async (gameId) => simulateDelay((getDatabase().globalGames || []).find(g => g.id === gameId)),
+          deleteGame: async (gameId) => {
+              const db = getDatabase();
+              db.globalGames = (db.globalGames || []).filter(g => g.id !== gameId);
+              saveDatabase(db);
+              return simulateDelay({ message: 'Game deleted' });
+          },
+          updateGame: async (gameId, updatedData) => {
+              const db = getDatabase();
+              const gameIndex = (db.globalGames || []).findIndex(g => g.id === gameId);
+              if (gameIndex > -1) {
+                  db.globalGames[gameIndex] = { ...db.globalGames[gameIndex], ...updatedData };
+                  saveDatabase(db);
+                  return simulateDelay(db.globalGames[gameIndex]);
+              }
+              return null;
+          },
+          saveTrivialScore: async (gameId, scoreData) => {
+              const key = `playtest_trivial_scores_${gameId}`;
+              try {
+                  const history = JSON.parse(localStorage.getItem(key) || '[]');
+                  history.unshift(scoreData);
+                  localStorage.setItem(key, JSON.stringify(history.slice(0, 10)));
+              } catch (e) { console.error("Failed to save trivial score", e); }
+              return simulateDelay({ success: true });
+          },
+          updateUserStats: async (userId, gameId, gameResults, gameModeName) => {
+              const db = getDatabase();
+              const profile = db.userProfiles[userId];
+              if (!profile) return;
+      
+              if (!profile.answerHistory) profile.answerHistory = [];
+              if (!profile.stats) profile.stats = {};
+              if (!profile.stats.consolidation) {
+                  profile.stats.consolidation = { byQuestion: {}, byTopic: {}, byBlock: {} };
+              }
+              
+              for (const answer of gameResults.answers) {
+                  const { blockId, questionId, topicName, result, responseTime } = answer;
+                  if (!blockId || !questionId) continue;
+                  
+                  profile.answerHistory.unshift({
+                      gameId, questionId, blockId, topicName, result,
+                      responseTime, timestamp: new Date().toISOString(),
+                  });
+              }
+
+              const allGlobalQuestions = db.globalQuestions || [];
+              const blockIdsInGame = new Set(gameResults.answers.map(a => a.blockId).filter(Boolean));
+
+              for (const blockId of blockIdsInGame) {
+                  const questionsInBlock = allGlobalQuestions.filter(q => q.bloqueId === blockId);
+                  if (questionsInBlock.length === 0) continue;
+
+                  const correctlyAnsweredIdsInBlock = new Set(
+                      profile.answerHistory
+                          .filter(h => h.blockId === blockId && h.result === 'ACIERTO')
+                          .map(h => h.questionId)
+                  );
+                  const blockConsolidation = (correctlyAnsweredIdsInBlock.size / questionsInBlock.length) * 100;
+                  profile.stats.consolidation.byBlock[blockId] = blockConsolidation;
+
+                  const topicsInBlock = [...new Set(questionsInBlock.map(q => q.tema).filter(Boolean))];
+                  
+                  for (const topicName of topicsInBlock) {
+                      const questionsInTopic = questionsInBlock.filter(q => q.tema === topicName);
+                      if (questionsInTopic.length === 0) continue;
+
+                      const correctlyAnsweredIdsInTopic = new Set(
+                          profile.answerHistory
+                              .filter(h => h.blockId === blockId && h.topicName === topicName && h.result === 'ACIERTO')
+                              .map(h => h.questionId)
+                      );
+                      const topicConsolidation = (correctlyAnsweredIdsInTopic.size / questionsInTopic.length) * 100;
+                      const topicKey = `${blockId}_${topicName}`;
+                      profile.stats.consolidation.byTopic[topicKey] = topicConsolidation;
+                  }
+              }
+      
+              saveDatabase(db);
+              return simulateDelay({ success: true });
+          },
+      };
+
+      // --- INLINED: auth ---
+      const UserContext = createContext();
+      const useUser = () => useContext(UserContext);
+      const UserProvider = ({ children }) => {
+        const [currentUser, setCurrentUser] = useState(null);
+        const [isLoading, setIsLoading] = useState(true);
+        useEffect(() => { try { const s = localStorage.getItem('playtest_session'); if (s) { const ses = JSON.parse(s); if (ses?.userId) { const user = (getDatabase().users || []).find(u => u.id === ses.userId); if (user) setCurrentUser(user); else localStorage.removeItem('playtest_session'); } } } catch (e) { console.error("Session parse error", e); } setIsLoading(false); }, []);
+        if (isLoading) return <div className="flex justify-center items-center h-screen"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"></circle><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor" className="opacity-75"></path></svg></div>;
+        if (!currentUser) { window.location.href = 'index.html'; return null; }
+        return <UserContext.Provider value={{ currentUser }}>{children}</UserContext.Provider>;
+      }
+
+      // --- INLINED: components ---
+       const ConfirmationDialog = ({ title, message, confirmText, cancelText, onConfirm, onCancel, danger = false }) => (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={onCancel}>
+          <div className={`bg-brand-secondary rounded-xl shadow-2xl w-full max-w-sm m-4 border ${danger ? 'border-brand-danger/50' : 'border-brand-tertiary'} p-6 text-center`} onClick={e => e.stopPropagation()}>
+              <h4 className="text-xl font-bold text-brand-light">{title}</h4>
+              <p className="text-brand-accent my-4">{message}</p>
+              <div className="flex justify-center gap-4 mt-6">
+                  <button onClick={onCancel} className="py-2 px-6 rounded-lg bg-brand-tertiary hover:bg-brand-accent text-brand-light font-bold transition-colors">{cancelText}</button>
+                  <button onClick={onConfirm} className={`py-2 px-6 rounded-lg font-bold transition-colors text-white ${danger ? 'bg-brand-danger hover:bg-red-500' : 'bg-brand-cta hover:bg-brand-cta-hover'}`}>{confirmText}</button>
+              </div>
+          </div>
+        </div>
+      );
+      
+      const Header = () => {
+        const { t } = useLanguage();
+        return (
+          <header className="bg-brand-secondary shadow-lg"><div className="container mx-auto px-4 sm:px-6 lg:px-8"><div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-3"><BrainSalutingIcon className="h-8 w-8 text-brand-cta" /><h1 className="text-xl md:text-2xl font-bold tracking-wider text-brand-light">{t('header_title')}</h1></div>
+          </div></div></header>
+        );
+      };
+
+      // --- TRIVIAL GAME COMPONENTS ---
+      const TrivialGamePage = ({ gameId }) => {
+        const { t } = useLanguage();
+        const [game, setGame] = useState(null);
+        const [questions, setQuestions] = useState([]);
+        const [isLoading, setIsLoading] = useState(true);
+        const [error, setError] = useState(null);
+        
+        useEffect(() => {
+            const loadData = async () => {
+                try {
+                     const [fetchedGame, fetchedBlocks] = await Promise.all([ 
+                        dataService.fetchGame(gameId), 
+                        dataService.fetchAllBlocks() 
+                      ]);
+                    if (!fetchedGame) throw new Error("Game not found or has been declined.");
+
+                    const gameQuestions = fetchedBlocks
+                      .filter(b => fetchedGame.config[b.id])
+                      .flatMap(b => b.questions.map(q => ({...q, blockId: b.id})));
+                      
+                    setQuestions(gameQuestions);
+
+                    const initialisedGame = { 
+                        ...fetchedGame,
+                        gameState: fetchedGame.gameState || 'pre_turn',
+                        turn: fetchedGame.turn || 0,
+                        playerWedges: fetchedGame.playerWedges || {0: [], 1: []},
+                        askedQuestionIds: fetchedGame.askedQuestionIds || [],
+                        history: fetchedGame.history || [],
+                        round: fetchedGame.round || 0,
+                        totalTurns: fetchedGame.totalTurns || 0,
+                        startTime: fetchedGame.startTime || Date.now()
+                    };
+                    setGame(initialisedGame);
+                } catch (err) { setError(err.message);
+                } finally { setIsLoading(false); }
+            };
+            loadData();
+        }, [gameId]);
+
+        const renderContent = () => {
+            if (isLoading) { return <div className="flex justify-center items-center h-64"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>; }
+            if (error) { return <div className="text-center text-brand-danger bg-red-500/10 p-4 rounded-lg">{t('error')}: {error}</div>; }
+            if (game.status === 'pending') { return <div className="text-center text-brand-accent p-8">Waiting for opponent to accept the challenge...</div> }
+            if ([...new Set(questions.map(q => q.tema))].length < 5) { return <div className="text-center text-brand-accent p-8">Not enough different topics for a Trivial game (at least 5 are needed).</div> }
+            return <TrivialGameComponent initialGame={game} questions={questions} />;
+        };
+
+        return (
+            <div className="min-h-screen flex flex-col">
+                <Header />
+                <main className="flex-grow p-4 sm:p-6 lg:p-8">{renderContent()}</main>
+                <footer className="text-center p-4 text-xs text-brand-accent"><p>{t('footer_text')}</p></footer>
+            </div>
+        );
+      }
+
+      const TrivialGameApp = () => {
+        const [gameId, setGameId] = useState(null);
+        useEffect(() => {
+            const params = new URLSearchParams(window.location.search);
+            setGameId(params.get('gameId'));
+        }, []);
+        if (!gameId) {
+            return <div>Error: No game ID provided.</div>
+        }
+        return <UserProvider><TrivialGamePage gameId={gameId} /></UserProvider>
+      };
+
+      const TrivialGameComponent = ({ initialGame, questions }) => {
+          const { t } = useLanguage();
+          const { currentUser } = useUser();
+
+          const [game, setGame] = useState(initialGame);
+          const [currentQuestion, setCurrentQuestion] = useState(null);
+          const [feedback, setFeedback] = useState(null);
+          const [isConfirmingFinish, setIsConfirmingFinish] = useState(false);
+          const [spinResult, setSpinResult] = useState(null);
+          const [timeRemaining, setTimeRemaining] = useState(null);
+          const timerRef = useRef(null);
+          const [gameAnswers, setGameAnswers] = useState([]);
+
+          const { wheelTopics, displayTopics, topicColors } = useMemo(() => {
+              const uniqueTopics = [...new Set(questions.map(q => q.tema))].sort();
+              const spinAgainTopic = t('game_spin_again');
+              const allTopicsForWheel = [...uniqueTopics, spinAgainTopic];
+              
+              for (let i = allTopicsForWheel.length - 1; i > 0; i--) {
+                  const j = Math.floor(Math.random() * (i + 1));
+                  [allTopicsForWheel[i], allTopicsForWheel[j]] = [allTopicsForWheel[j], allTopicsForWheel[i]];
+              }
+
+              const colors = ['#3b82f6', '#ec4899', '#22c55e', '#eab308', '#a855f7', '#f97316', '#dc2626', '#14b8a6'];
+              const spinAgainColor = '#6b7280'; // gray-500
+              
+              const topicColorMap = {};
+              let colorIndex = 0;
+              uniqueTopics.forEach(topic => {
+                  topicColorMap[topic] = colors[colorIndex % colors.length];
+                  colorIndex++;
+              });
+              topicColorMap[spinAgainTopic] = spinAgainColor;
+
+              return { wheelTopics: allTopicsForWheel, displayTopics: uniqueTopics, topicColors: topicColorMap };
+          }, [questions, t]);
+          
+          const currentPlayerIndex = game.turn;
+          const currentPlayer = game.players[currentPlayerIndex];
+          const isMyTurn = currentPlayer.userId === currentUser.id;
+          
+          // Debug info - remove in production
+          console.log('Debug Trivial:', {
+              currentPlayerIndex,
+              currentPlayer: currentPlayer?.nickname,
+              currentUserId: currentUser?.id,
+              currentPlayerUserId: currentPlayer?.userId,
+              isMyTurn,
+              gameState: game.gameState
+          });
+
+          const updateSharedGameState = useCallback((data) => {
+              const updatedGame = { ...game, ...data };
+              setGame(updatedGame);
+              dataService.updateGame(game.id, updatedGame);
+          }, [game]);
+          
+          const onSpinEnd = useCallback((resultTopic) => {
+              setSpinResult(resultTopic);
+              if(resultTopic === t('game_spin_again')) {
+                setFeedback({ isCorrect: false, anotherTurn: true, earnedWedge: null, noMoreQuestions: false, isSpinAgain: true });
+                updateSharedGameState({ gameState: 'feedback' });
+                return;
+              }
+              const availableQuestions = questions.filter(q => q.tema === resultTopic && !game.askedQuestionIds.includes(q.id));
+              if (availableQuestions.length === 0) {
+                  setFeedback({ isCorrect: false, anotherTurn: false, earnedWedge: null, noMoreQuestions: true });
+                  updateSharedGameState({ gameState: 'feedback' });
+                  return;
+              }
+              const question = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+              setCurrentQuestion(question);
+              setTimeRemaining(60);
+              updateSharedGameState({ gameState: 'answering' });
+          }, [questions, game, updateSharedGameState, t]);
+
+          const handleAnswer = (isCorrect) => {
+              if (timerRef.current) {
+                  clearInterval(timerRef.current);
+                  timerRef.current = null;
+              }
+              setTimeRemaining(null);
+              
+              const topic = currentQuestion.tema;
+              const responseTime = 60 - (timeRemaining || 0);
+              const answerData = {
+                  player: currentPlayerIndex,
+                  questionId: currentQuestion.id,
+                  blockId: currentQuestion.blockId,
+                  topic,
+                  isCorrect,
+                  responseTime,
+                  timestamp: new Date().toISOString()
+              };
+              
+              setGameAnswers(prev => [...prev, answerData]);
+              
+              const newHistory = [...game.history, { player: currentPlayerIndex, topic, isCorrect, questionId: currentQuestion.id }];
+              const newAskedIds = [...game.askedQuestionIds, currentQuestion.id];
+              let anotherTurn = false;
+              let earnedWedge = null;
+              
+              const newPlayerWedges = { ...game.playerWedges };
+              if (isCorrect) {
+                  anotherTurn = true;
+                  if (!game.playerWedges[currentPlayerIndex].includes(topic)) {
+                      earnedWedge = topic;
+                      newPlayerWedges[currentPlayerIndex] = [...game.playerWedges[currentPlayerIndex], topic];
+                  }
+              }
+
+              setFeedback({ isCorrect, earnedWedge, anotherTurn });
+              
+              if (newPlayerWedges[currentPlayerIndex].length === displayTopics.length) {
+                  updateSharedGameState({ gameState: 'finished', playerWedges: newPlayerWedges, history: newHistory });
+              } else {
+                  updateSharedGameState({ gameState: 'feedback', playerWedges: newPlayerWedges, askedQuestionIds: newAskedIds, history: newHistory });
+              }
+          };
+
+          const handleTimeExpired = () => {
+              if (timerRef.current) {
+                  clearInterval(timerRef.current);
+                  timerRef.current = null;
+              }
+              setTimeRemaining(null);
+              
+              const topic = currentQuestion.tema;
+              const answerData = {
+                  player: currentPlayerIndex,
+                  questionId: currentQuestion.id,
+                  blockId: currentQuestion.blockId,
+                  topic,
+                  isCorrect: false,
+                  responseTime: 60,
+                  timestamp: new Date().toISOString()
+              };
+              
+              setGameAnswers(prev => [...prev, answerData]);
+              
+              const newHistory = [...game.history, { player: currentPlayerIndex, topic, isCorrect: false, questionId: currentQuestion.id }];
+              const newAskedIds = [...game.askedQuestionIds, currentQuestion.id];
+              
+              setFeedback({ isCorrect: false, earnedWedge: null, anotherTurn: false, timeExpired: true });
+              updateSharedGameState({ 
+                  gameState: 'feedback', 
+                  history: newHistory, 
+                  askedQuestionIds: newAskedIds 
+              });
+          };
+          
+          const handleContinue = () => {
+              let nextTurn = currentPlayerIndex;
+              if (!feedback.anotherTurn) {
+                  nextTurn = (currentPlayerIndex + 1) % game.players.length;
+              }
+              const newRound = nextTurn === 0 ? game.round + 1 : game.round;
+
+              setFeedback(null);
+              setCurrentQuestion(null);
+              setSpinResult(null);
+              updateSharedGameState({ 
+                  gameState: 'pre_turn', 
+                  turn: nextTurn,
+                  round: newRound,
+                  totalTurns: game.totalTurns + 1,
+              });
+          };
+          
+          const handleFinish = () => {
+            updateSharedGameState({ gameState: 'finished' });
+            setIsConfirmingFinish(false);
+          }
+
+          useEffect(() => {
+              if (game.gameState === 'answering' && timeRemaining !== null) {
+                  timerRef.current = setInterval(() => {
+                      setTimeRemaining(prev => {
+                          if (prev <= 1) {
+                              handleTimeExpired();
+                              return 0;
+                          }
+                          return prev - 1;
+                      });
+                  }, 1000);
+              }
+              
+              return () => {
+                  if (timerRef.current) {
+                      clearInterval(timerRef.current);
+                      timerRef.current = null;
+                  }
+              };
+          }, [game.gameState, timeRemaining]);
+          
+          useEffect(() => {
+              if (game.gameState === 'finished') {
+                  const winner = game.players.find((p, idx) => game.playerWedges[idx].length === displayTopics.length);
+                  const scoreData = {
+                      winner: winner ? winner.nickname : 'No Winner',
+                      rounds: game.round,
+                      date: new Date().toISOString(),
+                      players: game.players.map((p, idx) => ({
+                          nickname: p.nickname,
+                          wedges: game.playerWedges[idx],
+                          answers: gameAnswers.filter(a => a.player === idx)
+                      }))
+                  };
+                  dataService.saveTrivialScore(game.id, scoreData);
+                  
+                  game.players.forEach((player, playerIndex) => {
+                      const playerAnswers = gameAnswers.filter(a => a.player === playerIndex);
+                      const answersForStats = playerAnswers.map(a => ({
+                          questionId: a.questionId,
+                          result: a.isCorrect ? 'ACIERTO' : 'FALLO',
+                          blockId: a.blockId,
+                          topicName: a.topic,
+                          responseTime: a.responseTime
+                      }));
+                      
+                      const gameResults = { answers: answersForStats };
+                      dataService.updateUserStats(player.userId, game.id, gameResults, "Trivial");
+                  });
+              }
+          }, [game.gameState, gameAnswers]);
+          
+          if (game.gameState === 'finished') {
+              const winner = game.players.find((p, idx) => game.playerWedges[idx].length === displayTopics.length);
+              return (
+                  <div className="max-w-3xl mx-auto text-center animate-fade-in p-8 bg-brand-secondary rounded-xl">
+                      <h2 className="text-4xl font-bold text-brand-light mb-4 flex items-center justify-center gap-4"><TrophyIcon className="h-10 w-10 text-amber-400" />{t('game_results_title')}</h2>
+                      <h3 className="text-2xl font-semibold text-brand-cta mb-8">
+                          {winner ? t('game_winner_announcement', { nickname: winner.nickname }) : "The game has ended."}
+                      </h3>
+                      <div className="flex justify-center gap-4">
+                          <button onClick={() => window.location.reload()} className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-bold py-3 px-6 rounded-lg transition-colors"><ArrowPathIcon className="h-5 w-5" />{t('game_button_play_again')}</button>
+                          <button onClick={() => window.location.href = `index.html`} className="flex items-center gap-2 bg-brand-cta hover:bg-brand-cta-hover text-white font-bold py-3 px-6 rounded-lg transition-colors"><ArrowUturnLeftIcon className="h-5 w-5" />{t('game_button_dashboard')}</button>
+                      </div>
+                  </div>
+              )
+          }
+
+          return (
+              <div className="max-w-6xl mx-auto animate-fade-in flex flex-col" style={{ minHeight: 'calc(100vh - 12rem)' }}>
+                  <div className="flex-grow">
+                    {isConfirmingFinish && ( <ConfirmationDialog title={t('game_finish_confirm_title')} message={t('game_finish_confirm_message')} confirmText={t('game_button_finish')} onConfirm={handleFinish} onCancel={() => setIsConfirmingFinish(false)} danger={true}/> )}
+
+                    <div className="flex justify-between items-center mb-4">
+                        <a href="index.html" className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold py-2 px-4 rounded-lg transition-colors">
+                            <ArrowUturnLeftIcon className="h-5 w-5" />
+                            <span>{t('all_blocks_return')}</span>
+                        </a>
+                        <button onClick={() => setIsConfirmingFinish(true)} className="flex items-center gap-2 text-sm bg-brand-danger/80 hover:bg-brand-danger text-white font-semibold py-2 px-4 rounded-lg transition-colors"> <FlagIcon className="h-5 w-5" /> {t('game_button_finish')} </button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                        <PlayerHUD player={game.players[0]} wedges={game.playerWedges[0]} topics={displayTopics} topicColors={topicColors} isCurrentTurn={currentPlayerIndex === 0} />
+                        
+                        <div className={`p-6 rounded-xl shadow-2xl lg:col-span-1 text-center min-h-[400px] transition-all duration-300 ${
+                            isMyTurn ? 'bg-brand-cta/20 border-2 border-brand-cta' : 'bg-brand-secondary border-2 border-transparent'
+                        }`}>
+                           <div className={`font-semibold mb-4 text-lg ${isMyTurn ? 'text-brand-cta' : 'text-brand-accent'}`}>
+                               {isMyTurn ? t('game_your_turn') : t('game_player_turn', { playerNickname: currentPlayer.nickname })}
+                           </div>
+                            {(game.gameState === 'pre_turn' || game.gameState === 'spinning') && (
+                                <RouletteScreen t={t} isMyTurn={isMyTurn} onSpinEnd={onSpinEnd} topics={wheelTopics} topicColors={topicColors} />
+                            )}
+                            {game.gameState === 'answering' && currentQuestion && (
+                                <QuestionScreen question={currentQuestion} onAnswer={handleAnswer} isMyTurn={isMyTurn} t={t} spinResult={spinResult} timeRemaining={timeRemaining} />
+                            )}
+                             {game.gameState === 'feedback' && feedback && (
+                                <FeedbackScreen feedback={feedback} onContinue={handleContinue} t={t} />
+                            )}
+                        </div>
+
+                        <PlayerHUD player={game.players[1]} wedges={game.playerWedges[1]} topics={displayTopics} topicColors={topicColors} isCurrentTurn={currentPlayerIndex === 1} />
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0 mt-6">
+                    <TrivialLegend topics={displayTopics} topicColors={topicColors} />
+                  </div>
+              </div>
+          );
+      };
+
+      const RouletteScreen = ({ t, isMyTurn, onSpinEnd, topics, topicColors }) => {
+          const wheelRef = useRef(null);
+          const [rotation, setRotation] = useState(0);
+          const [isSpinning, setIsSpinning] = useState(false);
+
+          const spin = () => {
+              if (!isMyTurn || isSpinning) return;
+              setIsSpinning(true);
+              const newRotation = rotation + 360 * 5 + Math.random() * 360;
+              setRotation(newRotation);
+              
+              setTimeout(() => {
+                  const sliceAngle = 360 / topics.length;
+                  const pointerAngle = newRotation % 360;
+                  const selectedIndex = Math.floor((360 - pointerAngle + sliceAngle / 2) % 360 / sliceAngle);
+                  onSpinEnd(topics[selectedIndex]);
+                  setIsSpinning(false);
+              }, 5000); // 5s spin animation
+          };
+          
+          const sliceAngle = 360 / topics.length;
+
+          return (
+              <div className="flex flex-col items-center">
+                  <div className="relative w-[300px] h-[300px] mb-6">
+                      <div className="roulette-pointer"></div>
+                      <div className="roulette-container">
+                          <div
+                              ref={wheelRef} 
+                              className="roulette-wheel" 
+                              style={{ transform: `rotate(${rotation}deg)` }}
+                          >
+                              {topics.map((topic, index) => (
+                                  <div
+                                      key={index}
+                                      className="roulette-slice"
+                                      style={{ 
+                                          transform: `rotate(${index * sliceAngle}deg)`,
+                                          background: topicColors[topic],
+                                          '--slice-angle': `${sliceAngle}deg`
+                                      }}
+                                  >
+                                      <div className="slice-text">
+                                          {topic.length > 10 ? topic.substring(0, 8) + '...' : topic}
+                                      </div>
+                                  </div>
+                              ))}
+                          </div>
+                          <div className="absolute inset-0 flex items-center justify-center z-10">
+                                <button 
+                                    onClick={spin} 
+                                    disabled={!isMyTurn || isSpinning} 
+                                    className={`w-32 h-32 rounded-full text-white font-bold text-lg flex items-center justify-center text-center border-4 shadow-lg transition-colors ${
+                                        !isMyTurn ? 'bg-gray-500 border-gray-600 cursor-not-allowed' : 
+                                        isSpinning ? 'bg-brand-tertiary border-brand-tertiary' : 
+                                        'bg-brand-secondary border-brand-tertiary hover:bg-brand-accent'
+                                    }`}
+                                >
+                                    {!isMyTurn ? t('game_waiting_turn') : 
+                                     isSpinning ? (
+                                        <svg className="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                    ) : t('game_spin_button')}
+                                </button>
+                            </div>
+                      </div>
+                  </div>
+              </div>
+          );
+      };
+      
+      const TrivialLegend = ({ topics, topicColors }) => {
+        return (
+          <div className="w-full bg-brand-primary/50 p-4 rounded-lg">
+            <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
+              {topics.map(topic => (
+                <li key={topic} className="flex items-center gap-3">
+                  <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: topicColors[topic] }}></div>
+                  <span className="text-brand-light text-left">{topic}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      };
+
+      const PlayerHUD = ({ player, wedges, topics, topicColors, isCurrentTurn }) => {
+          const numTopics = topics.length;
+          if (numTopics === 0) return null;
+          const sliceAngle = 360 / numTopics;
+
+          const getCoordinatesForPercent = (percent) => [Math.cos(2 * Math.PI * percent), Math.sin(2 * Math.PI * percent)];
+
+          return (
+              <div className={`p-4 rounded-xl transition-all duration-300 ${isCurrentTurn ? 'bg-brand-cta/20 ring-2 ring-brand-cta' : 'bg-brand-secondary'}`}>
+                  <h3 className="text-xl font-bold text-center text-brand-light truncate mb-4">{player.nickname}</h3>
+                  <div className="w-32 h-32 mx-auto">
+                      <svg viewBox="-1.1 -1.1 2.2 2.2" className="w-full h-full transform -rotate-90">
+                          {topics.map((topic, i) => {
+                              const [startX, startY] = getCoordinatesForPercent((i * sliceAngle) / 360);
+                              const [endX, endY] = getCoordinatesForPercent(((i + 1) * sliceAngle) / 360);
+                              const pathData = `M ${startX} ${startY} A 1 1 0 ${sliceAngle > 180 ? 1 : 0} 1 ${endX} ${endY} L 0 0`;
+                              const isEarned = wedges.includes(topic);
+                              const fillColor = isEarned ? topicColors[topic] : '#415A7755';
+                              return <path key={topic} d={pathData} fill={fillColor} />;
+                          })}
+                      </svg>
+                  </div>
+              </div>
+          );
+      };
+      
+      const QuestionScreen = ({ question, onAnswer, isMyTurn, t, spinResult, timeRemaining }) => (
+        <div className="animate-fade-in space-y-4">
+          <p className="font-bold text-lg text-center text-brand-cta">{t('game_spun_topic', {topic: spinResult})}</p>
+          {timeRemaining !== null && (
+            <div className="text-center">
+              <div className={`text-3xl font-bold ${timeRemaining <= 10 ? 'text-brand-danger animate-pulse' : 'text-brand-accent'}`}>
+                {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
+              </div>
+              <div className="w-full bg-brand-tertiary rounded-full h-2 mt-2">
+                <div 
+                  className={`h-2 rounded-full transition-all duration-1000 ${timeRemaining <= 10 ? 'bg-brand-danger' : 'bg-brand-cta'}`}
+                  style={{ width: `${(timeRemaining / 60) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
+          <p className="text-xl font-semibold text-brand-light">{question.textoPregunta}</p>
+          <div className="space-y-3">
+              {question.respuestas.map((ans, i) => (
+                  <button 
+                      key={i} 
+                      onClick={() => isMyTurn && onAnswer(ans.esCorrecta)} 
+                      disabled={!isMyTurn}
+                      className={`w-full text-left p-3 rounded-lg font-medium transition-colors ${
+                          !isMyTurn ? 'bg-gray-500 text-gray-300 cursor-not-allowed' : 
+                          'text-brand-light bg-brand-tertiary hover:bg-brand-accent'
+                      }`}
+                  >
+                      {ans.textoRespuesta}
+                  </button>
+              ))}
+          </div>
+        </div>
+      );
+
+      const FeedbackScreen = ({ feedback, onContinue, t }) => (
+        <div className="animate-pop-in text-center space-y-3 flex flex-col justify-center h-full">
+          {feedback.isSpinAgain ? (
+             <h3 className="text-2xl font-bold text-amber-400">{t('game_turn_again')}</h3>
+          ) : (
+             <h3 className={`text-2xl font-bold ${feedback.isCorrect ? 'text-brand-success' : 'text-brand-danger'}`}>
+                {feedback.timeExpired ? 'Tiempo Agotado' : (feedback.isCorrect ? t('game_feedback_correct') : t('game_feedback_incorrect'))}
+             </h3>
+          )}
+
+          {feedback.earnedWedge && <p className="font-semibold text-amber-400">{t('game_wedge_earned')}</p>}
+          {feedback.noMoreQuestions && <p className="font-semibold text-brand-accent">{t('game_no_more_questions')}</p>}
+          {feedback.timeExpired && <p className="font-semibold text-brand-accent">El turno pasa al siguiente jugador</p>}
+          <p className="text-brand-accent">{feedback.anotherTurn ? t('game_turn_again') : t('game_turn_ends')}</p>
+          <button onClick={onContinue} className="mt-4 bg-brand-cta hover:bg-brand-cta-hover text-white font-bold py-2 px-8 rounded-lg">
+            {t('game_continue_button')}
+          </button>
+        </div>
+      );
+
+      // --- App Entry Point ---
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render( <React.StrictMode> <LanguageProvider><TrivialGameApp /></LanguageProvider> </React.StrictMode> );
+    </script>
+    <noscript>This application requires JavaScript to run.</noscript>
+  </body>
+</html>

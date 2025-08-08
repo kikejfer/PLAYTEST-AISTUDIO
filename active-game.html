@@ -1,0 +1,1000 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>PLAYTEST - Game Ready</title>
+
+    <!-- Embedded Global Stylesheet -->
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      }
+      .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: #1B263B; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb { background: #415A77; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: #778DA9; }
+      * { scrollbar-width: thin; scrollbar-color: #415A77 #1B263B; }
+    </style>
+
+    <!-- Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-primary': '#0D1B2A',
+              'brand-secondary': '#1B263B',
+              'brand-tertiary': '#415A77',
+              'brand-accent': '#778DA9',
+              'brand-light': '#E0E1DD',
+              'brand-cta': '#3B82F6',
+              'brand-cta-hover': '#2563EB',
+              'brand-success': '#10B981',
+              'brand-danger': '#EF4444',
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Import Map to resolve bare module specifiers for React -->
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+    "react/": "https://esm.sh/react@18.2.0/"
+  }
+}
+</script>
+  </head>
+  <body class="bg-brand-primary text-brand-light">
+    <div id="root"></div>
+
+    <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Main application script -->
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
+      import ReactDOM from 'react-dom/client';
+
+      // --- INLINED: i18n ---
+      const translations = {
+        es: {
+          header_title: 'Aplicación PLAYTEST', header_subtitle: 'La forma más divertida de estudiar', language: 'Idioma', english: 'Inglés', spanish: 'Español',
+          game_page_ready: 'Partida Lista', game_page_mode: 'Modo:', game_page_delete: 'Eliminar Partida', game_page_config: 'Configuración de la Partida', game_page_total_questions: 'Total de preguntas en esta partida:', game_page_start: 'Empezar Partida',
+          all_blocks_return: 'Volver',
+          delete_game_confirm: '¿Estás seguro de que quieres eliminar esta partida? Esta acción no se puede deshacer.', delete_game_prompt_title: 'Borrar Partida',
+          delete_question_prompt_confirm: 'SI', delete_question_prompt_cancel: 'NO',
+          game_setup_all_topics: 'Todos los temas', game_setup_topics_selected: '{count} tema(s) seleccionado(s)',
+          generic_cancel: 'Cancelar', delete: 'Eliminar', error: 'Error', loading: 'Cargando...',
+          footer_text: '© 2024 PLAYTEST. Todos los derechos reservados.',
+          admin_blocks_by: 'de',
+          ranking_title: 'Ranking Maratón', ranking_title_timetrial: 'Ranking Contrarreloj', ranking_title_lives: 'Ranking Vidas', ranking_title_streak: 'Ranking Racha', ranking_title_exam: 'Ranking Examen Simulado', ranking_title_duel: 'Ranking Duelo', ranking_title_trivial: 'Ranking Trivial', ranking_no_scores: 'Aún no hay puntuaciones. ¡Sé el primero!',
+          ranking_header_rank: '#', ranking_header_player: 'Jugador', ranking_header_correct: 'Aciertos', ranking_header_incorrect: 'Fallos', ranking_header_date: 'Fecha', ranking_header_streak: 'Racha', ranking_header_score: 'Nota', ranking_header_questions: 'Preguntas', ranking_header_winner: 'Ganador', ranking_header_player1: 'Jugador 1', ranking_header_player2: 'Jugador 2', ranking_header_rounds: 'Rondas',
+          game_classic_desc: 'Responde a las preguntas a tu ritmo. No hay límite de tiempo ni vidas. ¡Ideal para aprender y repasar!',
+          game_time_trial_desc: '¡Rápido! Responde tantas preguntas como puedas antes de que se acabe el tiempo. Cada acierto suma puntos.',
+          game_lives_desc: 'Tienes 5 vidas. Cada error te cuesta una. ¡Intenta conseguir la máxima puntuación antes de quedarte sin oportunidades! <strong>Por cada racha de 10 aciertos seguidos, recuperarás una vida.</strong>',
+          game_levels_desc: 'Supera los niveles acertando un número mínimo de preguntas. La dificultad aumenta con cada nivel. ¿Hasta dónde puedes llegar? <strong>Importante: Esta modalidad solo está disponible si las preguntas tienen un nivel de dificultad asignado.</strong>',
+          game_streak_desc: 'El objetivo es conseguir la racha de aciertos más larga. Un error reinicia tu racha, pero no termina el juego. ¡A por el récord!',
+          game_exam_desc: 'Simula un examen real con una selección de 60, 90 o 120 preguntas y un tiempo límite (Nº Preguntas / 2 minutos). Elige una penalización por fallo (cada 1, 2 o 3 fallos restan un acierto) para calcular tu nota final. ¡Compite por el mejor puesto en el ranking! No hay feedback hasta el final. ¡Buena suerte!',
+          game_duel_desc: 'Enfréntate a otro jugador en turnos alternos. Ganas puntos por acertar y por responder más rápido.',
+          game_trivial_desc: 'Los jugadores eligen temas para ganar "fichas". Gana el primero que consiga una ficha de cada tema.',
+          game_marathon_desc: 'Responde a todas las preguntas antes de que se acabe el tiempo. Los aciertos suman tiempo, los errores restan. ¡Sobrevive a la maratón!',
+          game_duel_opponent: 'Rival',
+          exam_num_questions: "Número de Preguntas",
+          exam_penalty: "Penalización por Fallo",
+          exam_penalty_none: "No penaliza",
+          exam_penalty_3_1: "3 fallos restan 1 acierto",
+          exam_penalty_2_1: "2 fallos restan 1 acierto",
+          exam_penalty_1_1: "1 fallo resta 1 acierto",
+          exam_start_button_not_enough_questions: "Se necesitan {count} preguntas",
+          game_motivational_tip: 'Compitiendo también se aprende: cada respuesta cuenta para tu consolidación.',
+          game_redirecting_title: 'Partida en curso...',
+          game_redirecting_subtitle: 'Redirigiendo a la pantalla de juego.',
+        },
+        en: {
+          header_title: 'PLAYTEST App', header_subtitle: 'The most fun way to study', language: 'Language', english: 'English', spanish: 'Spanish',
+          game_page_ready: 'Game Ready', game_page_mode: 'Mode:', game_page_delete: 'Delete Game', game_page_config: 'Game Configuration', game_page_total_questions: 'Total questions in this game:', game_page_start: 'Start Game',
+          all_blocks_return: 'Return',
+          delete_game_confirm: 'Are you sure you want to delete this game? This action cannot be undone.', delete_game_prompt_title: 'Delete Game',
+          delete_question_prompt_confirm: 'YES', delete_question_prompt_cancel: 'NO',
+          game_setup_all_topics: 'All Topics', game_setup_topics_selected: '{count} topic(s) selected',
+          generic_cancel: 'Cancel', delete: 'Delete', error: 'Error', loading: 'Loading...',
+          footer_text: '© 2024 PLAYTEST. All rights reserved.',
+          admin_blocks_by: 'by',
+          ranking_title: 'Marathon Ranking', ranking_title_timetrial: 'Time Trial Ranking', ranking_title_lives: 'Lives Ranking', ranking_title_streak: 'Streak Ranking', ranking_title_exam: 'Simulated Exam Ranking', ranking_title_duel: 'Duel Ranking', ranking_title_trivial: 'Trivial Ranking', ranking_no_scores: 'No scores yet. Be the first!',
+          ranking_header_rank: '#', ranking_header_player: 'Player', ranking_header_correct: 'Correct', ranking_header_incorrect: 'Incorrect', ranking_header_date: 'Date', ranking_header_streak: 'Streak', ranking_header_score: 'Score', ranking_header_questions: 'Questions', ranking_header_winner: 'Winner', ranking_header_player1: 'Player 1', ranking_header_player2: 'Player 2', ranking_header_rounds: 'Rounds',
+          game_classic_desc: 'Answer questions at your own pace. There are no time limits or lives. Ideal for learning and reviewing!',
+          game_time_trial_desc: 'Quickly! Answer as many questions as you can before time runs out. Every correct answer scores points.',
+          game_lives_desc: 'You have 5 lives. Each mistake costs you one. Try to get the highest score before you run out of chances! <strong>For every streak of 10 correct answers in a row, you will recover one life.</strong>',
+          game_levels_desc: 'Pass the levels by answering a minimum number of questions correctly. The difficulty increases with each level. How far can you go? <strong>Important: This mode is only available if the questions have an assigned difficulty level.</strong>',
+          game_streak_desc: 'The goal is to get the longest streak of correct answers. A mistake resets your streak but doesn\'t end the game. Go for the record!',
+          game_exam_desc: 'Simulate a real exam with a selection of 60, 90, or 120 questions and a time limit (Number of Questions / 2 minutes). Choose a penalty for wrong answers (every 1, 2, or 3 mistakes cancel a correct one) to calculate your final grade. Compete for the best spot in the ranking! No feedback until the end. Good luck!',
+          game_duel_desc: 'Face another player in alternating turns. You earn points for correct answers and for being faster.',
+          game_trivial_desc: 'Players choose topics to win "wedges". The first to collect a wedge from every topic wins.',
+          game_marathon_desc: 'Answer all questions before time runs out. Correct answers add time, mistakes subtract it. Survive the marathon!',
+          game_duel_opponent: 'Opponent',
+          exam_num_questions: "Number of Questions",
+          exam_penalty: "Penalty for Errors",
+          exam_penalty_none: "No penalty",
+          exam_penalty_3_1: "3 errors subtract 1 correct",
+          exam_penalty_2_1: "2 errors subtract 1 correct",
+          exam_penalty_1_1: "1 error subtracts 1 correct",
+          exam_start_button_not_enough_questions: "{count} questions needed",
+          game_motivational_tip: "Competing is also learning: every answer counts towards your consolidation.",
+          game_redirecting_title: 'Game in progress...',
+          game_redirecting_subtitle: 'Redirecting to the game screen.',
+        }
+      };
+      const LanguageContext = createContext();
+      const LanguageProvider = ({ children }) => {
+        const [language, setLanguage] = useState(() => localStorage.getItem('playtest_lang') || 'es');
+        useEffect(() => { localStorage.setItem('playtest_lang', language); }, [language]);
+        const t = useCallback((key, replacements = {}) => {
+            let translation = translations[language][key] || translations['en'][key] || key;
+            Object.keys(replacements).forEach(placeholder => {
+                translation = translation.replace(`{${placeholder}}`, replacements[placeholder]);
+            });
+            return translation;
+        }, [language]);
+        return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>;
+      };
+      const useLanguage = () => useContext(LanguageContext);
+      
+      // --- INLINED: types.ts ---
+      const BlockType = { GENERAL: 'TEMARIO GENERAL', COMPLETE: 'TEMARIO COMPLETO', EXTERNAL: 'EXTERNO' };
+
+      // --- INLINED: components/icons.tsx ---
+      const ArrowLeftIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /> </svg> );
+      const TrashIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /> </svg> );
+      const ChevronUpDownIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" /> </svg> );
+
+      // --- INLINED: services/dataService.ts ---
+      const DB_KEY = 'playtest_db_v3';
+      const getDatabase = () => {
+          const dbString = localStorage.getItem(DB_KEY);
+          return dbString ? JSON.parse(dbString) : { users: [], globalBlocks: [], globalQuestions: [], userProfiles: {}, marathonScores: [] };
+      };
+      const saveDatabase = (db) => localStorage.setItem(DB_KEY, JSON.stringify(db));
+      const simulateDelay = (data, delay = 50) => new Promise(resolve => setTimeout(() => resolve(JSON.parse(JSON.stringify(data))), delay));
+
+      const dataService = {
+          fetchAllBlocks: async () => {
+              const db = getDatabase();
+              const userMap = (db.users || []).reduce((acc, user) => {
+                  acc[user.id] = user.nickname;
+                  return acc;
+              }, {});
+              return simulateDelay((db.globalBlocks || []).map(b => ({
+                  ...b,
+                  creatorNickname: userMap[b.creatorId] || 'Unknown',
+                  questions: (db.globalQuestions || []).filter(q => q.bloqueId === b.id),
+              })));
+          },
+          fetchGame: async (gameId) => {
+              const db = getDatabase();
+              const game = (db.globalGames || []).find(g => g.id === gameId);
+              return simulateDelay(game);
+          },
+          deleteGame: async (gameId) => {
+              const db = getDatabase();
+              db.globalGames = (db.globalGames || []).filter(g => g.id !== gameId);
+              saveDatabase(db);
+              return simulateDelay({ message: 'Game deleted' });
+          },
+          fetchMarathonScores: async (blockId) => {
+              const db = getDatabase();
+              let scores = db.marathonScores || [];
+              if (blockId) {
+                scores = scores.filter(s => s.blockId === blockId);
+              }
+              return simulateDelay(scores);
+          },
+          fetchTimeTrialScores: async (gameId) => {
+              const key = `playtest_timetrial_scores_${gameId}`;
+              const scoresString = localStorage.getItem(key);
+              const scores = scoresString ? JSON.parse(scoresString) : [];
+              return simulateDelay(scores);
+          },
+          fetchLivesScores: async (gameId) => {
+              const key = `playtest_lives_scores_${gameId}`;
+              const scoresString = localStorage.getItem(key);
+              const scores = scoresString ? JSON.parse(scoresString) : [];
+              return simulateDelay(scores);
+          },
+          fetchStreakScores: async (gameId) => {
+              const key = `playtest_streak_scores_${gameId}`;
+              const scoresString = localStorage.getItem(key);
+              const scores = scoresString ? JSON.parse(scoresString) : [];
+              return simulateDelay(scores);
+          },
+          fetchExamScores: async (gameId) => {
+              const key = `playtest_exam_scores_${gameId}`;
+              const scoresString = localStorage.getItem(key);
+              const scores = scoresString ? JSON.parse(scoresString) : [];
+              return simulateDelay(scores);
+          },
+           fetchDuelScores: async (gameId) => {
+              const key = `playtest_duel_scores_${gameId}`;
+              const scoresString = localStorage.getItem(key);
+              return simulateDelay(scoresString ? JSON.parse(scoresString) : []);
+          },
+          fetchTrivialScores: async (gameId) => {
+              const key = `playtest_trivial_scores_${gameId}`;
+              const scoresString = localStorage.getItem(key);
+              return simulateDelay(scoresString ? JSON.parse(scoresString) : []);
+          },
+      };
+
+      // --- INLINED: auth ---
+      const UserContext = createContext();
+      const useUser = () => useContext(UserContext);
+
+      const UserProvider = ({ children }) => {
+        const [currentUser, setCurrentUser] = useState(null);
+        const [isLoading, setIsLoading] = useState(true);
+
+        useEffect(() => {
+          try {
+            const sessionString = localStorage.getItem('playtest_session');
+            if (sessionString) {
+              const session = JSON.parse(sessionString);
+              if (session && session.userId) {
+                const db = getDatabase();
+                const user = (db.users || []).find(u => u.id === session.userId);
+                if (user) {
+                  setCurrentUser(user);
+                } else {
+                  localStorage.removeItem('playtest_session');
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Failed to parse session, clearing it.", e);
+            localStorage.removeItem('playtest_session');
+          }
+          setIsLoading(false);
+        }, []);
+
+        if (isLoading) {
+          return (
+             <div className="flex justify-center items-center h-screen"> <svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle> <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> </div>
+          )
+        }
+
+        if (!currentUser) {
+           window.location.href = 'index.html';
+           return null;
+        }
+
+        return (
+          <UserContext.Provider value={{ currentUser }}>
+            {children}
+          </UserContext.Provider>
+        );
+      }
+      
+      const modeDetails = {
+        'Modo Clásico': { image: './Imagenes/Clásico.png', descKey: 'game_classic_desc' },
+        'Modo Contrarreloj': { image: './Imagenes/Contrarreloj.png', descKey: 'game_time_trial_desc' },
+        'Modo Vidas': { image: './Imagenes/Vidas.png', descKey: 'game_lives_desc' },
+        'Por Niveles': { image: './Imagenes/Niveles.png', descKey: 'game_levels_desc' },
+        'Racha de Aciertos': { image: './Imagenes/Racha.png', descKey: 'game_streak_desc' },
+        'Examen Simulado': { image: './Imagenes/Examen.png', descKey: 'game_exam_desc' },
+        'Duelo': { image: './Imagenes/Duelo.png', descKey: 'game_duel_desc' },
+        'Trivial': { image: './Imagenes/Trivia.png', descKey: 'game_trivial_desc' },
+        'Maratón': { image: './Imagenes/Maratón.png', descKey: 'game_marathon_desc' },
+      };
+
+      // --- INLINED: components ---
+      const ConfirmationDialog = ({ title, message, confirmText, cancelText, onConfirm, onCancel, danger = false }) => (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={onCancel}>
+          <div className={`bg-brand-secondary rounded-xl shadow-2xl w-full max-w-sm m-4 border ${danger ? 'border-brand-danger/50' : 'border-brand-tertiary'} p-6 text-center`} onClick={e => e.stopPropagation()}>
+              <h4 className="text-xl font-bold text-brand-light">{title}</h4>
+              <p className="text-brand-accent my-4">{message}</p>
+              <div className="flex justify-center gap-4 mt-6">
+                  <button onClick={onCancel} className="py-2 px-6 rounded-lg bg-brand-tertiary hover:bg-brand-accent text-brand-light font-bold transition-colors">{cancelText}</button>
+                  <button onClick={onConfirm} className={`py-2 px-6 rounded-lg font-bold transition-colors text-white ${danger ? 'bg-brand-danger hover:bg-red-500' : 'bg-brand-cta hover:bg-brand-cta-hover'}`}>{confirmText}</button>
+              </div>
+          </div>
+        </div>
+      );
+
+      const MarathonRankingPreview = ({ scores, t }) => {
+          const sortedScores = useMemo(() => {
+              return [...scores].sort((a, b) => b.correctAnswers - a.correctAnswers || a.wrongAnswers - b.wrongAnswers);
+          }, [scores]);
+
+          const formatDate = (dateString) => {
+              if (!dateString) return 'N/A';
+              return new Date(dateString).toLocaleDateString(undefined, {
+                  year: 'numeric', month: 'short', day: 'numeric'
+              });
+          };
+
+          if (sortedScores.length === 0) {
+              return <p className="text-center py-8 text-brand-accent">{t('ranking_no_scores')}</p>;
+          }
+
+          return (
+              <div className="max-h-80 overflow-y-auto pr-2">
+                  <table className="w-full text-sm text-left text-brand-accent">
+                      <thead className="text-xs text-brand-light uppercase bg-brand-primary/50 sticky top-0">
+                          <tr>
+                              <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_rank')}</th>
+                              <th scope="col" className="px-6 py-3">{t('ranking_header_player')}</th>
+                              <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_correct')}</th>
+                              <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_incorrect')}</th>
+                              <th scope="col" className="px-6 py-3">{t('ranking_header_date')}</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {sortedScores.map((score, index) => (
+                              <tr key={score.id} className="bg-brand-secondary border-b border-brand-tertiary">
+                                  <td className="px-6 py-4 font-medium text-brand-light text-center">{index + 1}</td>
+                                  <td className="px-6 py-4 font-semibold text-brand-light">{score.userNickname}</td>
+                                  <td className="px-6 py-4 text-brand-success font-bold text-center">{score.correctAnswers}</td>
+                                  <td className="px-6 py-4 text-brand-danger font-bold text-center">{score.wrongAnswers}</td>
+                                  <td className="px-6 py-4">{formatDate(score.endTime)}</td>
+                              </tr>
+                          ))}
+                      </tbody>
+                  </table>
+              </div>
+          );
+      };
+
+      const TimeTrialRankingPreview = ({ scores, t }) => {
+        const sortedScores = useMemo(() => {
+            return [...scores].sort((a, b) => b.correct - a.correct || a.incorrect - b.incorrect);
+        }, [scores]);
+
+        const formatDate = (dateString) => {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleString(undefined, {
+                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+        };
+
+        if (sortedScores.length === 0) {
+            return <p className="text-center py-8 text-brand-accent">{t('ranking_no_scores')}</p>;
+        }
+
+        return (
+            <div className="max-h-full overflow-y-auto pr-2">
+                <table className="w-full text-sm text-left text-brand-accent">
+                    <thead className="text-xs text-brand-light uppercase bg-brand-primary/50 sticky top-0">
+                        <tr>
+                            <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_rank')}</th>
+                            <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_correct')}</th>
+                            <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_incorrect')}</th>
+                            <th scope="col" className="px-6 py-3">{t('ranking_header_date')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {sortedScores.map((score, index) => (
+                            <tr key={index} className="bg-brand-secondary border-b border-brand-tertiary">
+                                <td className="px-6 py-4 font-medium text-brand-light text-center">{index + 1}</td>
+                                <td className="px-6 py-4 text-brand-success font-bold text-center">{score.correct}</td>
+                                <td className="px-6 py-4 text-brand-danger font-bold text-center">{score.incorrect}</td>
+                                <td className="px-6 py-4">{formatDate(score.date)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+      };
+
+      const LivesRankingPreview = ({ scores, t }) => {
+        const sortedScores = useMemo(() => {
+            return [...scores].sort((a, b) => b.correct - a.correct);
+        }, [scores]);
+
+        const formatDate = (dateString) => {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleString(undefined, {
+                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+        };
+
+        if (sortedScores.length === 0) {
+            return <p className="text-center py-8 text-brand-accent">{t('ranking_no_scores')}</p>;
+        }
+
+        return (
+            <div className="max-h-full overflow-y-auto pr-2">
+                <table className="w-full text-sm text-left text-brand-accent">
+                    <thead className="text-xs text-brand-light uppercase bg-brand-primary/50 sticky top-0">
+                        <tr>
+                            <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_rank')}</th>
+                            <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_correct')}</th>
+                            <th scope="col" className="px-6 py-3">{t('ranking_header_date')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {sortedScores.map((score, index) => (
+                            <tr key={index} className="bg-brand-secondary border-b border-brand-tertiary">
+                                <td className="px-6 py-4 font-medium text-brand-light text-center">{index + 1}</td>
+                                <td className="px-6 py-4 text-brand-success font-bold text-center">{score.correct}</td>
+                                <td className="px-6 py-4">{formatDate(score.date)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+      };
+
+      const StreakRankingPreview = ({ scores, t }) => {
+        const sortedScores = useMemo(() => {
+            return [...scores].sort((a, b) => b.streak - a.streak);
+        }, [scores]);
+
+        const formatDate = (dateString) => {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleString(undefined, {
+                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+        };
+
+        if (sortedScores.length === 0) {
+            return <p className="text-center py-8 text-brand-accent">{t('ranking_no_scores')}</p>;
+        }
+
+        return (
+            <div className="max-h-full overflow-y-auto pr-2">
+                <table className="w-full text-sm text-left text-brand-accent">
+                    <thead className="text-xs text-brand-light uppercase bg-brand-primary/50 sticky top-0">
+                        <tr>
+                            <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_rank')}</th>
+                            <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_streak')}</th>
+                            <th scope="col" className="px-6 py-3">{t('ranking_header_date')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {sortedScores.map((score, index) => (
+                            <tr key={index} className="bg-brand-secondary border-b border-brand-tertiary">
+                                <td className="px-6 py-4 font-medium text-brand-light text-center">{index + 1}</td>
+                                <td className="px-6 py-4 text-amber-400 font-bold text-center">{score.streak}</td>
+                                <td className="px-6 py-4">{formatDate(score.date)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+      };
+      
+      const ExamRankingPreview = ({ scores, t }) => {
+        const sortedScores = useMemo(() => {
+            return [...scores].sort((a, b) => b.score - a.score);
+        }, [scores]);
+
+        const formatDate = (dateString) => {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleString(undefined, {
+                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+        };
+
+        if (sortedScores.length === 0) {
+            return <p className="text-center py-8 text-brand-accent">{t('ranking_no_scores')}</p>;
+        }
+
+        return (
+            <div className="max-h-full overflow-y-auto pr-2">
+                <table className="w-full text-sm text-left text-brand-accent">
+                    <thead className="text-xs text-brand-light uppercase bg-brand-primary/50 sticky top-0">
+                        <tr>
+                            <th scope="col" className="px-4 py-3 text-center">{t('ranking_header_rank')}</th>
+                            <th scope="col" className="px-4 py-3 text-center">{t('ranking_header_score')}</th>
+                            <th scope="col" className="px-4 py-3 text-center">{t('ranking_header_questions')}</th>
+                            <th scope="col" className="px-4 py-3 text-center">{t('ranking_header_correct')}</th>
+                            <th scope="col" className="px-4 py-3 text-center">{t('ranking_header_incorrect')}</th>
+                            <th scope="col" className="px-4 py-3">{t('ranking_header_date')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {sortedScores.map((score, index) => (
+                            <tr key={index} className="bg-brand-secondary border-b border-brand-tertiary">
+                                <td className="px-4 py-4 font-medium text-brand-light text-center">{index + 1}</td>
+                                <td className="px-4 py-4 font-bold text-center" style={{color: score.score >= 5 ? '#10B981' : '#EF4444' }}>{score.score}</td>
+                                <td className="px-4 py-4 text-brand-light text-center">{score.numQuestions}</td>
+                                <td className="px-4 py-4 text-brand-success font-semibold text-center">{score.correct}</td>
+                                <td className="px-4 py-4 text-brand-danger font-semibold text-center">{score.incorrect}</td>
+                                <td className="px-4 py-4">{formatDate(score.date)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+      };
+      
+      const DuelRankingPreview = ({ scores, t }) => {
+        const formatDate = (dateString) => new Date(dateString).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        if (scores.length === 0) return <p className="text-center py-8 text-brand-accent">{t('ranking_no_scores')}</p>;
+        return (
+            <div className="max-h-full overflow-y-auto pr-2">
+                <table className="w-full text-sm text-left text-brand-accent">
+                    <thead className="text-xs text-brand-light uppercase bg-brand-primary/50 sticky top-0">
+                        <tr>
+                            <th scope="col" className="px-4 py-3 text-center">{t('ranking_header_rank')}</th>
+                            <th scope="col" className="px-4 py-3">{t('ranking_header_winner')}</th>
+                            <th scope="col" className="px-4 py-3">{t('ranking_header_player1')}</th>
+                            <th scope="col" className="px-4 py-3">{t('ranking_header_player2')}</th>
+                            <th scope="col" className="px-4 py-3">{t('ranking_header_date')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>{scores.map((s, i) => ( <tr key={i} className="bg-brand-secondary border-b border-brand-tertiary"><td className="px-4 py-4 font-medium text-brand-light text-center">{i + 1}</td><td className="px-4 py-4 font-bold text-brand-success">{s.winner}</td><td className="px-4 py-4">{s.p1}</td><td className="px-4 py-4">{s.p2}</td><td className="px-4 py-4">{formatDate(s.date)}</td></tr> ))}</tbody>
+                </table>
+            </div>
+        );
+      };
+
+      const TrivialRankingPreview = ({ scores, t }) => {
+        const formatDate = (dateString) => new Date(dateString).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        if (scores.length === 0) return <p className="text-center py-8 text-brand-accent">{t('ranking_no_scores')}</p>;
+        return (
+             <div className="max-h-full overflow-y-auto pr-2">
+                <table className="w-full text-sm text-left text-brand-accent">
+                    <thead className="text-xs text-brand-light uppercase bg-brand-primary/50 sticky top-0">
+                        <tr>
+                            <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_rank')}</th>
+                            <th scope="col" className="px-6 py-3">{t('ranking_header_winner')}</th>
+                            <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_rounds')}</th>
+                            <th scope="col" className="px-6 py-3">{t('ranking_header_date')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>{scores.map((s, i) => ( <tr key={i} className="bg-brand-secondary border-b border-brand-tertiary"><td className="px-6 py-4 font-medium text-brand-light text-center">{i + 1}</td><td className="px-6 py-4 font-bold text-brand-success">{s.winner}</td><td className="px-6 py-4 text-center">{s.rounds}</td><td className="px-6 py-4">{formatDate(s.date)}</td></tr> ))}</tbody>
+                </table>
+            </div>
+        );
+      };
+
+      const GamePage = ({ game, blocks, onDeleteGame, marathonScores, timeTrialScores, livesScores, streakScores, examScores, duelScores, trivialScores, blockName }) => {
+        const { t } = useLanguage();
+        const { currentUser } = useUser();
+        const [confirmingDelete, setConfirmingDelete] = useState(false);
+        const [examConfig, setExamConfig] = useState({ numQuestions: 60, penalty: 3 });
+
+        const totalQuestions = useMemo(() => {
+            if (!game || !game.config || !blocks || blocks.length === 0) return 0;
+            
+            let count = 0;
+            for (const [blockId, blockConfig] of Object.entries(game.config)) {
+                const block = blocks.find(b => b.id === blockId);
+                if (!block || !block.questions) continue;
+                
+                if (blockConfig.topics === 'all') {
+                    count += block.questions.length;
+                } else if (Array.isArray(blockConfig.topics)) {
+                    count += block.questions.filter(q => blockConfig.topics.includes(q.tema)).length;
+                }
+            }
+            return count;
+        }, [game, blocks]);
+        
+        const getGameConfigDetails = useCallback((blockId, blockConfig) => {
+            const block = blocks.find(b => b.id === blockId);
+            if (!block) return null;
+            const topicInfo = blockConfig.topics === 'all' 
+                ? t('game_setup_all_topics')
+                : t('game_setup_topics_selected', {count: blockConfig.topics.length});
+            
+            return (
+              <li key={blockId} className="flex items-center gap-4 p-3 bg-brand-primary rounded-lg">
+                <img src={block.urlImagenBloque} alt={block.nombreCorto} className="h-10 w-16 object-cover rounded-md" />
+                <div>
+                  <p className="font-semibold text-brand-light">{block.nombreCorto}</p>
+                  <p className="text-xs text-brand-accent">{t('admin_blocks_by')} {block.creatorNickname}</p>
+                  <p className="text-xs text-brand-accent mt-1">{topicInfo}</p>
+                </div>
+              </li>
+            );
+        }, [blocks, t]);
+
+        const handleExamConfigChange = (e) => {
+            const { name, value } = e.target;
+            setExamConfig(prev => ({ ...prev, [name]: parseInt(value, 10) }));
+        };
+        
+        const handleStartGame = () => {
+          const modeToFile = {
+              'Modo Clásico': 'game-classic.html',
+              'Modo Contrarreloj': 'game-time-trial.html',
+              'Modo Vidas': 'game-lives.html',
+              'Por Niveles': 'game-by-levels.html',
+              'Racha de Aciertos': 'game-streak.html',
+              'Examen Simulado': 'game-exam.html',
+              'Duelo': 'game-duel.html',
+              'Maratón': 'game-marathon.html',
+              'Trivial': 'game-trivial.html',
+          };
+          let fileName = modeToFile[game.mode];
+          if (fileName) {
+              let url = `${fileName}?gameId=${game.id}`;
+              if(game.mode === 'Examen Simulado') {
+                  url += `&numQuestions=${examConfig.numQuestions}&penalty=${examConfig.penalty}`;
+              }
+              window.location.href = url;
+          } else {
+              alert(`Game mode "${game.mode}" is not implemented yet.`);
+          }
+        };
+        
+        const isDuel = game.mode === 'Duelo';
+        const opponent = useMemo(() => {
+            if (!isDuel || !game || !game.players || game.players.length < 2 || !currentUser) return null;
+            return game.players.find(p => p.userId !== currentUser.id);
+        }, [isDuel, game, currentUser]);
+
+        if (!game) {
+            return (
+              <div className="text-center p-8">
+                  <p className="text-xl text-brand-accent">Game not found</p>
+                  <button onClick={() => window.location.href = 'index.html'} className="mt-4 flex items-center justify-center mx-auto gap-2 bg-brand-cta hover:bg-brand-cta-hover text-white font-bold py-2.5 px-4 rounded-lg transition-colors">
+                    <ArrowLeftIcon className="h-5 w-5" />
+                    <span>{t('all_blocks_return')}</span>
+                  </button>
+              </div>
+            );
+        }
+        
+        const isMarathon = game.mode === 'Maratón';
+        const isTimeTrial = game.mode === 'Modo Contrarreloj';
+        const isLives = game.mode === 'Modo Vidas';
+        const isStreak = game.mode === 'Racha de Aciertos';
+        const isExam = game.mode === 'Examen Simulado';
+        const isTrivial = game.mode === 'Trivial';
+        const details = modeDetails[game.mode];
+
+        const gameInfoColumn = (
+          <div>
+            <div className="text-center mb-6">
+                {details?.image && <img src={details.image} alt={game.mode} className="h-32 w-32 mx-auto mb-4 object-contain" />}
+                <h2 className="text-4xl font-bold text-brand-light mb-2">{game.mode}</h2>
+                {details?.descKey && <p className="text-brand-light max-w-xl mx-auto" dangerouslySetInnerHTML={{ __html: t(details.descKey) }} />}
+            </div>
+             {isDuel && opponent && (
+                <div className="bg-brand-primary/50 p-4 rounded-lg mb-4 text-center">
+                    <h4 className="font-semibold text-brand-accent mb-1">{t('game_duel_opponent')}</h4>
+                    <p className="text-xl font-bold text-brand-light">{opponent.nickname}</p>
+                </div>
+            )}
+            <div className="bg-brand-primary/50 p-6 rounded-lg">
+                <h3 className="text-xl font-semibold text-brand-light mb-4">{t('game_page_config')}</h3>
+                <ul className="space-y-3 max-h-40 overflow-y-auto pr-2">
+                    {Object.entries(game.config).map(([blockId, blockConfig]) => getGameConfigDetails(blockId, blockConfig))}
+                </ul>
+            </div>
+          </div>
+        );
+
+        return (
+          <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 animate-fade-in">
+            {confirmingDelete && (
+                <ConfirmationDialog
+                    title={t('delete_game_prompt_title')}
+                    message={t('delete_game_confirm')}
+                    confirmText={t('delete_question_prompt_confirm')}
+                    cancelText={t('delete_question_prompt_cancel')}
+                    onConfirm={() => { onDeleteGame(game.id); setConfirmingDelete(false); }}
+                    onCancel={() => setConfirmingDelete(false)}
+                    danger={true}
+                />
+            )}
+            <div className="flex items-center justify-between mb-6">
+                <button onClick={() => window.location.href = 'index.html'} className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold py-2 px-4 rounded-lg transition-colors">
+                    <ArrowLeftIcon className="h-5 w-5" />
+                    <span>{t('all_blocks_return')}</span>
+                </button>
+                <button onClick={() => setConfirmingDelete(true)} className="flex items-center gap-2 bg-brand-danger/80 hover:bg-brand-danger text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                    <TrashIcon className="h-5 w-5"/>
+                    <span>{t('game_page_delete')}</span>
+                </button>
+            </div>
+            
+            {isMarathon ? (
+                <div className="bg-brand-secondary p-6 rounded-xl shadow-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {gameInfoColumn}
+                        <div className="bg-brand-primary/50 p-6 rounded-lg flex flex-col">
+                            <h4 className="text-xl font-semibold text-brand-light text-center mb-4">{t('ranking_title')}</h4>
+                            <MarathonRankingPreview scores={marathonScores} t={t} />
+                        </div>
+                    </div>
+                    <button onClick={handleStartGame} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                         {t('game_page_start')} ({t('game_page_total_questions')} {totalQuestions})
+                    </button>
+                     <p className="text-center text-xs text-brand-accent mt-4">{t('game_motivational_tip')}</p>
+                </div>
+            ) : isDuel ? (
+                 <div className="bg-brand-secondary p-6 rounded-xl shadow-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {gameInfoColumn}
+                        <div className="bg-brand-primary/50 p-6 rounded-lg flex flex-col">
+                            <h4 className="text-xl font-semibold text-brand-light text-center mb-4">{t('ranking_title_duel')}</h4>
+                            <DuelRankingPreview scores={duelScores} t={t} />
+                        </div>
+                    </div>
+                    <button onClick={handleStartGame} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                         {t('game_page_start')} ({t('game_page_total_questions')} {totalQuestions})
+                    </button>
+                    <p className="text-center text-xs text-brand-accent mt-4">{t('game_motivational_tip')}</p>
+                </div>
+            ) : isTrivial ? (
+                 <div className="bg-brand-secondary p-6 rounded-xl shadow-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {gameInfoColumn}
+                        <div className="bg-brand-primary/50 p-6 rounded-lg flex flex-col">
+                            <h4 className="text-xl font-semibold text-brand-light text-center mb-4">{t('ranking_title_trivial')}</h4>
+                            <TrivialRankingPreview scores={trivialScores} t={t} />
+                        </div>
+                    </div>
+                    <button onClick={handleStartGame} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                         {t('game_page_start')} ({t('game_page_total_questions')} {totalQuestions})
+                    </button>
+                    <p className="text-center text-xs text-brand-accent mt-4">{t('game_motivational_tip')}</p>
+                </div>
+            ) : isTimeTrial ? (
+                 <div className="bg-brand-secondary p-6 rounded-xl shadow-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {gameInfoColumn}
+                      <div className="bg-brand-primary/50 p-6 rounded-lg flex flex-col">
+                        <h4 className="text-xl font-semibold text-brand-light text-center mb-4">{t('ranking_title_timetrial')}</h4>
+                        <TimeTrialRankingPreview scores={timeTrialScores} t={t} />
+                      </div>
+                    </div>
+                    <button onClick={handleStartGame} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                         {t('game_page_start')} ({t('game_page_total_questions')} {totalQuestions})
+                    </button>
+                    <p className="text-center text-xs text-brand-accent mt-4">{t('game_motivational_tip')}</p>
+                </div>
+            ) : isLives ? (
+                 <div className="bg-brand-secondary p-6 rounded-xl shadow-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {gameInfoColumn}
+                      <div className="bg-brand-primary/50 p-6 rounded-lg flex flex-col">
+                        <h4 className="text-xl font-semibold text-brand-light text-center mb-4">{t('ranking_title_lives')}</h4>
+                        <LivesRankingPreview scores={livesScores} t={t} />
+                      </div>
+                    </div>
+                    <button onClick={handleStartGame} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                         {t('game_page_start')} ({t('game_page_total_questions')} {totalQuestions})
+                    </button>
+                </div>
+            ) : isStreak ? (
+                 <div className="bg-brand-secondary p-6 rounded-xl shadow-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {gameInfoColumn}
+                        <div className="bg-brand-primary/50 p-6 rounded-lg flex flex-col">
+                            <h4 className="text-xl font-semibold text-brand-light text-center mb-4">{t('ranking_title_streak')}</h4>
+                            <StreakRankingPreview scores={streakScores} t={t} />
+                        </div>
+                    </div>
+                    <button onClick={handleStartGame} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                         {t('game_page_start')} ({t('game_page_total_questions')} {totalQuestions})
+                    </button>
+                </div>
+            ) : isExam ? (
+                 <div className="bg-brand-secondary p-6 rounded-xl shadow-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            {gameInfoColumn}
+                            <div className="mt-4 space-y-4">
+                                <div className="bg-brand-primary/50 p-4 rounded-lg">
+                                    <h4 className="font-semibold text-brand-light mb-2">{t('exam_num_questions')}</h4>
+                                    <div className="flex justify-around">
+                                        {[60, 90, 120].map(num => (
+                                            <label key={num} className="flex items-center gap-2 cursor-pointer">
+                                                <input type="radio" name="numQuestions" value={num} checked={examConfig.numQuestions === num} onChange={handleExamConfigChange} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
+                                                {num}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="bg-brand-primary/50 p-4 rounded-lg">
+                                    <h4 className="font-semibold text-brand-light mb-2">{t('exam_penalty')}</h4>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                        {[3, 2, 1, 0].map(val => (
+                                             <label key={val} className="flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-brand-primary">
+                                                <input type="radio" name="penalty" value={val} checked={examConfig.penalty === val} onChange={handleExamConfigChange} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
+                                                {val === 0 ? t('exam_penalty_none') : t(`exam_penalty_${val}_1`)}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-brand-primary/50 p-6 rounded-lg flex flex-col">
+                          <h4 className="text-xl font-semibold text-brand-light text-center mb-4">{t('ranking_title_exam')}</h4>
+                          <ExamRankingPreview scores={examScores} t={t} />
+                        </div>
+                    </div>
+                    <button onClick={handleStartGame} disabled={totalQuestions < examConfig.numQuestions} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                         {t('game_page_start')} ({totalQuestions < examConfig.numQuestions ? t('exam_start_button_not_enough_questions', {count: examConfig.numQuestions}) : `${t('game_page_total_questions')} ${totalQuestions}`})
+                    </button>
+                    <p className="text-center text-xs text-brand-accent mt-4">{t('game_motivational_tip')}</p>
+                </div>
+            ) : (
+                <div className="bg-brand-secondary p-6 rounded-xl shadow-lg">
+                  <div className="text-center mb-8">
+                    {details?.image && <img src={details.image} alt={game.mode} className="h-32 w-32 mx-auto mb-4 object-contain" />}
+                    <h2 className="text-4xl font-bold text-brand-light mb-2">{game.mode}</h2>
+                    {details?.descKey && <p className="text-brand-light max-w-xl mx-auto" dangerouslySetInnerHTML={{ __html: t(details.descKey) }} />}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="bg-brand-primary/50 p-6 rounded-lg">
+                      <h3 className="text-xl font-semibold text-brand-light mb-4">{t('game_page_config')}</h3>
+                      <ul className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                        {Object.entries(game.config).map(([blockId, blockConfig]) => getGameConfigDetails(blockId, blockConfig))}
+                      </ul>
+                    </div>
+
+                    <div className="flex flex-col items-center justify-center bg-brand-primary/50 p-6 rounded-lg text-center">
+                      <h3 className="text-lg font-semibold text-brand-accent">{t('game_page_total_questions')}</h3>
+                      <p className="text-6xl font-extrabold text-brand-light my-4">{totalQuestions}</p>
+                       <button 
+                        onClick={handleStartGame} 
+                        disabled={totalQuestions === 0}
+                        className="w-full mt-4 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                         {t('game_page_start')}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+            )}
+          </div>
+        );
+      };
+
+      const Header = () => {
+        const { language, setLanguage, t } = useLanguage();
+        const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+        const dropdownRef = useRef(null);
+        useEffect(() => { const handleClickOutside = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setIsDropdownOpen(false); }; document.addEventListener("mousedown", handleClickOutside); return () => document.removeEventListener("mousedown", handleClickOutside); }, [dropdownRef]);
+        return (
+          <header className="bg-brand-secondary shadow-lg"><div className="container mx-auto px-4 sm:px-6 lg:px-8"><div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-3"><img src="./Imagenes/Playtest.png" alt="Playtest Logo" className="h-16 w-16" /><h1 className="text-xl md:text-2xl font-bold tracking-wider text-brand-light">{t('header_title')} <span className="font-light text-brand-accent hidden sm:inline">{t('header_subtitle')}</span></h1></div>
+              <div className="relative" ref={dropdownRef}><button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center gap-2 text-brand-accent hover:text-brand-light transition-colors p-2 rounded-md"><span className="font-semibold">{language.toUpperCase()}</span><ChevronUpDownIcon className="h-5 w-5" /></button>
+                {isDropdownOpen && (<div className="absolute right-0 mt-2 w-32 bg-brand-primary rounded-md shadow-lg z-20 ring-1 ring-black ring-opacity-5"><div className="py-1"><a href="#" onClick={(e)=>{e.preventDefault();setLanguage('es');setIsDropdownOpen(false);}} className="block px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">{t('spanish')}</a><a href="#" onClick={(e)=>{e.preventDefault();setLanguage('en');setIsDropdownOpen(false);}} className="block px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">{t('english')}</a></div></div>)}
+              </div>
+          </div></div></header>
+        );
+      };
+
+      const ActiveGamePageContent = () => {
+          const { t } = useLanguage();
+          const { currentUser } = useUser();
+          const [game, setGame] = useState(null);
+          const [blocks, setBlocks] = useState([]);
+          const [isLoading, setIsLoading] = useState(true);
+          const [error, setError] = useState(null);
+          const [marathonScores, setMarathonScores] = useState([]);
+          const [timeTrialScores, setTimeTrialScores] = useState([]);
+          const [livesScores, setLivesScores] = useState([]);
+          const [streakScores, setStreakScores] = useState([]);
+          const [examScores, setExamScores] = useState([]);
+          const [duelScores, setDuelScores] = useState([]);
+          const [trivialScores, setTrivialScores] = useState([]);
+          const [blockName, setBlockName] = useState('');
+
+          useEffect(() => {
+              if (!currentUser) return;
+              const loadData = async () => {
+                  try {
+                      const params = new URLSearchParams(window.location.search);
+                      const gameId = params.get('gameId');
+                      if (!gameId) throw new Error("No game ID provided.");
+
+                      const [fetchedGame, fetchedBlocks] = await Promise.all([
+                          dataService.fetchGame(gameId),
+                          dataService.fetchAllBlocks()
+                      ]);
+
+                      if (!fetchedGame) throw new Error("Game not found.");
+                      
+                      if (fetchedGame.mode === 'Maratón') {
+                          const mainBlockId = Object.keys(fetchedGame.config)[0];
+                          if (mainBlockId) {
+                              const scores = await dataService.fetchMarathonScores(mainBlockId);
+                              setMarathonScores(scores);
+                              const mainBlock = fetchedBlocks.find(b => b.id === mainBlockId);
+                              if (mainBlock) setBlockName(mainBlock.nombreCorto);
+                          }
+                      }
+
+                      if (fetchedGame.mode === 'Modo Contrarreloj') { setTimeTrialScores(await dataService.fetchTimeTrialScores(gameId)); }
+                      if (fetchedGame.mode === 'Modo Vidas') { setLivesScores(await dataService.fetchLivesScores(gameId)); }
+                      if (fetchedGame.mode === 'Racha de Aciertos') { setStreakScores(await dataService.fetchStreakScores(gameId)); }
+                      if (fetchedGame.mode === 'Examen Simulado') { setExamScores(await dataService.fetchExamScores(gameId)); }
+                      if (fetchedGame.mode === 'Duelo') { setDuelScores(await dataService.fetchDuelScores(gameId)); }
+                      if (fetchedGame.mode === 'Trivial') { setTrivialScores(await dataService.fetchTrivialScores(gameId)); }
+                      
+                      setGame(fetchedGame);
+                      setBlocks(fetchedBlocks);
+                  } catch (err) {
+                      setError(err.message);
+                  } finally {
+                      setIsLoading(false);
+                  }
+              };
+              loadData();
+          }, [currentUser]);
+
+          useEffect(() => {
+              if (game) {
+                  const isInProgress = (game.mode === 'Duelo' || game.mode === 'Trivial') && (game.gameState || game.turnState || (game.round && game.round > 0));
+                  if (isInProgress) {
+                      const targetPage = game.mode === 'Duelo' ? 'game-duel.html' : 'game-trivial.html';
+                      window.location.href = `${targetPage}?gameId=${game.id}`;
+                  }
+              }
+          }, [game]);
+
+          const handleDeleteGame = async (gameId) => {
+              try {
+                  await dataService.deleteGame(gameId);
+                  window.location.href = 'index.html'; // Redirect after deletion
+              } catch (err) {
+                  setError("Failed to delete game.");
+              }
+          };
+
+          const renderContent = () => {
+              if (isLoading) { return <div className="flex justify-center items-center h-64"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>; }
+              if (game && (game.mode === 'Duelo' || game.mode === 'Trivial') && (game.gameState || game.turnState || (game.round && game.round > 0))) {
+                  return (
+                      <div className="flex flex-col justify-center items-center h-64 text-center">
+                          <svg className="animate-spin h-10 w-10 text-brand-cta mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                          <p className="text-xl text-brand-light">{t('game_redirecting_title')}</p>
+                          <p className="text-brand-accent">{t('game_redirecting_subtitle')}</p>
+                      </div>
+                  );
+              }
+              if (error) { return <div className="text-center text-brand-danger bg-red-500/10 p-4 rounded-lg">{t('error')}: {error}</div>; }
+              return <GamePage game={game} blocks={blocks} onDeleteGame={handleDeleteGame} marathonScores={marathonScores} timeTrialScores={timeTrialScores} livesScores={livesScores} streakScores={streakScores} examScores={examScores} duelScores={duelScores} trivialScores={trivialScores} blockName={blockName} />;
+          };
+
+          return (
+              <div className="min-h-screen flex flex-col">
+                  <Header />
+                  <main className="flex-grow">{renderContent()}</main>
+                  <footer className="text-center p-4 text-xs text-brand-accent"><p>{t('footer_text')}</p></footer>
+              </div>
+          );
+      };
+
+      const ActiveGamePage = () => (
+          <UserProvider>
+            <ActiveGamePageContent />
+          </UserProvider>
+      );
+
+      // --- App Entry Point ---
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(
+        <React.StrictMode>
+          <LanguageProvider><ActiveGamePage /></LanguageProvider>
+        </React.StrictMode>
+      );
+    </script>
+    <noscript>This application requires JavaScript to run.</noscript>
+  </body>
+</html>

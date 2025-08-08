@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migration Example - Game Trivial with API</title>
+    
+    <!-- Mantén todos los estilos existentes -->
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      }
+      /* ... todos los estilos CSS existentes ... */
+    </style>
+
+    <!-- Suppressors para warnings -->
+    <script>
+      if (typeof window !== 'undefined') {
+        window.__TAILWIND_DISABLE_WARN__ = true;
+      }
+      
+      if (typeof chrome !== 'undefined' && chrome.runtime) {
+        const originalAddListener = chrome.runtime.onMessage.addListener;
+        chrome.runtime.onMessage.addListener = function(callback) {
+          return originalAddListener.call(this, function(request, sender, sendResponse) {
+            try {
+              return callback(request, sender, sendResponse);
+            } catch (e) {
+              return false;
+            }
+          });
+        };
+      }
+    </script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-primary': '#0D1B2A',
+              'brand-secondary': '#1B263B',
+              'brand-tertiary': '#415A77',
+              'brand-accent': '#778DA9',
+              'brand-light': '#E0E1DD',
+              'brand-cta': '#3B82F6',
+              'brand-cta-hover': '#2563EB',
+              'brand-success': '#10B981',
+              'brand-danger': '#EF4444',
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Import Map para React -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+        "react/": "https://esm.sh/react@18.2.0/"
+      }
+    }
+    </script>
+</head>
+<body class="bg-brand-primary text-brand-light">
+    <div id="root"></div>
+
+    <!-- Babel -->
+    <script>
+      window.__BABEL_DISABLE_DEV_WARNING__ = true;
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Incluir el nuevo API Data Service -->
+    <script src="api-data-service.js"></script>
+
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
+      import ReactDOM from 'react-dom/client';
+
+      // --- INLINED: i18n (sin cambios) ---
+      const translations = {
+        // ... mantienes todas las traducciones existentes ...
+        es: {
+          header_title: 'Aplicación PLAYTEST',
+          // ... resto de traducciones ...
+        }
+      };
+
+      const LanguageContext = createContext();
+      const LanguageProvider = ({ children }) => {
+        const [language, setLanguage] = useState(() => localStorage.getItem('playtest_lang') || 'es');
+        useEffect(() => { localStorage.setItem('playtest_lang', language); }, [language]);
+        const t = useCallback((key, replacements = {}) => {
+            let translation = translations[language]?.[key] || translations['en']?.[key] || key;
+            Object.keys(replacements).forEach(placeholder => {
+                translation = translation.replace(`{${placeholder}}`, replacements[placeholder]);
+            });
+            return translation;
+        }, [language]);
+        return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>;
+      };
+      const useLanguage = () => useContext(LanguageContext);
+
+      // --- MIGRATED: dataService usando API en lugar de localStorage ---
+      const dataService = {
+          fetchAllBlocks: () => apiDataService.fetchAllBlocks(),
+          fetchGame: (gameId) => apiDataService.fetchGame(gameId),
+          deleteGame: (gameId) => apiDataService.deleteGame(gameId),
+          updateGame: (gameId, updatedData) => apiDataService.updateGame(gameId, updatedData),
+          saveTrivialScore: (gameId, scoreData) => apiDataService.saveTrivialScore(gameId, scoreData),
+          updateUserStats: (userId, gameId, gameResults, gameModeName) => 
+              apiDataService.updateUserStats(userId, gameId, gameResults, gameModeName),
+      };
+
+      // --- MIGRATED: Authentication usando API ---
+      const UserContext = createContext();
+      const useUser = () => useContext(UserContext);
+      const UserProvider = ({ children }) => {
+        const [currentUser, setCurrentUser] = useState(null);
+        const [isLoading, setIsLoading] = useState(true);
+        
+        useEffect(() => {
+          const checkAuth = async () => {
+            try {
+              const token = localStorage.getItem('playtest_auth_token');
+              if (token) {
+                // Verificar token con la API
+                const response = await apiDataService.apiCall('/auth/verify');
+                setCurrentUser(response.user);
+              } else {
+                // Fallback al sistema antiguo para transición
+                const sessionString = localStorage.getItem('playtest_session');
+                if (sessionString) {
+                  const session = JSON.parse(sessionString);
+                  if (session?.userId) {
+                    setCurrentUser({ id: session.userId, nickname: session.nickname });
+                  }
+                }
+              }
+            } catch (error) {
+              console.error("Auth check error", error);
+              localStorage.removeItem('playtest_auth_token');
+              localStorage.removeItem('playtest_session');
+            }
+            setIsLoading(false);
+          };
+          
+          checkAuth();
+        }, []);
+
+        if (isLoading) return <div className="flex justify-center items-center h-screen"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"></circle><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor" className="opacity-75"></path></svg></div>;
+        if (!currentUser) { window.location.href = 'index.html'; return null; }
+        return <UserContext.Provider value={{ currentUser }}>{children}</UserContext.Provider>;
+      };
+
+      // --- Resto de componentes sin cambios ---
+      // El resto del código se mantiene igual...
+      // TrivialGameComponent, RouletteScreen, etc.
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(
+        <React.StrictMode>
+          <LanguageProvider>
+            {/* Tu aplicación aquí */}
+            <div className="p-8 text-center">
+              <h1 className="text-3xl font-bold text-brand-cta mb-4">
+                🚀 Migration Example
+              </h1>
+              <p className="text-brand-light">
+                Este es un ejemplo de cómo migrar el dataService para usar la API en lugar de localStorage.
+              </p>
+              <div className="mt-6 p-4 bg-brand-secondary rounded-lg">
+                <h3 className="text-xl font-semibold mb-2">Cambios principales:</h3>
+                <ul className="text-left space-y-1">
+                  <li>✅ dataService ahora usa apiDataService</li>
+                  <li>✅ Autenticación migrada a JWT tokens</li>
+                  <li>✅ Datos persistentes en PostgreSQL</li>
+                  <li>✅ Compatible con el código existente</li>
+                </ul>
+              </div>
+            </div>
+          </LanguageProvider>
+        </React.StrictMode>
+      );
+    </script>
+</body>
+</html>

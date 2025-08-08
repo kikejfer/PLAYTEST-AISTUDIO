@@ -1,0 +1,2229 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>PLAYTEST Admin Panel</title>
+
+    <!-- Embedded Global Stylesheet -->
+    <style>
+      /*
+      * Global styles and custom animations for the PLAYTEST Admin Panel.
+      */
+
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      }
+
+      /* Fade-in animation for page/component transitions */
+      .animate-fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      /* Custom Scrollbar Styles */
+      /* For Webkit-based browsers (Chrome, Safari) */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1B263B; /* brand-secondary */
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #415A77; /* brand-tertiary */
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #778DA9; /* brand-accent */
+      }
+      /* For Firefox */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #415A77 #1B263B; /* thumb color track color */
+      }
+
+
+      /* Custom styling for range inputs (e.g., difficulty slider) */
+      /* This ensures the thumb is vertically centered on the track */
+      input[type='range'] {
+        -webkit-appearance: none;
+        appearance: none;
+        background-color: transparent; /* Hide original track */
+        cursor: pointer;
+        width: 100%;
+      }
+
+      /* Track */
+      input[type='range']::-webkit-slider-runnable-track {
+        height: 0.5rem; /* Corresponds to h-2 in Tailwind */
+        background: #415A77; /* brand-tertiary */
+        border-radius: 0.5rem; /* rounded-lg */
+      }
+      input[type='range']::-moz-range-track {
+        height: 0.5rem; /* Corresponds to h-2 in Tailwind */
+        background: #415A77; /* brand-tertiary */
+        border-radius: 0.5rem; /* rounded-lg */
+      }
+
+      /* Thumb */
+      input[type='range']::-webkit-slider-thumb {
+        -webkit-appearance: none; /* Override default */
+        appearance: none;
+        margin-top: -6px; /* (track-height - thumb-height) / 2  => (8px - 20px) / 2 */
+        background-color: #3b82f6; /* brand-cta */
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+      }
+
+      input[type='range']::-moz-range-thumb {
+        border: none; /* Reset */
+        background-color: #3b82f6; /* brand-cta */
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+      }
+    </style>
+
+    <!-- Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-primary': '#0D1B2A',
+              'brand-secondary': '#1B263B',
+              'brand-tertiary': '#415A77',
+              'brand-accent': '#778DA9',
+              'brand-light': '#E0E1DD',
+              'brand-cta': '#3B82F6',
+              'brand-cta-hover': '#2563EB',
+              'brand-success': '#10B981',
+              'brand-danger': '#EF4444',
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Import Map to resolve bare module specifiers for React -->
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+    "react/": "https://esm.sh/react@18.2.0/",
+    "@google/genai": "https://esm.sh/@google/genai",
+    "path": "https://esm.sh/path@^0.12.7",
+    "vite": "https://esm.sh/vite@^7.0.6",
+    "url": "https://esm.sh/url@^0.11.4"
+  }
+}
+</script>
+  <link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-brand-primary text-brand-light">
+    <div id="root"></div>
+
+    <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Main application script -->
+    <script type="text/babel" data-type="module">
+      // Polyfill 'process' for browser environment. The execution environment
+      // is expected to populate process.env.API_KEY.
+      globalThis.process = globalThis.process || { env: {} };
+
+      import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
+      import ReactDOM from 'react-dom/client';
+      import { GoogleGenAI, Type } from "@google/genai";
+
+      // --- INLINED: i18n ---
+      
+      const translations = {
+        es: {
+          // Auth
+          auth_login_title: 'Iniciar Sesión', auth_register_title: 'Crear Cuenta', auth_nickname: 'Nickname', auth_password: 'Contraseña', auth_login_button: 'Entrar', auth_go_to_register: '¿No tienes cuenta? Regístrate', auth_go_to_login: '¿Ya tienes cuenta? Inicia sesión', auth_first_name: 'Nombre', auth_last_name: 'Apellidos', auth_email: 'Email (opcional)', auth_confirm_password: 'Confirmar Contraseña', auth_remember_me: 'Recordar sesión', auth_register_button: 'Registrarse', auth_error_pass_mismatch: 'Las contraseñas no coinciden.', auth_error_nickname_taken: 'El nickname ya está en uso.', auth_error_invalid_credentials: 'Nickname o contraseña incorrectos.', auth_error_generic: 'Ha ocurrido un error.', auth_email_invalid: 'El formato del correo electrónico no es válido.',
+          // Header User Menu
+          user_menu_profile: 'Datos Personales', user_menu_password: 'Cambiar Contraseña', user_menu_logout: 'Cerrar Sesión',
+          // Profile Modal
+          profile_modal_title: 'Editar Datos Personales', profile_modal_save: 'Guardar Cambios',
+          // Password Modal
+          password_modal_title: 'Cambiar Contraseña', password_modal_current: 'Contraseña Actual', password_modal_new: 'Nueva Contraseña', password_modal_confirm: 'Confirmar Nueva Contraseña', password_modal_change: 'Cambiar', password_modal_success: 'Contraseña actualizada con éxito.', password_modal_error_current: 'La contraseña actual es incorrecta.',
+          // General
+          header_title: 'Aplicación PLAYTEST', header_subtitle: 'La forma más divertida de estudiar', language: 'Idioma', english: 'Inglés', spanish: 'Español',
+          add_question_title: 'Agregar Pregunta', add_question_desc: 'Crea preguntas para tus bloques usando IA, subiendo un fichero o de forma manual.', add_question_button: 'Añadir Preguntas',
+          game_setup_title: 'Configuración de partida', game_setup_category: 'Modalidad', game_setup_training: 'Entrenamiento', game_setup_competition: 'Competición', game_setup_mode: 'Juego', game_setup_blocks_topics: 'Selección de bloques', game_setup_configure: 'Configurar', game_setup_not_selected: 'No seleccionado', game_setup_all_topics: 'Todos los temas', game_setup_topics_selected: '{count} tema(s) seleccionado(s)', game_setup_button_create: 'Nueva Partida',
+          game_mode_classic: 'Modo Clásico', game_mode_timetrial: 'Modo Contrarreloj', game_mode_lives: 'Modo Vidas', game_mode_levels: 'Por Niveles', game_mode_streak: 'Racha de Aciertos', game_mode_exam: 'Examen Simulado', game_mode_duel: 'Duelo', game_mode_marathon: 'Maratón', game_mode_trivial: 'Trivial',
+          active_games_title: 'Juegos Activos', active_games_none: 'No hay partidas activas.', active_games_create_new: 'Crea una nueva partida en el panel de configuración.', active_games_view_all: 'Ver Todos los Juegos ({count})',
+          block_management_title: 'Bloques Cargados', block_management_questions: '{count} preguntas', block_management_view_all: 'View All Blocks ({count})', block_management_add_available: 'Agregar Bloques Disponibles',
+          created_blocks_title: 'Bloques Creados', created_blocks_manage: 'Gestionar ({count})', created_blocks_none: 'No has creado ningún bloque.', created_blocks_create_new: 'Crea uno nuevo aquí.',
+          all_blocks_return: 'Volver', all_blocks_title: 'Todos los Bloques', all_blocks_total: '{count} Bloques en Total', all_blocks_header_block: 'Bloque', all_blocks_header_type: 'Tipo', all_blocks_header_questions: 'Preguntas', all_blocks_header_players: 'Jugadores Activos', all_blocks_header_actions: 'Acciones', all_blocks_topics_summary: 'Resumen de Temas', all_blocks_topic: 'Tema', all_blocks_no_topics: 'Este bloque no contiene temas.', all_blocks_edit_topic_name: 'Editar nombre del tema',
+          edit_block_title: 'Editar Bloque: {blockName}', edit_block_name_short: 'Nombre Corto', edit_block_name_long: 'Nombre Largo', edit_block_type: 'Tipo de Bloque', edit_block_public: 'Público (visible para otros)',
+          all_games_title: 'Todas las Partidas Activas', all_games_total: '{count} Partidas en Total', all_games_header_mode: 'Modo', all_games_header_config: 'Configuración', all_games_header_created: 'Creada el', all_games_header_actions: 'Acciones',
+          block_questions_filter_topic: 'Filtrar por tema', block_questions_all_topics: 'Todos los Temas', block_questions_count: '{count} Preguntas', block_questions_none: 'No se han encontrado preguntas para este tema.', block_questions_none_tip: 'Selecciona "Todos los Temas" para ver todas las preguntas o añadir nuevas.', block_questions_topic: 'Tema', block_questions_button_save: 'Guardar', block_questions_saving: 'Guardando...', block_questions_button_delete: 'Eliminar',
+          game_page_ready: 'Partida Lista', game_page_mode: 'Modo:', game_page_delete: 'Eliminar Partida', game_page_config: 'Configuración de la Partida', game_page_total_questions: 'Total de preguntas en esta partida:', game_page_start: 'Empezar Partida',
+          topic_modal_title: 'Configurar Temas', topic_modal_subtitle: 'Seleccionar temas para "{blockName}"', topic_modal_deselect_all: 'Deseleccionar Todo', topic_modal_select_all: 'Seleccionar Todo', topic_modal_no_topics: 'Este bloque no tiene temas definidos en sus preguntas.', topic_modal_save: 'Guardar Selección',
+          delete_question_confirm: '¿Estás seguro de que quieres eliminar esta pregunta? Esta acción no se puede deshacer.', delete_question_prompt_title: 'Borrar la pregunta',
+          delete_block_confirm: '¿Estás seguro de que quieres eliminar este bloque? Todas sus preguntas serán borradas permanentemente. Esta acción no se puede deshacer.', delete_block_prompt_title: 'Borrar Bloque',
+          delete_game_confirm: '¿Estás seguro de que quieres eliminar esta partida? Esta acción no se puede deshacer.', delete_game_prompt_title: 'Borrar Partida',
+          delete_topic_confirm: '¿Estás seguro de que quieres eliminar el tema "{topicName}"? Todas sus preguntas serán borradas permanentemente. Esta acción no se puede deshacer.', delete_topic_prompt_title: 'Borrar Tema',
+          delete_question_prompt_confirm: 'SI', delete_question_prompt_cancel: 'NO',
+          generic_cancel: 'Cancelar', delete: 'Eliminar', error: 'Error', loading: 'Cargando...',
+          footer_text: '© 2024 PLAYTEST. Todos los derechos reservados.',
+          admin_blocks_general: 'Bloques Generales', admin_blocks_public: 'Bloques Públicos de Usuarios', admin_blocks_private: 'Bloques Privados de Usuarios', admin_blocks_by: 'de', admin_blocks_no_category: 'No hay bloques en esta categoría.',
+          block_modal_owner: 'Propietario', block_modal_users: 'Usuarios',
+          admin_manage_blocks: 'Gestionar ({count})',
+          admin_user_stats_loaded_blocks: 'Bloques Cargados',
+          admin_user_stats_blocks: 'Bloques Creados',
+          admin_user_stats_questions: 'Preguntas Creadas',
+          admin_user_stats_games: 'Partidas Activas',
+          study_progress: 'Progreso de Estudio',
+          // Challenge System
+          game_setup_challenge_user: 'Retar a un Usuario', game_setup_challenge_random: 'Retar a Aleatorio', game_setup_select_opponent: 'Selecciona un oponente', game_setup_button_challenge: 'Enviar Reto', header_challenges: 'Retos', challenge_modal_title: 'Retos Entrantes', challenge_from: '¡{nickname} te reta a una partida de {mode}!', challenge_accept: 'Aceptar', challenge_decline: 'Declinar', challenge_sent: '¡Reto enviado correctamente!', challenge_no_users: 'No hay usuarios disponibles para retar.', challenge_none: 'No tienes nuevos retos.',
+          add: 'Añadir',
+          remove: 'Quitar',
+          game_setup_selected: 'Seleccionado',
+          available_blocks_view_details: 'Ver Detalles',
+          available_blocks_hide_details: 'Ocultar Detalles',
+          pending_challenges: 'Retos Pendientes',
+          stats_modal_title: 'Estadísticas del Bloque: {blockName}', stats_modal_question: 'Pregunta', stats_modal_history: 'Historial (más reciente a la derecha)', stats_modal_no_history: 'No hay historial de respuestas para este bloque.', stats_modal_correct: 'A', stats_modal_incorrect: 'F', stats_modal_blank: 'B', stats_modal_close: 'Cerrar',
+          history_title: 'Historial de Partidas', history_none: 'No has jugado ninguna partida todavía.', history_header_block: 'Bloque', history_header_mode: 'Modalidad', history_header_correct: 'Aciertos', history_header_incorrect: 'Fallos', history_header_date: 'Fecha', history_header_opponent: 'Rival', history_header_score: 'Nota',
+          game_status_your_turn: 'Tu turno',
+          game_status_opponent_turn: 'Turno de {nickname}',
+        },
+        en: {
+          // Auth
+          auth_login_title: 'Login', auth_register_title: 'Create Account', auth_nickname: 'Nickname', auth_password: 'Password', auth_login_button: 'Sign In', auth_go_to_register: "Don't have an account? Sign up", auth_go_to_login: 'Already have an account? Sign in', auth_first_name: 'First Name', auth_last_name: 'Last Name', auth_email: 'Email (optional)', auth_confirm_password: 'Confirm Password', auth_remember_me: 'Remember me', auth_register_button: 'Sign Up', auth_error_pass_mismatch: "Passwords don't match.", auth_error_nickname_taken: 'This nickname is already taken.', auth_error_invalid_credentials: 'Invalid nickname or password.', auth_error_generic: 'An error occurred.', auth_email_invalid: 'Invalid email format.',
+          // Header User Menu
+          user_menu_profile: 'Personal Data', user_menu_password: 'Change Password', user_menu_logout: 'Logout',
+          // Profile Modal
+          profile_modal_title: 'Edit Personal Data', profile_modal_save: 'Save Changes',
+          // Password Modal
+          password_modal_title: 'Change Password', password_modal_current: 'Current Password', password_modal_new: 'New Password', password_modal_confirm: 'Confirm New Password', password_modal_change: 'Change', password_modal_success: 'Password updated successfully.', password_modal_error_current: 'The current password is incorrect.',
+          // General
+          header_title: 'PLAYTEST App', header_subtitle: 'The most fun way to study', language: 'Language', english: 'English', spanish: 'Spanish',
+          add_question_title: 'Add Question', add_question_desc: 'Create questions for your blocks using AI, uploading a file, or manually.', add_question_button: 'Add Questions',
+          game_setup_title: 'Game Setup', game_setup_category: 'Category', game_setup_training: 'Training', game_setup_competition: 'Competition', game_setup_mode: 'Game Mode', game_setup_blocks_topics: 'Block Selection', game_setup_configure: 'Configure', game_setup_not_selected: 'Not selected', game_setup_all_topics: 'All Topics', game_setup_topics_selected: '{count} topic(s) selected', game_setup_button_create: 'New Game',
+          game_mode_classic: 'Classic Mode', game_mode_timetrial: 'Time Trial Mode', game_mode_lives: 'Lives Mode', game_mode_levels: 'By Levels', game_mode_streak: 'Streak Mode', game_mode_exam: 'Exam Simulation', game_mode_duel: 'Duel', game_mode_marathon: 'Marathon', game_mode_trivial: 'Trivial',
+          active_games_title: 'Active Games', active_games_none: 'There are no active games.', active_games_create_new: 'Create a new game in the setup panel.', active_games_view_all: 'View All Games ({count})',
+          block_management_title: 'Loaded Blocks', block_management_questions: '{count} questions', block_management_view_all: 'View All Blocks ({count})', block_management_add_available: 'Add Available Blocks',
+          created_blocks_title: 'Created Blocks', created_blocks_manage: 'Manage ({count})', created_blocks_none: "You haven't created any blocks.", created_blocks_create_new: 'Create a new one here.',
+          all_blocks_return: 'Return', all_blocks_title: 'All Blocks', all_blocks_total: '{count} Total Blocks', all_blocks_header_block: 'Block', all_blocks_header_type: 'Type', all_blocks_header_questions: 'Questions', all_blocks_header_players: 'Active Players', all_blocks_header_actions: 'Actions', all_blocks_topics_summary: 'Topics Summary', all_blocks_topic: 'Topic', all_blocks_no_topics: 'This block contains no topics.', all_blocks_edit_topic_name: 'Edit topic name',
+          edit_block_title: 'Edit Block: {blockName}', edit_block_name_short: 'Short Name', edit_block_name_long: 'Long Name', edit_block_type: 'Block Type', edit_block_public: 'Public (visible to others)',
+          all_games_title: 'All Active Games', all_games_total: '{count} Total Games', all_games_header_mode: 'Mode', all_games_header_config: 'Configuration', all_games_header_created: 'Created At', all_games_header_actions: 'Actions',
+          block_questions_filter_topic: 'Filter by topic', block_questions_all_topics: 'All Topics', block_questions_count: '{count} Questions', block_questions_none: 'No questions found for this topic.', block_questions_none_tip: 'Select "All Topics" to see all questions or add new ones.', block_questions_topic: 'Topic', block_questions_button_save: 'Save', block_questions_saving: 'Saving...', block_questions_button_delete: 'Delete',
+          game_page_ready: 'Game Ready', game_page_mode: 'Mode:', game_page_delete: 'Delete Game', game_page_config: 'Game Configuration', game_page_total_questions: 'Total questions in this game:', game_page_start: 'Start Game',
+          topic_modal_title: 'Configure Topics', topic_modal_subtitle: 'Select topics for "{blockName}"', topic_modal_deselect_all: 'Deselect All', topic_modal_select_all: 'Select All', topic_modal_no_topics: 'This block has no topics defined in its questions.', topic_modal_save: 'Save Selection',
+          delete_question_confirm: 'Are you sure you want to delete this question? This action cannot be undone.', delete_question_prompt_title: 'Delete Question',
+          delete_block_confirm: 'Are you sure you want to delete this block? All of its questions will be permanently deleted. This action cannot be undone.', delete_block_prompt_title: 'Delete Block',
+          delete_game_confirm: 'Are you sure you want to delete this game? This action cannot be undone.', delete_game_prompt_title: 'Delete Game',
+          delete_topic_confirm: 'Are you sure you want to delete the topic "{topicName}"? All of its questions will be permanently deleted. This action cannot be undone.', delete_topic_prompt_title: 'Delete Topic',
+          delete_question_prompt_confirm: 'YES', delete_question_prompt_cancel: 'NO',
+          generic_cancel: 'Cancel', delete: 'Delete', error: 'Error', loading: 'Loading...',
+          footer_text: '© 2024 PLAYTEST. All rights reserved.',
+          admin_blocks_general: 'General Blocks', admin_blocks_public: 'Public User Blocks', admin_blocks_private: 'Private User Blocks', admin_blocks_by: 'by', admin_blocks_no_category: 'No blocks in this category.',
+          block_modal_owner: 'Owner', block_modal_users: 'Users',
+          admin_manage_blocks: 'Manage ({count})',
+          admin_user_stats_loaded_blocks: 'Loaded Blocks',
+          admin_user_stats_blocks: 'Created Blocks',
+          admin_user_stats_questions: 'Created Questions',
+          admin_user_stats_games: 'Active Games',
+          study_progress: 'Study Progress',
+           // Challenge System
+          game_setup_challenge_user: 'Challenge a User', game_setup_challenge_random: 'Challenge Random', game_setup_select_opponent: 'Select an opponent', game_setup_button_challenge: 'Send Challenge', header_challenges: 'Challenges', challenge_modal_title: 'Incoming Challenges', challenge_from: '{nickname} challenges you to a game of {mode}!', challenge_accept: 'Accept', challenge_decline: 'Decline', challenge_sent: 'Challenge sent successfully!', challenge_no_users: 'No other users available to challenge.', challenge_none: 'You have no new challenges.',
+          add: 'Add',
+          remove: 'Remove',
+          game_setup_selected: 'Selected',
+          available_blocks_view_details: 'View Details',
+          available_blocks_hide_details: 'Hide Details',
+          pending_challenges: 'Pending Challenges',
+          stats_modal_title: 'Block Statistics: {blockName}', stats_modal_question: 'Question', stats_modal_history: 'History (most recent on the right)', stats_modal_no_history: 'No answer history available for this block.', stats_modal_correct: 'A', stats_modal_incorrect: 'F', stats_modal_blank: 'B', stats_modal_close: 'Close',
+          history_title: 'Game History', history_none: "You haven't played any games yet.", history_header_block: 'Block', history_header_mode: 'Mode', history_header_correct: 'Correct', history_header_incorrect: 'Incorrect', history_header_date: 'Date', history_header_opponent: 'Opponent', history_header_score: 'Score',
+          game_status_your_turn: 'Your turn',
+          game_status_opponent_turn: "{nickname}'s turn",
+        }
+      };
+
+      const LanguageContext = createContext();
+      const UserContext = createContext();
+
+      const LanguageProvider = ({ children }) => {
+        const [language, setLanguage] = useState(() => localStorage.getItem('playtest_lang') || 'es');
+
+        useEffect(() => {
+          localStorage.setItem('playtest_lang', language);
+        }, [language]);
+
+        const t = useCallback((key, replacements = {}) => {
+            let translation = translations[language][key] || translations['en'][key] || key;
+            Object.keys(replacements).forEach(placeholder => {
+                translation = translation.replace(`{${placeholder}}`, replacements[placeholder]);
+            });
+            return translation;
+        }, [language]);
+
+        return (
+          <LanguageContext.Provider value={{ language, setLanguage, t }}>
+            {children}
+          </LanguageContext.Provider>
+        );
+      };
+
+      const useLanguage = () => useContext(LanguageContext);
+      const useUser = () => useContext(UserContext);
+      
+      // --- INLINED: types.ts ---
+      
+      const BlockType = {
+        GENERAL: 'TEMARIO GENERAL',
+        COMPLETE: 'TEMARIO COMPLETO',
+        EXTERNAL: 'EXTERNO',
+      };
+      
+      // --- INLINED: components/icons.tsx ---
+
+      const BookOpenIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+      );
+      
+      const CogIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} {...props}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826 3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      );
+      
+      const GamepadIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} {...props}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M11 19a5.5 5.5 0 005.5-5.5h-11A5.5 5.5 0 0011 19zm-4.28-7.53a5.53 5.53 0 014.28-4.28v8.56a5.53 5.53 0 01-4.28-4.28zM17.28 11.47a5.53 5.53 0 01-4.28 4.28V7.19a5.53 5.53 0 014.28 4.28zM4 9a2 2 0 100-4 2 2 0 000 4zm4.5 1.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM15.5 10.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+        </svg>
+      );
+
+      const PlusCircleIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      );
+      
+      const MinusCircleIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      );
+
+      const TrashIcon = (props) => (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+          </svg>
+      );
+      
+      const ChevronUpDownIcon = (props) => (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+          </svg>
+      );
+      const UserCircleIcon = (props) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}><path fillRule="evenodd" d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clipRule="evenodd" /></svg>);
+      const KeyIcon = (props) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}><path fillRule="evenodd" d="M15.75 1.5a6.75 6.75 0 00-6.651 7.906c.067.39-.032.79-.233 1.125a.75.75 0 00.276 1.06l.519.299c.33.19.74.19 1.07 0l.519-.299a.75.75 0 00.276-1.06c-.201-.335-.3-.735-.233-1.125A6.75 6.75 0 0015.75 1.5zm-3 6a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75h-.008a.75.75 0 01-.75-.75V7.5z" clipRule="evenodd" /><path d="M3 9.75a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75zM3 12.75a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75zM3 15.75a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75zM3 18.75a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z" /></svg>);
+      const ArrowRightOnRectangleIcon = (props) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}><path fillRule="evenodd" d="M7.5 3.75A1.5 1.5 0 006 5.25v13.5a1.5 1.5 0 001.5 1.5h6a1.5 1.5 0 001.5-1.5V15a.75.75 0 011.5 0v3.75a3 3 0 01-3 3h-6a3 3 0 01-3-3V5.25a3 3 0 013-3h6a3 3 0 013 3V9A.75.75 0 0115 9V5.25a1.5 1.5 0 00-1.5-1.5h-6zm10.72 4.72a.75.75 0 011.06 0l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 11-1.06-1.06l1.72-1.72H9a.75.75 0 010-1.5h10.94l-1.72-1.72a.75.75 0 010-1.06z" clipRule="evenodd" /></svg>);
+      const UsersIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} {...props}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.124-1.282-.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      );
+      const MagnifyingGlassIcon = (props) => (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+      );
+      const XMarkIcon = (props) => (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+      );
+      const QuestionMarkCircleIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+        </svg>
+      );
+      const RectangleStackIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L12 15.25l5.571-3m-5.571 0v-2.25a2.25 2.25 0 0 0-2.25-2.25h-1.5a2.25 2.25 0 0 0-2.25 2.25v2.25m11.142 0v-2.25a2.25 2.25 0 0 1 2.25-2.25h1.5a2.25 2.25 0 0 1 2.25 2.25v2.25" />
+        </svg>
+      );
+      const BellIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /> </svg> );
+      const SwordsIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}><path d="M20.25 3.003L12 11.253l-8.25-8.25-1.5 1.5 8.25 8.25-8.25 8.25 1.5 1.5 8.25-8.25 8.25 8.25 1.5-1.5-8.25-8.25 8.25-8.25-1.5-1.5z"/></svg> );
+      const CheckCircleIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" {...props}> <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /> </svg> );
+      const XCircleIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" {...props}> <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /> </svg> );
+      const ClipboardDocumentCheckIcon = (props) => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M10.125 2.25h-4.5c-1.125 0-2.063.938-2.063 2.063v15.375c0 1.125.938 2.063 2.063 2.063h12.75c1.125 0 2.063-.938 2.063-2.063V12.336M10.125 2.25H14.25m4.219 2.531l-9.664 9.664-4.5-4.5 9.664-9.664 4.5 4.5z" /></svg>);
+
+      // --- INLINED: services/dataService.ts ---
+
+      const DB_KEY = 'playtest_db_v3';
+      const DB_INITIALIZED_KEY = 'playtest_db_v3_initialized';
+      
+      const getDatabase = () => {
+          const dbString = localStorage.getItem(DB_KEY);
+          return dbString ? JSON.parse(dbString) : { users: [], globalBlocks: [], globalQuestions: [], userProfiles: {}, globalGames: [] };
+      };
+      
+      const saveDatabase = (db) => {
+          localStorage.setItem(DB_KEY, JSON.stringify(db));
+      };
+      
+      const initializeDatabase = () => {
+          if (!localStorage.getItem(DB_INITIALIZED_KEY)) {
+              console.log("Initializing user-based database in localStorage...");
+              const initialDb = {
+                  users: [],
+                  globalBlocks: [],
+                  globalQuestions: [],
+                  userProfiles: {},
+                  marathonScores: [],
+                  globalGames: [],
+              };
+              
+              const adminUser = { id: 'admin_user_01', nickname: 'admin', password: 'kikejfer', firstName: 'Admin', lastName: 'User', email: 'admin@playtest.app', isAdmin: true };
+              initialDb.users.push(adminUser);
+              initialDb.userProfiles[adminUser.id] = { loadedBlockIds: [], stats: {}, challenges: [] };
+
+              saveDatabase(initialDb);
+              localStorage.setItem(DB_INITIALIZED_KEY, 'true');
+          }
+      };
+      
+      initializeDatabase();
+
+      const simulateDelay = (data, delay = 50) => 
+        new Promise(resolve => setTimeout(() => resolve(JSON.parse(JSON.stringify(data))), delay));
+
+      const dataService = {
+        login: async (nickname, password) => {
+            const db = getDatabase();
+            const user = db.users.find(u => u.nickname.toLowerCase() === nickname.toLowerCase() && u.password === password);
+            return simulateDelay(user || null);
+        },
+        registerUser: async (userData) => {
+            const db = getDatabase();
+            if (db.users.some(u => u.nickname.toLowerCase() === userData.nickname.toLowerCase())) {
+                throw new Error("Nickname is already taken.");
+            }
+            const newUser = { id: `user_${Date.now()}`, ...userData, isAdmin: false, };
+            db.users.push(newUser);
+            db.userProfiles[newUser.id] = { loadedBlockIds: [], stats: { byBlock: {} }, challenges: [] };
+            saveDatabase(db);
+            return simulateDelay(newUser);
+        },
+        updateUser: async (userId, updatedData) => {
+          const db = getDatabase();
+          const userIndex = db.users.findIndex(u => u.id === userId);
+          if (userIndex > -1) {
+            db.users[userIndex] = { ...db.users[userIndex], ...updatedData };
+            saveDatabase(db);
+            return simulateDelay(db.users[userIndex]);
+          }
+          throw new Error("User not found");
+        },
+        getUserProfile: async (userId) => {
+            const db = getDatabase();
+            return simulateDelay(db.userProfiles[userId] || null);
+        },
+        fetchGameHistory: async (userId) => {
+            const db = getDatabase();
+            const profile = db.userProfiles[userId];
+            return simulateDelay(profile?.gameHistory || []);
+        },
+        fetchBlocksForUser: async (userId) => {
+            const db = getDatabase();
+            const profile = db.userProfiles[userId];
+            if (!profile) return simulateDelay([]);
+            
+            const userMap = (db.users || []).reduce((acc, user) => {
+                acc[user.id] = user.nickname;
+                return acc;
+            }, {});
+
+            const loadedBlocks = db.globalBlocks
+                .filter(b => profile.loadedBlockIds.includes(b.id))
+                .map(block => {
+                    const totalPreguntas = db.globalQuestions.filter(q => q.bloqueId === block.id).length;
+                    const studyProgress = profile.stats?.consolidation?.byBlock?.[block.id] ?? 0;
+                    
+                    const blockQuestions = db.globalQuestions.filter(q => q.bloqueId === block.id);
+                    const uniqueTopics = [...new Set(blockQuestions.map(q => q.tema).filter(Boolean))].sort();
+
+                    const topicsWithStats = uniqueTopics.map(topicName => {
+                        const topicKey = `${block.id}_${topicName}`;
+                        const score = profile.stats?.consolidation?.byTopic?.[topicKey] ?? 0;
+                        return { name: topicName, score: Math.round(score) };
+                    });
+
+                    return {
+                        ...block,
+                        questions: blockQuestions,
+                        totalPreguntas,
+                        studyProgress: Math.round(studyProgress),
+                        creatorNickname: userMap[block.creatorId] || 'Unknown',
+                        topicsWithStats,
+                    };
+                });
+            return simulateDelay(loadedBlocks);
+        },
+        fetchGamesForUser: async (userId) => {
+            const db = getDatabase();
+            const userGames = (db.globalGames || []).filter(game => 
+              game.players.some(p => p.userId === userId)
+            );
+            return simulateDelay(userGames);
+        },
+        createGameForUser: async (userId, userNickname, gameConfig) => {
+            const db = getDatabase();
+            const newGame = {
+                id: `g${Date.now()}`,
+                ...gameConfig,
+                status: 'active',
+                players: [{ userId, nickname: userNickname, score: 0 }],
+                createdAt: new Date().toISOString()
+            };
+            if (!db.globalGames) db.globalGames = [];
+            db.globalGames.unshift(newGame);
+            saveDatabase(db);
+            return simulateDelay(newGame);
+        },
+        createChallenge: async (challengerUser, challengedUser, gameConfig) => {
+          const db = getDatabase();
+          const newGame = {
+            id: `g${Date.now()}`,
+            ...gameConfig,
+            status: 'pending',
+            players: [
+              { userId: challengerUser.id, nickname: challengerUser.nickname, score: 0 },
+              { userId: challengedUser.id, nickname: challengedUser.nickname, score: 0 }
+            ],
+            createdAt: new Date().toISOString(),
+            turn: 0
+          };
+          if (!db.globalGames) db.globalGames = [];
+          db.globalGames.unshift(newGame);
+          const challengedProfile = db.userProfiles[challengedUser.id];
+          if (challengedProfile) {
+            if (!challengedProfile.challenges) challengedProfile.challenges = [];
+            challengedProfile.challenges.unshift({
+              gameId: newGame.id,
+              mode: newGame.mode,
+              challengerNickname: challengerUser.nickname,
+            });
+          }
+          saveDatabase(db);
+          return simulateDelay(newGame);
+        },
+        fetchChallengesForUser: async (userId) => {
+          const db = getDatabase();
+          const profile = db.userProfiles[userId];
+          return simulateDelay(profile?.challenges || []);
+        },
+        acceptChallenge: async (userId, gameId) => {
+            const db = getDatabase();
+            const game = (db.globalGames || []).find(g => g.id === gameId);
+            if(game) game.status = 'active';
+
+            const profile = db.userProfiles[userId];
+            if(profile && profile.challenges) {
+                profile.challenges = profile.challenges.filter(c => c.gameId !== gameId);
+            }
+            saveDatabase(db);
+            return simulateDelay(game);
+        },
+        declineChallenge: async (userId, gameId) => {
+            const db = getDatabase();
+            db.globalGames = (db.globalGames || []).filter(g => g.id !== gameId);
+
+            const profile = db.userProfiles[userId];
+            if(profile && profile.challenges) {
+                profile.challenges = profile.challenges.filter(c => c.gameId !== gameId);
+            }
+            saveDatabase(db);
+            return simulateDelay({ message: 'Challenge declined' });
+        },
+        deleteGameForUser: async (userId, gameId) => {
+            const db = getDatabase();
+            db.globalGames = (db.globalGames || []).filter(g => g.id !== gameId);
+            saveDatabase(db);
+            return simulateDelay({ message: 'Game deleted' });
+        },
+        deleteBlockForUser: async (userId, blockId) => {
+          const db = getDatabase();
+          const profile = db.userProfiles[userId];
+          if (!profile) throw new Error("User profile not found");
+          profile.loadedBlockIds = profile.loadedBlockIds.filter(id => id !== blockId);
+          // Also delete any games associated with this block
+          db.globalGames = (db.globalGames || []).filter(game => !game.config[blockId]);
+          saveDatabase(db);
+          return simulateDelay({message: 'Block unloaded'});
+        },
+        addBlockToUser: async (userId, blockId) => {
+            const db = getDatabase();
+            const profile = db.userProfiles[userId];
+            if (!profile) throw new Error("User profile not found");
+            if (!profile.loadedBlockIds.includes(blockId)) {
+                profile.loadedBlockIds.push(blockId);
+                saveDatabase(db);
+            }
+            return simulateDelay({ message: 'Block added successfully' });
+        },
+        fetchAllBlocks: async () => {
+          const db = getDatabase();
+          const playerCountMap = {};
+          const userMap = (db.users || []).reduce((acc, user) => {
+              acc[user.id] = user.nickname;
+              return acc;
+          }, {});
+          
+          (db.globalBlocks || []).forEach(block => {
+              playerCountMap[block.id] = 0;
+          });
+
+          Object.values(db.userProfiles || {}).forEach(profile => {
+              (profile.loadedBlockIds || []).forEach(blockId => {
+                  if (playerCountMap.hasOwnProperty(blockId)) {
+                      playerCountMap[blockId]++;
+                  }
+              });
+          });
+
+          const blocksWithDetails = (db.globalBlocks || []).map(b => ({
+              ...b,
+              questions: (db.globalQuestions || []).filter(q => q.bloqueId === b.id),
+              totalPreguntas: (db.globalQuestions || []).filter(q => q.bloqueId === b.id).length,
+              playerCount: playerCountMap[b.id] || 0,
+              creatorNickname: userMap[b.creatorId] || 'Unknown',
+            }));
+          
+          return simulateDelay(blocksWithDetails);
+        },
+        fetchAllUsers: async () => {
+          const db = getDatabase();
+          return simulateDelay(db.users);
+        },
+        fetchAllUserProfiles: async () => {
+            const db = getDatabase();
+            return simulateDelay(db.userProfiles || {});
+        },
+        fetchAllUsersWithStats: async () => {
+            const db = getDatabase();
+            const usersWithStats = (db.users || []).map(user => {
+                const createdBlocks = (db.globalBlocks || []).filter(b => b.creatorId === user.id);
+                const createdBlockIds = new Set(createdBlocks.map(b => b.id));
+                const totalQuestionsCreated = (db.globalQuestions || []).filter(q => createdBlockIds.has(q.bloqueId)).length;
+                const activeGames = (db.globalGames || []).filter(g => g.players.some(p => p.userId === user.id)).length;
+                const loadedBlocks = db.userProfiles[user.id]?.loadedBlockIds?.length || 0;
+                
+                return {
+                    ...user,
+                    stats: {
+                        createdBlocks: createdBlocks.length,
+                        totalQuestionsCreated,
+                        activeGames,
+                        loadedBlocks,
+                    }
+                };
+            });
+            return simulateDelay(usersWithStats);
+        },
+        fetchDetailedHistoryForBlock: async (userId, blockId) => {
+            const db = getDatabase();
+            const profile = db.userProfiles[userId];
+            if (!profile || !profile.answerHistory) return simulateDelay([]);
+
+            const blockQuestions = (db.globalQuestions || [])
+                .filter(q => q.bloqueId === blockId)
+                .sort((a, b) => (a.numero || 0) - (b.numero || 0));
+
+            const detailedHistory = blockQuestions.map(question => {
+                const historyForQuestion = profile.answerHistory
+                    .filter(h => h.questionId === question.id)
+                    .slice(0, 20);
+
+                const results = historyForQuestion.map(h => {
+                    if (h.result === 'ACIERTO') return 'A';
+                    if (h.result === 'FALLO') return 'F';
+                    return 'B';
+                }).reverse(); 
+
+                while (results.length < 20) {
+                    results.unshift(null);
+                }
+
+                return {
+                    id: question.id,
+                    numero: question.numero,
+                    textoPregunta: question.textoPregunta,
+                    results: results,
+                };
+            });
+
+            return simulateDelay(detailedHistory);
+        },
+      };
+
+
+      // --- INLINED: components ---
+      
+      const ConfirmationDialog = ({ title, message, confirmText, cancelText, onConfirm, onCancel, danger = false }) => {
+        return (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={onCancel}>
+            <div className={`bg-brand-secondary rounded-xl shadow-2xl w-full max-w-sm m-4 border ${danger ? 'border-brand-danger/50' : 'border-brand-tertiary'} p-6 text-center`} onClick={e => e.stopPropagation()}>
+                <h4 className="text-xl font-bold text-brand-light">{title}</h4>
+                <p className="text-brand-accent my-4">{message}</p>
+                <div className="flex justify-center gap-4 mt-6">
+                    <button onClick={onCancel} className="py-2 px-6 rounded-lg bg-brand-tertiary hover:bg-brand-accent text-brand-light font-bold transition-colors">
+                        {cancelText}
+                    </button>
+                    <button onClick={onConfirm} className={`py-2 px-6 rounded-lg font-bold transition-colors text-white ${danger ? 'bg-brand-danger hover:bg-red-500' : 'bg-brand-cta hover:bg-brand-cta-hover'}`}>
+                        {confirmText}
+                    </button>
+                </div>
+            </div>
+          </div>
+        );
+      };
+      
+      const TopicSelectionModal = ({ block, existingSelection, onSave, onClose }) => {
+          const { t } = useLanguage();
+          const uniqueTopics = useMemo(() => {
+              if (!block || !block.questions) return [];
+              return [...new Set(block.questions.map(q => q.tema).filter(Boolean))].sort();
+          }, [block]);
+
+          const [selectedTopics, setSelectedTopics] = useState(() => {
+              if (existingSelection === 'all') return new Set(uniqueTopics);
+              return new Set(existingSelection || []);
+          });
+
+          const handleToggleTopic = (topic) => {
+              setSelectedTopics(prev => {
+                  const newSet = new Set(prev);
+                  if (newSet.has(topic)) newSet.delete(topic);
+                  else newSet.add(topic);
+                  return newSet;
+              });
+          };
+
+          const handleSelectAll = () => {
+              if (selectedTopics.size === uniqueTopics.length) {
+                  setSelectedTopics(new Set());
+              } else {
+                  setSelectedTopics(new Set(uniqueTopics));
+              }
+          };
+
+          const handleSave = () => {
+              if (selectedTopics.size === 0) {
+                  onSave(block.id, null); // Nothing selected
+              } else if (selectedTopics.size === uniqueTopics.length) {
+                  onSave(block.id, 'all');
+              } else {
+                  onSave(block.id, Array.from(selectedTopics));
+              }
+          };
+          
+          if (!block) return null;
+
+          return (
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={onClose}>
+                  <div className="bg-brand-secondary rounded-xl shadow-2xl w-full max-w-md m-4 border border-brand-tertiary" onClick={e => e.stopPropagation()}>
+                      <div className="p-6 border-b border-brand-tertiary">
+                          <h4 className="text-xl font-bold text-brand-light">{t('topic_modal_title')}</h4>
+                          <p className="text-sm text-brand-accent">{t('topic_modal_subtitle', {blockName: block.nombreCorto})}</p>
+                      </div>
+                      <div className="p-6 max-h-[60vh] overflow-y-auto">
+                          {uniqueTopics.length > 0 ? (
+                            <div className="space-y-3">
+                              <button onClick={handleSelectAll} className="w-full text-sm font-semibold bg-brand-tertiary/50 hover:bg-brand-tertiary text-brand-light py-2 rounded-md transition-colors">
+                                {selectedTopics.size === uniqueTopics.length ? t('topic_modal_deselect_all') : t('topic_modal_select_all')} ({uniqueTopics.length})
+                              </button>
+                              <div className="space-y-2 pt-2">
+                                {uniqueTopics.map(topic => (
+                                    <label key={topic} className="flex items-center p-3 rounded-md hover:bg-brand-tertiary/50 cursor-pointer transition-colors">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedTopics.has(topic)}
+                                            onChange={() => handleToggleTopic(topic)}
+                                            className="h-4 w-4 rounded border-brand-tertiary text-brand-cta bg-brand-primary focus:ring-brand-cta focus:ring-2"
+                                        />
+                                        <span className="ml-3 text-brand-light">{topic}</span>
+                                    </label>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-center text-brand-accent py-8">{t('topic_modal_no_topics')}</p>
+                          )}
+                      </div>
+                      <div className="p-4 bg-brand-primary/50 flex justify-end gap-3 rounded-b-xl">
+                          <button onClick={onClose} className="py-2 px-4 rounded-lg bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold transition-colors">{t('generic_cancel')}</button>
+                          <button onClick={handleSave} className="py-2 px-4 rounded-lg bg-brand-cta hover:bg-brand-cta-hover text-white font-bold transition-colors">{t('topic_modal_save')}</button>
+                      </div>
+                  </div>
+              </div>
+          );
+      };
+
+      const GameSetup = ({ blocks, onCreateGame, onSendChallenge }) => {
+          const { t } = useLanguage();
+          const { currentUser } = useUser();
+          const [allUsers, setAllUsers] = useState([]);
+          const [allProfiles, setAllProfiles] = useState({});
+          
+          const trainingModes = [
+              { key: 'game_mode_classic', value: 'Modo Clásico', image: './Imagenes/Clásico.png'},
+              { key: 'game_mode_timetrial', value: 'Modo Contrarreloj', image: './Imagenes/Contrarreloj.png'},
+              { key: 'game_mode_lives', value: 'Modo Vidas', image: './Imagenes/Vidas.png'},
+              { key: 'game_mode_levels', value: 'Por Niveles', image: './Imagenes/Niveles.png'},
+              { key: 'game_mode_streak', value: 'Racha de Aciertos', image: './Imagenes/Racha.png'},
+              { key: 'game_mode_exam', value: 'Examen Simulado', image: './Imagenes/Examen.png'},
+          ];
+          const competitionModes = [
+              { key: 'game_mode_duel', value: 'Duelo', image: './Imagenes/Duelo.png' },
+              { key: 'game_mode_trivial', value: 'Trivial', image: './Imagenes/Trivia.png' },
+              { key: 'game_mode_marathon', value: 'Maratón', image: './Imagenes/Maratón.png' },
+          ];
+
+          const [category, setCategory] = useState('Entrenamiento');
+          const [mode, setMode] = useState(trainingModes[0].value);
+          const [configuredBlocks, setConfiguredBlocks] = useState({});
+          const [isModalOpen, setIsModalOpen] = useState(false);
+          const [blockToConfigure, setBlockToConfigure] = useState(null);
+          const [challengedUserId, setChallengedUserId] = useState('');
+          const [challengeStatus, setChallengeStatus] = useState('');
+
+          const isCompetitionMode = useMemo(() => category === 'Competición' && (mode === 'Duelo' || mode === 'Trivial'), [category, mode]);
+
+          useEffect(() => {
+              if (category === 'Entrenamiento') setMode(trainingModes[0].value);
+              else setMode(competitionModes[0].value);
+          }, [category]);
+          
+          useEffect(() => {
+            const fetchUsersAndProfiles = async () => {
+                const [users, profiles] = await Promise.all([
+                    dataService.fetchAllUsers(),
+                    dataService.fetchAllUserProfiles()
+                ]);
+                setAllUsers(users);
+                setAllProfiles(profiles);
+            };
+            fetchUsersAndProfiles();
+          }, []);
+          
+          const challengeableUsers = useMemo(() => {
+              const selectedBlockIds = Object.keys(configuredBlocks);
+              if (!isCompetitionMode || selectedBlockIds.length === 0) return [];
+
+              return allUsers.filter(user => {
+                  if (user.isAdmin || user.id === currentUser.id) return false;
+                  const profile = allProfiles[user.id];
+                  if (!profile || !profile.loadedBlockIds) return false;
+                  return selectedBlockIds.every(blockId => profile.loadedBlockIds.includes(blockId));
+              });
+          }, [allUsers, allProfiles, configuredBlocks, currentUser.id, isCompetitionMode]);
+          
+          const handleToggleBlockForCompetition = (blockId) => {
+              setConfiguredBlocks(prev => {
+                  const newConfig = { ...prev };
+                  if (newConfig[blockId]) {
+                      delete newConfig[blockId];
+                  } else {
+                      newConfig[blockId] = { topics: 'all' };
+                  }
+                  return newConfig;
+              });
+          };
+
+          const handleOpenModal = (block) => { setBlockToConfigure(block); setIsModalOpen(true); };
+          const handleCloseModal = () => { setBlockToConfigure(null); setIsModalOpen(false); };
+          const handleSaveTopicSelection = (blockId, topics) => {
+              setConfiguredBlocks(prev => {
+                  const newConfig = { ...prev };
+                  if (topics) newConfig[blockId] = { topics };
+                  else delete newConfig[blockId];
+                  return newConfig;
+              });
+              handleCloseModal();
+          };
+
+          const handleGameAction = () => {
+              if (Object.keys(configuredBlocks).length === 0) return;
+              const gameConfig = { mode, config: configuredBlocks };
+              
+              if (isCompetitionMode) {
+                  const challengedUser = challengeableUsers.find(u => u.id === challengedUserId);
+                  if (!challengedUser) return;
+                  onSendChallenge(challengedUser, gameConfig);
+                  setChallengeStatus(t('challenge_sent'));
+                  setTimeout(() => setChallengeStatus(''), 3000);
+              } else {
+                  onCreateGame(gameConfig);
+              }
+
+              setConfiguredBlocks({}); setChallengedUserId('');
+          };
+
+          const handleRandomChallenge = () => {
+              if (challengeableUsers.length === 0) return;
+              const randomUser = challengeableUsers[Math.floor(Math.random() * challengeableUsers.length)];
+              const gameConfig = { mode, config: configuredBlocks };
+              onSendChallenge(randomUser, gameConfig);
+              setChallengeStatus(t('challenge_sent'));
+              setTimeout(() => setChallengeStatus(''), 3000);
+              setConfiguredBlocks({});
+              setChallengedUserId('');
+          };
+          
+          const getBlockSelectionText = (blockId) => {
+              const config = configuredBlocks[blockId];
+              if (!config) return <span className="text-brand-accent">{t('game_setup_not_selected')}</span>;
+              if (config.topics === 'all') return <span className="text-brand-success">{t('game_setup_all_topics')}</span>;
+              return <span className="text-brand-cta">{t('game_setup_topics_selected', {count: config.topics.length})}</span>;
+          };
+          
+          const buttonDisabled = Object.keys(configuredBlocks).length === 0 || (isCompetitionMode && !challengedUserId);
+          const buttonText = isCompetitionMode ? t('game_setup_button_challenge') : t('game_setup_button_create');
+
+          return (
+              <div className="bg-brand-secondary p-6 rounded-xl shadow-lg">
+                  {isModalOpen && blockToConfigure && ( <TopicSelectionModal block={blockToConfigure} existingSelection={configuredBlocks[blockToConfigure.id]?.topics} onSave={handleSaveTopicSelection} onClose={handleCloseModal} /> )}
+                  <div className="flex items-center mb-4"> <img src="./Imagenes/Config.png" alt="Game Setup" className="h-10 w-10 mr-3" /> <h3 className="text-xl font-bold text-brand-light">{t('game_setup_title')}</h3> </div>
+                  <div className="space-y-4">
+                      <div>
+                         <label htmlFor="game-category" className="block text-sm font-medium text-brand-accent mb-1">{t('game_setup_category')}</label>
+                          <select id="game-category" value={category} onChange={(e) => setCategory(e.target.value)} className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none">
+                              <option value="Entrenamiento">{t('game_setup_training')}</option>
+                              <option value="Competición">{t('game_setup_competition')}</option>
+                          </select>
+                      </div>
+                      <div>
+                         <label className="block text-sm font-medium text-brand-accent mb-2">{t('game_setup_mode')}</label>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                              {(category === 'Entrenamiento' ? trainingModes : competitionModes).map(m => (
+                                  <button
+                                      key={m.key}
+                                      type="button"
+                                      onClick={() => setMode(m.value)}
+                                      className={`p-3 text-center rounded-lg border-2 transition-all duration-200 ${mode === m.value ? 'bg-brand-cta/20 border-brand-cta' : 'bg-brand-primary border-brand-tertiary hover:border-brand-accent'}`}
+                                  >
+                                      <div className="w-24 h-24 mx-auto mb-2 rounded-full bg-brand-secondary flex items-center justify-center ring-1 ring-brand-tertiary">
+                                          <img src={m.image} alt={t(m.key)} className="h-16 w-16 object-contain" />
+                                      </div>
+                                      <span className="text-xs font-semibold text-brand-light">{t(m.key)}</span>
+                                  </button>
+                              ))}
+                          </div>
+                      </div>
+
+                      {isCompetitionMode && (
+                        <div className="p-3 bg-brand-primary/50 rounded-lg animate-fade-in space-y-2">
+                          <div>
+                            <label htmlFor="opponent" className="block text-sm font-medium text-brand-accent mb-1">{t('game_setup_challenge_user')}</label>
+                            <select id="opponent" value={challengedUserId} onChange={(e) => setChallengedUserId(e.target.value)} className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" disabled={Object.keys(configuredBlocks).length === 0}>
+                               <option value="">{t('game_setup_select_opponent')}</option>
+                               {challengeableUsers.length > 0 ? challengeableUsers.map(user => (<option key={user.id} value={user.id}>{user.nickname}</option>)) : <option disabled>{t('challenge_no_users')}</option>}
+                            </select>
+                          </div>
+                          <div className="flex items-center gap-2">
+                              <div className="flex-grow border-t border-brand-tertiary"></div>
+                              <span className="text-xs text-brand-accent">O</span>
+                              <div className="flex-grow border-t border-brand-tertiary"></div>
+                          </div>
+                          <button onClick={handleRandomChallenge} disabled={challengeableUsers.length === 0} className="w-full bg-brand-tertiary text-white font-bold py-2 px-4 rounded-lg hover:bg-brand-accent transition-colors disabled:bg-brand-tertiary/50 disabled:cursor-not-allowed">
+                              {t('game_setup_challenge_random')}
+                          </button>
+                        </div>
+                      )}
+
+                      <div>
+                          <label className="block text-sm font-medium text-brand-accent mb-2">{t('game_setup_blocks_topics')}</label>
+                          <div className="max-h-40 overflow-y-auto space-y-2 p-1">
+                              {blocks.map(block => (
+                                  <div key={block.id} className="flex items-center justify-between p-2 rounded-md hover:bg-brand-tertiary/20 transition-colors">
+                                      <div className="overflow-hidden">
+                                          <p className="font-semibold text-brand-light truncate">{block.nombreCorto}</p>
+                                          <p className="text-xs text-brand-accent truncate">{t('admin_blocks_by')} {block.creatorNickname}</p>
+                                           <p className="text-xs mt-1">
+                                              {category === 'Competición' ? 
+                                                  (configuredBlocks[block.id] ? <span className="text-brand-success">{t('game_setup_selected')}</span> : <span className="text-brand-accent">{t('game_setup_not_selected')}</span>)
+                                                  : getBlockSelectionText(block.id)
+                                              }
+                                          </p>
+                                      </div>
+                                      {category === 'Competición' ? (
+                                          <button onClick={() => handleToggleBlockForCompetition(block.id)} className={`text-sm font-semibold py-1 px-3 rounded-md transition-colors ${configuredBlocks[block.id] ? 'bg-brand-danger/80 hover:bg-brand-danger text-white' : 'bg-brand-success hover:bg-green-600 text-white'}`}>
+                                              {configuredBlocks[block.id] ? t('remove') : t('add')}
+                                          </button>
+                                      ) : (
+                                          <button onClick={() => handleOpenModal(block)} className="text-sm font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1 px-3 rounded-md transition-colors">
+                                              {t('game_setup_configure')}
+                                          </button>
+                                      )}
+                                  </div>
+                              ))}
+                          </div>
+                      </div>
+                      
+                      {challengeStatus && <p className="text-center text-sm text-brand-success animate-pulse">{challengeStatus}</p>}
+                      
+                      <button onClick={handleGameAction} disabled={buttonDisabled} className="w-full mt-2 bg-brand-cta text-white font-bold py-2.5 px-4 rounded-lg hover:bg-brand-cta-hover transition-colors disabled:bg-brand-tertiary disabled:cursor-not-allowed">
+                          {buttonText}
+                      </button>
+                  </div>
+              </div>
+          );
+      };
+
+      const getGameStatusText = (game, currentUser, t) => {
+        if (game.status !== 'active') return '';
+    
+        if (game.mode === 'Duelo') {
+            if (!game.turnState || (game.gameState === 'finished')) return '';
+            const myPlayerIndex = game.players.findIndex(p => p.userId === currentUser.id);
+            if (myPlayerIndex === -1) return ''; 
+            const opponentIndex = 1 - myPlayerIndex;
+            const opponent = game.players[opponentIndex];
+            
+            const myTurnPattern = `p${myPlayerIndex + 1}`;
+            const opponentTurnPattern = `p${opponentIndex + 1}`;
+            
+            if (game.turnState.startsWith(myTurnPattern)) {
+                 return t('game_status_your_turn');
+            } else if (game.turnState.startsWith(opponentTurnPattern)) {
+                return t('game_status_opponent_turn', { nickname: opponent.nickname });
+            }
+    
+        } else if (game.mode === 'Trivial') {
+            const turn = game.turn || 0;
+            const players = game.players || [];
+            if (players.length > turn) {
+                const currentPlayer = players[turn];
+                if (currentPlayer.userId === currentUser.id) {
+                    return t('game_status_your_turn');
+                } else {
+                    return t('game_status_opponent_turn', { nickname: currentPlayer.nickname });
+                }
+            }
+        }
+        
+        return '';
+      };
+
+      const ActiveGames = ({ games, challenges, blocks, onDeleteGame, onNavigateToGame, onAcceptChallenge, onDeclineChallenge }) => {
+          const { t } = useLanguage();
+          const { currentUser } = useUser();
+          const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+
+          const getGameConfigDetails = (config) => {
+              if (!config || Object.keys(config).length === 0) return 'No blocks configured';
+              return Object.entries(config).map(([blockId, blockConfig]) => {
+                  const block = blocks.find(b => b.id === blockId);
+                  const blockName = block ? `${block.nombreCorto}` : 'Unknown Block';
+                  const topicInfo = blockConfig.topics === 'all' 
+                      ? `(${t('game_setup_all_topics')})` 
+                      : `(${t('game_setup_topics_selected', {count: blockConfig.topics.length})})`;
+                  return `${blockName}`;
+              }).join(', ');
+          };
+
+          const handleDeleteClick = (gameId) => {
+            setConfirmingDeleteId(gameId);
+          };
+          
+          const handleConfirmDelete = () => {
+            if (confirmingDeleteId) {
+                onDeleteGame(confirmingDeleteId);
+                setConfirmingDeleteId(null);
+            }
+          };
+
+          const activeGames = games.filter(g => g.status === 'active');
+          const pendingChallenges = games.filter(g => g.status === 'pending' && challenges.some(c => c.gameId === g.id));
+
+          return (
+            <div className="bg-brand-secondary p-6 rounded-xl shadow-lg flex flex-col h-full">
+              {confirmingDeleteId && (
+                <ConfirmationDialog
+                  title={t('delete_game_prompt_title')}
+                  message={t('delete_game_confirm')}
+                  confirmText={t('delete_question_prompt_confirm')}
+                  cancelText={t('delete_question_prompt_cancel')}
+                  onConfirm={handleConfirmDelete}
+                  onCancel={() => setConfirmingDeleteId(null)}
+                  danger={true}
+                />
+              )}
+              <div className="flex items-center justify-between mb-4 flex-shrink-0">
+                  <div className="flex items-center">
+                      <img src="./Imagenes/Juegos.png" alt="Active Games" className="h-10 w-10 mr-3" />
+                      <h3 className="text-xl font-bold text-brand-light">{t('active_games_title')}</h3>
+                  </div>
+                  {activeGames.length > 0 &&
+                      <a href="all-games.html" className="text-sm font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1 px-3 rounded-md transition-colors">
+                          {t('active_games_view_all', { count: activeGames.length })}
+                      </a>
+                  }
+              </div>
+              
+              <div className="space-y-4 overflow-y-auto pr-2 flex-grow">
+                {pendingChallenges.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-amber-400 mb-2">{t('pending_challenges')}</h4>
+                    <ul className="space-y-3">
+                      {pendingChallenges.map(challenge => {
+                        const challenger = challenge.players.find(p => p.userId !== currentUser.id);
+                        return (
+                          <li key={challenge.id} className="p-3 rounded-md bg-amber-500/10 border border-amber-500/30">
+                            <div className="flex items-center gap-3">
+                              <SwordsIcon className="h-6 w-6 text-amber-400 flex-shrink-0" />
+                              <div className="flex-grow overflow-hidden">
+                                <p className="font-semibold text-brand-light truncate" dangerouslySetInnerHTML={{__html: t('challenge_from', { nickname: `<strong>${challenger.nickname}</strong>`, mode: `<strong>${challenge.mode}</strong>` })}}/>
+                                <p className="text-xs text-brand-accent truncate" title={getGameConfigDetails(challenge.config)}>
+                                  {getGameConfigDetails(challenge.config)}
+                                </p>
+                              </div>
+                            </div>
+                             <div className="flex justify-end gap-3 mt-3">
+                              <button onClick={() => onDeclineChallenge(challenge.id)} className="py-1.5 px-4 text-sm rounded-lg bg-brand-danger/80 hover:bg-brand-danger text-white font-bold transition-colors">{t('challenge_decline')}</button>
+                              <button onClick={() => onAcceptChallenge(challenge.id)} className="py-1.5 px-4 text-sm rounded-lg bg-brand-success hover:bg-green-600 text-white font-bold transition-colors">{t('challenge_accept')}</button>
+                            </div>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </div>
+                )}
+                
+                {activeGames.length > 0 ? (
+                  <ul className="space-y-3">
+                      {activeGames.slice(0, 5).map(game => {
+                        const statusText = getGameStatusText(game, currentUser, t);
+                        return (
+                          <li key={game.id} className="flex items-center justify-between p-3 rounded-md bg-brand-primary hover:bg-brand-tertiary/40 transition-colors group">
+                              <div className="flex-grow overflow-hidden cursor-pointer" onClick={() => onNavigateToGame(game)}>
+                                  <p className="font-semibold text-brand-light truncate">{game.mode}</p>
+                                  {statusText && <p className="text-xs font-bold text-amber-400 mt-1">{statusText}</p>}
+                                  <p className="text-xs text-brand-accent truncate mt-1" title={getGameConfigDetails(game.config)}>
+                                    {getGameConfigDetails(game.config)}
+                                  </p>
+                              </div>
+                              <button
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteClick(game.id); }}
+                                  className="flex-shrink-0 ml-4 p-2 rounded-full text-brand-danger/70 hover:bg-brand-danger/20 hover:text-brand-danger transition-colors opacity-0 group-hover:opacity-100"
+                                  aria-label={`${t('delete')} partida ${game.id}`}
+                              >
+                                  <TrashIcon className="h-5 w-5" />
+                              </button>
+                          </li>
+                        )
+                      })}
+                  </ul>
+              ) : pendingChallenges.length === 0 && (
+                  <div className="text-center py-6 flex-grow flex items-center justify-center">
+                    <div>
+                      <p className="text-brand-accent">{t('active_games_none')}</p>
+                      <p className="text-sm text-brand-tertiary mt-1">{t('active_games_create_new')}</p>
+                    </div>
+                  </div>
+              )}
+              </div>
+            </div>
+          );
+      };
+
+      const GameHistory = ({ history }) => {
+        const { t, language } = useLanguage();
+
+        const formatDate = (dateString) => {
+            return new Date(dateString).toLocaleDateString(language, {
+                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+        };
+
+        return (
+            <div className="bg-brand-secondary p-6 rounded-xl shadow-lg flex flex-col h-full">
+                <div className="flex items-center mb-4 flex-shrink-0">
+                    <img src="./Imagenes/Historia.png" alt="Game History" className="h-10 w-10 mr-3" />
+                    <h3 className="text-xl font-bold text-brand-light">{t('history_title')}</h3>
+                </div>
+                {history && history.length > 0 ? (
+                    <div className="overflow-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="text-xs text-brand-accent uppercase">
+                                <tr>
+                                    <th scope="col" className="py-3 px-2">{t('history_header_block')}</th>
+                                    <th scope="col" className="py-3 px-2">{t('history_header_mode')}</th>
+                                    <th scope="col" className="py-3 px-2 text-center">{t('history_header_correct')}</th>
+                                    <th scope="col" className="py-3 px-2 text-center">{t('history_header_incorrect')}</th>
+                                    <th scope="col" className="py-3 px-2">{t('history_header_date')}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {history.map((game, index) => (
+                                    <tr key={game.gameId + index} className="border-b border-brand-tertiary/50">
+                                        <td className="py-3 px-2 font-medium text-brand-light truncate max-w-[100px] sm:max-w-xs" title={game.blockName}>{game.blockName}</td>
+                                        <td className="py-3 px-2 text-brand-accent">
+                                            <div>{game.mode}</div>
+                                            {game.opponent && <div className="text-xs">vs {game.opponent}</div>}
+                                            {game.score !== undefined && <div className="text-xs font-bold" style={{color: game.score >= 5 ? '#10B981' : '#EF4444' }}>{t('history_header_score')}: {game.score}</div>}
+                                        </td>
+                                        <td className="py-3 px-2 text-center font-bold text-brand-success">{game.correct}</td>
+                                        <td className="py-3 px-2 text-center font-bold text-brand-danger">{game.incorrect}</td>
+                                        <td className="py-3 px-2 text-brand-accent text-xs whitespace-nowrap">{formatDate(game.date)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="text-center py-6 flex-grow flex items-center justify-center">
+                        <p className="text-brand-accent">{t('history_none')}</p>
+                    </div>
+                )}
+            </div>
+        );
+    };
+      
+      const UserBlockManagement = ({ blocks, onViewBlock, onDeleteBlock, onOpenAddBlockModal, onOpenStatsModal }) => {
+          const { t } = useLanguage();
+          const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+          const [expandedBlockId, setExpandedBlockId] = useState(null);
+
+          const handleDeleteClick = (blockId) => {
+            setConfirmingDeleteId(blockId);
+          };
+
+          const handleConfirmDelete = () => {
+            if (confirmingDeleteId) {
+              onDeleteBlock(confirmingDeleteId);
+              setConfirmingDeleteId(null);
+            }
+          };
+          
+          const getProgressBarColor = (percentage) => {
+            if (percentage < 40) return 'bg-brand-danger';
+            if (percentage < 70) return 'bg-amber-500';
+            return 'bg-brand-success';
+          }
+
+          return (
+              <div className="bg-brand-secondary p-6 rounded-xl shadow-lg flex flex-col">
+                  {confirmingDeleteId && (
+                    <ConfirmationDialog
+                      title={t('delete_block_prompt_title')}
+                      message={t('delete_block_confirm')}
+                      confirmText={t('delete_question_prompt_confirm')}
+                      cancelText={t('delete_question_prompt_cancel')}
+                      onConfirm={handleConfirmDelete}
+                      onCancel={() => setConfirmingDeleteId(null)}
+                      danger={true}
+                    />
+                  )}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                       <div className="flex items-center">
+                          <img src="./Imagenes/Cargados.png" alt="Loaded Blocks" className="h-10 w-10 mr-3" />
+                          <h3 className="text-xl font-bold text-brand-light">{t('block_management_title')}</h3>
+                       </div>
+                       <div className="flex items-center gap-2 flex-shrink-0">
+                         <button onClick={onOpenAddBlockModal} className="text-sm font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1.5 px-3 rounded-md transition-colors">
+                            {t('block_management_add_available')}
+                         </button>
+                         <a href="add-question.html" className="text-sm font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-1.5 px-3 rounded-md transition-colors">
+                            {t('add_question_button')}
+                         </a>
+                       </div>
+                  </div>
+                  {blocks.length > 0 ? (
+                    <>
+                    <div className="space-y-3 overflow-y-auto max-h-[80vh] pr-2 flex-grow">
+                        {blocks.map(block => (
+                            <div key={block.id} className="p-3 rounded-md bg-brand-primary hover:bg-brand-tertiary/40 transition-colors group">
+                                <div className="flex items-start justify-between">
+                                    <div onClick={() => onViewBlock(block.id)} className="flex items-center gap-3 overflow-hidden flex-grow cursor-pointer">
+                                        <img className="h-10 w-16 rounded object-cover flex-shrink-0" src={block.urlImagenBloque} alt={block.nombreCorto} />
+                                        <div className="overflow-hidden">
+                                            <p className="font-semibold text-brand-light truncate">{block.nombreCorto}</p>
+                                            <p className="text-xs text-brand-accent truncate">{t('admin_blocks_by')} {block.creatorNickname} &bull; {t('block_management_questions', {count: block.totalPreguntas})}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 flex-shrink-0">
+                                       <button onClick={() => setExpandedBlockId(prev => prev === block.id ? null : block.id)} className="text-xs font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1 px-2 rounded-md transition-colors">
+                                          {expandedBlockId === block.id ? t('available_blocks_hide_details') : t('available_blocks_view_details')}
+                                       </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleDeleteClick(block.id); }}
+                                            className="p-2 rounded-full text-brand-danger/80 hover:bg-brand-danger/20 hover:text-brand-danger opacity-0 group-hover:opacity-100 transition-opacity"
+                                            aria-label={`${t('delete')} ${block.nombreCorto}`}
+                                        >
+                                            <TrashIcon className="h-5 w-5"/>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="mt-3">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-xs font-medium text-brand-accent">{t('study_progress')}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs font-medium text-brand-light">{block.studyProgress ?? 0}%</span>
+                                            <button onClick={() => onOpenStatsModal(block)} title={`Estadísticas de ${block.nombreCorto}`} className="text-xs font-bold bg-brand-tertiary hover:bg-brand-accent text-white py-1 px-3 rounded-md transition-colors">
+                                                STAT
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="w-full bg-brand-secondary rounded-full h-1.5">
+                                        <div className={`${getProgressBarColor(block.studyProgress)} h-1.5 rounded-full transition-all duration-500`} style={{width: `${block.studyProgress ?? 0}%`}}></div>
+                                    </div>
+                                </div>
+
+                                {expandedBlockId === block.id && (
+                                  <div className="mt-4 pt-4 border-t border-brand-tertiary/30 space-y-2 animate-fade-in">
+                                    {block.topicsWithStats.length > 0 ? block.topicsWithStats.map(topic => (
+                                      <div key={topic.name}>
+                                        <div className="flex justify-between mb-1">
+                                            <span className="text-xs font-medium text-brand-accent truncate pr-2">{topic.name}</span>
+                                            <span className="text-xs font-medium text-brand-light">{topic.score}%</span>
+                                        </div>
+                                        <div className="w-full bg-brand-secondary rounded-full h-1.5">
+                                            <div className={`${getProgressBarColor(topic.score)} h-1.5 rounded-full transition-all duration-500`} style={{width: `${topic.score}%`}}></div>
+                                        </div>
+                                      </div>
+                                    )) : <p className="text-xs text-brand-accent text-center">{t('all_blocks_no_topics')}</p>}
+                                  </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-6 flex-grow flex items-center justify-center">
+                        <p className="text-brand-accent">No blocks loaded. Click 'Add Questions' to create a new block.</p>
+                    </div>
+                  )}
+              </div>
+          );
+      };
+
+      const CreatedBlocksManagement = ({ blocks }) => {
+          const { t } = useLanguage();
+          return (
+              <div className="bg-brand-secondary p-6 rounded-xl shadow-lg flex flex-col">
+                  <div className="flex items-center justify-between mb-4 flex-shrink-0">
+                      <div className="flex items-center">
+                          <img src="./Imagenes/Creados.png" alt="Created Blocks" className="h-10 w-10 mr-3" />
+                          <h3 className="text-xl font-bold text-brand-light">{t('created_blocks_title')}</h3>
+                      </div>
+                      <a href="all-blocks.html" className="text-sm font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1.5 px-3 rounded-md transition-colors">
+                          {t('created_blocks_manage', { count: blocks.length })}
+                      </a>
+                  </div>
+                  {blocks.length > 0 ? (
+                      <div className="space-y-3 overflow-y-auto max-h-96 pr-2 flex-grow">
+                          {blocks.slice(0, 5).map(block => (
+                              <div key={block.id} className="flex items-center justify-between p-3 rounded-md bg-brand-primary">
+                                  <div className="flex items-center gap-3 overflow-hidden flex-grow">
+                                      <img className="h-10 w-16 rounded object-cover flex-shrink-0" src={block.urlImagenBloque} alt={block.nombreCorto} />
+                                      <div className="overflow-hidden">
+                                          <p className="font-semibold text-brand-light truncate">{block.nombreCorto}</p>
+                                          <p className="text-xs text-brand-accent">{t('block_management_questions', {count: block.totalPreguntas})}</p>
+                                      </div>
+                                  </div>
+                              </div>
+                          ))}
+                      </div>
+                  ) : (
+                      <div className="text-center py-6 flex-grow flex items-center justify-center">
+                        <div>
+                          <p className="text-brand-accent">{t('created_blocks_none')}</p>
+                          <p className="text-sm text-brand-tertiary mt-1">
+                            <a href="add-question.html" className="text-brand-cta hover:underline">{t('created_blocks_create_new')}</a>
+                          </p>
+                        </div>
+                      </div>
+                  )}
+              </div>
+          );
+      };
+
+      const UserDashboard = ({ blocks, createdBlocks, games, challenges, gameHistory, onViewBlock, onCreateGame, onSendChallenge, onDeleteGame, onNavigateToGame, onDeleteBlock, onOpenAddBlockModal, onAcceptChallenge, onDeclineChallenge, onOpenStatsModal }) => (
+        <div className="space-y-8 animate-fade-in">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div className="lg:col-span-2 space-y-8">
+              <GameSetup blocks={blocks} onCreateGame={onCreateGame} onSendChallenge={onSendChallenge}/>
+              <ActiveGames games={games} challenges={challenges} blocks={blocks} onDeleteGame={onDeleteGame} onNavigateToGame={onNavigateToGame} onAcceptChallenge={onAcceptChallenge} onDeclineChallenge={onDeclineChallenge} />
+              <GameHistory history={gameHistory} />
+            </div>
+            <div className="lg:col-span-1 space-y-8">
+              <UserBlockManagement blocks={blocks} onViewBlock={onViewBlock} onDeleteBlock={onDeleteBlock} onOpenAddBlockModal={onOpenAddBlockModal} onOpenStatsModal={onOpenStatsModal} />
+              <CreatedBlocksManagement blocks={createdBlocks} />
+            </div>
+          </div>
+        </div>
+      );
+
+      const BlockCategoryList = ({ title, blocks, userMap, t }) => (
+        <div className="bg-brand-primary/50 p-4 rounded-lg">
+          <h4 className="font-semibold text-brand-light mb-3">{title} ({blocks.length})</h4>
+          {blocks.length > 0 ? (
+            <ul className="space-y-2">
+              {blocks.map(block => (
+                <li key={block.id} className="p-3 bg-brand-primary rounded-md">
+                  <p className="font-semibold text-brand-light">{block.nombreCorto}</p>
+                  <p className="text-xs text-brand-accent">{block.tipoBloque} - {t('admin_blocks_by')} {userMap[block.creatorId] || 'Unknown'}</p>
+                </li>
+              ))}
+            </ul>
+          ) : <p className="text-sm text-brand-accent text-center py-2">{t('admin_blocks_no_category')}</p>}
+        </div>
+      );
+      
+      const AdminPanel = () => {
+        const { t } = useLanguage();
+        const [users, setUsers] = useState([]);
+        const [blocks, setBlocks] = useState([]);
+        const [isLoading, setIsLoading] = useState(true);
+
+        useEffect(() => {
+            const fetchData = async () => {
+                try {
+                    const [fetchedUsers, fetchedBlocks] = await Promise.all([
+                        dataService.fetchAllUsersWithStats(),
+                        dataService.fetchAllBlocks()
+                    ]);
+                    setUsers(fetchedUsers);
+                    setBlocks(fetchedBlocks);
+                } catch (error) {
+                    console.error("Failed to fetch admin data", error);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            fetchData();
+        }, []);
+
+        const { userMap, generalBlocks, publicUserBlocks, privateUserBlocks } = useMemo(() => {
+            const userMap = users.reduce((acc, user) => {
+                acc[user.id] = user.nickname;
+                return acc;
+            }, {});
+            const adminUser = users.find(u => u.isAdmin);
+            if (!adminUser) return { userMap, generalBlocks: [], publicUserBlocks: [], privateUserBlocks: [] };
+
+            const generalBlocks = blocks.filter(b => b.creatorId === adminUser.id);
+            const publicUserBlocks = blocks.filter(b => b.creatorId !== adminUser.id && b.isPublic);
+            const privateUserBlocks = blocks.filter(b => b.creatorId !== adminUser.id && !b.isPublic);
+            return { userMap, generalBlocks, publicUserBlocks, privateUserBlocks };
+        }, [users, blocks]);
+
+        if (isLoading) {
+            return (
+                <div className="flex justify-center items-center h-64">
+                    <svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            );
+        }
+
+        return (
+            <div className="space-y-8">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-3xl font-bold text-brand-light">Admin Panel</h2>
+                  <a href="add-question.html" className="flex items-center gap-2 text-sm font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-2 px-4 rounded-md transition-colors">
+                      <PlusCircleIcon className="h-5 w-5" />
+                      <span>{t('add_question_button')}</span>
+                  </a>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Registered Users Section */}
+                    <div className="bg-brand-secondary p-6 rounded-xl shadow-lg flex flex-col">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <UsersIcon className="h-6 w-6 text-brand-accent"/>
+                                <h3 className="text-xl font-bold text-brand-light">Usuarios Registrados</h3>
+                            </div>
+                            <span className="text-sm font-medium text-brand-accent bg-brand-primary px-3 py-1 rounded-full">{users.length} Total</span>
+                        </div>
+                        <div className="overflow-y-auto max-h-96 pr-2">
+                            <ul className="space-y-2">
+                                {users.map(user => (
+                                    <li key={user.id} className="p-3 bg-brand-primary rounded-md">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="font-semibold text-brand-light">{user.nickname}</p>
+                                                <p className="text-xs text-brand-accent">{user.firstName} {user.lastName}</p>
+                                            </div>
+                                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${user.isAdmin ? 'bg-amber-500/20 text-amber-400' : 'bg-teal-500/20 text-teal-400'}`}>
+                                                {user.isAdmin ? 'Admin' : 'User'}
+                                            </span>
+                                        </div>
+                                        {!user.isAdmin && user.stats && (
+                                          <div className="mt-2 pt-2 border-t border-brand-tertiary/20 flex items-center justify-around text-xs text-brand-accent">
+                                            <span className="flex items-center gap-1.5" title={t('admin_user_stats_loaded_blocks')}>
+                                              <RectangleStackIcon className="h-4 w-4" />
+                                              {user.stats.loadedBlocks}
+                                            </span>
+                                            <span className="flex items-center gap-1.5" title={t('admin_user_stats_blocks')}>
+                                              <BookOpenIcon className="h-4 w-4" />
+                                              {user.stats.createdBlocks}
+                                            </span>
+                                            <span className="flex items-center gap-1.5" title={t('admin_user_stats_questions')}>
+                                              <QuestionMarkCircleIcon className="h-4 w-4" />
+                                              {user.stats.totalQuestionsCreated}
+                                            </span>
+                                            <span className="flex items-center gap-1.5" title={t('admin_user_stats_games')}>
+                                              <GamepadIcon className="h-4 w-4" />
+                                              {user.stats.activeGames}
+                                            </span>
+                                          </div>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+
+                    {/* Available Blocks Section */}
+                    <div className="bg-brand-secondary p-6 rounded-xl shadow-lg flex flex-col">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <BookOpenIcon className="h-6 w-6 text-brand-accent"/>
+                                <h3 className="text-xl font-bold text-brand-light">Bloques Disponibles</h3>
+                            </div>
+                            <a href="all-blocks.html" className="text-sm font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1.5 px-3 rounded-md transition-colors">
+                                {t('admin_manage_blocks', { count: blocks.length })}
+                            </a>
+                        </div>
+                         <div className="overflow-y-auto max-h-96 pr-2 space-y-4">
+                            <BlockCategoryList title={t('admin_blocks_general')} blocks={generalBlocks} userMap={userMap} t={t} />
+                            <BlockCategoryList title={t('admin_blocks_public')} blocks={publicUserBlocks} userMap={userMap} t={t} />
+                            <BlockCategoryList title={t('admin_blocks_private')} blocks={privateUserBlocks} userMap={userMap} t={t} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+      };
+
+      const AvailableBlocksModal = ({ isOpen, onClose, onAddBlock, allBlocks, userBlockIds, allUsers }) => {
+          const { t } = useLanguage();
+          const [searchTerm, setSearchTerm] = useState('');
+          const [addingBlockId, setAddingBlockId] = useState(null);
+          const [expandedBlockId, setExpandedBlockId] = useState(null);
+          
+          const { generalBlocks, publicUserBlocks } = useMemo(() => {
+              const adminUser = allUsers.find(u => u.isAdmin);
+              if (!adminUser) return { generalBlocks: [], publicUserBlocks: [] };
+
+              const userIds = new Set(userBlockIds);
+              let available = allBlocks.filter(b => !userIds.has(b.id) && b.isPublic);
+
+              if (searchTerm) {
+                  available = available.filter(b => 
+                      b.nombreCorto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      b.nombreLargo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      b.creatorNickname.toLowerCase().includes(searchTerm.toLowerCase())
+                  );
+              }
+
+              return {
+                  generalBlocks: available.filter(b => b.creatorId === adminUser.id),
+                  publicUserBlocks: available.filter(b => b.creatorId !== adminUser.id),
+              };
+          }, [allBlocks, userBlockIds, searchTerm, allUsers]);
+
+          const handleAddClick = async (blockId) => {
+              setAddingBlockId(blockId);
+              await onAddBlock(blockId);
+              setAddingBlockId(null);
+          };
+          
+          if (!isOpen) return null;
+
+          const handleToggleExpand = (blockId) => {
+            setExpandedBlockId(prev => (prev === blockId ? null : blockId));
+          };
+
+          const ExpandedBlockDetails = ({ block }) => {
+              const { t } = useLanguage();
+              const [expandedTopics, setExpandedTopics] = useState(new Set());
+
+              const topics = useMemo(() => {
+                  if (!block.questions) return [];
+                  const topicsMap = new Map();
+                  block.questions.forEach(q => {
+                      const topicName = q.tema || 'Uncategorized';
+                      if (!topicsMap.has(topicName)) {
+                          topicsMap.set(topicName, []);
+                      }
+                      topicsMap.get(topicName).push(q);
+                  });
+                  return Array.from(topicsMap.entries()).map(([name, questions]) => ({ name, questions })).sort((a,b) => a.name.localeCompare(b.name));
+              }, [block.questions]);
+
+              const toggleTopic = (topicName) => {
+                  setExpandedTopics(prev => {
+                      const newSet = new Set(prev);
+                      if (newSet.has(topicName)) newSet.delete(topicName);
+                      else newSet.add(topicName);
+                      return newSet;
+                  });
+              };
+              
+              if (topics.length === 0) {
+                  return <p className="text-sm text-brand-accent text-center py-2">{t('all_blocks_no_topics')}</p>
+              }
+
+              return (
+                  <div className="space-y-2 animate-fade-in">
+                      {topics.map(topic => (
+                          <div key={topic.name}>
+                              <button onClick={() => toggleTopic(topic.name)} className="w-full text-left p-2 bg-brand-tertiary/30 hover:bg-brand-tertiary/60 rounded-md font-semibold flex justify-between items-center transition-colors">
+                                  <span>{topic.name} ({t('block_management_questions', {count: topic.questions.length})})</span>
+                                  {expandedTopics.has(topic.name) ? <MinusCircleIcon className="h-5 w-5"/> : <PlusCircleIcon className="h-5 w-5"/>}
+                              </button>
+                              {expandedTopics.has(topic.name) && (
+                                  <div className="pl-4 py-2 mt-1 bg-brand-secondary/40 rounded-b-md space-y-3">
+                                      {topic.questions.map((q, index) => (
+                                          <div key={q.id || index} className="p-3 bg-brand-secondary/50 rounded-md border-l-2 border-brand-tertiary">
+                                              <p className="font-semibold text-sm text-brand-light">{q.textoPregunta}</p>
+                                          </div>
+                                      ))}
+                                  </div>
+                              )}
+                          </div>
+                      ))}
+                  </div>
+              );
+          };
+
+          const BlockList = ({ blocks }) => (
+            <ul className="space-y-3">
+              {blocks.map(block => (
+                <li key={block.id} className="p-3 rounded-md bg-brand-primary hover:bg-brand-tertiary/40 transition-colors">
+                  <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 overflow-hidden">
+                          <img className="h-10 w-16 rounded object-cover flex-shrink-0" src={block.urlImagenBloque} alt={block.nombreCorto} />
+                          <div className="overflow-hidden">
+                              <p className="font-semibold text-brand-light truncate">{block.nombreCorto}</p>
+                              <div className="text-xs text-brand-accent flex items-center gap-3 flex-wrap mt-1">
+                                  <span>{t('block_management_questions', { count: block.totalPreguntas })}</span>
+                                  <span className="flex items-center gap-1" title={t('block_modal_owner')}>
+                                      <UserCircleIcon className="h-4 w-4" />
+                                      {block.creatorNickname}
+                                  </span>
+                                  <span className="flex items-center gap-1" title={t('block_modal_users')}>
+                                      <UsersIcon className="h-4 w-4" />
+                                      {block.playerCount}
+                                  </span>
+                              </div>
+                          </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                          <button
+                              onClick={() => handleToggleExpand(block.id)}
+                              className="text-sm font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1.5 px-3 rounded-md transition-colors"
+                          >
+                              {expandedBlockId === block.id ? t('available_blocks_hide_details') : t('available_blocks_view_details')}
+                          </button>
+                          <button
+                              onClick={() => handleAddClick(block.id)}
+                              disabled={addingBlockId === block.id}
+                              className="flex items-center gap-2 text-sm font-semibold bg-brand-cta/80 hover:bg-brand-cta text-white py-1.5 px-3 rounded-md transition-colors disabled:bg-brand-tertiary disabled:cursor-wait"
+                          >
+                              {addingBlockId === block.id ? (
+                                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                              ) : <PlusCircleIcon className="h-5 w-5" />}
+                              <span>{t('add')}</span>
+                          </button>
+                      </div>
+                  </div>
+                   {expandedBlockId === block.id && (
+                    <div className="mt-4 pt-4 border-t border-brand-tertiary/50">
+                      <ExpandedBlockDetails block={block} />
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          );
+
+          return (
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-50 animate-fade-in pt-10" onClick={onClose}>
+                  <div className="bg-brand-secondary rounded-xl shadow-2xl w-full max-w-3xl m-4 border border-brand-tertiary flex flex-col" onClick={e => e.stopPropagation()}>
+                      <div className="p-5 border-b border-brand-tertiary flex justify-between items-center">
+                          <h4 className="text-xl font-bold text-brand-light">{t('block_management_add_available')}</h4>
+                          <button onClick={onClose} className="p-1 rounded-full text-brand-accent hover:bg-brand-tertiary">
+                              <XMarkIcon className="h-6 w-6" />
+                          </button>
+                      </div>
+                      <div className="p-5">
+                          <div className="relative mb-4">
+                              <input
+                                  type="text"
+                                  placeholder="Search available blocks by name or owner..."
+                                  value={searchTerm}
+                                  onChange={(e) => setSearchTerm(e.target.value)}
+                                  className="w-full bg-brand-primary border border-brand-tertiary rounded-lg pl-10 pr-4 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+                              />
+                              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1.2 h-5 w-5 text-brand-accent" />
+                          </div>
+                      </div>
+                      <div className="px-5 pb-5 flex-grow overflow-y-auto max-h-[60vh] space-y-6">
+                          {generalBlocks.length > 0 && (
+                            <div>
+                                <h5 className="font-semibold text-brand-accent mb-3 text-lg border-b border-brand-tertiary pb-2">{t('admin_blocks_general')}</h5>
+                                <BlockList blocks={generalBlocks} />
+                            </div>
+                          )}
+
+                          {publicUserBlocks.length > 0 && (
+                            <div>
+                                <h5 className="font-semibold text-brand-accent mb-3 text-lg border-b border-brand-tertiary pb-2">{t('admin_blocks_public')}</h5>
+                                <BlockList blocks={publicUserBlocks} />
+                            </div>
+                          )}
+
+                          {generalBlocks.length === 0 && publicUserBlocks.length === 0 && (
+                              <p className="text-center text-brand-accent py-8">No other blocks available or match your search.</p>
+                          )}
+                      </div>
+                      <div className="p-4 bg-brand-primary/50 flex justify-end gap-3 rounded-b-xl">
+                          <button onClick={onClose} className="py-2 px-4 rounded-lg bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold transition-colors">{t('generic_cancel')}</button>
+                      </div>
+                  </div>
+              </div>
+          );
+      };
+
+      const StatisticsModal = ({ block, onClose }) => {
+        const { t } = useLanguage();
+        const { currentUser } = useUser();
+        const [history, setHistory] = useState([]);
+        const [isLoading, setIsLoading] = useState(true);
+        const [error, setError] = useState(null);
+        const [expandedQuestions, setExpandedQuestions] = useState(new Set());
+
+        useEffect(() => {
+          const fetchHistory = async () => {
+            if (!currentUser || !block) return;
+            try {
+              setIsLoading(true);
+              const data = await dataService.fetchDetailedHistoryForBlock(currentUser.id, block.id);
+              setHistory(data);
+            } catch (err) {
+              setError("Failed to load statistics.");
+            } finally {
+              setIsLoading(false);
+            }
+          };
+          fetchHistory();
+        }, [currentUser, block]);
+
+        const toggleQuestionExpansion = (questionId) => {
+          setExpandedQuestions(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(questionId)) {
+              newSet.delete(questionId);
+            } else {
+              newSet.add(questionId);
+            }
+            return newSet;
+          });
+        };
+
+        const getResultCellClass = (result) => {
+            if (result === 'A') return 'bg-brand-success/30 text-green-300';
+            if (result === 'F') return 'bg-brand-danger/30 text-red-300';
+            if (result === 'B') return 'bg-sky-500/30 text-sky-300';
+            return 'bg-brand-primary/50';
+        };
+        const getResultText = (result) => {
+            if (result === 'A') return t('stats_modal_correct');
+            if (result === 'F') return t('stats_modal_incorrect');
+            if (result === 'B') return t('stats_modal_blank');
+            return '-';
+        };
+
+        return (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-50 animate-fade-in pt-10" onClick={onClose}>
+                <div className="bg-brand-secondary rounded-xl shadow-2xl w-full max-w-6xl m-4 border border-brand-tertiary flex flex-col" onClick={e => e.stopPropagation()}>
+                    <div className="p-5 border-b border-brand-tertiary flex justify-between items-center">
+                        <h4 className="text-xl font-bold text-brand-light">{t('stats_modal_title', {blockName: block.nombreCorto})}</h4>
+                        <button onClick={onClose} className="p-1 rounded-full text-brand-accent hover:bg-brand-tertiary"><XMarkIcon className="h-6 w-6" /></button>
+                    </div>
+                    <div className="p-5 flex-grow overflow-auto max-h-[80vh]">
+                        {isLoading && <div className="text-center py-10">{t('loading')}</div>}
+                        {error && <div className="text-center py-10 text-brand-danger">{error}</div>}
+                        {!isLoading && !error && (
+                          history.length > 0 ? (
+                            <div className="overflow-x-auto">
+                              <table className="w-full min-w-max text-sm text-left">
+                                <thead className="text-xs text-brand-light uppercase bg-brand-primary/50 sticky top-0">
+                                  <tr>
+                                    <th scope="col" className="px-4 py-3">{t('stats_modal_question')}</th>
+                                    {Array.from({length: 20}).map((_, i) => <th key={i} scope="col" className="w-8 text-center py-3">{i + 1}</th>)}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {history.map(q => (
+                                    <React.Fragment key={q.id}>
+                                      <tr className="bg-brand-secondary border-b border-brand-tertiary hover:bg-brand-tertiary/20">
+                                        <td className="px-4 py-2 font-medium text-brand-light whitespace-nowrap">
+                                            <button onClick={() => toggleQuestionExpansion(q.id)} className="flex items-center gap-2">
+                                                <span className={`transition-transform transform ${expandedQuestions.has(q.id) ? 'rotate-90' : ''}`}>&#9656;</span>
+                                                <span>{t('stats_modal_question')} {q.numero}</span>
+                                            </button>
+                                        </td>
+                                        {q.results.map((res, i) => (
+                                          <td key={i} className={`w-8 h-8 text-center font-mono text-xs font-bold ${getResultCellClass(res)}`}>{getResultText(res)}</td>
+                                        ))}
+                                      </tr>
+                                      {expandedQuestions.has(q.id) && (
+                                        <tr className="bg-brand-primary/20">
+                                            <td colSpan="21" className="p-3 text-sm text-brand-accent italic">{q.textoPregunta}</td>
+                                        </tr>
+                                      )}
+                                    </React.Fragment>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : <p className="text-center py-10 text-brand-accent">{t('stats_modal_no_history')}</p>
+                        )}
+                    </div>
+                    <div className="p-4 bg-brand-primary/50 flex justify-end gap-3 rounded-b-xl">
+                        <button onClick={onClose} className="py-2 px-4 rounded-lg bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold transition-colors">{t('stats_modal_close')}</button>
+                    </div>
+                </div>
+            </div>
+        );
+      };
+
+      const Header = () => {
+        const { language, setLanguage, t } = useLanguage();
+        const { currentUser, logout } = useUser();
+        const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+        const dropdownRef = useRef(null);
+
+        useEffect(() => {
+          const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+              setIsDropdownOpen(false);
+            }
+          };
+          document.addEventListener("mousedown", handleClickOutside);
+          return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+          };
+        }, [dropdownRef]);
+
+        return (
+          <header className="bg-brand-secondary shadow-lg">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between h-16">
+                <div className="flex items-center space-x-3">
+                  <img src="./Imagenes/Playtest.png" alt="Playtest Logo" className="h-16 w-16" />
+                  <h1 className="text-xl md:text-2xl font-bold tracking-wider text-brand-light">{t('header_title')} <span className="font-light text-brand-accent hidden sm:inline">{t('header_subtitle')}</span></h1>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="relative" ref={dropdownRef}>
+                    <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center gap-2 text-brand-accent hover:text-brand-light transition-colors p-2 rounded-md">
+                      <span className="font-semibold">{currentUser.nickname}</span>
+                      <UserCircleIcon className="h-6 w-6" />
+                    </button>
+                    {isDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-56 bg-brand-primary rounded-md shadow-lg z-20 ring-1 ring-black ring-opacity-5">
+                        <div className="py-1">
+                          <a href="#" onClick={(e) => { e.preventDefault(); /* Open Profile Modal */ setIsDropdownOpen(false); }} className="flex items-center gap-3 px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">{t('user_menu_profile')}</a>
+                          <a href="#" onClick={(e) => { e.preventDefault(); /* Open Password Modal */ setIsDropdownOpen(false); }} className="flex items-center gap-3 px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">{t('user_menu_password')}</a>
+                          <div className="border-t border-brand-tertiary my-1"></div>
+                          <a href="#" onClick={(e) => { e.preventDefault(); logout(); setIsDropdownOpen(false); }} className="flex items-center gap-3 px-4 py-2 text-sm text-brand-danger hover:bg-brand-danger/20">{t('user_menu_logout')}</a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </header>
+        );
+      };
+      
+      const App = () => {
+        const { t } = useLanguage();
+        const { currentUser } = useUser();
+        
+        const [blocks, setBlocks] = useState([]);
+        const [games, setGames] = useState([]);
+        const [challenges, setChallenges] = useState([]);
+        const [gameHistory, setGameHistory] = useState([]);
+        const [isLoading, setIsLoading] = useState(true);
+        const [error, setError] = useState(null);
+        const [isAddBlockModalOpen, setIsAddBlockModalOpen] = useState(false);
+        const [statModalBlock, setStatModalBlock] = useState(null);
+        const [allGlobalBlocks, setAllGlobalBlocks] = useState([]);
+        const [allUsers, setAllUsers] = useState([]);
+
+        const loadData = useCallback(async () => {
+          if (!currentUser) return;
+          try {
+            setError(null);
+            setIsLoading(true);
+            const [fetchedBlocks, fetchedGames, allBlocks, users, fetchedChallenges, history] = await Promise.all([ 
+              dataService.fetchBlocksForUser(currentUser.id), 
+              dataService.fetchGamesForUser(currentUser.id),
+              dataService.fetchAllBlocks(),
+              dataService.fetchAllUsers(),
+              dataService.fetchChallengesForUser(currentUser.id),
+              dataService.fetchGameHistory(currentUser.id),
+            ]);
+            setBlocks(fetchedBlocks);
+            setGames(fetchedGames);
+            setAllGlobalBlocks(allBlocks);
+            setAllUsers(users);
+            setChallenges(fetchedChallenges);
+            setGameHistory(history);
+          } catch (err) { setError(err instanceof Error ? `Failed to load data: ${err.message}` : 'An unknown error occurred.');
+          } finally { setIsLoading(false); }
+        }, [currentUser]);
+
+        useEffect(() => { 
+            loadData(); 
+        }, [loadData]);
+
+        const viewBlockQuestions = (blockId) => {
+            window.location.href = `block-questions.html?blockId=${blockId}&returnUrl=index.html&viewMode=readonly`;
+        };
+        
+        const onNavigateToGame = (game) => {
+            const isInProgress = (game.mode === 'Duelo' || game.mode === 'Trivial') && (game.gameState || game.turnState || (game.round && game.round > 0));
+
+            if (isInProgress) {
+                const targetPage = game.mode === 'Duelo' ? 'game-duel.html' : 'game-trivial.html';
+                window.location.href = `${targetPage}?gameId=${game.id}`;
+            } else {
+                window.location.href = `active-game.html?gameId=${game.id}`;
+            }
+        };
+
+        const handleCreateGame = async (gameConfig) => { 
+            try { 
+                const newGame = await dataService.createGameForUser(currentUser.id, currentUser.nickname, gameConfig);
+                await loadData();
+                onNavigateToGame(newGame);
+            } catch (err) { 
+                setError(err instanceof Error ? `Failed to create game: ${err.message}` : 'Unknown API error.'); 
+            } 
+        };
+        const handleSendChallenge = async (challengedUser, gameConfig) => {
+            try {
+                await dataService.createChallenge(currentUser, challengedUser, gameConfig);
+                await loadData(); // To refresh game list if needed
+            } catch (err) {
+                 setError(err instanceof Error ? `Failed to send challenge: ${err.message}` : 'Unknown API error.'); 
+            }
+        };
+
+        const handleDeleteGame = async (gameId) => { try { await dataService.deleteGameForUser(currentUser.id, gameId); await loadData(); } catch (err) { setError(err instanceof Error ? `Failed to delete game: ${err.message}` : 'Unknown API error.'); } };
+        const handleDeleteBlock = async (blockId) => { try { await dataService.deleteBlockForUser(currentUser.id, blockId); await loadData(); } catch (err) { setError(err instanceof Error ? `Failed to delete block: ${err.message}` : 'Unknown API error.'); } };
+        
+        const handleOpenAddBlockModal = () => setIsAddBlockModalOpen(true);
+        const handleCloseAddBlockModal = () => setIsAddBlockModalOpen(false);
+
+        const handleAddBlock = async (blockId) => {
+            try {
+                await dataService.addBlockToUser(currentUser.id, blockId);
+                await loadData();
+            } catch (err) {
+                setError(err instanceof Error ? `Failed to add block: ${err.message}` : 'Unknown API error.'); 
+            }
+        };
+
+        const handleAcceptChallenge = async (gameId) => {
+            try {
+                const acceptedGame = await dataService.acceptChallenge(currentUser.id, gameId);
+                await loadData();
+                onNavigateToGame(acceptedGame);
+            } catch (err) {
+                 setError(err instanceof Error ? `Failed to accept challenge: ${err.message}` : 'Unknown API error.');
+            }
+        };
+
+        const handleDeclineChallenge = async (gameId) => {
+             try {
+                await dataService.declineChallenge(currentUser.id, gameId);
+                await loadData();
+            } catch (err) {
+                 setError(err instanceof Error ? `Failed to decline challenge: ${err.message}` : 'Unknown API error.');
+            }
+        };
+
+        const createdBlocks = useMemo(() => allGlobalBlocks.filter(b => b.creatorId === currentUser.id), [allGlobalBlocks, currentUser.id]);
+
+        const renderContent = () => {
+          if (isLoading) { return ( <div className="flex justify-center items-center h-64"> <svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle> <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> </div> ); }
+          if (error) { return <div className="text-center text-brand-danger bg-red-500/10 p-4 rounded-lg">{t('error')}: {error}</div>; }
+          
+          if (currentUser.isAdmin) {
+             return <AdminPanel />;
+          }
+
+          return (
+              <UserDashboard
+                  blocks={blocks}
+                  createdBlocks={createdBlocks}
+                  games={games}
+                  challenges={challenges}
+                  gameHistory={gameHistory}
+                  onViewBlock={viewBlockQuestions}
+                  onNavigateToGame={onNavigateToGame}
+                  onCreateGame={handleCreateGame}
+                  onSendChallenge={handleSendChallenge}
+                  onDeleteGame={handleDeleteGame}
+                  onDeleteBlock={handleDeleteBlock}
+                  onOpenAddBlockModal={handleOpenAddBlockModal}
+                  onOpenStatsModal={setStatModalBlock}
+                  onAcceptChallenge={handleAcceptChallenge}
+                  onDeclineChallenge={handleDeclineChallenge}
+              />
+          );
+        }
+
+        return (
+          <div className="min-h-screen flex flex-col">
+            <Header />
+            <main className="flex-grow p-4 sm:p-6 lg:p-8">
+                {isAddBlockModalOpen && !currentUser.isAdmin && (
+                    <AvailableBlocksModal
+                        isOpen={isAddBlockModalOpen}
+                        onClose={handleCloseAddBlockModal}
+                        onAddBlock={handleAddBlock}
+                        allBlocks={allGlobalBlocks}
+                        userBlockIds={blocks.map(b => b.id)}
+                        allUsers={allUsers}
+                    />
+                )}
+                 {statModalBlock && !currentUser.isAdmin && (
+                    <StatisticsModal
+                        block={statModalBlock}
+                        onClose={() => setStatModalBlock(null)}
+                    />
+                )}
+                {renderContent()}
+            </main>
+            <footer className="text-center p-4 text-xs text-brand-accent"> <p>{t('footer_text')}</p> </footer>
+          </div>
+        );
+      };
+      
+      const AuthForm = ({ title, children, onSubmit, buttonText, error, isLoading, bottomText, onBottomLinkClick, bottomLinkText}) => (
+        <div className="w-full max-w-md bg-brand-secondary p-8 rounded-2xl shadow-2xl animate-fade-in">
+            <div className="text-center mb-8">
+            <img src="./Imagenes/Playtest.png" alt="Playtest Logo" className="h-16 w-16 mx-auto" />
+            <h2 className="mt-4 text-3xl font-bold text-brand-light">{title}</h2>
+            </div>
+            <form onSubmit={onSubmit} className="space-y-6">
+            {children}
+            {error && <p className="text-sm text-brand-danger text-center">{error}</p>}
+            <div>
+                <button type="submit" disabled={isLoading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-brand-cta hover:bg-brand-cta-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-cta-hover disabled:bg-brand-tertiary">
+                {isLoading ? <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> : buttonText}
+                </button>
+            </div>
+            </form>
+            <p className="mt-6 text-center text-sm text-brand-accent">
+            {bottomText}{' '}
+            <a href="#" onClick={(e) => { e.preventDefault(); onBottomLinkClick(); }} className="font-medium text-brand-cta hover:text-brand-cta-hover">{bottomLinkText}</a>
+            </p>
+        </div>
+      );
+
+      const AuthPage = ({ onLogin }) => {
+        const { t } = useLanguage();
+        const [isLoginView, setIsLoginView] = useState(true);
+        const [error, setError] = useState('');
+        const [isLoading, setIsLoading] = useState(false);
+
+        const [loginData, setLoginData] = useState({ nickname: '', password: '', remember: false });
+        const [registerData, setRegisterData] = useState({ firstName: '', lastName: '', nickname: '', email: '', password: '', confirmPassword: '', remember: false });
+
+        const handleLoginChange = (e) => { const { name, value, type, checked } = e.target; setLoginData(p => ({ ...p, [name]: type === 'checkbox' ? checked : value })); };
+        const handleRegisterChange = (e) => { const { name, value, type, checked } = e.target; setRegisterData(p => ({ ...p, [name]: type === 'checkbox' ? checked : value })); };
+        
+        const validateEmail = (email) => { if (!email) return true; return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); };
+        
+        const handleBottomLinkClick = () => {
+            setIsLoginView(!isLoginView);
+            setError('');
+        };
+
+        const handleLoginSubmit = async (e) => {
+          e.preventDefault(); setIsLoading(true); setError('');
+          try {
+            const user = await dataService.login(loginData.nickname, loginData.password);
+            if (user) {
+              onLogin(user, loginData.remember);
+            } else {
+              setError(t('auth_error_invalid_credentials'));
+            }
+          } catch (err) { setError(t('auth_error_generic'));
+          } finally { setIsLoading(false); }
+        };
+
+        const handleRegisterSubmit = async (e) => {
+          e.preventDefault(); setIsLoading(true); setError('');
+          if (registerData.password !== registerData.confirmPassword) { setError(t('auth_error_pass_mismatch')); setIsLoading(false); return; }
+          if (!validateEmail(registerData.email)) { setError(t('auth_email_invalid')); setIsLoading(false); return; }
+          
+          try {
+            const { confirmPassword, ...newUserPayload } = registerData;
+            const newUser = await dataService.registerUser(newUserPayload);
+            onLogin(newUser, registerData.remember);
+          } catch (err) { setError(err.message || t('auth_error_generic'));
+          } finally { setIsLoading(false); }
+        };
+
+        return (
+          <div className="min-h-screen flex items-center justify-center p-4">
+            {isLoginView ? (
+              <AuthForm 
+                title={t('auth_login_title')} 
+                onSubmit={handleLoginSubmit} 
+                buttonText={t('auth_login_button')} 
+                error={error}
+                isLoading={isLoading}
+                bottomText={t('auth_go_to_register')} 
+                bottomLinkText={t('auth_register_button')}
+                onBottomLinkClick={handleBottomLinkClick}
+              >
+                <input name="nickname" type="text" value={loginData.nickname} onChange={handleLoginChange} required placeholder={t('auth_nickname')} className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" />
+                <input name="password" type="password" value={loginData.password} onChange={handleLoginChange} required placeholder={t('auth_password')} className="w-full bg-brand-primary border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" />
+                <div className="flex items-center"><input id="remember" name="remember" type="checkbox" checked={loginData.remember} onChange={handleLoginChange} className="h-4 w-4 text-brand-cta border-brand-tertiary rounded focus:ring-brand-cta" /><label htmlFor="remember" className="ml-2 block text-sm text-brand-accent">{t('auth_remember_me')}</label></div>
+              </AuthForm>
+            ) : (
+              <AuthForm 
+                title={t('auth_register_title')} 
+                onSubmit={handleRegisterSubmit} 
+                buttonText={t('auth_register_button')} 
+                error={error}
+                isLoading={isLoading}
+                bottomText={t('auth_go_to_login')} 
+                bottomLinkText={t('auth_login_title')}
+                onBottomLinkClick={handleBottomLinkClick}
+              >
+                <div className="flex gap-4"><input name="firstName" type="text" value={registerData.firstName} onChange={handleRegisterChange} required placeholder={t('auth_first_name')} className="w-full bg-brand-primary border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" /><input name="lastName" type="text" value={registerData.lastName} onChange={handleRegisterChange} required placeholder={t('auth_last_name')} className="w-full bg-brand-primary border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" /></div>
+                <input name="nickname" type="text" value={registerData.nickname} onChange={handleRegisterChange} required placeholder={t('auth_nickname')} className="w-full bg-brand-primary border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" />
+                <input name="email" type="email" value={registerData.email} onChange={handleRegisterChange} placeholder={t('auth_email')} className="w-full bg-brand-primary border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" />
+                <input name="password" type="password" value={registerData.password} onChange={handleRegisterChange} required placeholder={t('auth_password')} className="w-full bg-brand-primary border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" />
+                <input name="confirmPassword" type="password" value={registerData.confirmPassword} onChange={handleRegisterChange} required placeholder={t('auth_confirm_password')} className="w-full bg-brand-primary border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" />
+                <div className="flex items-center"><input id="remember_reg" name="remember" type="checkbox" checked={registerData.remember} onChange={handleRegisterChange} className="h-4 w-4 text-brand-cta border-brand-tertiary rounded focus:ring-brand-cta" /><label htmlFor="remember_reg" className="ml-2 block text-sm text-brand-accent">{t('auth_remember_me')}</label></div>
+              </AuthForm>
+            )}
+          </div>
+        );
+      };
+
+      const AuthController = () => {
+        const [currentUser, setCurrentUser] = useState(null);
+        const [isLoading, setIsLoading] = useState(true);
+
+        useEffect(() => {
+          try {
+            const sessionString = localStorage.getItem('playtest_session');
+            if (sessionString) {
+              const session = JSON.parse(sessionString);
+              if (session && session.userId) {
+                const db = getDatabase();
+                const user = db.users.find(u => u.id === session.userId);
+                if (user) {
+                  setCurrentUser(user);
+                } else {
+                  // User in session not found in DB, clear session
+                  localStorage.removeItem('playtest_session');
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Failed to parse session from localStorage, clearing it.", e);
+            // Corrupted session data, clear it to be safe
+            localStorage.removeItem('playtest_session');
+          }
+          setIsLoading(false);
+        }, []);
+
+        const handleLogin = (user, remember) => {
+          setCurrentUser(user);
+          if (remember) {
+            localStorage.setItem('playtest_session', JSON.stringify({ userId: user.id }));
+          }
+        };
+
+        const handleLogout = () => {
+          setCurrentUser(null);
+          localStorage.removeItem('playtest_session');
+        };
+        
+        if (isLoading) {
+          return (
+             <div className="flex justify-center items-center h-screen"> <svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle> <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> </div>
+          )
+        }
+        
+        return (
+          <UserContext.Provider value={{ currentUser, logout: handleLogout }}>
+            {currentUser ? <App /> : <AuthPage onLogin={handleLogin} />}
+          </UserContext.Provider>
+        );
+      }
+
+      // --- INLINED: index.tsx (App Entry Point) ---
+      
+      const rootElement = document.getElementById('root');
+      if (!rootElement) {
+        throw new Error("Could not find root element to mount to");
+      }
+
+      const root = ReactDOM.createRoot(rootElement);
+      root.render(
+        <React.StrictMode>
+          <LanguageProvider>
+            <AuthController />
+          </LanguageProvider>
+        </React.StrictMode>
+      );
+
+    </script>
+    <noscript>This application requires JavaScript to run.</noscript>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

@@ -1,0 +1,961 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>PLAYTEST Admin - Add Questions</title>
+
+    <!-- Embedded Global Stylesheet -->
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      }
+      .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: #1B263B; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb { background: #415A77; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: #778DA9; }
+      * { scrollbar-width: thin; scrollbar-color: #415A77 #1B263B; }
+      input[type='range'] { -webkit-appearance: none; appearance: none; background-color: transparent; cursor: pointer; width: 100%; }
+      input[type='range']::-webkit-slider-runnable-track { height: 0.5rem; background: #415A77; border-radius: 0.5rem; }
+      input[type='range']::-moz-range-track { height: 0.5rem; background: #415A77; border-radius: 0.5rem; }
+      input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; margin-top: -6px; background-color: #3b82f6; height: 20px; width: 20px; border-radius: 50%; }
+      input[type='range']::-moz-range-thumb { border: none; background-color: #3b82f6; height: 20px; width: 20px; border-radius: 50%; }
+    </style>
+
+    <!-- Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-primary': '#0D1B2A',
+              'brand-secondary': '#1B263B',
+              'brand-tertiary': '#415A77',
+              'brand-accent': '#778DA9',
+              'brand-light': '#E0E1DD',
+              'brand-cta': '#3B82F6',
+              'brand-cta-hover': '#2563EB',
+              'brand-success': '#10B981',
+              'brand-danger': '#EF4444',
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Import Map to resolve bare module specifiers for React -->
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+    "react/": "https://esm.sh/react@18.2.0/",
+    "@google/genai": "https://esm.sh/@google/genai"
+  }
+}
+</script>
+  </head>
+  <body class="bg-brand-primary text-brand-light">
+    <div id="root"></div>
+
+    <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Main application script -->
+    <script type="text/babel" data-type="module">
+      // Polyfill 'process' for browser environment.
+      globalThis.process = globalThis.process || { env: {} };
+
+      import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
+      import ReactDOM from 'react-dom/client';
+      import { GoogleGenAI, Type } from "@google/genai";
+
+      const UserContext = createContext();
+      const useUser = () => useContext(UserContext);
+
+      // --- INLINED: i18n ---
+      const translations = {
+        es: {
+          header_title: 'Aplicación PLAYTEST', header_subtitle: 'La forma más divertida de estudiar', language: 'Idioma', english: 'Inglés', spanish: 'Español',
+          add_question_page_title: 'Añadir Preguntas', add_question_tab_generator: 'Generar con IA', add_question_tab_uploader: 'Subir Fichero', add_question_tab_manual: 'Agregar Manualmente',
+          all_blocks_return: 'Volver',
+          generator_title: 'Generador de Preguntas', generator_powered_by: 'Hecho con Gemini', generator_api_key: 'API Key de Gemini', generator_api_key_placeholder: 'Introduce tu API Key aquí', generator_block: 'Bloque', generator_block_placeholder: 'Escribe un bloque nuevo o elige uno existente', generator_topic: 'Tema', generator_topic_placeholder: 'Elige o crea un tema nuevo', generator_questions: 'Preguntas', generator_difficulty: 'Dificultad', generator_button_generate: 'Generar Preguntas', generator_button_generating: 'Generando...', generator_error_no_api_key: 'Generador de preguntas con AI sin habilitar. Introducir una API Key.', generator_error_fields_missing: 'Por favor, introduce un nombre de bloque y de tema.', generator_generated_questions: 'Preguntas Generadas:', generator_explanation: 'Explicación:', generator_button_save: 'Guardar Preguntas', generator_save_success_updated: '¡Se han guardado {count} preguntas en "{block}"!', generator_save_success_created: '¡Se ha creado "{block}" y guardado {count} preguntas!', generator_save_error: 'Ha ocurrido un error inesperado al guardar.', generator_syllabus_upload: 'Subir Temario (Opcional)', generator_syllabus_upload_button: 'Seleccionar Archivo', generator_syllabus_clear: 'Quitar', generator_difficulty_range: 'Rango de Dificultad (Opcional)',
+          uploader_title: 'Subir Preguntas desde Fichero', uploader_file_label: 'Subir Fichero (.txt)', uploader_file_prompt_1: 'Sube un fichero', uploader_file_prompt_2: 'o arrástralo aquí', uploader_file_selected: 'Seleccionado: {fileName}', uploader_file_type: 'Solo ficheros TXT', uploader_format_guide: 'Guía de Formato de Fichero', uploader_format_line_1: 'Separa la pregunta y las respuestas con', uploader_format_line_2: 'Marca la respuesta correcta con', uploader_format_line_3: 'La explicación es una línea opcional justo después de la pregunta.', uploader_example: 'Ejemplo:', uploader_button_load: 'Cargar Preguntas para Revisar', uploader_button_load_selected: 'Cargar {count} archivo(s) para revisar', uploader_parsing: 'Analizando...', uploader_status_loaded: 'Se han cargado {count} preguntas para revisar.', uploader_status_no_questions: 'No se han encontrado preguntas válidas en el fichero. Por favor, comprueba el formato.', uploader_status_read_error: 'Error al leer el fichero.', uploader_status_parse_error: 'Ha ocurrido un error desconocido durante el análisis.', uploader_status_generic_error: 'Por favor, introduce un tema y selecciona un fichero.', uploader_review_title: 'Revisar y Editar Preguntas Subidas ({count})', uploader_question_text: 'Texto de la Pregunta', uploader_answers: 'Respuestas', uploader_button_cancel: 'Cancelar', uploader_button_save_edit: 'Guardar Edición', uploader_button_edit: 'Editar', uploader_button_clear: 'Limpiar y Reiniciar', uploader_button_save_all: 'Guardar Todas las Preguntas', uploader_saving: 'Guardando...', uploader_button_exclude: 'No incluir',
+          uploader_batch_title: "Subida Múltiple desde Carpeta", uploader_batch_explanation: "Selecciona una carpeta que contenga ficheros .txt con el formato <strong>NombreBloque_NombreTema.txt</strong>. Cada fichero será procesado de forma secuencial.", uploader_batch_button_select: "Seleccionar Carpeta", uploader_batch_button_processing: "Procesando Lote...", uploader_batch_status_progress: "Procesando fichero {current} de {total}: {fileName}", uploader_batch_status_complete: "¡Proceso de subida por lote completado!", uploader_batch_status_no_files: "No se encontraron ficheros válidos en la carpeta. El formato debe ser 'Bloque_Tema.txt'.", uploader_batch_status_skip_no_save: "No hay preguntas para guardar, saltando al siguiente fichero.", uploader_button_skip: "Descartar Archivo", uploader_separator: "O sube un único fichero", uploader_batch_detected_files: 'Archivos Detectados en la Carpeta', uploader_batch_finish: 'Finalizar Subida Múltiple',
+          manual_form_title: 'Nueva Pregunta Manual', manual_form_add_answer: 'Añadir Respuesta', manual_form_question_text: 'Texto de la Pregunta', manual_form_answers: 'Respuestas (marca la correcta)', manual_form_explanation: 'Explicación (opcional)', manual_form_add_button: 'Añadir Pregunta', manual_form_discard_button: 'Descartar', manual_form_save_success: '¡Pregunta añadida correctamente!', manual_form_error: 'Error al guardar la pregunta.', manual_form_fields_missing: 'Por favor, rellena el bloque, tema, la pregunta y al menos dos respuestas con una correcta.',
+          generic_cancel: 'Cancelar', delete: 'Eliminar', error: 'Error', loading: 'Cargando...',
+          footer_text: '© 2024 PLAYTEST. Todos los derechos reservados.',
+          block_type: 'Tipo de Bloque', block_public: 'Público', block_private: 'Privado',
+        },
+        en: {
+          header_title: 'PLAYTEST App', header_subtitle: 'The most fun way to study', language: 'Language', english: 'English', spanish: 'Spanish',
+          add_question_page_title: 'Add Questions', add_question_tab_generator: 'Generate with AI', add_question_tab_uploader: 'Upload File', add_question_tab_manual: 'Add Manually',
+          all_blocks_return: 'Return',
+          generator_title: 'Question Generator', generator_powered_by: 'Powered by Gemini', generator_api_key: 'Gemini API Key', generator_api_key_placeholder: 'Enter your API Key here', generator_block: 'Block', generator_block_placeholder: 'Type new or select existing block', generator_topic: 'Topic', generator_topic_placeholder: 'Select or create new topic', generator_questions: 'Questions', generator_difficulty: 'Difficulty', generator_button_generate: 'Generate Questions', generator_button_generating: 'Generating...', generator_error_no_api_key: 'AI question generator not enabled. Please enter an API Key.', generator_error_fields_missing: 'Please provide both a block and a topic name.', generator_generated_questions: 'Generated Questions:', generator_explanation: 'Explanation:', generator_button_save: 'Save Questions', generator_save_success_updated: 'Successfully saved {count} questions to "{block}"!', generator_save_success_created: 'Successfully created "{block}" and saved {count} questions!', generator_save_error: 'An unexpected error occurred while saving.', generator_syllabus_upload: 'Upload Syllabus (Optional)', generator_syllabus_upload_button: 'Select File', generator_syllabus_clear: 'Clear', generator_difficulty_range: 'Difficulty Range (Optional)',
+          uploader_title: 'Upload Questions from File', uploader_file_label: 'Upload File (.txt)', uploader_file_prompt_1: 'Upload a file', uploader_file_prompt_2: 'or drag and drop', uploader_file_selected: 'Selected: {fileName}', uploader_file_type: 'TXT file only', uploader_format_guide: 'File Format Guide', uploader_format_line_1: 'Separate question and answers with', uploader_format_line_2: 'Mark the correct answer with', uploader_format_line_3: 'The explanation is an optional line immediately after the question.', uploader_example: 'Example:', uploader_button_load: 'Load Questions for Review', uploader_button_load_selected: 'Load {count} selected file(s) for review', uploader_parsing: 'Parsing...', uploader_status_loaded: 'Loaded {count} questions for review.', uploader_status_no_questions: 'No valid questions found in the file. Please check the format.', uploader_status_read_error: 'Failed to read the file.', uploader_status_parse_error: 'An unknown error occurred during parsing.', uploader_status_generic_error: 'Please provide a topic and select a file.', uploader_review_title: 'Review & Edit Uploaded Questions ({count})', uploader_question_text: 'Question Text', uploader_answers: 'Answers', uploader_button_cancel: 'Cancel', uploader_button_save_edit: 'Save Edit', uploader_button_edit: 'Edit', uploader_button_clear: 'Clear & Reset', uploader_button_save_all: 'Save All Questions', uploader_saving: 'Saving...', uploader_button_exclude: 'Do not include',
+          uploader_batch_title: "Batch Upload from Folder", uploader_batch_explanation: "Select a folder containing .txt files named in the format <strong>BlockName_TopicName.txt</strong>. Each file will be processed sequentially.", uploader_batch_button_select: "Select Folder", uploader_batch_button_processing: "Processing Batch...", uploader_batch_status_progress: "Processing file {current} of {total}: {fileName}", uploader_batch_status_complete: "Batch upload process complete!", uploader_batch_status_no_files: "No valid files found in the folder. Name format must be 'Block_Topic.txt'.", uploader_batch_status_skip_no_save: "No questions to save, skipping to next file.", uploader_button_skip: "Discard File", uploader_separator: "Or upload a single file", uploader_batch_detected_files: 'Detected Files in Folder', uploader_batch_finish: 'Finish Batch Upload',
+          manual_form_title: 'New Manual Question', manual_form_add_answer: 'Add Answer', manual_form_question_text: 'Question Text', manual_form_answers: 'Answers (check the correct one)', manual_form_explanation: 'Explanation (optional)', manual_form_add_button: 'Add Question', manual_form_discard_button: 'Discard', manual_form_save_success: 'Question added successfully!', manual_form_error: 'Error saving question.', manual_form_fields_missing: 'Please fill out the block, topic, question, and at least two answers with one correct.',
+          generic_cancel: 'Cancel', delete: 'Delete', error: 'Error', loading: 'Loading...',
+          footer_text: '© 2024 PLAYTEST. All rights reserved.',
+          block_type: 'Tipo de Bloque', block_public: 'Public', block_private: 'Private',
+        }
+      };
+
+      const LanguageContext = createContext();
+
+      const LanguageProvider = ({ children }) => {
+        const [language, setLanguage] = useState(() => localStorage.getItem('playtest_lang') || 'es');
+        useEffect(() => { localStorage.setItem('playtest_lang', language); }, [language]);
+        const t = useCallback((key, replacements = {}) => {
+            let translation = translations[language][key] || translations['en'][key] || key;
+            Object.keys(replacements).forEach(placeholder => {
+                translation = translation.replace(`{${placeholder}}`, replacements[placeholder]);
+            });
+            return translation;
+        }, [language]);
+        return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>;
+      };
+      const useLanguage = () => useContext(LanguageContext);
+      
+      // --- INLINED: types.ts ---
+      const BlockType = { GENERAL: 'TEMARIO GENERAL', COMPLETE: 'TEMARIO COMPLETO', EXTERNAL: 'EXTERNO' };
+      
+      // --- INLINED: components/icons.tsx ---
+      const SparklesIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /> </svg> );
+      const BrainSalutingIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}> <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.5 14.5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3-4c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm2.5-1.5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm1-5.5H11v-1h3.5c.83 0 1.5.67 1.5 1.5v1zM9.5 11c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/> </svg> );
+      const CheckCircleIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" {...props}> <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /> </svg> );
+      const XCircleIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" {...props}> <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /> </svg> );
+      const PlusCircleIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /> </svg> );
+      const ArrowLeftIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /> </svg> );
+      const PencilIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /> </svg> );
+      const TrashIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /> </svg> );
+      const SaveIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /> </svg> );
+      const ChevronUpDownIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" /> </svg> );
+      const ArrowUpTrayIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /> </svg> );
+      const XMarkIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /> </svg> );
+      const DocumentTextIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /> </svg> );
+      const PencilSquareIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 19.82a2.25 2.25 0 01-1.897 1.13-2.25 2.25 0 01-2.475-1.332l-.285-.945a2.25 2.25 0 01.945-2.688l8.25-4.95z" /> <path strokeLinecap="round" strokeLinejoin="round" d="M15 5.25l2.25 2.25" /> </svg> );
+
+
+      // --- INLINED: data/dataService.ts ---
+      const DB_KEY = 'playtest_db_v3';
+      const getDatabase = () => JSON.parse(localStorage.getItem(DB_KEY) || '{}');
+      const saveDatabase = (db) => localStorage.setItem(DB_KEY, JSON.stringify(db));
+      const simulateDelay = (data, delay = 50) => new Promise(resolve => setTimeout(() => resolve(JSON.parse(JSON.stringify(data))), delay));
+      const getNextQuestionId = (allQuestions) => {
+          if (allQuestions.length === 0) return 1;
+          return Math.max(...allQuestions.map(q => q.id || 0)) + 1;
+      };
+      const fetchBlocks = async () => {
+          const db = getDatabase();
+          const blocksWithQuestions = (db.globalBlocks || []).map(block => {
+              const blockQuestions = (db.globalQuestions || []).filter(q => q.bloqueId === block.id);
+              return { ...block, totalPreguntas: blockQuestions.length, questions: blockQuestions };
+          }).sort((a, b) => a.nombreCorto.localeCompare(b.nombreCorto));
+          return simulateDelay(blocksWithQuestions);
+      };
+      const createBlockWithQuestions = async (blockName, questions, isPublic = true) => {
+          const db = getDatabase();
+          const sessionString = localStorage.getItem('playtest_session');
+          const session = sessionString ? JSON.parse(sessionString) : null;
+          if (!session || !session.userId) throw new Error("User not authenticated");
+          const creatorId = session.userId;
+          
+          const newBlockId = `b${Date.now()}`;
+          const newBlock = { 
+              id: newBlockId, 
+              nombreCorto: blockName, 
+              nombreLargo: `${blockName} (Custom)`, 
+              tipoBloque: BlockType.EXTERNAL, 
+              urlImagenBloque: `https://picsum.photos/seed/${encodeURIComponent(blockName)}/400/200`,
+              creatorId: creatorId,
+              isPublic: isPublic,
+           };
+          db.globalBlocks.push(newBlock);
+          if (questions && questions.length > 0) {
+              let nextId = getNextQuestionId(db.globalQuestions);
+              const newQuestions = questions.map((q, index) => ({ ...q, id: nextId++, bloqueId: newBlockId, numero: index + 1 }));
+              db.globalQuestions.push(...newQuestions);
+          }
+
+          // Auto-add block to creator's profile
+          if (db.userProfiles && db.userProfiles[creatorId]) {
+              if (!db.userProfiles[creatorId].loadedBlockIds) {
+                  db.userProfiles[creatorId].loadedBlockIds = [];
+              }
+              if (!db.userProfiles[creatorId].loadedBlockIds.includes(newBlockId)) {
+                  db.userProfiles[creatorId].loadedBlockIds.push(newBlockId);
+              }
+          }
+
+          saveDatabase(db);
+          const createdBlock = { ...newBlock, totalPreguntas: questions.length, questions: questions };
+          return simulateDelay(createdBlock);
+      };
+      const saveQuestionsToBlock = async (blockId, questions) => {
+          const db = getDatabase();
+          if (!db.globalBlocks.some(b => b.id === blockId)) throw new Error('Block not found');
+          const existingQuestionsForBlock = db.globalQuestions.filter(q => q.bloqueId === blockId);
+          const maxNumero = existingQuestionsForBlock.reduce((max, q) => Math.max(max, q.numero || 0), 0);
+          let nextId = getNextQuestionId(db.globalQuestions);
+          const newQuestions = questions.map((q, index) => ({ ...q, id: nextId++, bloqueId: blockId, numero: maxNumero + index + 1 }));
+          db.globalQuestions.push(...newQuestions);
+          saveDatabase(db);
+          return simulateDelay({ message: 'Questions added successfully.' });
+      };
+       const generateQuestionsWithAI = async (
+        block, topic, count, numOptions, difficulty, apiKey, noApiKeyErrorText,
+        syllabusContent = '', difficultyRange = new Set()
+      ) => {
+        if (!apiKey) {
+            throw new Error(noApiKeyErrorText || "AI feature is unavailable. The administrator has not configured the API Key.");
+        }
+        const ai = new GoogleGenAI({ apiKey });
+        const responseSchema = { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { textoPregunta: { type: Type.STRING }, respuestas: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { textoRespuesta: { type: Type.STRING }, esCorrecta: { type: Type.BOOLEAN } }, required: ["textoRespuesta", "esCorrecta"] } }, explicacionRespuesta: { type: Type.STRING }, dificultad: { type: Type.INTEGER }, tema: { type: Type.STRING } }, required: ["textoPregunta", "respuestas", "explicacionRespuesta", "dificultad", "tema"] } };
+        const difficultyInstruction = difficultyRange.size > 0 ? `La dificultad de las preguntas debe variar entre los siguientes niveles: ${Array.from(difficultyRange).join(', ')} (escala 1-5).` : `La dificultad deseada para estas preguntas es ${difficulty} en una escala de 1 a 5 (1=muy fácil, 5=nivel experto).`;
+        const prompt = `Eres un experto en la creación de preguntas de examen de alta calidad para oposiciones en España. Tu tarea es generar ${count} preguntas de opción múltiple sobre el tema: "${topic}", que forma parte del bloque: "${block}".${syllabusContent ? `\nUtiliza el siguiente texto como base:\n---\n${syllabusContent}\n---\n` : ''}Instrucciones: 1. ${difficultyInstruction} 2. Cada pregunta debe tener ${numOptions} respuestas. 3. Exactamente una respuesta debe ser correcta. 4. Proporciona una explicación para la respuesta correcta. 5. El campo 'tema' debe ser "${topic}". 6. Asegúrate de que todo el texto esté en español.`;
+        try {
+          const response = await ai.models.generateContent({ model: "gemini-2.5-flash", contents: prompt, config: { responseMimeType: "application/json", responseSchema, temperature: 0.7 } });
+          const jsonResponse = JSON.parse(response.text.trim());
+          if (!Array.isArray(jsonResponse)) throw new Error("AI response is not an array.");
+          return jsonResponse.map((q, index) => ({ ...q, id: Date.now() + index, numero: index + 1 }));
+        } catch (error) { console.error("Error generating questions with AI:", error); if (error.message.includes("API key not valid")) throw new Error("Generador de preguntas con AI sin habilitar. Introducir una API Key válida."); throw new Error("Failed to generate AI questions."); }
+      };
+
+      // --- INLINED: components ---
+
+      const Combobox = ({ options, value, onChange, placeholder, disabled }) => {
+          const [isOpen, setIsOpen] = useState(false);
+          const containerRef = useRef(null);
+          const filteredOptions = value ? options.filter(option => option.label.toLowerCase().includes(value.toLowerCase())) : options;
+          useEffect(() => { const handleClickOutside = (e) => { if (containerRef.current && !containerRef.current.contains(e.target)) setIsOpen(false); }; document.addEventListener('mousedown', handleClickOutside); return () => document.removeEventListener('mousedown', handleClickOutside); }, []);
+          return ( <div className="relative" ref={containerRef}> <div className="relative"> <input type="text" value={value} onChange={(e) => { onChange(e.target.value); if (!isOpen) setIsOpen(true); }} onFocus={() => setIsOpen(true)} className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none pr-10" placeholder={placeholder} disabled={disabled} aria-haspopup="listbox" aria-expanded={isOpen} /> <button type="button" className="absolute inset-y-0 right-0 flex items-center px-2 text-brand-accent rounded-r-lg focus:outline-none" onClick={() => setIsOpen(!isOpen)} disabled={disabled} aria-label="Toggle options"> <ChevronUpDownIcon className="h-5 w-5" aria-hidden="true" /> </button> </div> {isOpen && ( <ul className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-brand-secondary py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" role="listbox"> {filteredOptions.length > 0 ? ( filteredOptions.map(option => ( <li key={option.id} className="relative cursor-pointer select-none py-2 px-4 text-brand-light hover:bg-brand-tertiary" onClick={() => { onChange(option.label); setIsOpen(false); }} role="option" aria-selected={value === option.label}> {option.label} </li> )) ) : ( <li className="relative cursor-default select-none py-2 px-4 text-brand-accent">{value ? "No blocks found. Type to create new." : "Type to search or create new."}</li> )} </ul> )} </div> );
+      };
+      
+      const QuestionGenerator = ({ currentUser, blocks, onSaveQuestions, onCreateBlock, preselectedBlock, preselectedTopic }) => {
+        const { t } = useLanguage();
+        const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
+        const [blockName, setBlockName] = useState('');
+        const [topicName, setTopicName] = useState('');
+        const [availableTopics, setAvailableTopics] = useState([]);
+        const [questionCount, setQuestionCount] = useState(5);
+        const [optionCount, setOptionCount] = useState(4);
+        const [difficulty, setDifficulty] = useState(3);
+        const [difficultyRange, setDifficultyRange] = useState(new Set());
+        const [syllabusContent, setSyllabusContent] = useState('');
+        const [syllabusFileName, setSyllabusFileName] = useState('');
+        const [generatedQuestions, setGeneratedQuestions] = useState([]);
+        const [isLoading, setIsLoading] = useState(false);
+        const [error, setError] = useState(null);
+        const [saveStatus, setSaveStatus] = useState('idle');
+        const [saveMessage, setSaveMessage] = useState('');
+        const [isPublic, setIsPublic] = useState(true);
+        const syllabusInputRef = useRef(null);
+        
+        const isNewBlock = useMemo(() => 
+            blockName.trim() && !blocks.some(b => b.nombreCorto.toLowerCase() === blockName.trim().toLowerCase() && b.creatorId === currentUser.id),
+            [blockName, blocks, currentUser.id]
+        );
+
+        useEffect(() => {
+            if (preselectedBlock) setBlockName(preselectedBlock);
+            if (preselectedTopic) setTopicName(preselectedTopic);
+        }, [preselectedBlock, preselectedTopic]);
+
+        useEffect(() => { localStorage.setItem('gemini_api_key', apiKey); }, [apiKey]);
+
+        useEffect(() => {
+          const selectedBlock = blocks.find(b => b.nombreCorto.toLowerCase() === blockName.toLowerCase());
+          if (selectedBlock && selectedBlock.questions && selectedBlock.questions.length > 0) {
+              const uniqueTopics = [...new Set(selectedBlock.questions.map(q => q.tema))];
+              setAvailableTopics(uniqueTopics.map(t => ({ id: t, label: t })));
+          } else { setAvailableTopics([]); }
+          if (!preselectedTopic) setTopicName('');
+        }, [blockName, blocks, preselectedTopic]);
+
+        const handleGenerate = useCallback(async () => {
+          if (!blockName.trim() || !topicName.trim()) { setError(t('generator_error_fields_missing')); return; }
+          setIsLoading(true); setError(null); setGeneratedQuestions([]);
+          try {
+            const questions = await generateQuestionsWithAI(blockName, topicName, questionCount, optionCount, difficulty, apiKey, t('generator_error_no_api_key'), syllabusContent, difficultyRange);
+            setGeneratedQuestions(questions);
+          } catch (err) { setError(err instanceof Error ? err.message : 'An unknown error occurred.');
+          } finally { setIsLoading(false); }
+        }, [blockName, topicName, questionCount, optionCount, difficulty, apiKey, t, syllabusContent, difficultyRange]);
+        
+        const resetGenerator = useCallback(() => {
+            setBlockName(preselectedBlock || ''); setTopicName(preselectedTopic || ''); setQuestionCount(5); setDifficulty(3);
+            setSyllabusContent(''); setSyllabusFileName(''); if (syllabusInputRef.current) syllabusInputRef.current.value = '';
+            setDifficultyRange(new Set());
+        }, [preselectedBlock, preselectedTopic]);
+
+        const handleSave = useCallback(() => {
+          try {
+              const trimmedBlockName = blockName.trim();
+              if (!trimmedBlockName) { setSaveStatus('error'); setSaveMessage('Block name cannot be empty.'); setTimeout(() => setSaveStatus('idle'), 3000); return; }
+              const existingBlock = blocks.find(b => b.nombreCorto.toLowerCase() === trimmedBlockName.toLowerCase() && b.creatorId === currentUser.id);
+              if (existingBlock) {
+                  onSaveQuestions(existingBlock.id, generatedQuestions);
+                  setSaveStatus('success'); setSaveMessage(t('generator_save_success_updated', {count: generatedQuestions.length, block: existingBlock.nombreCorto}));
+              } else {
+                  onCreateBlock(trimmedBlockName, generatedQuestions, isPublic);
+                  setSaveStatus('success'); setSaveMessage(t('generator_save_success_created', {count: generatedQuestions.length, block: trimmedBlockName}));
+              }
+              setTimeout(() => { setGeneratedQuestions([]); resetGenerator(); setSaveStatus('idle'); }, 2500);
+          } catch (err) { setSaveStatus('error'); setSaveMessage(t('generator_save_error')); setTimeout(() => setSaveStatus('idle'), 3000); }
+        }, [blockName, generatedQuestions, blocks, onSaveQuestions, onCreateBlock, t, resetGenerator, isPublic, currentUser.id]);
+
+        useEffect(() => { setSaveStatus('idle'); setSaveMessage(''); setError(null); }, [generatedQuestions]);
+        
+        const handleSyllabusFileChange = (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (e) => { setSyllabusContent(e.target.result); setSyllabusFileName(file.name); }; reader.readAsText(file); };
+        const clearSyllabus = () => { setSyllabusContent(''); setSyllabusFileName(''); if (syllabusInputRef.current) syllabusInputRef.current.value = ''; };
+        const handleDifficultyRangeChange = (value) => { setDifficultyRange(prev => { const newSet = new Set(prev); if (newSet.has(value)) newSet.delete(value); else newSet.add(value); return newSet; }); };
+
+        const blockOptions = blocks.map(b => ({ id: b.id, label: b.nombreCorto }));
+        const isUIBlocked = isLoading || generatedQuestions.length > 0;
+
+        return (
+          <div className="bg-brand-secondary p-6 rounded-xl shadow-lg">
+            <div className="flex items-center mb-4 gap-4"> <div className="flex items-center"> <SparklesIcon className="h-6 w-6 mr-3 text-brand-accent" /> <h3 className="text-xl font-bold text-brand-light">{t('generator_title')}</h3> </div> <span className="text-xs font-semibold text-brand-accent bg-brand-primary px-2 py-1 rounded-md">{t('generator_powered_by')}</span> </div>
+            <div className="space-y-4">
+              <div> <label htmlFor="api_key" className="block text-sm font-medium text-brand-accent mb-1">{t('generator_api_key')}</label> <input type="password" id="api_key" value={apiKey} onChange={(e) => setApiKey(e.target.value)} className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" placeholder={t('generator_api_key_placeholder')} disabled={isUIBlocked} /> </div>
+              <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_syllabus_upload')}</label> <div className="flex items-center gap-2"> <label htmlFor="syllabus-upload" className={`flex-grow inline-flex items-center justify-center gap-2 bg-brand-tertiary text-white font-bold py-2 px-4 rounded-lg transition-colors ${isUIBlocked ? 'cursor-not-allowed opacity-50' : 'hover:bg-brand-accent cursor-pointer'}`}> <DocumentTextIcon className="h-5 w-5" /> {syllabusFileName || t('generator_syllabus_upload_button')} </label> <input ref={syllabusInputRef} id="syllabus-upload" type="file" className="sr-only" accept=".txt" onChange={handleSyllabusFileChange} disabled={isUIBlocked} /> {syllabusFileName && ( <button onClick={clearSyllabus} className="text-sm font-semibold bg-brand-danger/80 hover:bg-brand-danger text-white py-2 px-3 rounded-md transition-colors" disabled={isUIBlocked}> {t('generator_syllabus_clear')} </button> )} </div> </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_block')}</label> <Combobox options={blockOptions} value={blockName} onChange={setBlockName} placeholder={t('generator_block_placeholder')} disabled={isUIBlocked} /> </div>
+                <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_topic')}</label> <Combobox options={availableTopics} value={topicName} onChange={setTopicName} placeholder={t('generator_topic_placeholder')} disabled={!blockName.trim() || isUIBlocked} /> </div>
+              </div>
+              {isNewBlock && currentUser && !currentUser.isAdmin && (
+                <div className="bg-brand-primary p-3 rounded-lg flex items-center gap-4">
+                    <label className="text-sm font-medium text-brand-accent">{t('block_type')}:</label>
+                    <div className="flex items-center gap-4 text-brand-light">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="block-visibility-gen" checked={isPublic} onChange={() => setIsPublic(true)} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
+                            {t('block_public')}
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="block-visibility-gen" checked={!isPublic} onChange={() => setIsPublic(false)} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
+                            {t('block_private')}
+                        </label>
+                    </div>
+                </div>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                <div> <label htmlFor="q_count" className="block text-sm font-medium text-brand-accent mb-1">{t('generator_questions')}</label> <input type="number" id="q_count" value={questionCount} onChange={(e) => setQuestionCount(Math.max(1, parseInt(e.target.value, 10) || 1))} className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" disabled={isUIBlocked} /> </div>
+                <div> <label htmlFor="difficulty" className="block text-sm font-medium text-brand-accent mb-1">{t('generator_difficulty')} ({difficulty}/5)</label> <input type="range" id="difficulty" min="1" max="5" value={difficulty} onChange={(e) => setDifficulty(parseInt(e.target.value, 10))} className="w-full" disabled={isUIBlocked || difficultyRange.size > 0} /> </div>
+              </div>
+              <div> <label className="block text-sm font-medium text-brand-accent mb-2">{t('generator_difficulty_range')}</label> <div className="flex items-center justify-around bg-brand-primary p-2 rounded-lg"> {[1, 2, 3, 4, 5].map(level => ( <label key={level} className="flex items-center gap-2 cursor-pointer text-brand-light"> <input type="checkbox" checked={difficultyRange.has(level)} onChange={() => handleDifficultyRangeChange(level)} disabled={isUIBlocked} className="h-4 w-4 rounded border-brand-tertiary text-brand-cta bg-brand-secondary focus:ring-brand-cta"/> {level} </label> ))} </div> </div>
+              <button onClick={handleGenerate} disabled={!blockName.trim() || !topicName.trim() || isUIBlocked} className="w-full flex items-center justify-center bg-brand-cta text-white font-bold py-2.5 px-4 rounded-lg hover:bg-brand-cta-hover transition-colors disabled:bg-brand-tertiary disabled:cursor-not-allowed"> {isLoading ? ( <><svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>{t('generator_button_generating')}</> ) : t('generator_button_generate')} </button>
+              {error && <p className="text-sm text-brand-danger text-center">{error}</p>}
+            </div>
+            {generatedQuestions.length > 0 && (
+              <div className="mt-6 space-y-4">
+                <h4 className="text-lg font-semibold text-brand-light">{t('generator_generated_questions')}</h4>
+                {generatedQuestions.map((q, qIndex) => (
+                  <div key={q.id || qIndex} className="bg-brand-primary p-4 rounded-lg">
+                    <p className="font-semibold">{qIndex + 1}. {q.textoPregunta}</p>
+                    <div className="mt-2 space-y-1 pl-4"> {q.respuestas.map((r, rIndex) => ( <div key={rIndex} className={`flex items-center text-sm ${r.esCorrecta ? 'text-brand-success' : 'text-brand-accent'}`}> {r.esCorrecta ? <CheckCircleIcon className="h-4 w-4 mr-2" /> : <XCircleIcon className="h-4 w-4 mr-2" />} <span>{r.textoRespuesta}</span> </div> ))} </div>
+                    <p className="mt-2 text-xs italic text-brand-accent pl-4 border-l-2 border-brand-tertiary"> <strong>{t('generator_explanation')}:</strong> {q.explicacionRespuesta} </p>
+                  </div>
+                ))}
+                <div className="mt-6"> <button onClick={handleSave} disabled={saveStatus !== 'idle'} className="w-full flex items-center justify-center bg-brand-success text-white font-bold py-2.5 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:bg-brand-tertiary disabled:cursor-not-allowed"> <SaveIcon className="h-5 w-5 mr-2" /> <span>{t('generator_button_save')}</span> </button> {saveStatus === 'success' && <p className="text-sm text-brand-success mt-3 text-center animate-pulse">{saveMessage}</p>} {saveStatus === 'error' && <p className="text-sm text-brand-danger mt-3 text-center">{saveMessage}</p>} </div>
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock, preselectedBlock, preselectedTopic }) => {
+          const { t } = useLanguage();
+          const [blockName, setBlockName] = useState('');
+          const [topicName, setTopicName] = useState('');
+          const [file, setFile] = useState(null);
+          const [availableTopics, setAvailableTopics] = useState([]);
+          const [reviewedQuestions, setReviewedQuestions] = useState([]);
+          const [editingQuestionIndex, setEditingQuestionIndex] = useState(null);
+          const [editedQuestion, setEditedQuestion] = useState(null);
+          const [excludedIndices, setExcludedIndices] = useState(new Set());
+          const [isLoading, setIsLoading] = useState(false);
+          const [status, setStatus] = useState('idle');
+          const [message, setMessage] = useState('');
+          const [isPublic, setIsPublic] = useState(true);
+          
+          const [fileQueue, setFileQueue] = useState([]);
+          const [isBatchModeActive, setIsBatchModeActive] = useState(false);
+          const [selectedBatchFiles, setSelectedBatchFiles] = useState(new Set());
+          
+          const isNewBlock = useMemo(() => 
+              blockName.trim() && !blocks.some(b => b.nombreCorto.toLowerCase() === blockName.trim().toLowerCase() && b.creatorId === currentUser.id),
+              [blockName, blocks, currentUser.id]
+          );
+      
+          const parseQuestionsFromFile = (text, topic) => {
+              const questions = []; const lines = text.replace(/\r\n/g, '\n').split('\n');
+              let i = 0;
+              while (i < lines.length) {
+                  const line = lines[i].trim();
+                  if (line.includes('##')) {
+                      const parts = line.split('##'); const questionText = parts[0].trim(); const answerParts = parts.slice(1);
+                      if (!questionText || answerParts.length < 2) { i++; continue; }
+                      const respuestas = answerParts.map(answerText => { const trimmedText = answerText.trim(); return { textoRespuesta: trimmedText.startsWith('@@') ? trimmedText.substring(2).trim() : trimmedText, esCorrecta: trimmedText.startsWith('@@'), }; });
+                      if (respuestas.filter(r => r.esCorrecta).length !== 1) { i++; continue; }
+                      let explicacionRespuesta = "";
+                      if (i + 1 < lines.length) {
+                          const nextLine = lines[i + 1].trim();
+                          if (nextLine.length > 0 && !nextLine.includes('##')) { explicacionRespuesta = nextLine; i++; }
+                      }
+                      questions.push({ textoPregunta: questionText, dificultad: 1, respuestas: respuestas, explicacionRespuesta: explicacionRespuesta, tema: topic, });
+                  }
+                  i++;
+              }
+              return questions;
+          };
+
+          const resetFullState = useCallback(() => {
+              setBlockName(preselectedBlock || ''); setTopicName(preselectedTopic || ''); setFile(null); setReviewedQuestions([]); setEditingQuestionIndex(null); setEditedQuestion(null); setStatus('idle'); setMessage(''); setIsLoading(false); setExcludedIndices(new Set()); setFileQueue([]); setIsBatchModeActive(false); setSelectedBatchFiles(new Set());
+          }, [preselectedBlock, preselectedTopic]);
+          
+          const resetReviewForm = useCallback(() => {
+              setReviewedQuestions([]); setExcludedIndices(new Set()); setFile(null); setBlockName(preselectedBlock || ''); setTopicName(preselectedTopic || ''); setIsLoading(false); setEditingQuestionIndex(null); setEditedQuestion(null);
+          }, [preselectedBlock, preselectedTopic]);
+
+           useEffect(() => {
+            if (preselectedBlock) setBlockName(preselectedBlock);
+            if (preselectedTopic) setTopicName(preselectedTopic);
+        }, [preselectedBlock, preselectedTopic]);
+
+          const handleLoadForReview = useCallback(() => {
+              if (!topicName.trim() || !file) { setMessage(t('uploader_status_generic_error')); setStatus('error'); return; }
+              setIsLoading(true); setStatus('idle'); const reader = new FileReader();
+              reader.onload = (e) => {
+                  try {
+                      const text = e.target?.result;
+                      if (!text) throw new Error("File is empty or could not be read.");
+                      const parsedQuestions = parseQuestionsFromFile(text, topicName.trim());
+                      if (parsedQuestions.length === 0) throw new Error(t('uploader_status_no_questions'));
+                      setReviewedQuestions(parsedQuestions); setMessage(t('uploader_status_loaded', {count: parsedQuestions.length})); setStatus('success');
+                  } catch (err) { 
+                      setMessage(err.message); setStatus('error'); setReviewedQuestions([]);
+                  } finally { 
+                    setIsLoading(false); 
+                    setTimeout(() => { setStatus('idle'); setMessage(''); }, 3000);
+                  }
+              };
+              reader.onerror = () => { setMessage(t('uploader_status_read_error')); setStatus('error'); setIsLoading(false); };
+              reader.readAsText(file);
+          }, [topicName, file, t, parseQuestionsFromFile]);
+
+          const handleFolderSelect = (event) => {
+              if (event.target.files) {
+                  resetFullState();
+                  const files = Array.from(event.target.files);
+                  const fileRegex = /^([^_]+)_([^_\.]+)\.txt$/i;
+                  const newQueue = files.map(file => {
+                      const match = file.name.match(fileRegex);
+                      if (match) { return { file, blockName: match[1].replace(/-/g, ' '), topicName: match[2].replace(/-/g, ' ') }; }
+                      return null;
+                  }).filter(Boolean);
+      
+                  if (newQueue.length > 0) {
+                      setFileQueue(newQueue); 
+                      setIsBatchModeActive(true);
+                  } else {
+                      setMessage(t('uploader_batch_status_no_files')); setStatus('error');
+                  }
+              }
+              event.target.value = '';
+          };
+      
+          const handleBatchFileSelectionChange = (fileName) => {
+            setSelectedBatchFiles(prev => {
+                const newSet = new Set(prev);
+                if (newSet.has(fileName)) newSet.delete(fileName);
+                else newSet.add(fileName);
+                return newSet;
+            });
+          };
+
+          const handleLoadSelectedBatchFiles = useCallback(async () => {
+            if (selectedBatchFiles.size === 0) return;
+            setIsLoading(true); setStatus('idle');
+            let allParsedQuestions = [];
+            const filesToProcess = fileQueue.filter(f => selectedBatchFiles.has(f.file.name));
+
+            try {
+                for (const fileInfo of filesToProcess) {
+                    const text = await fileInfo.file.text();
+                    if (!text) continue;
+                    const parsedQuestions = parseQuestionsFromFile(text, fileInfo.topicName.trim()).map(q => ({ ...q, blockName: fileInfo.blockName.trim() }));
+                    allParsedQuestions.push(...parsedQuestions);
+                }
+                if (allParsedQuestions.length === 0) throw new Error(t('uploader_status_no_questions'));
+                setReviewedQuestions(allParsedQuestions);
+                setMessage(t('uploader_status_loaded', { count: allParsedQuestions.length }));
+                setStatus('success');
+            } catch (err) {
+                setMessage(err.message); setStatus('error'); setReviewedQuestions([]);
+            } finally {
+                setIsLoading(false);
+            }
+          }, [selectedBatchFiles, fileQueue, t]);
+      
+          const handleSaveAllQuestions = useCallback(async () => {
+              const questionsToSave = reviewedQuestions.filter((_, index) => !excludedIndices.has(index));
+              if (questionsToSave.length === 0) {
+                  setMessage('No questions to save.'); setStatus('error');
+                  setTimeout(() => setStatus('idle'), 3000); return;
+              }
+              setIsLoading(true); setStatus('idle');
+              
+              const isBatchSave = questionsToSave[0].hasOwnProperty('blockName');
+
+              try {
+                  if (isBatchSave) {
+                      const questionsByBlock = questionsToSave.reduce((acc, q) => {
+                          const blockKey = q.blockName.toLowerCase();
+                          if (!acc[blockKey]) acc[blockKey] = { originalName: q.blockName, questions: [] };
+                          acc[blockKey].questions.push(q);
+                          return acc;
+                      }, {});
+
+                      for (const blockKey in questionsByBlock) {
+                          const { originalName, questions } = questionsByBlock[blockKey];
+                          const existingBlock = blocks.find(b => b.nombreCorto.toLowerCase() === originalName.toLowerCase() && b.creatorId === currentUser.id);
+                          if (existingBlock) {
+                              await onSaveQuestions(existingBlock.id, questions);
+                          } else {
+                              await onCreateBlock(originalName, questions, true);
+                          }
+                      }
+                      setMessage(t('uploader_batch_status_complete'));
+                  } else {
+                      const trimmedBlockName = blockName.trim();
+                      if (!trimmedBlockName) throw new Error("Block name is required.");
+                      const existingBlock = blocks.find(b => b.nombreCorto.toLowerCase() === trimmedBlockName.toLowerCase() && b.creatorId === currentUser.id);
+                      if (existingBlock) {
+                          await onSaveQuestions(existingBlock.id, questionsToSave);
+                          setMessage(t('generator_save_success_updated', { count: questionsToSave.length, block: existingBlock.nombreCorto }));
+                      } else {
+                          await onCreateBlock(trimmedBlockName, questionsToSave, isPublic);
+                          setMessage(t('generator_save_success_created', { count: questionsToSave.length, block: trimmedBlockName }));
+                      }
+                  }
+                  setStatus('success');
+                  setTimeout(() => { resetFullState(); }, 2500);
+              } catch (err) {
+                  setMessage(err.message); setStatus('error');
+              } finally {
+                  setIsLoading(false);
+              }
+          }, [blockName, reviewedQuestions, excludedIndices, blocks, onSaveQuestions, onCreateBlock, t, resetFullState, isPublic, currentUser.id]);
+      
+          const handleClearOrSkip = () => { 
+            if (isBatchModeActive) { 
+                const newQueue = fileQueue.filter(f => !selectedBatchFiles.has(f.file.name));
+                setFileQueue(newQueue);
+                setSelectedBatchFiles(new Set());
+                resetReviewForm();
+            } else { 
+                resetFullState(); 
+            } 
+          };
+
+          useEffect(() => {
+              if (isBatchModeActive) return;
+              const selectedBlock = blocks.find(b => b.nombreCorto.toLowerCase() === blockName.toLowerCase());
+              if (selectedBlock && selectedBlock.questions?.length > 0) {
+                  const uniqueTopics = [...new Set(selectedBlock.questions.map(q => q.tema))];
+                  setAvailableTopics(uniqueTopics.map(t => ({ id: t, label: t })));
+              } else { setAvailableTopics([]); }
+               if (!preselectedTopic) setTopicName('');
+          }, [blockName, blocks, isBatchModeActive, preselectedTopic]);
+          
+          const handleFileChange = (event) => { if (event.target.files?.length > 0) { setFile(event.target.files[0]); setStatus('idle'); setMessage(''); setReviewedQuestions([]); setExcludedIndices(new Set()); } event.target.value = ''; };
+          const handleToggleExclude = (index) => { setExcludedIndices(prev => { const newSet = new Set(prev); if (newSet.has(index)) newSet.delete(index); else newSet.add(index); return newSet; }); };
+          const handleEditClick = (question, index) => { setEditingQuestionIndex(index); setEditedQuestion(JSON.parse(JSON.stringify(question))); };
+          const handleCancelEdit = () => { setEditingQuestionIndex(null); setEditedQuestion(null); };
+          const handleSaveEdit = () => { if (editedQuestion !== null && editingQuestionIndex !== null) { const updatedQuestions = [...reviewedQuestions]; updatedQuestions[editingQuestionIndex] = editedQuestion; setReviewedQuestions(updatedQuestions); handleCancelEdit(); } };
+          const handleFormChange = (e) => { if (!editedQuestion) return; const { name, value } = e.target; setEditedQuestion({ ...editedQuestion, [name]: name === 'dificultad' ? parseInt(value, 10) : value }); };
+          const handleAnswerTextChange = (index, text) => { if (!editedQuestion) return; const newAnswers = [...editedQuestion.respuestas]; newAnswers[index].textoRespuesta = text; setEditedQuestion({ ...editedQuestion, respuestas: newAnswers }); };
+          const handleCorrectAnswerChange = (index) => { if (!editedQuestion) return; const newAnswers = editedQuestion.respuestas.map((ans, i) => ({ ...ans, esCorrecta: i === index })); setEditedQuestion({ ...editedQuestion, respuestas: newAnswers }); };
+          
+          const blockOptions = blocks.map(b => ({ id: b.id, label: b.nombreCorto }));
+          const isUIBlocked = isLoading || reviewedQuestions.length > 0;
+          
+          return (
+              <div className="bg-brand-secondary p-6 rounded-xl shadow-lg">
+                  <div className="flex items-center mb-4"> <ArrowUpTrayIcon className="h-6 w-6 mr-3 text-brand-accent" /> <h3 className="text-xl font-bold text-brand-light">{t('uploader_title')}</h3> </div>
+
+                  {/* BATCH UPLOAD UI */}
+                  <div className="mb-4"> <label htmlFor="folder-upload" className={`w-full flex justify-center items-center gap-4 p-4 border-2 border-dashed rounded-md transition-colors ${isBatchModeActive || isUIBlocked ? 'border-brand-tertiary/50 bg-brand-primary opacity-60 cursor-not-allowed' : 'border-brand-tertiary hover:border-brand-cta hover:bg-brand-primary cursor-pointer'}`}> <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-brand-accent flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"> <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" /> </svg> <div className="text-left"> <span className="font-bold text-brand-light">{t('uploader_batch_title')}</span> <p className="text-xs text-brand-accent" dangerouslySetInnerHTML={{ __html: t('uploader_batch_explanation') }} /> </div> </label> <input id="folder-upload" type="file" {...{webkitdirectory:"", directory:""}} className="sr-only" onChange={handleFolderSelect} disabled={isBatchModeActive || isUIBlocked}/> </div>
+                  {isBatchModeActive && reviewedQuestions.length === 0 && ( <div className="my-4 p-4 bg-brand-primary rounded-lg border border-brand-tertiary"> <div className="flex justify-between items-center mb-3"> <h4 className="text-lg font-semibold text-brand-light">{t('uploader_batch_detected_files')} ({fileQueue.length})</h4> <button onClick={resetFullState} className="text-sm font-semibold bg-brand-danger/80 hover:bg-brand-danger text-white py-1 px-3 rounded-md transition-colors"> {t('uploader_batch_finish')} </button> </div> {fileQueue.length > 0 ? ( <> <div className="max-h-48 overflow-y-auto space-y-2 pr-2"> {fileQueue.map((fileInfo, index) => ( <label key={index} className="flex items-center w-full text-left p-2 rounded-md transition-colors text-sm bg-brand-secondary hover:bg-brand-tertiary text-brand-light cursor-pointer"> <input type="checkbox" checked={selectedBatchFiles.has(fileInfo.file.name)} onChange={() => handleBatchFileSelectionChange(fileInfo.file.name)} className="h-4 w-4 rounded border-brand-tertiary text-brand-cta bg-brand-primary focus:ring-brand-cta" /> <span className="ml-3">{fileInfo.file.name}</span> </label> ))} </div> <button onClick={handleLoadSelectedBatchFiles} disabled={selectedBatchFiles.size === 0 || isLoading} className="w-full mt-4 flex items-center justify-center bg-brand-cta text-white font-bold py-2.5 px-4 rounded-lg hover:bg-brand-cta-hover transition-colors disabled:bg-brand-tertiary disabled:cursor-not-allowed"> {isLoading ? t('uploader_parsing') : t('uploader_button_load_selected', {count: selectedBatchFiles.size})} </button> </> ) : ( <div className="text-center py-4 text-brand-accent">{t('uploader_batch_status_complete')}</div> )} </div> )}
+
+                  {/* SINGLE UPLOAD / BATCH LOAD UI */}
+                  {reviewedQuestions.length === 0 && !isBatchModeActive && (
+                      <div className="space-y-4 mt-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_block')}</label> <Combobox options={blockOptions} value={blockName} onChange={setBlockName} placeholder={t('generator_block_placeholder')} disabled={isUIBlocked}/> </div> <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_topic')}</label> <Combobox options={availableTopics} value={topicName} onChange={setTopicName} placeholder={t('generator_topic_placeholder')} disabled={!blockName.trim() || isUIBlocked}/> </div> </div>
+                          {isNewBlock && currentUser && !currentUser.isAdmin && (
+                            <div className="bg-brand-primary p-3 rounded-lg flex items-center gap-4">
+                                <label className="text-sm font-medium text-brand-accent">{t('block_type')}:</label>
+                                <div className="flex items-center gap-4 text-brand-light">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="block-visibility-upl" checked={isPublic} onChange={() => setIsPublic(true)} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
+                                        {t('block_public')}
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="block-visibility-upl" checked={!isPublic} onChange={() => setIsPublic(false)} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
+                                        {t('block_private')}
+                                    </label>
+                                </div>
+                            </div>
+                          )}
+                          <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('uploader_file_label')}</label> <div className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-brand-tertiary border-dashed rounded-md ${isBatchModeActive ? 'bg-brand-primary/50 opacity-50' : ''}`}> <div className="space-y-1 text-center"> <svg className="mx-auto h-12 w-12 text-brand-accent" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg> <div className="flex text-sm text-brand-accent"><label htmlFor="file-upload" className={`relative rounded-md font-medium text-brand-cta px-1 ${isUIBlocked || isBatchModeActive ? 'cursor-not-allowed' : 'hover:text-brand-cta-hover cursor-pointer bg-brand-primary'}`}><span>{t('uploader_file_prompt_1')}</span><input id="file-upload" name="file-upload" type="file" className="sr-only" accept=".txt" onChange={handleFileChange} disabled={isUIBlocked || isBatchModeActive}/></label><p className="pl-1">{t('uploader_file_prompt_2')}</p></div> <p className="text-xs text-brand-tertiary">{file && !isUIBlocked ? t('uploader_file_selected', {fileName: file.name}) : t('uploader_file_type')}</p> </div> </div> </div>
+                          <div className="text-xs text-brand-accent bg-brand-primary p-4 rounded-lg"> <p className="font-semibold mb-2 text-sm text-brand-light">{t('uploader_format_guide')}</p> <ul className="list-disc list-inside space-y-1 mb-3"> <li>{t('uploader_format_line_1')} <code className="bg-brand-secondary px-1 py-0.5 rounded">##</code>.</li> <li>{t('uploader_format_line_2')} <code className="bg-brand-secondary px-1 py-0.5 rounded">@@</code>.</li> <li>{t('uploader_format_line_3')}</li> </ul> <p className="font-semibold text-sm text-brand-light">{t('uploader_example')}</p> <pre className="whitespace-pre-wrap font-mono leading-relaxed mt-1 p-2 bg-black/20 rounded">{`Pregunta con explicación##Respuesta A##@@Respuesta B\nEsta es la explicación para la pregunta 1.\n\nPregunta sin explicación##@@Correcta##Incorrecta`}</pre> </div>
+                          <button onClick={handleLoadForReview} disabled={!blockName.trim() || !topicName.trim() || !file || isUIBlocked} className="w-full flex items-center justify-center bg-brand-cta text-white font-bold py-2.5 px-4 rounded-lg hover:bg-brand-cta-hover transition-colors disabled:bg-brand-tertiary disabled:cursor-not-allowed"> {isLoading && status !== 'success' ? t('uploader_parsing') : t('uploader_button_load')} </button>
+                      </div>
+                  )}
+
+                   {status !== 'idle' && message && <p className={`text-sm mt-2 text-center flex items-center justify-center gap-2 ${status === 'success' ? 'text-brand-success' : 'text-brand-danger'}`}>{status === 'success' ? <CheckCircleIcon/> : <XCircleIcon/>}{message}</p>}
+                  
+                   {/* REVIEW UI */}
+                  {reviewedQuestions.length > 0 && (
+                      <div className="mt-6 border-t-2 border-brand-tertiary pt-6 space-y-4">
+                          <h4 className="text-lg font-semibold text-brand-light">{t('uploader_review_title', {count: reviewedQuestions.length - excludedIndices.size})}</h4>
+                          {isBatchModeActive && ( <div className="p-3 bg-brand-primary rounded-lg text-sm text-center"> <span className="font-semibold text-brand-accent">Se han cargado preguntas de {selectedBatchFiles.size} archivos.</span> </div> )}
+                          {reviewedQuestions.map((q, qIndex) => (
+                              <div key={qIndex}>
+                                  {editingQuestionIndex === qIndex ? (
+                                      <div className="bg-brand-primary p-4 rounded-lg border-2 border-brand-cta animate-fade-in"><div className="space-y-4"><div><label className="text-sm font-medium text-brand-accent">{t('uploader_question_text')}</label><textarea name="textoPregunta" value={editedQuestion?.textoPregunta} onChange={handleFormChange} rows={3} className="mt-1 w-full bg-brand-secondary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" /></div><div><label className="text-sm font-medium text-brand-accent">{t('uploader_answers')}</label><div className="mt-1 space-y-2">{editedQuestion?.respuestas.map((ans, idx) => (<div key={idx} className="flex items-center gap-2"><input type="radio" name={`correctAnswer-${qIndex}`} checked={ans.esCorrecta} onChange={() => handleCorrectAnswerChange(idx)} className="h-4 w-4 text-brand-cta bg-brand-tertiary border-brand-tertiary focus:ring-brand-cta"/><input type="text" value={ans.textoRespuesta} onChange={(e) => handleAnswerTextChange(idx, e.target.value)} className="w-full bg-brand-secondary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"/></div>))}</div></div><div><label className="text-sm font-medium text-brand-accent">{t('generator_explanation')}</label><textarea name="explicacionRespuesta" value={editedQuestion?.explicacionRespuesta} onChange={handleFormChange} rows={2} className="mt-1 w-full bg-brand-secondary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" /></div><div className="flex justify-end gap-3 mt-4"><button onClick={handleCancelEdit} className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold py-2 px-4 rounded-lg transition-colors"><XMarkIcon className="h-5 w-5"/>{t('uploader_button_cancel')}</button><button onClick={handleSaveEdit} className="flex items-center gap-2 bg-brand-success hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"><SaveIcon className="h-5 w-5"/>{t('uploader_button_save_edit')}</button></div></div></div>
+                                  ) : (
+                                      <div className={`bg-brand-primary p-4 rounded-lg border border-brand-tertiary/50 transition-opacity ${excludedIndices.has(qIndex) ? 'opacity-40' : 'opacity-100'}`}>
+                                          <div className="flex items-start justify-between gap-3">
+                                              <p className="flex-grow font-semibold text-brand-light">{qIndex + 1}. {q.textoPregunta}</p>
+                                              <div className="flex items-center gap-4 flex-shrink-0"> <label className="flex items-center gap-2 cursor-pointer text-sm text-brand-accent hover:text-brand-light"> <input type="checkbox" checked={excludedIndices.has(qIndex)} onChange={() => handleToggleExclude(qIndex)} className="h-4 w-4 rounded border-brand-tertiary text-brand-danger bg-brand-primary focus:ring-brand-danger" /> {t('uploader_button_exclude')} </label> <button onClick={() => handleEditClick(q, qIndex)} className="flex items-center gap-2 bg-brand-tertiary/50 hover:bg-brand-tertiary text-brand-light font-semibold py-1.5 px-3 rounded-lg transition-colors text-sm"><PencilIcon className="h-4 w-4"/> {t('uploader_button_edit')}</button> </div>
+                                          </div>
+                                          {q.blockName && <p className="text-xs text-brand-accent mt-1">Bloque: {q.blockName} | Tema: {q.tema}</p>}
+                                          <div className="mt-3 space-y-2 pl-6">{q.respuestas.map((r, rIndex) => (<div key={rIndex} className={`flex items-center text-sm ${r.esCorrecta ? 'text-brand-success' : 'text-brand-accent'}`}>{r.esCorrecta ? <CheckCircleIcon className="h-5 w-5 mr-2 flex-shrink-0" /> : <XCircleIcon className="h-5 w-5 mr-2 flex-shrink-0 text-brand-danger/50" />}<span>{r.textoRespuesta}</span></div>))}</div>
+                                          {q.explicacionRespuesta && (<p className="mt-3 text-xs italic text-brand-accent pl-6 border-l-2 border-brand-tertiary ml-2.5"><strong>{t('generator_explanation')}:</strong> {q.explicacionRespuesta}</p>)}
+                                      </div>
+                                  )}
+                              </div>
+                          ))}
+                          <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4 border-t border-brand-tertiary">
+                               <button onClick={handleClearOrSkip} disabled={isLoading} className="flex items-center justify-center gap-2 bg-brand-danger/80 hover:bg-brand-danger text-white font-bold py-2.5 px-4 rounded-lg transition-colors disabled:bg-brand-tertiary disabled:cursor-not-allowed"> <TrashIcon className="h-5 w-5" /> {isBatchModeActive ? t('uploader_button_skip') : t('uploader_button_clear')} </button>
+                              <button onClick={handleSaveAllQuestions} disabled={isLoading} className="flex items-center justify-center gap-2 bg-brand-success hover:bg-green-600 text-white font-bold py-2.5 px-4 rounded-lg transition-colors disabled:bg-brand-tertiary disabled:cursor-not-allowed"> {isLoading ? <><svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>{t('uploader_saving')}</> : <><SaveIcon className="h-5 w-5" /> {t('uploader_button_save_all')}</>} </button>
+                          </div>
+                      </div>
+                  )}
+              </div>
+          );
+      };
+
+      const ManualQuestionForm = ({ currentUser, blocks, onSaveQuestions, onCreateBlock, preselectedBlock, preselectedTopic, onDataChange }) => {
+        const { t } = useLanguage();
+        const initialAnswer = () => ({ text: '', isCorrect: false });
+        const initialFormState = () => ({
+            blockName: preselectedBlock || '',
+            topicName: preselectedTopic || '',
+            questionText: '',
+            difficulty: 3,
+            explanation: '',
+            answers: [initialAnswer(), initialAnswer()],
+            isPublic: true,
+        });
+
+        const [formState, setFormState] = useState(initialFormState());
+        const [status, setStatus] = useState({ type: 'idle', message: '' });
+        const [availableTopics, setAvailableTopics] = useState([]);
+        
+        const isNewBlock = useMemo(() => 
+            formState.blockName.trim() && !blocks.some(b => b.nombreCorto.toLowerCase() === formState.blockName.trim().toLowerCase() && b.creatorId === currentUser.id),
+            [formState.blockName, blocks, currentUser.id]
+        );
+
+        useEffect(() => {
+            setFormState(initialFormState());
+        }, [preselectedBlock, preselectedTopic]);
+
+        useEffect(() => {
+          const selectedBlock = blocks.find(b => b.nombreCorto.toLowerCase() === formState.blockName.toLowerCase());
+          if (selectedBlock && selectedBlock.questions?.length > 0) {
+              const uniqueTopics = [...new Set(selectedBlock.questions.map(q => q.tema))];
+              setAvailableTopics(uniqueTopics.map(t => ({ id: t, label: t })));
+          } else { setAvailableTopics([]); }
+          if(formState.blockName !== preselectedBlock) setFormState(p => ({...p, topicName: ''}))
+        }, [formState.blockName, blocks, preselectedBlock]);
+        
+        const handleInputChange = (e) => {
+            const { name, value, type, checked } = e.target;
+            setFormState(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+        };
+
+        const handleAnswerChange = (index, text) => {
+            const newAnswers = [...formState.answers];
+            newAnswers[index].text = text;
+            setFormState(prev => ({ ...prev, answers: newAnswers }));
+        };
+
+        const setCorrectAnswer = (index) => {
+            const newAnswers = formState.answers.map((ans, i) => ({ ...ans, isCorrect: i === index }));
+            setFormState(prev => ({ ...prev, answers: newAnswers }));
+        };
+
+        const addAnswer = () => {
+            if (formState.answers.length < 6) {
+                setFormState(prev => ({ ...prev, answers: [...prev.answers, initialAnswer()] }));
+            }
+        };
+
+        const removeAnswer = (index) => {
+            if (formState.answers.length > 2) {
+                const newAnswers = formState.answers.filter((_, i) => i !== index);
+                if (!newAnswers.some(a => a.isCorrect) && newAnswers.length > 0) {
+                    newAnswers[0].isCorrect = true;
+                }
+                setFormState(prev => ({ ...prev, answers: newAnswers }));
+            }
+        };
+
+        const handleDiscard = () => {
+            setFormState(initialFormState());
+            setStatus({ type: 'idle', message: '' });
+        };
+
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+            if (!formState.blockName.trim() || !formState.topicName.trim() || !formState.questionText.trim() || formState.answers.length < 2 || !formState.answers.some(a => a.isCorrect)) {
+                setStatus({ type: 'error', message: t('manual_form_fields_missing') });
+                return;
+            }
+
+            const newQuestion = {
+                textoPregunta: formState.questionText,
+                respuestas: formState.answers.map(a => ({ textoRespuesta: a.text, esCorrecta: a.isCorrect })),
+                explicacionRespuesta: formState.explanation,
+                dificultad: formState.difficulty,
+                tema: formState.topicName.trim(),
+            };
+
+            try {
+                const trimmedBlockName = formState.blockName.trim();
+                const existingBlock = blocks.find(b => b.nombreCorto.toLowerCase() === trimmedBlockName.toLowerCase() && b.creatorId === currentUser.id);
+                if (existingBlock) {
+                    await onSaveQuestions(existingBlock.id, [newQuestion]);
+                } else {
+                    await onCreateBlock(trimmedBlockName, [newQuestion], formState.isPublic);
+                }
+                setStatus({ type: 'success', message: t('manual_form_save_success') });
+                handleDiscard();
+                onDataChange(); // Notify parent to refetch blocks data
+                setTimeout(() => setStatus({ type: 'idle', message: '' }), 3000);
+            } catch (err) {
+                setStatus({ type: 'error', message: t('manual_form_error') });
+            }
+        };
+
+        const blockOptions = blocks.map(b => ({ id: b.id, label: b.nombreCorto }));
+
+        return (
+             <div className="bg-brand-secondary p-6 rounded-xl shadow-lg">
+                <div className="flex items-center mb-6">
+                    <PencilSquareIcon className="h-6 w-6 mr-3 text-brand-accent" />
+                    <h3 className="text-xl font-bold text-brand-light">{t('manual_form_title')}</h3>
+                </div>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_block')}</label><Combobox options={blockOptions} value={formState.blockName} onChange={(val) => setFormState(p => ({...p, blockName: val}))} placeholder={t('generator_block_placeholder')} /></div>
+                        <div><label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_topic')}</label><Combobox options={availableTopics} value={formState.topicName} onChange={(val) => setFormState(p => ({...p, topicName: val}))} placeholder={t('generator_topic_placeholder')} disabled={!formState.blockName.trim()} /></div>
+                    </div>
+                    {isNewBlock && currentUser && !currentUser.isAdmin && (
+                      <div className="bg-brand-primary p-3 rounded-lg flex items-center gap-4">
+                          <label className="text-sm font-medium text-brand-accent">{t('block_type')}:</label>
+                          <div className="flex items-center gap-4 text-brand-light">
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                  <input type="radio" name="block-visibility-manual" checked={formState.isPublic} onChange={() => setFormState(p => ({...p, isPublic: true}))} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
+                                  {t('block_public')}
+                              </label>
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                  <input type="radio" name="block-visibility-manual" checked={!formState.isPublic} onChange={() => setFormState(p => ({...p, isPublic: false}))} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
+                                  {t('block_private')}
+                              </label>
+                          </div>
+                      </div>
+                    )}
+                    <div><label htmlFor="questionText" className="block text-sm font-medium text-brand-accent mb-1">{t('manual_form_question_text')}</label><textarea id="questionText" name="questionText" rows="3" value={formState.questionText} onChange={handleInputChange} required className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"></textarea></div>
+                    <div><label className="block text-sm font-medium text-brand-accent mb-1">{t('manual_form_answers')}</label>
+                        <div className="space-y-3">
+                            {formState.answers.map((answer, index) => (
+                                <div key={index} className="flex items-center gap-2">
+                                    <input type="radio" name="correctAnswer" checked={answer.isCorrect} onChange={() => setCorrectAnswer(index)} className="h-5 w-5 text-brand-cta bg-brand-primary border-brand-tertiary focus:ring-brand-cta flex-shrink-0" />
+                                    <input type="text" placeholder={`Answer ${index + 1}`} value={answer.text} onChange={(e) => handleAnswerChange(index, e.target.value)} required className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" />
+                                    {formState.answers.length > 2 && <button type="button" onClick={() => removeAnswer(index)} className="p-2 text-brand-danger/70 hover:text-brand-danger hover:bg-brand-danger/20 rounded-full transition-colors"><TrashIcon className="h-5 w-5" /></button>}
+                                </div>
+                            ))}
+                        </div>
+                        {formState.answers.length < 6 && <button type="button" onClick={addAnswer} className="mt-3 text-sm flex items-center gap-2 text-brand-cta hover:text-brand-cta-hover font-semibold"><PlusCircleIcon className="h-5 w-5" /> {t('manual_form_add_answer')}</button>}
+                    </div>
+                    <div><label htmlFor="explanation" className="block text-sm font-medium text-brand-accent mb-1">{t('manual_form_explanation')}</label><textarea id="explanation" name="explanation" rows="2" value={formState.explanation} onChange={handleInputChange} className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"></textarea></div>
+                    <div><label htmlFor="difficulty" className="block text-sm font-medium text-brand-accent mb-1">{t('generator_difficulty')} ({formState.difficulty}/5)</label><input type="range" id="difficulty" name="difficulty" min="1" max="5" value={formState.difficulty} onChange={handleInputChange} className="w-full" /></div>
+                    <div className="flex justify-end gap-4 border-t border-brand-tertiary pt-4">
+                        <button type="button" onClick={handleDiscard} className="py-2 px-6 rounded-lg bg-brand-tertiary hover:bg-brand-accent text-brand-light font-bold transition-colors">{t('manual_form_discard_button')}</button>
+                        <button type="submit" className="py-2 px-6 rounded-lg bg-brand-cta hover:bg-brand-cta-hover text-white font-bold transition-colors">{t('manual_form_add_button')}</button>
+                    </div>
+                    {status.message && <p className={`text-sm text-center ${status.type === 'success' ? 'text-brand-success' : 'text-brand-danger'}`}>{status.message}</p>}
+                </form>
+            </div>
+        );
+      };
+
+      const Header = ({ returnUrl }) => {
+        const { language, setLanguage, t } = useLanguage();
+        const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+        const dropdownRef = useRef(null);
+        useEffect(() => { const handleClickOutside = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setIsDropdownOpen(false); }; document.addEventListener("mousedown", handleClickOutside); return () => document.removeEventListener("mousedown", handleClickOutside); }, [dropdownRef]);
+        return (
+          <header className="bg-brand-secondary shadow-lg">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between h-16">
+                <div className="flex items-center gap-4">
+                    <a href={returnUrl} className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold py-2 px-3 rounded-lg transition-colors"> <ArrowLeftIcon className="h-5 w-5" /> </a>
+                    <div className="flex items-center space-x-3">
+                        <BrainSalutingIcon className="h-8 w-8 text-brand-cta" />
+                        <h1 className="text-xl md:text-2xl font-bold tracking-wider text-brand-light">{t('add_question_page_title')}</h1>
+                    </div>
+                </div>
+                <div className="relative" ref={dropdownRef}><button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center gap-2 text-brand-accent hover:text-brand-light transition-colors p-2 rounded-md"><span className="font-semibold">{language.toUpperCase()}</span><ChevronUpDownIcon className="h-5 w-5" /></button>
+                  {isDropdownOpen && (<div className="absolute right-0 mt-2 w-32 bg-brand-primary rounded-md shadow-lg z-20 ring-1 ring-black ring-opacity-5"><div className="py-1"><a href="#" onClick={(e)=>{e.preventDefault();setLanguage('es');setIsDropdownOpen(false);}} className="block px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">{t('spanish')}</a><a href="#" onClick={(e)=>{e.preventDefault();setLanguage('en');setIsDropdownOpen(false);}} className="block px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">{t('english')}</a></div></div>)}
+                </div>
+              </div>
+            </div>
+          </header>
+        );
+      };
+      
+      const AddQuestionPage = () => {
+        const { t } = useLanguage();
+        const { currentUser } = useUser();
+        const [blocks, setBlocks] = useState([]);
+        const [isLoading, setIsLoading] = useState(true);
+        const [error, setError] = useState(null);
+        const [returnUrl, setReturnUrl] = useState('index.html');
+        const [preselectedBlock, setPreselectedBlock] = useState('');
+        const [preselectedTopic, setPreselectedTopic] = useState('');
+        const [activeTab, setActiveTab] = useState('generator');
+
+        const loadData = useCallback(async () => {
+          try {
+            setIsLoading(true);
+            setError(null);
+            const fetchedBlocks = await fetchBlocks();
+            setBlocks(fetchedBlocks);
+            
+            const params = new URLSearchParams(window.location.search);
+            const blockId = params.get('blockId');
+            const topicName = params.get('topicName');
+            const url = params.get('returnUrl');
+            if (url) setReturnUrl(url);
+            if (topicName) setPreselectedTopic(decodeURIComponent(topicName));
+            if (blockId) {
+                const foundBlock = fetchedBlocks.find(b => b.id === blockId);
+                if (foundBlock) setPreselectedBlock(foundBlock.nombreCorto);
+            }
+          } catch (err) { setError(err.message);
+          } finally { setIsLoading(false); }
+        }, []);
+
+        useEffect(() => { loadData(); }, [loadData]);
+
+        const handleSaveQuestions = async (blockId, newQuestions) => { await saveQuestionsToBlock(blockId, newQuestions); await loadData(); };
+        const handleCreateBlock = async (blockName, newQuestions, isPublic) => { await createBlockWithQuestions(blockName, newQuestions, isPublic); await loadData(); };
+        
+        const renderContent = () => {
+          if (isLoading) return <div className="text-center p-8">{t('loading')}...</div>;
+          if (error) return <div className="text-center text-brand-danger bg-red-500/10 p-4 rounded-lg">{t('error')}: {error}</div>;
+
+          return (
+            <div>
+                <div className="mb-6 border-b border-brand-tertiary/50">
+                    <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+                        <button onClick={() => setActiveTab('generator')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'generator' ? 'border-brand-cta text-brand-cta' : 'border-transparent text-brand-accent hover:text-brand-light hover:border-brand-tertiary'}`}> {t('add_question_tab_generator')} </button>
+                        <button onClick={() => setActiveTab('uploader')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'uploader' ? 'border-brand-cta text-brand-cta' : 'border-transparent text-brand-accent hover:text-brand-light hover:border-brand-tertiary'}`}> {t('add_question_tab_uploader')} </button>
+                        <button onClick={() => setActiveTab('manual')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'manual' ? 'border-brand-cta text-brand-cta' : 'border-transparent text-brand-accent hover:text-brand-light hover:border-brand-tertiary'}`}> {t('add_question_tab_manual')} </button>
+                    </nav>
+                </div>
+                <div className="animate-fade-in">
+                    {activeTab === 'generator' && <QuestionGenerator currentUser={currentUser} blocks={blocks} onSaveQuestions={handleSaveQuestions} onCreateBlock={handleCreateBlock} preselectedBlock={preselectedBlock} preselectedTopic={preselectedTopic} />}
+                    {activeTab === 'uploader' && <QuestionUploader currentUser={currentUser} blocks={blocks} onSaveQuestions={handleSaveQuestions} onCreateBlock={handleCreateBlock} preselectedBlock={preselectedBlock} preselectedTopic={preselectedTopic} />}
+                    {activeTab === 'manual' && <ManualQuestionForm currentUser={currentUser} blocks={blocks} onSaveQuestions={saveQuestionsToBlock} onCreateBlock={createBlockWithQuestions} onDataChange={loadData} preselectedBlock={preselectedBlock} preselectedTopic={preselectedTopic} />}
+                </div>
+            </div>
+          );
+        };
+
+        return (
+          <div className="min-h-screen flex flex-col">
+            <Header returnUrl={returnUrl} />
+            <main className="flex-grow p-4 sm:p-6 lg:p-8">{renderContent()}</main>
+            <footer className="text-center p-4 text-xs text-brand-accent"><p>{t('footer_text')}</p></footer>
+          </div>
+        );
+      };
+
+      const AppWrapper = () => {
+          const [currentUser, setCurrentUser] = useState(null);
+          const [isLoading, setIsLoading] = useState(true);
+
+          useEffect(() => {
+            try {
+              const sessionString = localStorage.getItem('playtest_session');
+              if (sessionString) {
+                const session = JSON.parse(sessionString);
+                if (session && session.userId) {
+                  const db = getDatabase();
+                  const user = (db.users || []).find(u => u.id === session.userId);
+                  if (user) {
+                    setCurrentUser(user);
+                  }
+                }
+              }
+            } catch(e) { console.error("Failed to load user session", e); }
+            finally {
+              setIsLoading(false);
+            }
+          }, []);
+
+          if (isLoading) {
+            return (
+               <div className="flex justify-center items-center h-screen"> <svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle> <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> </div>
+            )
+          }
+
+          if (!currentUser) {
+             window.location.href = 'index.html'; // Redirect if not logged in
+             return null;
+          }
+
+          return (
+            <UserContext.Provider value={{ currentUser }}>
+              <AddQuestionPage />
+            </UserContext.Provider>
+          );
+      };
+
+      // --- App Entry Point ---
+      const rootElement = document.getElementById('root');
+      if (!rootElement) { throw new Error("Could not find root element to mount to"); }
+      const root = ReactDOM.createRoot(rootElement);
+      root.render( <React.StrictMode> <LanguageProvider> <AppWrapper /> </LanguageProvider> </React.StrictMode> );
+    </script>
+    <noscript>This application requires JavaScript to run.</noscript>
+  </body>
+</html>

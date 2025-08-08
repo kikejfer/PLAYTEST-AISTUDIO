@@ -1,0 +1,598 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>PLAYTEST - Duel Mode</title>
+
+    <!-- Embedded Global Stylesheet -->
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      }
+      .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+      .animate-pop-in { animation: popIn 0.3s ease-out; }
+      @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: #1B263B; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb { background: #415A77; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: #778DA9; }
+      * { scrollbar-width: thin; scrollbar-color: #415A77 #1B263B; }
+    </style>
+
+    <!-- Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-primary': '#0D1B2A',
+              'brand-secondary': '#1B263B',
+              'brand-tertiary': '#415A77',
+              'brand-accent': '#778DA9',
+              'brand-light': '#E0E1DD',
+              'brand-cta': '#3B82F6',
+              'brand-cta-hover': '#2563EB',
+              'brand-success': '#10B981',
+              'brand-danger': '#EF4444',
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Import Map to resolve bare module specifiers for React -->
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+    "react/": "https://esm.sh/react@18.2.0/"
+  }
+}
+</script>
+  </head>
+  <body class="bg-brand-primary text-brand-light">
+    <div id="root"></div>
+
+    <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Main application script -->
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
+      import ReactDOM from 'react-dom/client';
+
+      // --- INLINED: i18n ---
+      const translations = {
+        es: {
+          header_title: 'Aplicación PLAYTEST', header_subtitle: 'La forma más divertida de estudiar',
+          all_blocks_return: 'Volver', generic_cancel: 'Cancelar', error: 'Error', loading: 'Cargando...',
+          footer_text: '© 2024 PLAYTEST. Todos los derechos reservados.',
+          game_finish_confirm_title: '¿Finalizar Duelo?', game_finish_confirm_message: '¿Seguro que quieres terminar el duelo? Se declarará un ganador con la puntuación actual.',
+          game_button_finish: 'Finalizar', game_button_play_again: 'Jugar de Nuevo', game_button_dashboard: 'Volver al Panel',
+          delete_question_prompt_confirm: 'SI', delete_question_prompt_cancel: 'NO',
+          game_duel_desc: 'Compite contra otro jugador pregunta a pregunta. Gana puntos por acertar y por ser el más rápido.',
+          game_round: 'Ronda', game_player_turn: 'Turno de {playerNickname}', game_get_ready: '¡Prepárate!',
+          game_start_turn: 'Empezar Turno', game_time_left: 'Tiempo', game_player: 'Jugador',
+          game_round_results: 'Resultados de la Ronda', game_correct: 'Correcto', game_incorrect: 'Incorrecto',
+          game_too_slow: 'Sin respuesta', game_faster: '¡Más rápido!', game_points_this_round: 'Puntos de esta ronda',
+          game_next_round: 'Siguiente Ronda', game_view_results: 'Ver Resultados',
+          game_winner_announcement: '¡{nickname} Gana el Duelo!', game_draw_announcement: '¡El Duelo ha terminado en Empate!',
+          game_final_score: 'Puntuación Final', game_total_correct: 'Aciertos Totales', game_avg_response_time: 'Tiempo de Resp. Medio',
+          game_seconds: 's', game_duel_stats: 'Estadísticas del Duelo',
+        },
+        en: {
+          header_title: 'PLAYTEST App', header_subtitle: 'The most fun way to study',
+          all_blocks_return: 'Return', generic_cancel: 'Cancel', error: 'Error', loading: 'Loading...',
+          footer_text: '© 2024 PLAYTEST. All rights reserved.',
+          game_finish_confirm_title: 'Finish Duel?', game_finish_confirm_message: 'Are you sure you want to end the duel? A winner will be declared based on the current score.',
+          game_button_finish: 'Finish', game_button_play_again: 'Play Again', game_button_dashboard: 'Back to Dashboard',
+          delete_question_prompt_confirm: 'YES', delete_question_prompt_cancel: 'NO',
+          game_duel_desc: 'Compete against another player question by question. Earn points for correct answers and for being the fastest.',
+          game_round: 'Round', game_player_turn: "{playerNickname}'s Turn", game_get_ready: 'Get Ready!',
+          game_start_turn: 'Start Turn', game_time_left: 'Time', game_player: 'Player',
+          game_round_results: 'Round Results', game_correct: 'Correct', game_incorrect: 'Incorrect',
+          game_too_slow: 'No answer', game_faster: 'Faster!', game_points_this_round: 'Points this round',
+          game_next_round: 'Next Round', game_view_results: 'View Results',
+          game_winner_announcement: '{nickname} Wins the Duel!', game_draw_announcement: 'The Duel is a Draw!',
+          game_final_score: 'Final Score', game_total_correct: 'Total Correct', game_avg_response_time: 'Avg. Response Time',
+          game_seconds: 's', game_duel_stats: 'Duel Statistics',
+        }
+      };
+      const LanguageContext = createContext();
+      const LanguageProvider = ({ children }) => {
+        const [language, setLanguage] = useState(() => localStorage.getItem('playtest_lang') || 'es');
+        useEffect(() => { localStorage.setItem('playtest_lang', language); }, [language]);
+        const t = useCallback((key, replacements = {}) => {
+            let translation = translations[language]?.[key] || translations['en']?.[key] || key;
+            Object.keys(replacements).forEach(placeholder => {
+                translation = translation.replace(`{${placeholder}}`, replacements[placeholder]);
+            });
+            return translation;
+        }, [language]);
+        return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>;
+      };
+      const useLanguage = () => useContext(LanguageContext);
+
+      // --- INLINED: components/icons.tsx ---
+      const BrainSalutingIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}> <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.5 14.5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3-4c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm2.5-1.5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm1-5.5H11v-1h3.5c.83 0 1.5.67 1.5 1.5v1zM9.5 11c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/> </svg> );
+      const FlagIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 4.5v.75m0 10.5v.75m18-11.25v.75m0 10.5v.75M4.5 10.5a1.5 1.5 0 113 0v3a1.5 1.5 0 01-3 0v-3z" /></svg>);
+      const ArrowPathIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-11.667-11.667a8.25 8.25 0 0111.667 0l3.181 3.183m-14.85-3.183L2.985 16.24z" /> </svg> );
+      const ArrowUturnLeftIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /> </svg> );
+      
+      // --- INLINED: services/dataService.ts ---
+      const DB_KEY = 'playtest_db_v3';
+      const getDatabase = () => JSON.parse(localStorage.getItem(DB_KEY) || '{}');
+      const saveDatabase = (db) => localStorage.setItem(DB_KEY, JSON.stringify(db));
+      const simulateDelay = (data, delay = 50) => new Promise(resolve => setTimeout(() => resolve(JSON.parse(JSON.stringify(data))), delay));
+      const dataService = {
+          fetchAllBlocks: async () => simulateDelay((getDatabase().globalBlocks || []).map(b => ({...b, questions: (getDatabase().globalQuestions || []).filter(q => q.bloqueId === b.id)}))),
+          fetchGame: async (gameId) => simulateDelay((getDatabase().globalGames || []).find(g => g.id === gameId)),
+          deleteGame: async (gameId) => {
+              const db = getDatabase();
+              db.globalGames = (db.globalGames || []).filter(g => g.id !== gameId);
+              saveDatabase(db);
+              return simulateDelay({ message: 'Game deleted' });
+          },
+          updateGame: async (gameId, updatedData) => {
+              const db = getDatabase();
+              const gameIndex = (db.globalGames || []).findIndex(g => g.id === gameId);
+              if (gameIndex > -1) {
+                  db.globalGames[gameIndex] = { ...db.globalGames[gameIndex], ...updatedData };
+                  saveDatabase(db);
+                  return simulateDelay(db.globalGames[gameIndex]);
+              }
+              return null;
+          },
+          updateUserStats: async (userId, gameId, gameResults, gameModeName) => {
+              const db = getDatabase();
+              const profile = db.userProfiles[userId];
+              if (!profile) return;
+      
+              if (!profile.stats) profile.stats = {};
+              if (!profile.answerHistory) profile.answerHistory = [];
+              if (!profile.stats.consolidation) {
+                  profile.stats.consolidation = { byQuestion: {}, byTopic: {}, byBlock: {} };
+              }
+              
+              for (const answer of gameResults.answers) {
+                  const { blockId, questionId, topicName, result, responseTime } = answer;
+                  if (!blockId || !questionId) continue;
+                  
+                  profile.answerHistory.unshift({
+                      gameId, questionId, blockId, topicName, result,
+                      responseTime, timestamp: new Date().toISOString(),
+                  });
+              }
+
+              const allGlobalQuestions = db.globalQuestions || [];
+              const blockIdsInGame = new Set(gameResults.answers.map(a => a.blockId).filter(Boolean));
+
+              for (const blockId of blockIdsInGame) {
+                  const questionsInBlock = allGlobalQuestions.filter(q => q.bloqueId === blockId);
+                  if (questionsInBlock.length === 0) continue;
+
+                  const correctlyAnsweredIdsInBlock = new Set(
+                      profile.answerHistory
+                          .filter(h => h.blockId === blockId && h.result === 'ACIERTO')
+                          .map(h => h.questionId)
+                  );
+                  const blockConsolidation = (correctlyAnsweredIdsInBlock.size / questionsInBlock.length) * 100;
+                  profile.stats.consolidation.byBlock[blockId] = blockConsolidation;
+
+                  const topicsInBlock = [...new Set(questionsInBlock.map(q => q.tema).filter(Boolean))];
+                  
+                  for (const topicName of topicsInBlock) {
+                      const questionsInTopic = questionsInBlock.filter(q => q.tema === topicName);
+                      if (questionsInTopic.length === 0) continue;
+
+                      const correctlyAnsweredIdsInTopic = new Set(
+                          profile.answerHistory
+                              .filter(h => h.blockId === blockId && h.topicName === topicName && h.result === 'ACIERTO')
+                              .map(h => h.questionId)
+                      );
+                      const topicConsolidation = (correctlyAnsweredIdsInTopic.size / questionsInTopic.length) * 100;
+                      const topicKey = `${blockId}_${topicName}`;
+                      profile.stats.consolidation.byTopic[topicKey] = topicConsolidation;
+                  }
+              }
+
+              if (!profile.gameHistory) {
+                  profile.gameHistory = [];
+              }
+              const correct = gameResults.answers.filter(a => a.result === 'ACIERTO' || a.isCorrect === true).length;
+              const incorrect = gameResults.answers.filter(a => a.result === 'FALLO' || a.isCorrect === false).length;
+              
+              const blockIds = [...new Set(gameResults.answers.map(a => a.blockId))];
+              const blockNames = (db.globalBlocks || [])
+                  .filter(b => blockIds.includes(b.id))
+                  .map(b => b.nombreCorto)
+                  .join(', ');
+
+              const historyEntry = {
+                  gameId,
+                  blockName: blockNames || 'N/A',
+                  mode: gameModeName,
+                  correct,
+                  incorrect,
+                  date: new Date().toISOString(),
+              };
+
+              if(gameResults.opponent) historyEntry.opponent = gameResults.opponent;
+
+              profile.gameHistory.unshift(historyEntry);
+              if (profile.gameHistory.length > 10) {
+                  profile.gameHistory = profile.gameHistory.slice(0, 10);
+              }
+      
+              saveDatabase(db);
+              return simulateDelay({ success: true });
+          },
+      };
+
+      // --- INLINED: auth ---
+      const UserContext = createContext();
+      const useUser = () => useContext(UserContext);
+      const UserProvider = ({ children }) => {
+        const [currentUser, setCurrentUser] = useState(null);
+        const [isLoading, setIsLoading] = useState(true);
+        useEffect(() => { try { const s = localStorage.getItem('playtest_session'); if (s) { const ses = JSON.parse(s); if (ses?.userId) { const user = (getDatabase().users || []).find(u => u.id === ses.userId); if (user) setCurrentUser(user); else localStorage.removeItem('playtest_session'); } } } catch (e) { console.error("Session parse error", e); } setIsLoading(false); }, []);
+        if (isLoading) return <div className="flex justify-center items-center h-screen"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"></circle><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor" className="opacity-75"></path></svg></div>;
+        if (!currentUser) { window.location.href = 'index.html'; return null; }
+        return <UserContext.Provider value={{ currentUser }}>{children}</UserContext.Provider>;
+      }
+
+      // --- INLINED: components ---
+       const ConfirmationDialog = ({ title, message, confirmText, cancelText, onConfirm, onCancel, danger = false }) => (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={onCancel}>
+          <div className={`bg-brand-secondary rounded-xl shadow-2xl w-full max-w-sm m-4 border ${danger ? 'border-brand-danger/50' : 'border-brand-tertiary'} p-6 text-center`} onClick={e => e.stopPropagation()}>
+              <h4 className="text-xl font-bold text-brand-light">{title}</h4>
+              <p className="text-brand-accent my-4">{message}</p>
+              <div className="flex justify-center gap-4 mt-6">
+                  <button onClick={onCancel} className="py-2 px-6 rounded-lg bg-brand-tertiary hover:bg-brand-accent text-brand-light font-bold transition-colors">{cancelText}</button>
+                  <button onClick={onConfirm} className={`py-2 px-6 rounded-lg font-bold transition-colors text-white ${danger ? 'bg-brand-danger hover:bg-red-500' : 'bg-brand-cta hover:bg-brand-cta-hover'}`}>{confirmText}</button>
+              </div>
+          </div>
+        </div>
+      );
+      
+      const Header = () => {
+        const { t } = useLanguage();
+        return (
+          <header className="bg-brand-secondary shadow-lg"><div className="container mx-auto px-4 sm:px-6 lg:px-8"><div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-3"><BrainSalutingIcon className="h-8 w-8 text-brand-cta" /><h1 className="text-xl md:text-2xl font-bold tracking-wider text-brand-light">{t('header_title')}</h1></div>
+          </div></div></header>
+        );
+      };
+
+      // --- DUEL GAME COMPONENTS ---
+      const DuelGamePage = ({ game, questions }) => {
+        const { t } = useLanguage();
+        const { currentUser } = useUser();
+        
+        const DUEL_ROUNDS = Math.min(10, Math.floor(questions.length / 2) * 2);
+        const duelQuestions = useMemo(() => questions.slice(0, DUEL_ROUNDS), [questions]);
+
+        const [gameState, setGameState] = useState(game.gameState || 'playing'); // playing, round_summary, finished
+        const [turnState, setTurnState] = useState(game.turnState || 'p1_ready'); // p1_ready, p1_answering, p2_ready, p2_answering
+        const [myAnswersHistory, setMyAnswersHistory] = useState([]);
+        const [currentRound, setCurrentRound] = useState(game.round || 0);
+        const [playerScores, setPlayerScores] = useState({ 0: game.players[0].score, 1: game.players[1].score });
+        const [roundAnswers, setRoundAnswers] = useState(game.roundAnswers || { 0: null, 1: null });
+        const [isConfirmingFinish, setIsConfirmingFinish] = useState(false);
+        const [timeLeft, setTimeLeft] = useState(30);
+        const turnStartTime = useRef(null);
+        const timerRef = useRef(null);
+        
+        const currentQuestion = duelQuestions[currentRound];
+        const isMyTurn = (turnState.startsWith('p1') && currentUser.id === game.players[0].userId) || (turnState.startsWith('p2') && currentUser.id === game.players[1].userId);
+
+        const updateSharedGameState = useCallback((data) => {
+            dataService.updateGame(game.id, data);
+        }, [game.id]);
+
+        const startTurn = useCallback(() => {
+            const newTurnState = turnState === 'p1_ready' ? 'p1_answering' : 'p2_answering';
+            setTurnState(newTurnState);
+            setTimeLeft(30);
+            turnStartTime.current = Date.now();
+            updateSharedGameState({ turnState: newTurnState });
+        }, [turnState, updateSharedGameState]);
+
+        useEffect(() => {
+            if (isMyTurn && (turnState === 'p1_ready' || turnState === 'p2_ready')) {
+                startTurn();
+            }
+        }, [isMyTurn, turnState, startTurn]);
+
+
+        useEffect(() => {
+          if ((turnState === 'p1_answering' || turnState === 'p2_answering') && isMyTurn) {
+            timerRef.current = setInterval(() => {
+              setTimeLeft(prev => {
+                if (prev <= 1) {
+                  clearInterval(timerRef.current);
+                  handleAnswerSelect(null); // Timeout
+                  return 0;
+                }
+                return prev - 1;
+              });
+            }, 1000);
+          }
+          return () => clearInterval(timerRef.current);
+        }, [turnState, isMyTurn]);
+
+        useEffect(() => {
+            if (gameState === 'finished' && currentUser) {
+                if (myAnswersHistory.length > 0) {
+                    const opponent = game.players.find(p => p.userId !== currentUser.id);
+                    const gameResults = { 
+                        answers: myAnswersHistory, 
+                        opponent: opponent?.nickname 
+                    };
+                    dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
+                }
+                dataService.deleteGame(game.id);
+            }
+        }, [gameState, currentUser, myAnswersHistory, game]);
+
+        useEffect(() => {
+          if (roundAnswers[0] !== null && roundAnswers[1] !== null) {
+            let p1Points = 0; let p2Points = 0;
+            if(roundAnswers[0].isCorrect) p1Points++;
+            if(roundAnswers[1].isCorrect) p2Points++;
+            if(roundAnswers[0].isCorrect && roundAnswers[1].isCorrect) {
+              if (roundAnswers[0].time < roundAnswers[1].time) p1Points++;
+              else if (roundAnswers[1].time < roundAnswers[0].time) p2Points++;
+            }
+            
+            const newScores = { 0: playerScores[0] + p1Points, 1: playerScores[1] + p2Points };
+            setPlayerScores(newScores);
+            setGameState('round_summary');
+            updateSharedGameState({ gameState: 'round_summary', players: [{...game.players[0], score: newScores[0]}, {...game.players[1], score: newScores[1]}], roundAnswers });
+          }
+        }, [roundAnswers]);
+
+        const handleAnswerSelect = (answerIndex) => {
+            clearInterval(timerRef.current);
+            const responseTime = answerIndex === null ? 30 : (Date.now() - turnStartTime.current) / 1000;
+            const currentPlayerIdx = turnState === 'p1_answering' ? 0 : 1;
+            const isCorrect = answerIndex !== null && currentQuestion.respuestas[answerIndex].esCorrecta;
+            
+            if (currentUser.id === game.players[currentPlayerIdx].userId) {
+                setMyAnswersHistory(prev => [...prev, {
+                    questionId: currentQuestion.id,
+                    result: isCorrect ? 'ACIERTO' : (answerIndex === null ? 'BLANCO' : 'FALLO'),
+                    blockId: currentQuestion.blockId,
+                    topicName: currentQuestion.tema,
+                    responseTime,
+                }]);
+            }
+
+            const newRoundAnswers = {...roundAnswers, [currentPlayerIdx]: { answerIndex, time: responseTime, isCorrect }};
+
+            setRoundAnswers(newRoundAnswers);
+            const nextTurnState = currentPlayerIdx === 0 ? 'p2_ready' : 'finished_round';
+            setTurnState(nextTurnState);
+            updateSharedGameState({ turnState: nextTurnState, roundAnswers: newRoundAnswers });
+        };
+
+        const handleNextRound = () => {
+          const nextRound = currentRound + 1;
+          if (nextRound < duelQuestions.length) {
+            setCurrentRound(nextRound);
+            setRoundAnswers({ 0: null, 1: null });
+            setGameState('playing');
+            setTurnState('p1_ready');
+            updateSharedGameState({ round: nextRound, roundAnswers: { 0: null, 1: null }, gameState: 'playing', turnState: 'p1_ready' });
+          } else {
+            setGameState('finished');
+            updateSharedGameState({ gameState: 'finished' });
+          }
+        };
+
+        if (gameState === 'finished') {
+            const winner = playerScores[0] > playerScores[1] ? game.players[0] : (playerScores[1] > playerScores[0] ? game.players[1] : null);
+            return (
+                 <div className="max-w-3xl mx-auto text-center animate-fade-in p-8 bg-brand-secondary rounded-xl">
+                    <h2 className="text-4xl font-bold text-brand-light mb-4">{t('game_results_title')}</h2>
+                    <h3 className="text-2xl font-semibold text-brand-cta mb-8">
+                        {winner ? t('game_winner_announcement', { nickname: winner.nickname }) : t('game_draw_announcement')}
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4 bg-brand-primary p-6 rounded-lg mb-8 text-center">
+                        <div>
+                            <p className="font-bold text-xl text-brand-light">{game.players[0].nickname}</p>
+                            <p className="text-4xl font-extrabold text-white my-2">{playerScores[0]}</p>
+                        </div>
+                        <div>
+                             <p className="font-bold text-xl text-brand-light">{game.players[1].nickname}</p>
+                             <p className="text-4xl font-extrabold text-white my-2">{playerScores[1]}</p>
+                        </div>
+                    </div>
+                    <div className="flex justify-center gap-4">
+                        <button onClick={() => window.location.reload()} className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-bold py-3 px-6 rounded-lg transition-colors"><ArrowPathIcon className="h-5 w-5" />{t('game_button_play_again')}</button>
+                        <button onClick={() => window.location.href = 'index.html'} className="flex items-center gap-2 bg-brand-cta hover:bg-brand-cta-hover text-white font-bold py-3 px-6 rounded-lg transition-colors"><ArrowUturnLeftIcon className="h-5 w-5" />{t('game_button_dashboard')}</button>
+                    </div>
+                </div>
+            )
+        }
+        
+        const PlayerScorecard = ({ playerNum }) => (
+            <div className={`text-center p-4 rounded-lg transition-colors duration-300 ${turnState.startsWith(`p${playerNum+1}`) ? 'bg-brand-cta/20' : ''}`}>
+                <p className="font-bold text-brand-light truncate">{game.players[playerNum].nickname}</p>
+                <p className="text-3xl font-bold text-white">{playerScores[playerNum]}</p>
+            </div>
+        );
+
+        if(!currentQuestion) return <div className="text-center p-8">{t('loading')}</div>;
+
+        return (
+             <div className="max-w-4xl mx-auto animate-fade-in">
+                {isConfirmingFinish && ( <ConfirmationDialog title={t('game_finish_confirm_title')} message={t('game_finish_confirm_message')} confirmText={t('game_button_finish')} onConfirm={() => setGameState('finished')} onCancel={() => setIsConfirmingFinish(false)} danger={true}/> )}
+                 
+                {gameState === 'playing' && !isMyTurn && (
+                    <div className="mb-4">
+                        <a href="index.html" className="flex items-center gap-2 w-max bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold py-2 px-4 rounded-lg transition-colors">
+                            <ArrowUturnLeftIcon className="h-5 w-5" />
+                            <span>{t('all_blocks_return')}</span>
+                        </a>
+                    </div>
+                )}
+                 
+                 <div className="mb-4 flex justify-between items-center">
+                    <h2 className="text-xl font-bold text-brand-light">{game.mode} - {t('game_round')} {currentRound + 1}/{duelQuestions.length}</h2>
+                    <button onClick={() => setIsConfirmingFinish(true)} className="flex items-center gap-2 text-sm bg-brand-danger/80 hover:bg-brand-danger text-white font-semibold py-2 px-4 rounded-lg transition-colors"> <FlagIcon className="h-5 w-5" /> {t('game_button_finish')} </button>
+                </div>
+                <div className="bg-brand-secondary p-6 rounded-xl shadow-2xl">
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                        <PlayerScorecard playerNum={0}/>
+                        <PlayerScorecard playerNum={1}/>
+                    </div>
+
+                    {gameState === 'playing' && (
+                        <>
+                            {(turnState === 'p1_ready' || turnState === 'p2_ready') && (
+                                <div className="text-center p-8 animate-fade-in">
+                                    <h3 className="text-3xl font-bold text-brand-light mb-2">{t('game_player_turn', {playerNickname: game.players[turnState === 'p1_ready' ? 0 : 1].nickname})}</h3>
+                                    <p className="text-brand-accent mb-6">{isMyTurn ? t('game_get_ready') : 'Esperando al oponente...'}</p>
+                                </div>
+                            )}
+                            {(turnState === 'p1_answering' || turnState === 'p2_answering') && (
+                                <div className="animate-fade-in">
+                                    <p className="text-center text-brand-accent font-semibold mb-4">{t('game_time_left')}: {timeLeft}s</p>
+                                    <div className="w-full bg-brand-primary rounded-full h-2.5 mb-6"><div className="bg-brand-danger h-2.5 rounded-full transition-all duration-1000 linear" style={{ width: `${(timeLeft/30)*100}%` }}></div></div>
+                                    <div className="bg-brand-primary p-6 rounded-lg mb-6"><p className="text-xl font-semibold text-center text-brand-light">{currentQuestion.textoPregunta}</p></div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {currentQuestion.respuestas.map((ans, i) => (
+                                            <button key={i} onClick={() => handleAnswerSelect(i)} disabled={!isMyTurn} className="w-full text-left p-4 rounded-lg text-brand-light font-medium transition-colors bg-brand-tertiary hover:bg-brand-accent disabled:cursor-not-allowed disabled:opacity-50">
+                                                {ans.textoRespuesta}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+                    
+                    {gameState === 'round_summary' && (
+                        <div className="animate-pop-in text-center">
+                            <h3 className="text-2xl font-bold text-brand-light mb-6">{t('game_round_results')}</h3>
+                            <div className="grid grid-cols-2 gap-4 mb-6">
+                                {[0, 1].map(playerNum => {
+                                    const answer = roundAnswers[playerNum];
+                                    const points = (answer.isCorrect ? 1 : 0) + (answer.isCorrect && roundAnswers[1-playerNum]?.isCorrect && answer.time < roundAnswers[1-playerNum]?.time ? 1 : 0);
+                                    return (
+                                        <div key={playerNum} className="bg-brand-primary p-4 rounded-lg">
+                                            <p className="font-bold text-lg text-brand-light mb-2">{game.players[playerNum].nickname}</p>
+                                            {answer.answerIndex === null ? <p className="font-semibold text-brand-accent">{t('game_too_slow')}</p> : <p className={`font-semibold ${answer.isCorrect ? 'text-brand-success' : 'text-brand-danger'}`}>{answer.isCorrect ? t('game_correct') : t('game_incorrect')}</p>}
+                                            <p className="text-sm text-brand-accent">{answer.time.toFixed(2)}{t('game_seconds')}</p>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                            <button onClick={handleNextRound} className="bg-brand-cta hover:bg-brand-cta-hover text-white font-bold py-3 px-8 rounded-lg text-lg">
+                                {currentRound < duelQuestions.length - 1 ? t('game_next_round') : t('game_view_results')}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+      }
+
+      const DuelGamePageContent = () => {
+          const { t } = useLanguage();
+          const { currentUser } = useUser();
+          const [game, setGame] = useState(null);
+          const [blocks, setBlocks] = useState([]);
+          const [isLoading, setIsLoading] = useState(true);
+          const [error, setError] = useState(null);
+          const [gameQuestions, setGameQuestions] = useState([]);
+
+          useEffect(() => {
+              const params = new URLSearchParams(window.location.search);
+              const gameId = params.get('gameId');
+              if (!gameId) { setError("No game ID provided."); setIsLoading(false); return; }
+
+              const loadData = async () => {
+                  try {
+                       const [fetchedGame, fetchedBlocks] = await Promise.all([ 
+                          dataService.fetchGame(gameId), 
+                          dataService.fetchAllBlocks() 
+                        ]);
+                      if (!fetchedGame) throw new Error("Game not found or has been declined.");
+                      setGame(fetchedGame);
+                      setBlocks(fetchedBlocks);
+                  } catch (err) { setError(err.message);
+                  } finally { setIsLoading(false); }
+              };
+              loadData();
+          }, []);
+          
+          useEffect(() => {
+            if (!game || !blocks || blocks.length === 0) return;
+
+            const prepareQuestions = async () => {
+                let allQuestions = [];
+                for (const [blockId, blockConfig] of Object.entries(game.config)) {
+                    const block = blocks.find(b => b.id === blockId);
+                    if (!block || !block.questions) continue;
+                    const questionsWithMeta = block.questions.map(q => ({...q, blockId: block.id }));
+                    if (blockConfig.topics === 'all') { allQuestions.push(...questionsWithMeta); } 
+                    else if (Array.isArray(blockConfig.topics)) { allQuestions.push(...questionsWithMeta.filter(q => blockConfig.topics.includes(q.tema))); }
+                }
+
+                if (game.shuffledQuestionIds) {
+                    const questionMap = new Map(allQuestions.map(q => [q.id, q]));
+                    const orderedQuestions = game.shuffledQuestionIds.map(id => questionMap.get(id)).filter(Boolean);
+                    setGameQuestions(orderedQuestions);
+                } else {
+                    const shuffled = allQuestions.sort(() => Math.random() - 0.5);
+                    const shuffledIds = shuffled.map(q => q.id);
+                    setGameQuestions(shuffled);
+                    await dataService.updateGame(game.id, { shuffledQuestionIds: shuffledIds });
+                }
+            };
+            prepareQuestions();
+          }, [game, blocks]);
+
+          const renderContent = () => {
+              if (isLoading) { return <div className="flex justify-center items-center h-64"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>; }
+              if (error) { return <div className="text-center text-brand-danger bg-red-500/10 p-4 rounded-lg">{t('error')}: {error}</div>; }
+              if (game.status === 'pending') { return <div className="text-center text-brand-accent p-8">Esperando a que el oponente acepte el reto...</div> }
+              if (gameQuestions.length === 0) {
+                 return <div className="flex justify-center items-center h-64"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>;
+              }
+              if (gameQuestions.length < 10) { return <div className="text-center text-brand-accent p-8">No hay suficientes preguntas para un Duelo (se necesitan 10).</div> }
+              return <DuelGamePage questions={gameQuestions} game={game} />;
+          };
+
+          return (
+              <div className="min-h-screen flex flex-col">
+                  <Header />
+                  <main className="flex-grow p-4 sm:p-6 lg:p-8">{renderContent()}</main>
+                  <footer className="text-center p-4 text-xs text-brand-accent"><p>{t('footer_text')}</p></footer>
+              </div>
+          );
+      };
+
+      const DuelGameApp = () => ( <UserProvider> <DuelGamePageContent /> </UserProvider> );
+
+      // --- App Entry Point ---
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render( <React.StrictMode> <LanguageProvider><DuelGameApp /></LanguageProvider> </React.StrictMode> );
+    </script>
+    <noscript>This application requires JavaScript to run.</noscript>
+  </body>
+</html>
