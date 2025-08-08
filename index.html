@@ -2172,8 +2172,11 @@
                 if (user) {
                   setCurrentUser(user);
                 } else {
-                  // User in session not found in DB, clear session
-                  localStorage.removeItem('playtest_session');
+              // User in session not found in local DB, but that's OK 
+                since we use PostgreSQL now DB, but that's OK since we use PostgreSQL now
+              // 
+               localStorage.removeItem('playtest_session');
+               localStorage.removeItem('playtest_session');
                 }
               }
             }
