@@ -1237,9 +1237,9 @@
                          <button onClick={onOpenAddBlockModal} className="text-sm font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1.5 px-3 rounded-md transition-colors">
                             {t('block_management_add_available')}
                          </button>
-                         <a href="/add-question.html" className="text-sm font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-1.5 px-3 rounded-md transition-colors inline-block">
+                         <button onClick={() => setCurrentView('add-question')} className="text-sm font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-1.5 px-3 rounded-md transition-colors inline-block">
                             {t('add_question_button')}
-                         </a>
+                         </button>
                        </div>
                   </div>
                   {blocks.length > 0 ? (
@@ -1304,7 +1304,7 @@
                     </>
                   ) : (
                     <div className="text-center py-6 flex-grow flex items-center justify-center">
-                        <p className="text-brand-accent">No blocks loaded. <a href="/add-question.html" className="text-brand-cta hover:underline">Click 'Add Questions'</a> to create a new block.</p>
+                        <p className="text-brand-accent">No blocks loaded. <button onClick={() => setCurrentView('add-question')} className="text-brand-cta hover:underline">Click 'Add Questions'</button> to create a new block.</p>
                     </div>
                   )}
               </div>
@@ -1343,7 +1343,7 @@
                         <div>
                           <p className="text-brand-accent">{t('created_blocks_none')}</p>
                           <p className="text-sm text-brand-tertiary mt-1">
-                            <a href="/add-question.html" className="text-brand-cta hover:underline">{t('created_blocks_create_new')}</a>
+                            <button onClick={() => setCurrentView('add-question')} className="text-brand-cta hover:underline">{t('created_blocks_create_new')}</button>
                           </p>
                         </div>
                       </div>
