@@ -435,12 +435,16 @@
           const [gameId, setGameId] = useState(null);
 
           useEffect(() => {
+              console.log('🌐 Current URL:', window.location.href);
+              console.log('🔍 Search params:', window.location.search);
+              
               const params = new URLSearchParams(window.location.search);
               const id = params.get('gameId');
               const isSimple = params.get('simple') === 'true';
               const isFallback = params.get('fallback') === 'true';
               
               console.log('🎮 Game loading with params:', { id, isSimple, isFallback });
+              console.log('📋 All URL params:', Object.fromEntries(params.entries()));
               
               if (id) {
                   setGameId(id);
@@ -450,6 +454,8 @@
                       console.log('🔄 Using fallback game ID:', id);
                   }
               } else { 
+                  console.error('❌ No gameId found in URL params');
+                  console.error('❌ Available params:', [...params.entries()]);
                   setError("No game ID provided."); 
                   setIsLoading(false); 
               }

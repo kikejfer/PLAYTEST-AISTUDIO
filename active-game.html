@@ -579,6 +579,7 @@
                   url += `&numQuestions=${examConfig.numQuestions}&penalty=${examConfig.penalty}`;
               }
               console.log('🔗 Final URL:', url);
+              console.log('🔗 URL components:', { fileName, simpleGameId, mode: game.mode });
               alert('🔗 Navegando a: ' + url);
               
               // Store game config in localStorage for the game to use
@@ -589,8 +590,9 @@
                   created: Date.now()
               };
               localStorage.setItem(`game_${simpleGameId}`, JSON.stringify(gameConfigData));
-              console.log('💾 Stored game config in localStorage');
+              console.log('💾 Stored game config in localStorage:', gameConfigData);
               
+              console.log('🚀 Initiating navigation to:', url);
               window.location.href = url;
           } else {
               alert(`Game mode "${game.mode}" is not implemented yet.`);
