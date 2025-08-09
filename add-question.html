@@ -236,10 +236,10 @@
                   const question = questions[i];
                   const questionData = {
                       blockId: blockId,
-                      textoPregunta: question.pregunta || question.textoPregunta,
-                      tema: question.tema || 'General',
+                      textoPregunta: question.textoPregunta || question.pregunta,
+                      tema: question.tema || 'General', 
                       respuestas: question.respuestas || [],
-                      difficulty: question.dificultad || 3
+                      difficulty: question.dificultad || question.difficulty || 1
                   };
                   
                   console.log(`🔧 Creating question ${i + 1}:`, questionData);
