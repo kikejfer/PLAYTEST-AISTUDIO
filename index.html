@@ -3,12 +3,19 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- 
+      DEVELOPMENT VERSION - For production, consider:
+      1. Installing Tailwind CSS as PostCSS plugin instead of CDN
+      2. Pre-compiling JSX/TSX instead of using Babel in-browser
+      3. Using proper build tools like Vite, Webpack, or Parcel
+    -->
     <meta charset="UTF-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0"
     />
     <title>PLAYTEST Admin Panel</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
 
     <!-- Embedded Global Stylesheet -->
     <style>
@@ -103,7 +110,7 @@
       }
     </style>
 
-    <!-- Tailwind CSS from CDN -->
+    <!-- Tailwind CSS from CDN - Development only -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -146,14 +153,19 @@
   <body class="bg-brand-primary text-brand-light">
     <div id="root"></div>
 
-    <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
+    <!-- Babel Standalone for in-browser transpilation of TSX/JSX - Development only -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- API Data Service -->
+    <script src="./api-data-service.js"></script>
 
     <!-- Main application script -->
     <script type="text/babel" data-type="module">
       // Polyfill 'process' for browser environment. The execution environment
       // is expected to populate process.env.API_KEY.
       globalThis.process = globalThis.process || { env: {} };
+      
+      console.log("🎮 PLAYTEST JavaScript loaded successfully!");
 
       import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
       import ReactDOM from 'react-dom/client';
@@ -382,45 +394,13 @@
 
       // --- INLINED: services/dataService.ts ---
 
-      const DB_KEY = 'playtest_db_v3';
-      const DB_INITIALIZED_KEY = 'playtest_db_v3_initialized';
-      
-      const getDatabase = () => {
-          const dbString = localStorage.getItem(DB_KEY);
-          return dbString ? JSON.parse(dbString) : { users: [], globalBlocks: [], globalQuestions: [], userProfiles: {}, globalGames: [] };
-      };
-      
-      const saveDatabase = (db) => {
-          localStorage.setItem(DB_KEY, JSON.stringify(db));
-      };
-      
-      const initializeDatabase = () => {
-          if (!localStorage.getItem(DB_INITIALIZED_KEY)) {
-              console.log("Initializing user-based database in localStorage...");
-              const initialDb = {
-                  users: [],
-                  globalBlocks: [],
-                  globalQuestions: [],
-                  userProfiles: {},
-                  marathonScores: [],
-                  globalGames: [],
-              };
-              
-              const adminUser = { id: 'admin_user_01', nickname: 'admin', password: 'kikejfer', firstName: 'Admin', lastName: 'User', email: 'admin@playtest.app', isAdmin: true };
-              initialDb.users.push(adminUser);
-              initialDb.userProfiles[adminUser.id] = { loadedBlockIds: [], stats: {}, challenges: [] };
-
-              saveDatabase(initialDb);
-              localStorage.setItem(DB_INITIALIZED_KEY, 'true');
-          }
-      };
-      
-      initializeDatabase();
+      // Database initialization removed - now using PostgreSQL via API
 
       const simulateDelay = (data, delay = 50) => 
         new Promise(resolve => setTimeout(() => resolve(JSON.parse(JSON.stringify(data))), delay));
 
-      const dataService = {
+      // Use the API data service instead of localStorage
+      const dataService = apiDataService || {
         login: async (nickname, password) => {
             const db = getDatabase();
             const user = db.users.find(u => u.nickname.toLowerCase() === nickname.toLowerCase() && u.password === password);
@@ -1038,7 +1018,7 @@
         return '';
       };
 
-      const ActiveGames = ({ games, challenges, blocks, onDeleteGame, onNavigateToGame, onAcceptChallenge, onDeclineChallenge }) => {
+      const ActiveGames = ({ games, challenges, blocks, onDeleteGame, onNavigateToGame, onAcceptChallenge, onDeclineChallenge, setCurrentView }) => {
           const { t } = useLanguage();
           const { currentUser } = useUser();
           const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
@@ -1088,7 +1068,7 @@
                       <h3 className="text-xl font-bold text-brand-light">{t('active_games_title')}</h3>
                   </div>
                   {activeGames.length > 0 &&
-                      <a href="all-games.html" className="text-sm font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1 px-3 rounded-md transition-colors">
+                      <a href="/all-games.html" className="text-sm font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1 px-3 rounded-md transition-colors">
                           {t('active_games_view_all', { count: activeGames.length })}
                       </a>
                   }
@@ -1213,7 +1193,7 @@
         );
     };
       
-      const UserBlockManagement = ({ blocks, onViewBlock, onDeleteBlock, onOpenAddBlockModal, onOpenStatsModal }) => {
+      const UserBlockManagement = ({ blocks, onViewBlock, onDeleteBlock, onOpenAddBlockModal, onOpenStatsModal, setCurrentView }) => {
           const { t } = useLanguage();
           const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
           const [expandedBlockId, setExpandedBlockId] = useState(null);
@@ -1257,7 +1237,7 @@
                          <button onClick={onOpenAddBlockModal} className="text-sm font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1.5 px-3 rounded-md transition-colors">
                             {t('block_management_add_available')}
                          </button>
-                         <a href="add-question.html" className="text-sm font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-1.5 px-3 rounded-md transition-colors">
+                         <a href="/add-question.html" className="text-sm font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-1.5 px-3 rounded-md transition-colors inline-block">
                             {t('add_question_button')}
                          </a>
                        </div>
@@ -1324,14 +1304,14 @@
                     </>
                   ) : (
                     <div className="text-center py-6 flex-grow flex items-center justify-center">
-                        <p className="text-brand-accent">No blocks loaded. Click 'Add Questions' to create a new block.</p>
+                        <p className="text-brand-accent">No blocks loaded. <a href="/add-question.html" className="text-brand-cta hover:underline">Click 'Add Questions'</a> to create a new block.</p>
                     </div>
                   )}
               </div>
           );
       };
 
-      const CreatedBlocksManagement = ({ blocks }) => {
+      const CreatedBlocksManagement = ({ blocks, setCurrentView }) => {
           const { t } = useLanguage();
           return (
               <div className="bg-brand-secondary p-6 rounded-xl shadow-lg flex flex-col">
@@ -1363,7 +1343,7 @@
                         <div>
                           <p className="text-brand-accent">{t('created_blocks_none')}</p>
                           <p className="text-sm text-brand-tertiary mt-1">
-                            <a href="add-question.html" className="text-brand-cta hover:underline">{t('created_blocks_create_new')}</a>
+                            <a href="/add-question.html" className="text-brand-cta hover:underline">{t('created_blocks_create_new')}</a>
                           </p>
                         </div>
                       </div>
@@ -1372,17 +1352,17 @@
           );
       };
 
-      const UserDashboard = ({ blocks, createdBlocks, games, challenges, gameHistory, onViewBlock, onCreateGame, onSendChallenge, onDeleteGame, onNavigateToGame, onDeleteBlock, onOpenAddBlockModal, onAcceptChallenge, onDeclineChallenge, onOpenStatsModal }) => (
+      const UserDashboard = ({ blocks, createdBlocks, games, challenges, gameHistory, onViewBlock, onCreateGame, onSendChallenge, onDeleteGame, onNavigateToGame, onDeleteBlock, onOpenAddBlockModal, onAcceptChallenge, onDeclineChallenge, onOpenStatsModal, setCurrentView }) => (
         <div className="space-y-8 animate-fade-in">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-2 space-y-8">
               <GameSetup blocks={blocks} onCreateGame={onCreateGame} onSendChallenge={onSendChallenge}/>
-              <ActiveGames games={games} challenges={challenges} blocks={blocks} onDeleteGame={onDeleteGame} onNavigateToGame={onNavigateToGame} onAcceptChallenge={onAcceptChallenge} onDeclineChallenge={onDeclineChallenge} />
+              <ActiveGames games={games} challenges={challenges} blocks={blocks} onDeleteGame={onDeleteGame} onNavigateToGame={onNavigateToGame} onAcceptChallenge={onAcceptChallenge} onDeclineChallenge={onDeclineChallenge} setCurrentView={setCurrentView} />
               <GameHistory history={gameHistory} />
             </div>
             <div className="lg:col-span-1 space-y-8">
-              <UserBlockManagement blocks={blocks} onViewBlock={onViewBlock} onDeleteBlock={onDeleteBlock} onOpenAddBlockModal={onOpenAddBlockModal} onOpenStatsModal={onOpenStatsModal} />
-              <CreatedBlocksManagement blocks={createdBlocks} />
+              <UserBlockManagement blocks={blocks} onViewBlock={onViewBlock} onDeleteBlock={onDeleteBlock} onOpenAddBlockModal={onOpenAddBlockModal} onOpenStatsModal={onOpenStatsModal} setCurrentView={setCurrentView} />
+              <CreatedBlocksManagement blocks={createdBlocks} setCurrentView={setCurrentView} />
             </div>
           </div>
         </div>
@@ -1404,7 +1384,7 @@
         </div>
       );
       
-      const AdminPanel = () => {
+      const AdminPanel = ({ setCurrentView }) => {
         const { t } = useLanguage();
         const [users, setUsers] = useState([]);
         const [blocks, setBlocks] = useState([]);
@@ -1457,10 +1437,10 @@
             <div className="space-y-8">
                 <div className="flex justify-between items-center">
                   <h2 className="text-3xl font-bold text-brand-light">Admin Panel</h2>
-                  <a href="add-question.html" className="flex items-center gap-2 text-sm font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-2 px-4 rounded-md transition-colors">
+                  <button onClick={() => { console.log('🔧 Navigating to add-question.html'); window.location.href = '/add-question.html'; }} className="flex items-center gap-2 text-sm font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-2 px-4 rounded-md transition-colors">
                       <PlusCircleIcon className="h-5 w-5" />
                       <span>{t('add_question_button')}</span>
-                  </a>
+                  </button>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -1519,7 +1499,7 @@
                                 <BookOpenIcon className="h-6 w-6 text-brand-accent"/>
                                 <h3 className="text-xl font-bold text-brand-light">Bloques Disponibles</h3>
                             </div>
-                            <a href="all-blocks.html" className="text-sm font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1.5 px-3 rounded-md transition-colors">
+                            <a href="/all-blocks.html" className="text-sm font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1.5 px-3 rounded-md transition-colors">
                                 {t('admin_manage_blocks', { count: blocks.length })}
                             </a>
                         </div>
@@ -1883,6 +1863,7 @@
         const { t } = useLanguage();
         const { currentUser } = useUser();
         
+        const [currentView, setCurrentView] = useState('dashboard'); // dashboard, add-question, block-questions, etc.
         const [blocks, setBlocks] = useState([]);
         const [games, setGames] = useState([]);
         const [challenges, setChallenges] = useState([]);
@@ -1994,8 +1975,11 @@
           if (isLoading) { return ( <div className="flex justify-center items-center h-64"> <svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle> <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> </div> ); }
           if (error) { return <div className="text-center text-brand-danger bg-red-500/10 p-4 rounded-lg">{t('error')}: {error}</div>; }
           
+          // Navigation based on currentView - add-question now goes to HTML file directly
+
+          
           if (currentUser.isAdmin) {
-             return <AdminPanel />;
+             return <AdminPanel setCurrentView={setCurrentView} />;
           }
 
           return (
@@ -2015,6 +1999,7 @@
                   onOpenStatsModal={setStatModalBlock}
                   onAcceptChallenge={handleAcceptChallenge}
                   onDeclineChallenge={handleDeclineChallenge}
+                  setCurrentView={setCurrentView}
               />
           );
         }
@@ -2090,13 +2075,20 @@
         const handleLoginSubmit = async (e) => {
           e.preventDefault(); setIsLoading(true); setError('');
           try {
-            const user = await dataService.login(loginData.nickname, loginData.password);
-            if (user) {
-              onLogin(user, loginData.remember);
+            console.log('🔐 Attempting login with:', loginData.nickname);
+            const response = await dataService.login(loginData.nickname, loginData.password);
+            console.log('🔐 Login API response:', response);
+            
+            if (response && response.user && response.token) {
+              console.log('✅ Login successful, user data:', response.user);
+              onLogin(response.user, loginData.remember);
             } else {
+              console.log('❌ Login failed - invalid response structure');
               setError(t('auth_error_invalid_credentials'));
             }
-          } catch (err) { setError(t('auth_error_generic'));
+          } catch (err) { 
+            console.error('❌ Login error:', err);
+            setError(t('auth_error_generic'));
           } finally { setIsLoading(false); }
         };
 
@@ -2107,9 +2099,15 @@
           
           try {
             const { confirmPassword, ...newUserPayload } = registerData;
-            const newUser = await dataService.registerUser(newUserPayload);
-            onLogin(newUser, registerData.remember);
-          } catch (err) { setError(err.message || t('auth_error_generic'));
+            const response = await dataService.registerUser(newUserPayload);
+            if (response && response.user && response.token) {
+              onLogin(response.user, registerData.remember);
+            } else {
+              setError(t('auth_error_generic'));
+            }
+          } catch (err) { 
+            console.error('Registration error:', err);
+            setError(err.message || t('auth_error_generic'));
           } finally { setIsLoading(false); }
         };
 
@@ -2154,43 +2152,89 @@
       };
 
       const AuthController = () => {
+        console.log("🔐 AuthController component initialized");
         const [currentUser, setCurrentUser] = useState(null);
         const [isLoading, setIsLoading] = useState(true);
 
         useEffect(() => {
+          console.log('Checking for existing session...');
           try {
             const sessionString = localStorage.getItem('playtest_session');
-            if (sessionString) {
+            const token = localStorage.getItem('playtest_auth_token');
+            console.log('Session string:', sessionString);
+            console.log('Token:', token ? 'exists' : 'missing');
+            
+            if (sessionString && token) {
               const session = JSON.parse(sessionString);
-              if (session && session.userId) {
-                const db = getDatabase();
-                const user = db.users.find(u => u.id === session.userId);
-                if (user) {
-                  setCurrentUser(user);
-                } else {
-                  // User in session not found in DB, clear session
-                  localStorage.removeItem('playtest_session');
+              console.log('Parsed session:', session);
+              
+              // Check if session has valid data
+              if (session && session.userId && session.nickname) {
+                // Create user object from session data (no need to query local DB)
+                const user = {
+                  id: session.userId,
+                  nickname: session.nickname
+                };
+                console.log('✅ Restoring user session:', user);
+                setCurrentUser(user);
+                
+                // Ensure apiDataService has the token
+                if (apiDataService && !apiDataService.token) {
+                  apiDataService.token = token;
+                  console.log('Set token in apiDataService');
                 }
+              } else {
+                console.log('❌ Session data is invalid or incomplete, clearing...');
+                localStorage.removeItem('playtest_session');
+                localStorage.removeItem('playtest_auth_token');
               }
+            } else {
+              console.log('No valid session found');
             }
           } catch (e) {
             console.error("Failed to parse session from localStorage, clearing it.", e);
             // Corrupted session data, clear it to be safe
             localStorage.removeItem('playtest_session');
+            localStorage.removeItem('playtest_auth_token');
           }
           setIsLoading(false);
         }, []);
 
         const handleLogin = (user, remember) => {
+          console.log('handleLogin called with:', user, remember);
+          
+          // Always save session data FIRST (both for remember and non-remember)
+          const sessionData = { 
+            userId: user.id, 
+            nickname: user.nickname
+          };
+          localStorage.setItem('playtest_session', JSON.stringify(sessionData));
+          console.log('💾 Saved session data:', sessionData);
+          
+          // Verify it was saved correctly
+          const savedSession = localStorage.getItem('playtest_session');
+          console.log('🔍 Verification - what was actually saved:', savedSession);
+          
+          // Then set the user state
           setCurrentUser(user);
-          if (remember) {
-            localStorage.setItem('playtest_session', JSON.stringify({ userId: user.id }));
-          }
+          console.log('✅ User state set successfully');
         };
 
-        const handleLogout = () => {
+        const handleLogout = async () => {
+          try {
+            // Call API logout endpoint
+            await apiDataService.logout();
+          } catch (error) {
+            console.error('Logout API call failed:', error);
+          }
+          
           setCurrentUser(null);
           localStorage.removeItem('playtest_session');
+          localStorage.removeItem('playtest_auth_token');
+          
+          // Clear old localStorage data if it exists
+          localStorage.removeItem('playtest_db_v3');
+          localStorage.removeItem('playtest_db_v3_initialized');
         };
         
         if (isLoading) {
@@ -2224,6 +2268,5 @@
 
     </script>
     <noscript>This application requires JavaScript to run.</noscript>
-  <script type="module" src="/index.tsx"></script>
 </body>
 </html>

@@ -72,10 +72,15 @@
     <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- API Data Service -->
+    <script src="./api-data-service.js"></script>
+
     <!-- Main application script -->
     <script type="text/babel" data-type="module">
       // Polyfill 'process' for browser environment.
       globalThis.process = globalThis.process || { env: {} };
+      
+      console.log("🔧 ADD-QUESTION.HTML loaded successfully!");
 
       import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
       import ReactDOM from 'react-dom/client';
@@ -166,42 +171,60 @@
           return simulateDelay(blocksWithQuestions);
       };
       const createBlockWithQuestions = async (blockName, questions, isPublic = true) => {
-          const db = getDatabase();
+          console.log('🔧 Creating block with questions:', blockName);
           const sessionString = localStorage.getItem('playtest_session');
-          const session = sessionString ? JSON.parse(sessionString) : null;
-          if (!session || !session.userId) throw new Error("User not authenticated");
-          const creatorId = session.userId;
+          const token = localStorage.getItem('playtest_auth_token');
           
-          const newBlockId = `b${Date.now()}`;
-          const newBlock = { 
-              id: newBlockId, 
-              nombreCorto: blockName, 
-              nombreLargo: `${blockName} (Custom)`, 
-              tipoBloque: BlockType.EXTERNAL, 
-              urlImagenBloque: `https://picsum.photos/seed/${encodeURIComponent(blockName)}/400/200`,
-              creatorId: creatorId,
-              isPublic: isPublic,
-           };
-          db.globalBlocks.push(newBlock);
+          if (!sessionString || !token) {
+            throw new Error("User not authenticated - no session or token");
+          }
+          
+          const session = JSON.parse(sessionString);
+          if (!session || !session.userId) {
+            throw new Error("User not authenticated - invalid session");
+          }
+          
+          const creatorId = session.userId;
+          console.log('🔧 Creator ID:', creatorId);
+          
+          // Create block using API
+          const blockData = {
+              nombre_corto: blockName,
+              nombre_largo: `${blockName} (Custom)`,
+              tipo_bloque: 'EXTERNO',
+              url_imagen_bloque: `https://picsum.photos/seed/${encodeURIComponent(blockName)}/400/200`,
+              is_public: isPublic
+          };
+          
+          console.log('🔧 Creating block via API:', blockData);
+          const createdBlock = await apiDataService.createBlock(blockData);
+          console.log('✅ Block created:', createdBlock);
+          
           if (questions && questions.length > 0) {
-              let nextId = getNextQuestionId(db.globalQuestions);
-              const newQuestions = questions.map((q, index) => ({ ...q, id: nextId++, bloqueId: newBlockId, numero: index + 1 }));
-              db.globalQuestions.push(...newQuestions);
+              console.log('🔧 Adding questions to block...');
+              for (let i = 0; i < questions.length; i++) {
+                  const question = questions[i];
+                  const questionData = {
+                      block_id: createdBlock.id,
+                      texto_pregunta: question.pregunta,
+                      respuestas: question.respuestas,
+                      respuesta_correcta: question.respuestas.findIndex(r => r.esCorrecta),
+                      explicacion: question.explicacion,
+                      topic: question.tema || 'General',
+                      numero: i + 1
+                  };
+                  
+                  console.log(`🔧 Creating question ${i + 1}:`, questionData);
+                  await apiDataService.createQuestion(questionData);
+              }
+              console.log('✅ All questions created successfully');
           }
 
-          // Auto-add block to creator's profile
-          if (db.userProfiles && db.userProfiles[creatorId]) {
-              if (!db.userProfiles[creatorId].loadedBlockIds) {
-                  db.userProfiles[creatorId].loadedBlockIds = [];
-              }
-              if (!db.userProfiles[creatorId].loadedBlockIds.includes(newBlockId)) {
-                  db.userProfiles[creatorId].loadedBlockIds.push(newBlockId);
-              }
-          }
-
-          saveDatabase(db);
-          const createdBlock = { ...newBlock, totalPreguntas: questions.length, questions: questions };
-          return simulateDelay(createdBlock);
+          // Auto-add block to creator's blocks (via API)
+          await apiDataService.addBlockToUser(creatorId, createdBlock.id);
+          console.log('✅ Block added to user profile');
+          
+          return { ...createdBlock, totalPreguntas: questions.length, questions: questions };
       };
       const saveQuestionsToBlock = async (blockId, questions) => {
           const db = getDatabase();
@@ -910,38 +933,93 @@
       };
 
       const AppWrapper = () => {
+          console.log('🔧 [add-question.html] AppWrapper component initialized');
           const [currentUser, setCurrentUser] = useState(null);
           const [isLoading, setIsLoading] = useState(true);
+          
+          console.log('🔧 [add-question.html] Current state - isLoading:', isLoading, 'currentUser:', currentUser);
 
           useEffect(() => {
-            try {
-              const sessionString = localStorage.getItem('playtest_session');
-              if (sessionString) {
-                const session = JSON.parse(sessionString);
-                if (session && session.userId) {
-                  const db = getDatabase();
-                  const user = (db.users || []).find(u => u.id === session.userId);
-                  if (user) {
+            console.log('🔍 [add-question.html] Checking for existing session...');
+            
+            // Add a small delay to ensure everything is loaded
+            const checkSession = async () => {
+              try {
+                // Small delay to allow React to stabilize
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                const sessionString = localStorage.getItem('playtest_session');
+                const token = localStorage.getItem('playtest_auth_token');
+                console.log('🔍 [add-question.html] Session string:', sessionString);
+                console.log('🔍 [add-question.html] Token:', token ? 'exists' : 'missing');
+                
+                if (sessionString && token) {
+                  const session = JSON.parse(sessionString);
+                  console.log('🔍 [add-question.html] Parsed session:', session);
+                  
+                  // Check if session has valid data (new API format)
+                  if (session && session.userId && session.nickname) {
+                    // Create user object from session data
+                    const user = {
+                      id: session.userId,
+                      nickname: session.nickname,
+                      isAdmin: false  // Default for now, could be enhanced later
+                    };
+                    console.log('✅ [add-question.html] Restoring user session:', user);
                     setCurrentUser(user);
+                    
+                    // Ensure apiDataService has the token
+                    if (apiDataService && !apiDataService.token) {
+                      apiDataService.token = token;
+                      console.log('✅ [add-question.html] Set token in apiDataService');
+                    }
+                  } else {
+                    console.log('❌ [add-question.html] Session data is invalid, clearing...');
+                    localStorage.removeItem('playtest_session');
+                    localStorage.removeItem('playtest_auth_token');
                   }
+                } else {
+                  console.log('❌ [add-question.html] No valid session found');
                 }
+              } catch(e) { 
+                console.error("❌ [add-question.html] Failed to load user session", e); 
+                localStorage.removeItem('playtest_session');
+                localStorage.removeItem('playtest_auth_token');
+              } finally {
+                console.log('🔍 [add-question.html] Finishing loading...');
+                setIsLoading(false);
               }
-            } catch(e) { console.error("Failed to load user session", e); }
-            finally {
-              setIsLoading(false);
-            }
+            };
+            
+            checkSession();
           }, []);
 
+          console.log('🔧 [add-question.html] Render check - isLoading:', isLoading, 'currentUser:', !!currentUser);
+          
           if (isLoading) {
+            console.log('🔧 [add-question.html] Still loading, showing spinner...');
             return (
                <div className="flex justify-center items-center h-screen"> <svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle> <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> </div>
             )
           }
 
-          if (!currentUser) {
-             window.location.href = 'index.html'; // Redirect if not logged in
-             return null;
+          // Only redirect after loading is complete and no user is found
+          if (!isLoading && !currentUser) {
+             console.log('❌ [add-question.html] No user found after loading, redirecting to index.html in 500ms...');
+             setTimeout(() => {
+               window.location.href = '/index.html';
+             }, 500);
+             return (
+               <div className="flex justify-center items-center h-screen">
+                 <div className="text-center">
+                   <p className="text-brand-light mb-4">No authenticated session found</p>
+                   <p className="text-brand-accent">Redirecting to login...</p>
+                 </div>
+               </div>
+             );
           }
+          
+          console.log('✅ [add-question.html] User authenticated, rendering AddQuestionPage');
 
           return (
             <UserContext.Provider value={{ currentUser }}>

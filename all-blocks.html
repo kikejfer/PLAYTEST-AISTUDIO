@@ -72,6 +72,9 @@
     <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- API Data Service -->
+    <script src="./api-data-service.js"></script>
+
     <!-- Main application script -->
     <script type="text/babel" data-type="module">
       import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
@@ -284,20 +287,45 @@
         const [isLoading, setIsLoading] = useState(true);
 
         useEffect(() => {
+          console.log('🔍 [all-blocks.html] Checking for existing session...');
           try {
             const sessionString = localStorage.getItem('playtest_session');
-            if (sessionString) {
+            const token = localStorage.getItem('playtest_auth_token');
+            console.log('🔍 [all-blocks.html] Session string:', sessionString);
+            console.log('🔍 [all-blocks.html] Token:', token ? 'exists' : 'missing');
+            
+            if (sessionString && token) {
               const session = JSON.parse(sessionString);
-              if (session && session.userId) {
-                const db = getDatabase();
-                const user = (db.users || []).find(u => u.id === session.userId);
-                if (user) { setCurrentUser(user); } 
-                else { localStorage.removeItem('playtest_session'); }
+              console.log('🔍 [all-blocks.html] Parsed session:', session);
+              
+              // Check if session has valid data (new API format)
+              if (session && session.userId && session.nickname) {
+                // Create user object from session data
+                const user = {
+                  id: session.userId,
+                  nickname: session.nickname,
+                  isAdmin: false  // Default for now, could be enhanced later
+                };
+                console.log('✅ [all-blocks.html] Restoring user session:', user);
+                setCurrentUser(user);
+                
+                // Ensure apiDataService has the token
+                if (apiDataService && !apiDataService.token) {
+                  apiDataService.token = token;
+                  console.log('✅ [all-blocks.html] Set token in apiDataService');
+                }
+              } else {
+                console.log('❌ [all-blocks.html] Session data is invalid, clearing...');
+                localStorage.removeItem('playtest_session');
+                localStorage.removeItem('playtest_auth_token');
               }
+            } else {
+              console.log('❌ [all-blocks.html] No valid session found');
             }
           } catch (e) {
-            console.error("Failed to parse session, clearing it.", e);
+            console.error("❌ [all-blocks.html] Failed to parse session, clearing it.", e);
             localStorage.removeItem('playtest_session');
+            localStorage.removeItem('playtest_auth_token');
           }
           setIsLoading(false);
         }, []);
