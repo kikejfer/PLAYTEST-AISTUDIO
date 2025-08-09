@@ -2,9 +2,10 @@
   "public": ".",
   "cleanUrls": false,
   "trailingSlash": false,
+  "directoryListing": false,
   "headers": [
     {
-      "source": "**/*",
+      "source": "**/*.{png,jpg,jpeg,gif,ico,svg}",
       "headers": [
         {
           "key": "Cache-Control",
@@ -20,21 +21,6 @@
           "value": "public, max-age=86400"
         }
       ]
-    },
-    {
-      "source": "**/*.{png,jpg,jpeg,gif,ico,svg}",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000"
-        }
-      ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/index.html",
-      "destination": "/index.html"
     }
   ]
 }
