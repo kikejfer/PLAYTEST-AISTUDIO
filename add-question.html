@@ -236,11 +236,9 @@
                   const question = questions[i];
                   const questionData = {
                       blockId: blockId,
-                      topicName: question.tema || 'General',
-                      questionText: question.pregunta || question.textoPregunta,
-                      answers: question.respuestas ? question.respuestas.map(r => r.textoRespuesta || r) : [],
-                      correctAnswer: question.respuestas ? question.respuestas.findIndex(r => r.esCorrecta) : 0,
-                      explanation: question.explicacion || question.explicacionRespuesta || '',
+                      textoPregunta: question.pregunta || question.textoPregunta,
+                      tema: question.tema || 'General',
+                      respuestas: question.respuestas || [],
                       difficulty: question.dificultad || 3
                   };
                   
