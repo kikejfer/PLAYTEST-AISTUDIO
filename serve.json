@@ -3,13 +3,17 @@
   "cleanUrls": false,
   "trailingSlash": false,
   "directoryListing": false,
+  "symlinks": true,
+  "dotfiles": true,
+  "etag": true,
+  "cors": true,
   "headers": [
     {
       "source": "**/*.{png,jpg,jpeg,gif,ico,svg}",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=31536000"
+          "value": "public, max-age=3600"
         }
       ]
     },
@@ -18,9 +22,15 @@
       "headers": [
         {
           "key": "Cache-Control", 
-          "value": "public, max-age=86400"
+          "value": "public, max-age=300"
         }
       ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/index.html"
     }
   ]
 }
