@@ -68,6 +68,9 @@
     <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- API Data Service -->
+    <script src="./api-data-service.js"></script>
+
     <!-- Main application script -->
     <script type="text/babel" data-type="module">
       import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
@@ -137,113 +140,8 @@
       const PlayIcon = (props) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}><path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.647c1.295.742 1.295 2.545 0 3.286L7.279 20.99c-1.25.722-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" /></svg>);
       const PauseIcon = (props) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}><path fillRule="evenodd" d="M6.75 5.25a.75.75 0 00-.75.75v12a.75.75 0 00.75.75h.75a.75.75 0 00.75-.75V6a.75.75 0 00-.75-.75H6.75zm8.25 0a.75.75 0 00-.75.75v12a.75.75 0 00.75.75h.75a.75.75 0 00.75-.75V6a.75.75 0 00-.75-.75h-.75z" clipRule="evenodd" /></svg>);
       
-      // --- INLINED: services/dataService.ts ---
-      const DB_KEY = 'playtest_db_v3';
-      const getDatabase = () => {
-          const dbString = localStorage.getItem(DB_KEY);
-          return dbString ? JSON.parse(dbString) : { users: [], globalBlocks: [], globalQuestions: [], userProfiles: {} };
-      };
-      const saveDatabase = (db) => localStorage.setItem(DB_KEY, JSON.stringify(db));
-      const simulateDelay = (data, delay = 50) => new Promise(resolve => setTimeout(() => resolve(JSON.parse(JSON.stringify(data))), delay));
-      const dataService = {
-          fetchAllBlocks: async () => {
-              const db = getDatabase();
-              return simulateDelay((db.globalBlocks || []).map(b => ({
-                  ...b,
-                  questions: (db.globalQuestions || []).filter(q => q.bloqueId === b.id),
-              })));
-          },
-          fetchGame: async (gameId) => {
-              const db = getDatabase();
-              const game = (db.globalGames || []).find(g => g.id === gameId);
-              return simulateDelay(game);
-          },
-          updateUserStats: async (userId, gameId, gameResults, gameModeName) => {
-              const db = getDatabase();
-              const profile = db.userProfiles[userId];
-              if (!profile) return;
-      
-              if (!profile.stats) profile.stats = {};
-              if (!profile.answerHistory) profile.answerHistory = [];
-              if (!profile.stats.consolidation) {
-                  profile.stats.consolidation = { byQuestion: {}, byTopic: {}, byBlock: {} };
-              }
-              
-              for (const answer of gameResults.answers) {
-                  const { blockId, questionId, topicName, result, responseTime } = answer;
-                  if (!blockId || !questionId) continue;
-                  
-                  profile.answerHistory.unshift({
-                      gameId, questionId, blockId, topicName, result,
-                      responseTime, timestamp: new Date().toISOString(),
-                  });
-              }
-
-              const allGlobalQuestions = db.globalQuestions || [];
-              const blockIdsInGame = new Set(gameResults.answers.map(a => a.blockId).filter(Boolean));
-
-              for (const blockId of blockIdsInGame) {
-                  const questionsInBlock = allGlobalQuestions.filter(q => q.bloqueId === blockId);
-                  if (questionsInBlock.length === 0) continue;
-
-                  const correctlyAnsweredIdsInBlock = new Set(
-                      profile.answerHistory
-                          .filter(h => h.blockId === blockId && h.result === 'ACIERTO')
-                          .map(h => h.questionId)
-                  );
-                  const blockConsolidation = (correctlyAnsweredIdsInBlock.size / questionsInBlock.length) * 100;
-                  profile.stats.consolidation.byBlock[blockId] = blockConsolidation;
-
-                  const topicsInBlock = [...new Set(questionsInBlock.map(q => q.tema).filter(Boolean))];
-                  
-                  for (const topicName of topicsInBlock) {
-                      const questionsInTopic = questionsInBlock.filter(q => q.tema === topicName);
-                      if (questionsInTopic.length === 0) continue;
-
-                      const correctlyAnsweredIdsInTopic = new Set(
-                          profile.answerHistory
-                              .filter(h => h.blockId === blockId && h.topicName === topicName && h.result === 'ACIERTO')
-                              .map(h => h.questionId)
-                      );
-                      const topicConsolidation = (correctlyAnsweredIdsInTopic.size / questionsInTopic.length) * 100;
-                      const topicKey = `${blockId}_${topicName}`;
-                      profile.stats.consolidation.byTopic[topicKey] = topicConsolidation;
-                  }
-              }
-      
-              if (!profile.gameHistory) {
-                  profile.gameHistory = [];
-              }
-              const correct = gameResults.answers.filter(a => a.result === 'ACIERTO' || a.isCorrect === true).length;
-              const incorrect = gameResults.answers.filter(a => a.result === 'FALLO' || a.isCorrect === false).length;
-              
-              const blockIds = [...new Set(gameResults.answers.map(a => a.blockId))];
-              const blockNames = (db.globalBlocks || [])
-                  .filter(b => blockIds.includes(b.id))
-                  .map(b => b.nombreCorto)
-                  .join(', ');
-
-              const historyEntry = {
-                  gameId,
-                  blockName: blockNames || 'N/A',
-                  mode: gameModeName,
-                  correct,
-                  incorrect,
-                  date: new Date().toISOString(),
-              };
-
-              if(gameResults.opponent) historyEntry.opponent = gameResults.opponent;
-              if(gameResults.score !== undefined) historyEntry.score = gameResults.score;
-
-              profile.gameHistory.unshift(historyEntry);
-              if (profile.gameHistory.length > 10) {
-                  profile.gameHistory = profile.gameHistory.slice(0, 10);
-              }
-
-              saveDatabase(db);
-              return simulateDelay({ success: true });
-          },
-      };
+      // Use API Data Service instead of localStorage
+      const dataService = apiDataService;
       
       // --- INLINED: auth ---
       const UserContext = createContext();
@@ -254,25 +152,31 @@
         const [isLoading, setIsLoading] = useState(true);
 
         useEffect(() => {
-          try {
-            const sessionString = localStorage.getItem('playtest_session');
-            if (sessionString) {
-              const session = JSON.parse(sessionString);
-              if (session && session.userId) {
-                const db = getDatabase();
-                const user = (db.users || []).find(u => u.id === session.userId);
-                if (user) {
+          const checkAuth = async () => {
+            try {
+              const sessionString = localStorage.getItem('playtest_session');
+              if (sessionString && apiDataService.token) {
+                const session = JSON.parse(sessionString);
+                if (session && session.userId) {
+                  // Create a user object from session data
+                  const user = {
+                    id: session.userId,
+                    nickname: session.nickname
+                  };
                   setCurrentUser(user);
                 } else {
                   localStorage.removeItem('playtest_session');
+                  localStorage.removeItem('playtest_auth_token');
                 }
               }
+            } catch (e) {
+              console.error("Failed to parse session, clearing it.", e);
+              localStorage.removeItem('playtest_session');
+              localStorage.removeItem('playtest_auth_token');
             }
-          } catch (e) {
-            console.error("Failed to parse session, clearing it.", e);
-            localStorage.removeItem('playtest_session');
-          }
-          setIsLoading(false);
+            setIsLoading(false);
+          };
+          checkAuth();
         }, []);
 
         if (isLoading) {
@@ -358,7 +262,21 @@
                  const gameResults = {
                     answers: answersForStats
                 };
-                dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
+                (async () => {
+                  try {
+                    await dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
+                    // Also save time trial score
+                    await dataService.saveTimeTrialScore(game.id, {
+                      score: userAnswers.filter(a => a.isCorrect).length,
+                      totalQuestions: userAnswers.length,
+                      timeRemaining: timeRemaining,
+                      timeLimit: game.timeLimit || 60,
+                      answers: answersForStats
+                    });
+                  } catch (error) {
+                    console.error('Failed to save game results:', error);
+                  }
+                })();
             }
           }, [gameState, currentUser, userAnswers, game]);
 
@@ -431,7 +349,7 @@
                   const topics = blockConfig.topics === 'all'
                       ? t('game_setup_all_topics')
                       : blockConfig.topics.join(', ');
-                  return { blockName: block.nombreCorto, topics };
+                  return { blockName: block.name || block.nombreCorto, topics };
               }).filter(Boolean);
           }, [game, blocks, t]);
           

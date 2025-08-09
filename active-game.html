@@ -65,6 +65,9 @@
     <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- API Data Service -->
+    <script src="./api-data-service.js"></script>
+
     <!-- Main application script -->
     <script type="text/babel" data-type="module">
       import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
@@ -162,82 +165,8 @@
       const TrashIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /> </svg> );
       const ChevronUpDownIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" /> </svg> );
 
-      // --- INLINED: services/dataService.ts ---
-      const DB_KEY = 'playtest_db_v3';
-      const getDatabase = () => {
-          const dbString = localStorage.getItem(DB_KEY);
-          return dbString ? JSON.parse(dbString) : { users: [], globalBlocks: [], globalQuestions: [], userProfiles: {}, marathonScores: [] };
-      };
-      const saveDatabase = (db) => localStorage.setItem(DB_KEY, JSON.stringify(db));
-      const simulateDelay = (data, delay = 50) => new Promise(resolve => setTimeout(() => resolve(JSON.parse(JSON.stringify(data))), delay));
-
-      const dataService = {
-          fetchAllBlocks: async () => {
-              const db = getDatabase();
-              const userMap = (db.users || []).reduce((acc, user) => {
-                  acc[user.id] = user.nickname;
-                  return acc;
-              }, {});
-              return simulateDelay((db.globalBlocks || []).map(b => ({
-                  ...b,
-                  creatorNickname: userMap[b.creatorId] || 'Unknown',
-                  questions: (db.globalQuestions || []).filter(q => q.bloqueId === b.id),
-              })));
-          },
-          fetchGame: async (gameId) => {
-              const db = getDatabase();
-              const game = (db.globalGames || []).find(g => g.id === gameId);
-              return simulateDelay(game);
-          },
-          deleteGame: async (gameId) => {
-              const db = getDatabase();
-              db.globalGames = (db.globalGames || []).filter(g => g.id !== gameId);
-              saveDatabase(db);
-              return simulateDelay({ message: 'Game deleted' });
-          },
-          fetchMarathonScores: async (blockId) => {
-              const db = getDatabase();
-              let scores = db.marathonScores || [];
-              if (blockId) {
-                scores = scores.filter(s => s.blockId === blockId);
-              }
-              return simulateDelay(scores);
-          },
-          fetchTimeTrialScores: async (gameId) => {
-              const key = `playtest_timetrial_scores_${gameId}`;
-              const scoresString = localStorage.getItem(key);
-              const scores = scoresString ? JSON.parse(scoresString) : [];
-              return simulateDelay(scores);
-          },
-          fetchLivesScores: async (gameId) => {
-              const key = `playtest_lives_scores_${gameId}`;
-              const scoresString = localStorage.getItem(key);
-              const scores = scoresString ? JSON.parse(scoresString) : [];
-              return simulateDelay(scores);
-          },
-          fetchStreakScores: async (gameId) => {
-              const key = `playtest_streak_scores_${gameId}`;
-              const scoresString = localStorage.getItem(key);
-              const scores = scoresString ? JSON.parse(scoresString) : [];
-              return simulateDelay(scores);
-          },
-          fetchExamScores: async (gameId) => {
-              const key = `playtest_exam_scores_${gameId}`;
-              const scoresString = localStorage.getItem(key);
-              const scores = scoresString ? JSON.parse(scoresString) : [];
-              return simulateDelay(scores);
-          },
-           fetchDuelScores: async (gameId) => {
-              const key = `playtest_duel_scores_${gameId}`;
-              const scoresString = localStorage.getItem(key);
-              return simulateDelay(scoresString ? JSON.parse(scoresString) : []);
-          },
-          fetchTrivialScores: async (gameId) => {
-              const key = `playtest_trivial_scores_${gameId}`;
-              const scoresString = localStorage.getItem(key);
-              return simulateDelay(scoresString ? JSON.parse(scoresString) : []);
-          },
-      };
+      // Use API Data Service instead of localStorage
+      const dataService = apiDataService;
 
       // --- INLINED: auth ---
       const UserContext = createContext();
@@ -248,25 +177,31 @@
         const [isLoading, setIsLoading] = useState(true);
 
         useEffect(() => {
-          try {
-            const sessionString = localStorage.getItem('playtest_session');
-            if (sessionString) {
-              const session = JSON.parse(sessionString);
-              if (session && session.userId) {
-                const db = getDatabase();
-                const user = (db.users || []).find(u => u.id === session.userId);
-                if (user) {
+          const checkAuth = async () => {
+            try {
+              const sessionString = localStorage.getItem('playtest_session');
+              if (sessionString && apiDataService.token) {
+                const session = JSON.parse(sessionString);
+                if (session && session.userId) {
+                  // Create a user object from session data
+                  const user = {
+                    id: session.userId,
+                    nickname: session.nickname
+                  };
                   setCurrentUser(user);
                 } else {
                   localStorage.removeItem('playtest_session');
+                  localStorage.removeItem('playtest_auth_token');
                 }
               }
+            } catch (e) {
+              console.error("Failed to parse session, clearing it.", e);
+              localStorage.removeItem('playtest_session');
+              localStorage.removeItem('playtest_auth_token');
             }
-          } catch (e) {
-            console.error("Failed to parse session, clearing it.", e);
-            localStorage.removeItem('playtest_session');
-          }
-          setIsLoading(false);
+            setIsLoading(false);
+          };
+          checkAuth();
         }, []);
 
         if (isLoading) {

@@ -137,6 +137,9 @@
   <body class="bg-brand-primary text-brand-light">
     <div id="root"></div>
 
+    <!-- API Data Service -->
+    <script src="./api-data-service.js"></script>
+
     <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
     <script>
       // Suppress Babel development warning
@@ -224,96 +227,8 @@
       const ArrowUturnLeftIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /> </svg> );
       const TrophyIcon = (props) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}><path fillRule="evenodd" d="M4.5 2.25a.75.75 0 000 1.5v1.125a.75.75 0 00.75.75H6v.14L4.22 8.358a.75.75 0 00.22 1.03l.22.105a2.25 2.25 0 011.632 2.958 2.25 2.25 0 01-1.632 2.958l-.22.105a.75.75 0 00-.22 1.03l1.78 2.894v.14h-.75a.75.75 0 00-.75.75v1.125a.75.75 0 001.5 0V21h12v.75a.75.75 0 001.5 0v-1.125a.75.75 0 00-.75-.75h-.75v-.14l1.78-2.894a.75.75 0 00-.22-1.03l-.22-.105a2.25 2.25 0 01-1.632-2.958 2.25 2.25 0 011.632-2.958l.22-.105a.75.75 0 00.22-1.03L18 5.265v-.14h.75a.75.75 0 00.75-.75V3.75a.75.75 0 000-1.5h-15zM9 6a.75.75 0 000 1.5h6A.75.75 0 0015 6H9z" clipRule="evenodd" /></svg>);
       
-      // --- INLINED: services/dataService.ts ---
-      const DB_KEY = 'playtest_db_v3';
-      const getDatabase = () => JSON.parse(localStorage.getItem(DB_KEY) || '{}');
-      const saveDatabase = (db) => localStorage.setItem(DB_KEY, JSON.stringify(db));
-      const simulateDelay = (data, delay = 50) => new Promise(resolve => setTimeout(() => resolve(JSON.parse(JSON.stringify(data))), delay));
-      const dataService = {
-          fetchAllBlocks: async () => simulateDelay((getDatabase().globalBlocks || []).map(b => ({...b, questions: (getDatabase().globalQuestions || []).filter(q => q.bloqueId === b.id)}))),
-          fetchGame: async (gameId) => simulateDelay((getDatabase().globalGames || []).find(g => g.id === gameId)),
-          deleteGame: async (gameId) => {
-              const db = getDatabase();
-              db.globalGames = (db.globalGames || []).filter(g => g.id !== gameId);
-              saveDatabase(db);
-              return simulateDelay({ message: 'Game deleted' });
-          },
-          updateGame: async (gameId, updatedData) => {
-              const db = getDatabase();
-              const gameIndex = (db.globalGames || []).findIndex(g => g.id === gameId);
-              if (gameIndex > -1) {
-                  db.globalGames[gameIndex] = { ...db.globalGames[gameIndex], ...updatedData };
-                  saveDatabase(db);
-                  return simulateDelay(db.globalGames[gameIndex]);
-              }
-              return null;
-          },
-          saveTrivialScore: async (gameId, scoreData) => {
-              const key = `playtest_trivial_scores_${gameId}`;
-              try {
-                  const history = JSON.parse(localStorage.getItem(key) || '[]');
-                  history.unshift(scoreData);
-                  localStorage.setItem(key, JSON.stringify(history.slice(0, 10)));
-              } catch (e) { console.error("Failed to save trivial score", e); }
-              return simulateDelay({ success: true });
-          },
-          updateUserStats: async (userId, gameId, gameResults, gameModeName) => {
-              const db = getDatabase();
-              const profile = db.userProfiles[userId];
-              if (!profile) return;
-      
-              if (!profile.answerHistory) profile.answerHistory = [];
-              if (!profile.stats) profile.stats = {};
-              if (!profile.stats.consolidation) {
-                  profile.stats.consolidation = { byQuestion: {}, byTopic: {}, byBlock: {} };
-              }
-              
-              for (const answer of gameResults.answers) {
-                  const { blockId, questionId, topicName, result, responseTime } = answer;
-                  if (!blockId || !questionId) continue;
-                  
-                  profile.answerHistory.unshift({
-                      gameId, questionId, blockId, topicName, result,
-                      responseTime, timestamp: new Date().toISOString(),
-                  });
-              }
-
-              const allGlobalQuestions = db.globalQuestions || [];
-              const blockIdsInGame = new Set(gameResults.answers.map(a => a.blockId).filter(Boolean));
-
-              for (const blockId of blockIdsInGame) {
-                  const questionsInBlock = allGlobalQuestions.filter(q => q.bloqueId === blockId);
-                  if (questionsInBlock.length === 0) continue;
-
-                  const correctlyAnsweredIdsInBlock = new Set(
-                      profile.answerHistory
-                          .filter(h => h.blockId === blockId && h.result === 'ACIERTO')
-                          .map(h => h.questionId)
-                  );
-                  const blockConsolidation = (correctlyAnsweredIdsInBlock.size / questionsInBlock.length) * 100;
-                  profile.stats.consolidation.byBlock[blockId] = blockConsolidation;
-
-                  const topicsInBlock = [...new Set(questionsInBlock.map(q => q.tema).filter(Boolean))];
-                  
-                  for (const topicName of topicsInBlock) {
-                      const questionsInTopic = questionsInBlock.filter(q => q.tema === topicName);
-                      if (questionsInTopic.length === 0) continue;
-
-                      const correctlyAnsweredIdsInTopic = new Set(
-                          profile.answerHistory
-                              .filter(h => h.blockId === blockId && h.topicName === topicName && h.result === 'ACIERTO')
-                              .map(h => h.questionId)
-                      );
-                      const topicConsolidation = (correctlyAnsweredIdsInTopic.size / questionsInTopic.length) * 100;
-                      const topicKey = `${blockId}_${topicName}`;
-                      profile.stats.consolidation.byTopic[topicKey] = topicConsolidation;
-                  }
-              }
-      
-              saveDatabase(db);
-              return simulateDelay({ success: true });
-          },
-      };
+      // --- API Data Service Integration ---
+      const dataService = apiDataService;
 
       // --- INLINED: auth ---
       const UserContext = createContext();
@@ -321,7 +236,26 @@
       const UserProvider = ({ children }) => {
         const [currentUser, setCurrentUser] = useState(null);
         const [isLoading, setIsLoading] = useState(true);
-        useEffect(() => { try { const s = localStorage.getItem('playtest_session'); if (s) { const ses = JSON.parse(s); if (ses?.userId) { const user = (getDatabase().users || []).find(u => u.id === ses.userId); if (user) setCurrentUser(user); else localStorage.removeItem('playtest_session'); } } } catch (e) { console.error("Session parse error", e); } setIsLoading(false); }, []);
+        useEffect(() => {
+          try {
+            const sessionString = localStorage.getItem('playtest_session');
+            const token = localStorage.getItem('playtest_auth_token');
+            if (sessionString && token) {
+              const session = JSON.parse(sessionString);
+              if (session && session.userId) {
+                setCurrentUser({ id: session.userId, nickname: session.nickname });
+              }
+            } else {
+              localStorage.removeItem('playtest_session');
+              localStorage.removeItem('playtest_auth_token');
+            }
+          } catch (e) {
+            console.error("Failed to parse session, clearing it.", e);
+            localStorage.removeItem('playtest_session');
+            localStorage.removeItem('playtest_auth_token');
+          }
+          setIsLoading(false);
+        }, []);
         if (isLoading) return <div className="flex justify-center items-center h-screen"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"></circle><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor" className="opacity-75"></path></svg></div>;
         if (!currentUser) { window.location.href = 'index.html'; return null; }
         return <UserContext.Provider value={{ currentUser }}>{children}</UserContext.Provider>;
@@ -617,32 +551,39 @@
           
           useEffect(() => {
               if (game.gameState === 'finished') {
-                  const winner = game.players.find((p, idx) => game.playerWedges[idx].length === displayTopics.length);
-                  const scoreData = {
-                      winner: winner ? winner.nickname : 'No Winner',
-                      rounds: game.round,
-                      date: new Date().toISOString(),
-                      players: game.players.map((p, idx) => ({
-                          nickname: p.nickname,
-                          wedges: game.playerWedges[idx],
-                          answers: gameAnswers.filter(a => a.player === idx)
-                      }))
+                  const finishTrivialGame = async () => {
+                      try {
+                          const winner = game.players.find((p, idx) => game.playerWedges[idx].length === displayTopics.length);
+                          const scoreData = {
+                              winner: winner ? winner.nickname : 'No Winner',
+                              rounds: game.round,
+                              date: new Date().toISOString(),
+                              players: game.players.map((p, idx) => ({
+                                  nickname: p.nickname,
+                                  wedges: game.playerWedges[idx],
+                                  answers: gameAnswers.filter(a => a.player === idx)
+                              }))
+                          };
+                          await dataService.saveTrivialScore(game.id, scoreData);
+                          
+                          for (const [playerIndex, player] of game.players.entries()) {
+                              const playerAnswers = gameAnswers.filter(a => a.player === playerIndex);
+                              const answersForStats = playerAnswers.map(a => ({
+                                  questionId: a.questionId,
+                                  result: a.isCorrect ? 'ACIERTO' : 'FALLO',
+                                  blockId: a.blockId,
+                                  topicName: a.topic,
+                                  responseTime: a.responseTime
+                              }));
+                              
+                              const gameResults = { answers: answersForStats };
+                              await dataService.updateUserStats(player.userId, game.id, gameResults, "Trivial");
+                          }
+                      } catch (error) {
+                          console.error("Failed to finish trivial game:", error);
+                      }
                   };
-                  dataService.saveTrivialScore(game.id, scoreData);
-                  
-                  game.players.forEach((player, playerIndex) => {
-                      const playerAnswers = gameAnswers.filter(a => a.player === playerIndex);
-                      const answersForStats = playerAnswers.map(a => ({
-                          questionId: a.questionId,
-                          result: a.isCorrect ? 'ACIERTO' : 'FALLO',
-                          blockId: a.blockId,
-                          topicName: a.topic,
-                          responseTime: a.responseTime
-                      }));
-                      
-                      const gameResults = { answers: answersForStats };
-                      dataService.updateUserStats(player.userId, game.id, gameResults, "Trivial");
-                  });
+                  finishTrivialGame();
               }
           }, [game.gameState, gameAnswers]);
           

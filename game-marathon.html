@@ -69,6 +69,9 @@
     <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- API Data Service -->
+    <script src="./api-data-service.js"></script>
+
     <!-- Main application script -->
     <script type="text/babel" data-type="module">
       import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
@@ -140,12 +143,10 @@
       const ArrowPathIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-11.667-11.667a8.25 8.25 0 0111.667 0l3.181 3.183m-14.85-3.183L2.985 16.24z" /> </svg> );
       const FlagIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 4.5v.75m0 10.5v.75m18-11.25v.75m0 10.5v.75M4.5 10.5a1.5 1.5 0 113 0v3a1.5 1.5 0 01-3 0v-3z" /></svg>);
       
-      // --- INLINED: services/dataService.ts ---
-      const DB_KEY = 'playtest_db_v3';
-      const getDatabase = () => {
-          const dbString = localStorage.getItem(DB_KEY);
-          return dbString ? JSON.parse(dbString) : { users: [], globalBlocks: [], globalQuestions: [], userProfiles: {}, marathonScores: [] };
-      };
+      // Use API Data Service instead of localStorage
+
+      
+      const dataService = apiDataService;
       const saveDatabase = (db) => localStorage.setItem(DB_KEY, JSON.stringify(db));
       const simulateDelay = (data, delay = 50) => new Promise(resolve => setTimeout(() => resolve(JSON.parse(JSON.stringify(data))), delay));
       const dataService = {
@@ -275,25 +276,83 @@
         const [isLoading, setIsLoading] = useState(true);
 
         useEffect(() => {
-          try {
-            const sessionString = localStorage.getItem('playtest_session');
-            if (sessionString) {
-              const session = JSON.parse(sessionString);
-              if (session && session.userId) {
-                const db = getDatabase();
-                const user = (db.users || []).find(u => u.id === session.userId);
-                if (user) {
+
+
+          const checkAuth = async () => {
+
+
+            try {
+
+
+              const sessionString = localStorage.getItem('playtest_session');
+
+
+              if (sessionString && apiDataService.token) {
+
+
+                const session = JSON.parse(sessionString);
+
+
+                if (session && session.userId) {
+
+
+                  // Create a user object from session data
+
+
+                  const user = {
+
+
+                    id: session.userId,
+
+
+                    nickname: session.nickname
+
+
+                  };
+
+
                   setCurrentUser(user);
+
+
                 } else {
+
+
                   localStorage.removeItem('playtest_session');
+
+
+                  localStorage.removeItem('playtest_auth_token');
+
+
                 }
+
+
               }
+
+
+            } catch (e) {
+
+
+              console.error("Failed to parse session, clearing it.", e);
+
+
+              localStorage.removeItem('playtest_session');
+
+
+              localStorage.removeItem('playtest_auth_token');
+
+
             }
-          } catch (e) {
-            console.error("Failed to parse session, clearing it.", e);
-            localStorage.removeItem('playtest_session');
-          }
-          setIsLoading(false);
+
+
+            setIsLoading(false);
+
+
+          };
+
+
+          checkAuth();
+
+
         }, []);
 
         if (isLoading) {
@@ -400,7 +459,19 @@
                 const gameResults = {
                     answers: answersForStats,
                 };
-                dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
+                (async () => {
+
+                  try {
+
+                    await dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
+
+                  } catch (error) {
+
+                    console.error('Failed to save game results:', error);
+
+                  }
+
+                })();
             }
           }, [gameState, currentUser, userAnswers, game.id, timeLeft, questions.length, game.config, t]);
 

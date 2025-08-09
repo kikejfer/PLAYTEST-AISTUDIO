@@ -67,6 +67,9 @@
   <body class="bg-brand-primary text-brand-light">
     <div id="root"></div>
 
+    <!-- API Data Service -->
+    <script src="./api-data-service.js"></script>
+
     <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
@@ -142,113 +145,8 @@
       const HeartIcon = (props) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}><path d="M11.645 20.91l-1.06-1.06C5.4 15.36 2.25 12.58 2.25 9.19c0-2.81 2.47-5.19 5.25-5.19 1.52 0 2.94.72 3.91 1.86 1.05-1.14 2.5-1.86 4.09-1.86 2.78 0 5.25 2.38 5.25 5.19 0 3.39-3.15 6.17-8.29 10.66L12 21.75l-.355-.34z" /></svg>);
       const BoltIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}><path fillRule="evenodd" d="M14.615 1.595a.75.75 0 01.359.852L12.982 9.75h7.268a.75.75 0 01.548 1.262l-10.5 11.25a.75.75 0 01-1.272-.71l2.965-7.19H4.5a.75.75 0 01-.548-1.262l10.5-11.25a.75.75 0 01.913-.143z" clipRule="evenodd" /></svg> );
 
-      // --- INLINED: services/dataService.ts ---
-      const DB_KEY = 'playtest_db_v3';
-      const getDatabase = () => {
-          const dbString = localStorage.getItem(DB_KEY);
-          return dbString ? JSON.parse(dbString) : { users: [], globalBlocks: [], globalQuestions: [], userProfiles: {} };
-      };
-      const saveDatabase = (db) => localStorage.setItem(DB_KEY, JSON.stringify(db));
-      const simulateDelay = (data, delay = 50) => new Promise(resolve => setTimeout(() => resolve(JSON.parse(JSON.stringify(data))), delay));
-      const dataService = {
-          fetchAllBlocks: async () => {
-              const db = getDatabase();
-              return simulateDelay((db.globalBlocks || []).map(b => ({
-                  ...b,
-                  questions: (db.globalQuestions || []).filter(q => q.bloqueId === b.id),
-              })));
-          },
-          fetchGame: async (gameId) => {
-              const db = getDatabase();
-              const game = (db.globalGames || []).find(g => g.id === gameId);
-              return simulateDelay(game);
-          },
-          updateUserStats: async (userId, gameId, gameResults, gameModeName) => {
-              const db = getDatabase();
-              const profile = db.userProfiles[userId];
-              if (!profile) return;
-      
-              if (!profile.stats) profile.stats = {};
-              if (!profile.answerHistory) profile.answerHistory = [];
-              if (!profile.stats.consolidation) {
-                  profile.stats.consolidation = { byQuestion: {}, byTopic: {}, byBlock: {} };
-              }
-              
-              for (const answer of gameResults.answers) {
-                  const { blockId, questionId, topicName, result, responseTime } = answer;
-                  if (!blockId || !questionId) continue;
-                  
-                  profile.answerHistory.unshift({
-                      gameId, questionId, blockId, topicName, result,
-                      responseTime, timestamp: new Date().toISOString(),
-                  });
-              }
-
-              const allGlobalQuestions = db.globalQuestions || [];
-              const blockIdsInGame = new Set(gameResults.answers.map(a => a.blockId).filter(Boolean));
-
-              for (const blockId of blockIdsInGame) {
-                  const questionsInBlock = allGlobalQuestions.filter(q => q.bloqueId === blockId);
-                  if (questionsInBlock.length === 0) continue;
-
-                  const correctlyAnsweredIdsInBlock = new Set(
-                      profile.answerHistory
-                          .filter(h => h.blockId === blockId && h.result === 'ACIERTO')
-                          .map(h => h.questionId)
-                  );
-                  const blockConsolidation = (correctlyAnsweredIdsInBlock.size / questionsInBlock.length) * 100;
-                  profile.stats.consolidation.byBlock[blockId] = blockConsolidation;
-
-                  const topicsInBlock = [...new Set(questionsInBlock.map(q => q.tema).filter(Boolean))];
-                  
-                  for (const topicName of topicsInBlock) {
-                      const questionsInTopic = questionsInBlock.filter(q => q.tema === topicName);
-                      if (questionsInTopic.length === 0) continue;
-
-                      const correctlyAnsweredIdsInTopic = new Set(
-                          profile.answerHistory
-                              .filter(h => h.blockId === blockId && h.topicName === topicName && h.result === 'ACIERTO')
-                              .map(h => h.questionId)
-                      );
-                      const topicConsolidation = (correctlyAnsweredIdsInTopic.size / questionsInTopic.length) * 100;
-                      const topicKey = `${blockId}_${topicName}`;
-                      profile.stats.consolidation.byTopic[topicKey] = topicConsolidation;
-                  }
-              }
-
-              if (!profile.gameHistory) {
-                  profile.gameHistory = [];
-              }
-              const correct = gameResults.answers.filter(a => a.result === 'ACIERTO' || a.isCorrect === true).length;
-              const incorrect = gameResults.answers.filter(a => a.result === 'FALLO' || a.isCorrect === false).length;
-              
-              const blockIds = [...new Set(gameResults.answers.map(a => a.blockId))];
-              const blockNames = (db.globalBlocks || [])
-                  .filter(b => blockIds.includes(b.id))
-                  .map(b => b.nombreCorto)
-                  .join(', ');
-
-              const historyEntry = {
-                  gameId,
-                  blockName: blockNames || 'N/A',
-                  mode: gameModeName,
-                  correct,
-                  incorrect,
-                  date: new Date().toISOString(),
-              };
-
-              if(gameResults.opponent) historyEntry.opponent = gameResults.opponent;
-              if(gameResults.score !== undefined) historyEntry.score = gameResults.score;
-
-              profile.gameHistory.unshift(historyEntry);
-              if (profile.gameHistory.length > 10) {
-                  profile.gameHistory = profile.gameHistory.slice(0, 10);
-              }
-      
-              saveDatabase(db);
-              return simulateDelay({ success: true });
-          },
-      };
+      // --- API Data Service Integration ---
+      const dataService = apiDataService;
 
       // --- INLINED: auth ---
       const UserContext = createContext();
@@ -261,21 +159,20 @@
         useEffect(() => {
           try {
             const sessionString = localStorage.getItem('playtest_session');
-            if (sessionString) {
+            const token = localStorage.getItem('playtest_auth_token');
+            if (sessionString && token) {
               const session = JSON.parse(sessionString);
               if (session && session.userId) {
-                const db = getDatabase();
-                const user = (db.users || []).find(u => u.id === session.userId);
-                if (user) {
-                  setCurrentUser(user);
-                } else {
-                  localStorage.removeItem('playtest_session');
-                }
+                setCurrentUser({ id: session.userId, nickname: session.nickname });
               }
+            } else {
+              localStorage.removeItem('playtest_session');
+              localStorage.removeItem('playtest_auth_token');
             }
           } catch (e) {
             console.error("Failed to parse session, clearing it.", e);
             localStorage.removeItem('playtest_session');
+            localStorage.removeItem('playtest_auth_token');
           }
           setIsLoading(false);
         }, []);
@@ -344,7 +241,7 @@
 
           const currentQuestion = questions[currentQuestionIndex];
 
-          const handleFinish = useCallback(() => {
+          const handleFinish = useCallback(async () => {
               if (gameState === 'finished') return;
               setGameState('finished');
               setIsConfirmingFinish(false);
@@ -355,20 +252,17 @@
                       result: answer.isCorrect ? 'ACIERTO' : 'FALLO',
                   }));
                   const gameResults = { answers: answersForStats };
-                  if (answersForStats.length > 0) {
-                      dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
-                  }
-          
-                  const correctAnswers = userAnswers.filter(a => a.isCorrect).length;
-                  const score = { correct: correctAnswers, date: new Date().toISOString() };
-                  const historyKey = `playtest_lives_scores_${game.id}`;
+                  
                   try {
-                      const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
-                      history.push(score);
-                      history.sort((a, b) => b.correct - a.correct);
-                      localStorage.setItem(historyKey, JSON.stringify(history.slice(0, 10)));
-                  } catch (e) {
-                      console.error("Failed to save lives mode score history", e);
+                      if (answersForStats.length > 0) {
+                          await dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
+                      }
+              
+                      const correctAnswers = userAnswers.filter(a => a.isCorrect).length;
+                      const score = { correct: correctAnswers, date: new Date().toISOString() };
+                      await dataService.saveLivesScore(game.id, score);
+                  } catch (error) {
+                      console.error("Failed to save lives mode scores:", error);
                   }
               }
           }, [gameState, currentUser, userAnswers, game]);
@@ -437,7 +331,7 @@
                   const topics = blockConfig.topics === 'all'
                       ? t('game_setup_all_topics')
                       : blockConfig.topics.join(', ');
-                  return { blockName: block.nombreCorto, topics };
+                  return { blockName: block.name || block.nombreCorto, topics };
               }).filter(Boolean);
           }, [game, blocks, t]);
           
