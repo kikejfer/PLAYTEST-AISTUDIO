@@ -70,6 +70,9 @@
     <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- API Data Service -->
+    <script src="./api-data-service.js"></script>
+
     <!-- Main application script -->
     <script type="text/babel" data-type="module">
       import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
@@ -127,51 +130,46 @@
 
       // --- INLINED: services/dataService.ts ---
       const DB_KEY = 'playtest_db_v3';
-      const getDatabase = () => {
-          const dbString = localStorage.getItem(DB_KEY);
-          return dbString ? JSON.parse(dbString) : { users: [], globalBlocks: [], globalQuestions: [], userProfiles: {} };
-      };
-      const saveDatabase = (db) => {
-          localStorage.setItem(DB_KEY, JSON.stringify(db));
-      };
+      // Removed localStorage database functions - using API now
       const simulateDelay = (data, delay = 50) => new Promise(resolve => setTimeout(() => resolve(JSON.parse(JSON.stringify(data))), delay));
 
       const fetchBlockById = async (blockId) => {
-          const db = getDatabase();
-          const block = (db.globalBlocks || []).find(b => b.id === blockId);
-          if (!block) return null;
-          const questions = (db.globalQuestions || []).filter(q => q.bloqueId === blockId);
-          return simulateDelay({ ...block, questions });
+          try {
+              const blocks = await apiDataService.fetchAllBlocks();
+              const block = blocks.find(b => b.id == blockId);
+              if (!block) return null;
+              return simulateDelay(block);
+          } catch (error) {
+              console.error('Error fetching block:', error);
+              return null;
+          }
       };
 
       const updateQuestion = async (updatedQuestion) => {
-          const db = getDatabase();
-          if (!updatedQuestion.id) throw new Error('Question ID is required.');
-          const qIndex = db.globalQuestions.findIndex(q => q.id === updatedQuestion.id);
-          if (qIndex === -1) throw new Error('Question not found.');
-          db.globalQuestions[qIndex] = { ...db.globalQuestions[qIndex], ...updatedQuestion };
-          saveDatabase(db);
-          return simulateDelay(db.globalQuestions[qIndex]);
+          try {
+              if (!updatedQuestion.id) throw new Error('Question ID is required.');
+              const questionData = {
+                  textoPregunta: updatedQuestion.textoPregunta,
+                  tema: updatedQuestion.tema,
+                  respuestas: updatedQuestion.respuestas,
+                  difficulty: updatedQuestion.dificultad || updatedQuestion.difficulty || 1
+              };
+              const result = await apiDataService.updateQuestion(updatedQuestion.id, questionData);
+              return simulateDelay(result);
+          } catch (error) {
+              console.error('Error updating question:', error);
+              throw error;
+          }
       };
 
       const deleteQuestion = async (questionId) => {
-          const db = getDatabase();
-          const qIndex = db.globalQuestions.findIndex(q => q.id === questionId);
-          if (qIndex === -1) throw new Error('Question not found.');
-          const { bloqueId } = db.globalQuestions[qIndex];
-          db.globalQuestions.splice(qIndex, 1);
-          
-          const remainingInBlock = db.globalQuestions
-              .filter(q => q.bloqueId === bloqueId)
-              .sort((a, b) => (a.numero || 0) - (b.numero || 0));
-
-          remainingInBlock.forEach((q, index) => {
-              const original = db.globalQuestions.find(orig => orig.id === q.id);
-              if(original) original.numero = index + 1;
-          });
-          
-          saveDatabase(db);
-          return simulateDelay({ message: 'Question deleted.' });
+          try {
+              const result = await apiDataService.deleteQuestion(questionId);
+              return simulateDelay(result);
+          } catch (error) {
+              console.error('Error deleting question:', error);
+              throw error;
+          }
       };
 
       // --- INLINED: components ---
@@ -205,14 +203,14 @@
             ? [...allQs]
             : allQs.filter(q => q.tema === topicFilter);
 
-          // Sort by difficulty (ascending), then by original number
+          // Sort by difficulty (ascending), then by question index
           questionsToProcess.sort((a, b) => {
-              const diffA = a.dificultad || 0;
-              const diffB = b.dificultad || 0;
+              const diffA = a.difficulty || a.dificultad || 1;
+              const diffB = b.difficulty || b.dificultad || 1;
               if (diffA !== diffB) {
                   return diffA - diffB;
               }
-              return (a.numero || 0) - (b.numero || 0);
+              return (a.id || 0) - (b.id || 0);
           });
           
           return questionsToProcess;
@@ -239,7 +237,7 @@
         
         const onReturn = () => { window.location.href = returnUrl || 'index.html'; };
 
-        const handleFormChange = (e) => { if (!editedQuestion) return; const { name, value } = e.target; setEditedQuestion({ ...editedQuestion, [name]: name === 'dificultad' ? parseInt(value, 10) : value }); };
+        const handleFormChange = (e) => { if (!editedQuestion) return; const { name, value } = e.target; if (name === 'dificultad') { setEditedQuestion({ ...editedQuestion, dificultad: parseInt(value, 10), difficulty: parseInt(value, 10) }); } else { setEditedQuestion({ ...editedQuestion, [name]: value }); } };
         const handleAnswerTextChange = (index, text) => { if (!editedQuestion) return; const newAnswers = [...editedQuestion.respuestas]; newAnswers[index].textoRespuesta = text; setEditedQuestion({ ...editedQuestion, respuestas: newAnswers }); };
         const handleCorrectAnswerChange = (index) => { if (!editedQuestion) return; const newAnswers = editedQuestion.respuestas.map((ans, i) => ({ ...ans, esCorrecta: i === index, })); setEditedQuestion({ ...editedQuestion, respuestas: newAnswers }); };
 
@@ -257,16 +255,16 @@
                 />
             )}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 border-b border-brand-tertiary pb-4 gap-4">
-              <div className="flex items-center gap-4"> <button onClick={onReturn} className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold py-2 px-4 rounded-lg transition-colors" aria-label="Return to previous page"> <ArrowLeftIcon className="h-5 w-5" /> <span>{t('all_blocks_return')}</span> </button> <div className="flex items-center gap-4"> <img src={block.urlImagenBloque} alt={block.nombreCorto} className="h-12 w-20 rounded-lg object-cover" /> <div> <h2 className="text-2xl font-bold text-brand-light">{block.nombreCorto}</h2> <p className="text-sm text-brand-accent">{block.nombreLargo}</p> </div> </div> </div>
+              <div className="flex items-center gap-4"> <button onClick={onReturn} className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold py-2 px-4 rounded-lg transition-colors" aria-label="Return to previous page"> <ArrowLeftIcon className="h-5 w-5" /> <span>{t('all_blocks_return')}</span> </button> <div className="flex items-center gap-4"> <img src="./Imagenes/Playtest.png" alt={block.name} className="h-12 w-20 rounded-lg object-cover" /> <div> <h2 className="text-2xl font-bold text-brand-light">{block.name}</h2> <p className="text-sm text-brand-accent">{block.description}</p> </div> </div> </div>
               <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2"> <select value={topicFilter} onChange={(e) => setTopicFilter(e.target.value)} className="w-full sm:w-48 bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" aria-label={t('block_questions_filter_topic')}> {uniqueTopics.map(topic => ( <option key={topic} value={topic}>{topic === 'all' ? t('block_questions_all_topics') : topic}</option> ))} </select> <span className="text-sm text-center font-medium text-brand-accent bg-brand-primary px-3 py-2 rounded-lg">{t('block_questions_count', {count: filteredQuestions.length})}</span> </div>
             </div>
             <div className="space-y-4">
               {filteredQuestions.length > 0 ? ( filteredQuestions.map((q, qIndex) => (
                 <div key={q.id || qIndex}>
                   {editingQuestionId === q.id ? (
-                    <div className="bg-brand-primary p-4 rounded-lg border-2 border-brand-cta animate-fade-in"> <div className="space-y-4"> <div> <label className="text-sm font-medium text-brand-accent">{t('uploader_question_text')}</label> <textarea name="textoPregunta" value={editedQuestion?.textoPregunta} onChange={handleFormChange} rows={3} className="mt-1 w-full bg-brand-secondary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" /> </div> <div> <label className="text-sm font-medium text-brand-accent">{t('uploader_answers')}</label> <div className="mt-1 space-y-2"> {editedQuestion?.respuestas.map((ans, idx) => ( <div key={idx} className="flex items-center gap-2"> <input type="radio" name={`correctAnswer-${q.id}`} checked={ans.esCorrecta} onChange={() => handleCorrectAnswerChange(idx)} className="h-4 w-4 text-brand-cta bg-brand-tertiary border-brand-tertiary focus:ring-brand-cta"/><input type="text" value={ans.textoRespuesta} onChange={(e) => handleAnswerTextChange(idx, e.target.value)} className="w-full bg-brand-secondary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"/> </div> ))} </div> </div> <div> <label className="text-sm font-medium text-brand-accent">{t('generator_explanation')}</label> <textarea name="explicacionRespuesta" value={editedQuestion?.explicacionRespuesta} onChange={handleFormChange} rows={2} className="mt-1 w-full bg-brand-secondary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" /> </div> <div className="grid grid-cols-2 gap-4"> <div> <label className="text-sm font-medium text-brand-accent">{t('block_questions_topic')}</label> <input name="tema" type="text" value={editedQuestion?.tema} onChange={handleFormChange} className="mt-1 w-full bg-brand-secondary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" /> </div> <div> <label className="text-sm font-medium text-brand-accent">{t('generator_difficulty')} ({editedQuestion?.dificultad}/5)</label> <input name="dificultad" type="range" min="1" max="5" value={editedQuestion?.dificultad} onChange={handleFormChange} className="mt-1 w-full h-2 bg-brand-tertiary rounded-lg appearance-none cursor-pointer" /> </div> </div> <div className="flex justify-end gap-3 mt-4"> <button onClick={handleCancelClick} className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold py-2 px-4 rounded-lg transition-colors"><XMarkIcon className="h-5 w-5"/>{t('generic_cancel')}</button> <button onClick={handleSaveClick} disabled={isSaving} className="flex items-center gap-2 bg-brand-cta hover:bg-brand-cta-hover text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:bg-brand-tertiary"> {isSaving ? <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> : <SaveIcon className="h-5 w-5"/>} {t('block_questions_button_save')} </button> </div> </div> </div>
+                    <div className="bg-brand-primary p-4 rounded-lg border-2 border-brand-cta animate-fade-in"> <div className="space-y-4"> <div> <label className="text-sm font-medium text-brand-accent">{t('uploader_question_text')}</label> <textarea name="textoPregunta" value={editedQuestion?.textoPregunta} onChange={handleFormChange} rows={3} className="mt-1 w-full bg-brand-secondary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" /> </div> <div> <label className="text-sm font-medium text-brand-accent">{t('uploader_answers')}</label> <div className="mt-1 space-y-2"> {editedQuestion?.respuestas.map((ans, idx) => ( <div key={idx} className="flex items-center gap-2"> <input type="radio" name={`correctAnswer-${q.id}`} checked={ans.esCorrecta} onChange={() => handleCorrectAnswerChange(idx)} className="h-4 w-4 text-brand-cta bg-brand-tertiary border-brand-tertiary focus:ring-brand-cta"/><input type="text" value={ans.textoRespuesta} onChange={(e) => handleAnswerTextChange(idx, e.target.value)} className="w-full bg-brand-secondary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"/> </div> ))} </div> </div> <div> <label className="text-sm font-medium text-brand-accent">{t('generator_explanation')}</label> <textarea name="explicacionRespuesta" value={editedQuestion?.explicacionRespuesta} onChange={handleFormChange} rows={2} className="mt-1 w-full bg-brand-secondary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" /> </div> <div className="grid grid-cols-2 gap-4"> <div> <label className="text-sm font-medium text-brand-accent">{t('block_questions_topic')}</label> <input name="tema" type="text" value={editedQuestion?.tema} onChange={handleFormChange} className="mt-1 w-full bg-brand-secondary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" /> </div> <div> <label className="text-sm font-medium text-brand-accent">{t('generator_difficulty')} ({editedQuestion?.difficulty || editedQuestion?.dificultad || 1}/5)</label> <input name="dificultad" type="range" min="1" max="5" value={editedQuestion?.difficulty || editedQuestion?.dificultad || 1} onChange={handleFormChange} className="mt-1 w-full h-2 bg-brand-tertiary rounded-lg appearance-none cursor-pointer" /> </div> </div> <div className="flex justify-end gap-3 mt-4"> <button onClick={handleCancelClick} className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold py-2 px-4 rounded-lg transition-colors"><XMarkIcon className="h-5 w-5"/>{t('generic_cancel')}</button> <button onClick={handleSaveClick} disabled={isSaving} className="flex items-center gap-2 bg-brand-cta hover:bg-brand-cta-hover text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:bg-brand-tertiary"> {isSaving ? <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> : <SaveIcon className="h-5 w-5"/>} {t('block_questions_button_save')} </button> </div> </div> </div>
                   ) : (
-                    <div className="bg-brand-primary p-4 rounded-lg border border-brand-tertiary/50"> <div className="flex items-start justify-between gap-4"> <div className="flex items-start gap-3 flex-grow"> <span className="flex-shrink-0 mt-1 w-8 text-center text-lg font-bold text-brand-accent">{q.numero}.</span> <div className="flex-grow"> <p className="font-semibold text-brand-light">{q.textoPregunta}</p> <div className="flex items-center gap-2 mt-1"> <span className="text-xs text-brand-accent">({t('generator_difficulty')}: {q.dificultad}/5)</span> <span className="text-xs font-medium text-brand-light bg-brand-tertiary px-2 py-0.5 rounded-full">{q.tema}</span> </div> </div> </div> <div className="flex-shrink-0 flex items-center gap-2"> {!isReadOnly && (<> <button onClick={() => handleEditClick(q)} className="flex items-center gap-2 bg-brand-tertiary/50 hover:bg-brand-tertiary text-brand-light font-semibold py-1.5 px-3 rounded-lg transition-colors text-sm"> <PencilIcon className="h-4 w-4"/> {t('uploader_button_edit')} </button> <button onClick={() => setConfirmingDeleteId(q.id)} disabled={deletingQuestionId === q.id} className="flex items-center gap-2 bg-brand-danger/20 hover:bg-brand-danger/40 text-brand-danger font-semibold py-1.5 px-3 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-wait"> {deletingQuestionId === q.id ? ( <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> ) : ( <TrashIcon className="h-4 w-4"/> )} <span>{t('block_questions_button_delete')}</span> </button> </>)} </div> </div> 
+                    <div className="bg-brand-primary p-4 rounded-lg border border-brand-tertiary/50"> <div className="flex items-start justify-between gap-4"> <div className="flex items-start gap-3 flex-grow"> <span className="flex-shrink-0 mt-1 w-8 text-center text-lg font-bold text-brand-accent">{qIndex + 1}.</span> <div className="flex-grow"> <p className="font-semibold text-brand-light">{q.textoPregunta}</p> <div className="flex items-center gap-2 mt-1"> <span className="text-xs text-brand-accent">({t('generator_difficulty')}: {q.difficulty || q.dificultad || 1}/5)</span> <span className="text-xs font-medium text-brand-light bg-brand-tertiary px-2 py-0.5 rounded-full">{q.tema}</span> </div> </div> </div> <div className="flex-shrink-0 flex items-center gap-2"> {!isReadOnly && (<> <button onClick={() => handleEditClick(q)} className="flex items-center gap-2 bg-brand-tertiary/50 hover:bg-brand-tertiary text-brand-light font-semibold py-1.5 px-3 rounded-lg transition-colors text-sm"> <PencilIcon className="h-4 w-4"/> {t('uploader_button_edit')} </button> <button onClick={() => setConfirmingDeleteId(q.id)} disabled={deletingQuestionId === q.id} className="flex items-center gap-2 bg-brand-danger/20 hover:bg-brand-danger/40 text-brand-danger font-semibold py-1.5 px-3 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-wait"> {deletingQuestionId === q.id ? ( <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> ) : ( <TrashIcon className="h-4 w-4"/> )} <span>{t('block_questions_button_delete')}</span> </button> </>)} </div> </div> 
                     {!isReadOnly && (
                       <>
                         <div className="mt-3 space-y-2 pl-11"> {q.respuestas.map((r, rIndex) => ( <div key={rIndex} className={`flex items-center text-sm rounded-md p-2 ${r.esCorrecta ? 'bg-brand-success/10 text-brand-success' : 'text-brand-accent'}`}> {r.esCorrecta ? <CheckCircleIcon className="h-5 w-5 mr-2 flex-shrink-0" /> : <XCircleIcon className="h-5 w-5 mr-2 flex-shrink-0 text-brand-danger" />} <span>{r.textoRespuesta}</span> </div> ))} </div> 
