@@ -386,9 +386,12 @@ class APIDataService {
 
 // Configuración de la URL base según el entorno
 const getAPIBaseURL = () => {
-    // Always use production API for now
-    return 'https://playtest-backend.onrender.com/api';
-  };
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return 'http://localhost:3000/api';
+  }
+  // URL de producción en Render
+  return 'https://playtest-backend.onrender.com/api';
+};
 
 // Instancia global del servicio
 const apiDataService = new APIDataService(getAPIBaseURL());

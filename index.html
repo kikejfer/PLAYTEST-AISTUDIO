@@ -2166,6 +2166,7 @@
             
             if (sessionString && token) {
               const session = JSON.parse(sessionString);
+<<<<<<< HEAD
               console.log('Parsed session:', session);
               
               // Check if session has valid data
@@ -2182,6 +2183,19 @@
                 if (apiDataService && !apiDataService.token) {
                   apiDataService.token = token;
                   console.log('Set token in apiDataService');
+=======
+              if (session && session.userId) {
+                const db = getDatabase();
+                const user = db.users.find(u => u.id === session.userId);
+                if (user) {
+                  setCurrentUser(user);
+                } else {
+              // User in session not found in local DB, but that's OK 
+                since we use PostgreSQL now DB, but that's OK since we use PostgreSQL now
+              // 
+               localStorage.removeItem('playtest_session');
+               localStorage.removeItem('playtest_session');
+>>>>>>> 9079d92e6fe2da049f60ad87199b7ba9f5106e0a
                 }
               } else {
                 console.log('❌ Session data is invalid or incomplete, clearing...');
@@ -2217,7 +2231,16 @@
           
           // Then set the user state
           setCurrentUser(user);
+<<<<<<< HEAD
           console.log('✅ User state set successfully');
+=======
+          if (remember) {
+            localStorage.setItem('playtest_session', JSON.stringify({
+              userId: user.id,
+              nickname: user.nickname
+            }));
+          }
+>>>>>>> 9079d92e6fe2da049f60ad87199b7ba9f5106e0a
         };
 
         const handleLogout = async () => {
