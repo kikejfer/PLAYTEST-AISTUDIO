@@ -339,7 +339,32 @@ class APIDataService {
   }
 
   async createGameForUser(userId, nickname, gameConfig) {
-    return this.createGame(gameConfig);
+    // Map Spanish game modes to English gameType values
+    const modeToType = {
+      'Modo Clásico': 'classic',
+      'Modo Contrarreloj': 'time-trial',
+      'Modo Vidas': 'lives',
+      'Por Niveles': 'by-levels',
+      'Racha de Aciertos': 'streak',
+      'Examen Simulado': 'exam',
+      'Duelo': 'duel',
+      'Maratón': 'marathon',
+      'Trivial': 'trivial'
+    };
+    
+    // Create properly formatted game data for backend
+    const gameData = {
+      gameType: modeToType[gameConfig.mode] || gameConfig.mode || 'classic',
+      config: gameConfig,
+      players: [
+        {
+          userId: userId,
+          nickname: nickname,
+          playerIndex: 0
+        }
+      ]
+    };
+    return this.createGame(gameData);
   }
 
   async addBlockToUser(userId, blockId) {

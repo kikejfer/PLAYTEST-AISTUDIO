@@ -548,27 +548,47 @@
             setExamConfig(prev => ({ ...prev, [name]: parseInt(value, 10) }));
         };
         
-        const handleStartGame = () => {
-          const modeToFile = {
-              'Modo Clásico': 'game-classic.html',
-              'Modo Contrarreloj': 'game-time-trial.html',
-              'Modo Vidas': 'game-lives.html',
-              'Por Niveles': 'game-by-levels.html',
-              'Racha de Aciertos': 'game-streak.html',
-              'Examen Simulado': 'game-exam.html',
-              'Duelo': 'game-duel.html',
-              'Maratón': 'game-marathon.html',
-              'Trivial': 'game-trivial.html',
-          };
-          let fileName = modeToFile[game.mode];
-          if (fileName) {
-              let url = `${fileName}?gameId=${game.id}`;
-              if(game.mode === 'Examen Simulado') {
-                  url += `&numQuestions=${examConfig.numQuestions}&penalty=${examConfig.penalty}`;
-              }
-              window.location.href = url;
-          } else {
-              alert(`Game mode "${game.mode}" is not implemented yet.`);
+        const handleStartGame = async () => {
+          try {
+            // Create game in backend first
+            const gameData = {
+              mode: game.mode,
+              config: game.config,
+              examConfig: game.mode === 'Examen Simulado' ? examConfig : undefined
+            };
+            
+            const createdGame = await dataService.createGameForUser(
+              currentUser.id, 
+              currentUser.nickname, 
+              gameData
+            );
+            
+            // Now navigate with the real backend game ID
+            const modeToFile = {
+                'Modo Clásico': 'game-classic.html',
+                'Modo Contrarreloj': 'game-time-trial.html',
+                'Modo Vidas': 'game-lives.html',
+                'Por Niveles': 'game-by-levels.html',
+                'Racha de Aciertos': 'game-streak.html',
+                'Examen Simulado': 'game-exam.html',
+                'Duelo': 'game-duel.html',
+                'Maratón': 'game-marathon.html',
+                'Trivial': 'game-trivial.html',
+            };
+            
+            let fileName = modeToFile[game.mode];
+            if (fileName) {
+                let url = `${fileName}?gameId=${createdGame.id}`;
+                if(game.mode === 'Examen Simulado') {
+                    url += `&numQuestions=${examConfig.numQuestions}&penalty=${examConfig.penalty}`;
+                }
+                window.location.href = url;
+            } else {
+                alert(`Game mode "${game.mode}" is not implemented yet.`);
+            }
+          } catch (error) {
+            console.error('Failed to create game:', error);
+            alert('Error creating game: ' + error.message);
           }
         };
         
