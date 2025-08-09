@@ -151,11 +151,52 @@ class APIDataService {
   // === GAMES ===
   async fetchGamesForUser(userId) {
     const games = await this.apiCall('/games');
+    
+    // Transform backend response to frontend format for all games
+    if (games && Array.isArray(games)) {
+      const typeToMode = {
+        'classic': 'Modo Clásico',
+        'time-trial': 'Modo Contrarreloj',
+        'lives': 'Modo Vidas',
+        'by-levels': 'Por Niveles',
+        'streak': 'Racha de Aciertos',
+        'exam': 'Examen Simulado',
+        'duel': 'Duelo',
+        'marathon': 'Maratón',
+        'trivial': 'Trivial'
+      };
+      
+      games.forEach(game => {
+        if (game.gameType) {
+          game.mode = typeToMode[game.gameType] || game.gameType;
+        }
+      });
+    }
+    
     return this.simulateDelay(games);
   }
 
   async fetchGame(gameId) {
     const game = await this.apiCall(`/games/${gameId}`);
+    
+    // Transform backend response to frontend format
+    if (game) {
+      // Map gameType to mode for frontend compatibility
+      const typeToMode = {
+        'classic': 'Modo Clásico',
+        'time-trial': 'Modo Contrarreloj',
+        'lives': 'Modo Vidas',
+        'by-levels': 'Por Niveles',
+        'streak': 'Racha de Aciertos',
+        'exam': 'Examen Simulado',
+        'duel': 'Duelo',
+        'marathon': 'Maratón',
+        'trivial': 'Trivial'
+      };
+      
+      game.mode = typeToMode[game.gameType] || game.gameType;
+    }
+    
     return this.simulateDelay(game);
   }
 
@@ -164,6 +205,13 @@ class APIDataService {
       method: 'POST',
       body: JSON.stringify(gameData)
     });
+    
+    // If we get a gameId, fetch the full game object for consistency
+    if (response && response.gameId) {
+      const fullGame = await this.fetchGame(response.gameId);
+      return this.simulateDelay(fullGame);
+    }
+    
     return this.simulateDelay(response);
   }
 

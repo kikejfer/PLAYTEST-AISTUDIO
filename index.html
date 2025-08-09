@@ -113,6 +113,17 @@
     <!-- Tailwind CSS from CDN - Development only -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+      // Suppress Tailwind CSS production warning for deployment
+      if (typeof console !== 'undefined' && console.warn) {
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+          if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
+            return; // Suppress this specific warning
+          }
+          originalWarn.apply(console, args);
+        };
+      }
+      
       tailwind.config = {
         theme: {
           extend: {
@@ -2838,11 +2849,18 @@
 
     </script>
     
-    <!-- EMERGENCY TEST BUTTON -->
-    <div id="emergency-test" style="position: fixed; top: 10px; right: 10px; z-index: 9999; background: red; padding: 10px; border-radius: 5px;">
-      <button onclick="emergencyTestGame()" style="background: darkred; color: white; padding: 10px; border: none; border-radius: 3px; cursor: pointer; font-weight: bold;">
-        🚨 EMERGENCY GAME TEST
-      </button>
+    <!-- TEST BUTTONS -->
+    <div id="test-buttons" style="position: fixed; top: 10px; right: 10px; z-index: 9999; display: flex; flex-direction: column; gap: 5px;">
+      <div style="background: red; padding: 10px; border-radius: 5px;">
+        <button onclick="emergencyTestGame()" style="background: darkred; color: white; padding: 10px; border: none; border-radius: 3px; cursor: pointer; font-weight: bold;">
+          🚨 EMERGENCY GAME TEST
+        </button>
+      </div>
+      <div style="background: blue; padding: 10px; border-radius: 5px;">
+        <button onclick="normalTestGame()" style="background: darkblue; color: white; padding: 10px; border: none; border-radius: 3px; cursor: pointer; font-weight: bold;">
+          🎮 NORMAL GAME TEST
+        </button>
+      </div>
     </div>
     
     <script>
@@ -2867,6 +2885,39 @@
         console.log('💾 Stored emergency game data:', gameData);
         alert('🚨 Navigating to: ' + url);
         window.location.href = url;
+      }
+
+      async function normalTestGame() {
+        console.log('🎮 Normal test game button clicked!');
+        
+        try {
+          // First register/login a test user
+          const loginResponse = await apiDataService.login('test_user', 'test123');
+          console.log('✅ Login successful:', loginResponse);
+          
+          // Create a test game with actual backend data
+          const gameConfig = {
+            gameType: 'classic',
+            mode: 'Modo Clásico',
+            config: {
+              '4': { topics: 'all' }  // Using block 4 (PER) which we know exists
+            }
+          };
+          
+          console.log('🎲 Creating game with config:', gameConfig);
+          const game = await apiDataService.createGameForUser(loginResponse.user.id, loginResponse.user.nickname, gameConfig);
+          console.log('✅ Game created successfully:', game);
+          
+          // Navigate to the game
+          const url = `active-game.html?gameId=${game.id}`;
+          console.log('🔗 Normal game navigation to:', url);
+          alert('🎮 Normal game created! Navigating to: ' + url);
+          window.location.href = url;
+          
+        } catch (error) {
+          console.error('❌ Normal game test failed:', error);
+          alert('❌ Error: ' + error.message);
+        }
       }
     </script>
     
