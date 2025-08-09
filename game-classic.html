@@ -437,23 +437,55 @@
           useEffect(() => {
               const params = new URLSearchParams(window.location.search);
               const id = params.get('gameId');
-              if (id) setGameId(id);
-              else { setError("No game ID provided."); setIsLoading(false); }
+              const isFallback = params.get('fallback') === 'true';
+              
+              if (id) {
+                  setGameId(id);
+                  if (isFallback) {
+                      console.log('🔄 Using fallback game ID:', id);
+                  }
+              } else { 
+                  setError("No game ID provided."); 
+                  setIsLoading(false); 
+              }
           }, []);
           
           useEffect(() => {
               if (!gameId || !currentUser) return;
               const loadData = async () => {
                   try {
-                      const [fetchedGame, fetchedBlocks] = await Promise.all([ 
-                          dataService.fetchGame(gameId), 
-                          dataService.fetchAllBlocks() 
-                        ]);
-                      if (!fetchedGame) throw new Error("Game not found.");
+                      const params = new URLSearchParams(window.location.search);
+                      const isFallback = params.get('fallback') === 'true';
+                      
+                      let fetchedGame;
+                      const fetchedBlocks = await dataService.fetchAllBlocks();
+                      
+                      if (isFallback) {
+                          console.log('🔄 Creating fallback game data');
+                          // Create a fallback game with all available blocks
+                          const gameConfig = {};
+                          fetchedBlocks.slice(0, 3).forEach(block => {
+                              gameConfig[block.id] = { topics: 'all' };
+                          });
+                          
+                          fetchedGame = {
+                              id: gameId,
+                              mode: 'Modo Clásico',
+                              config: gameConfig,
+                              fallback: true
+                          };
+                      } else {
+                          fetchedGame = await dataService.fetchGame(gameId);
+                          if (!fetchedGame) throw new Error("Game not found.");
+                      }
+                      
                       setGame(fetchedGame);
                       setBlocks(fetchedBlocks);
-                  } catch (err) { setError(err.message);
-                  } finally { setIsLoading(false); }
+                  } catch (err) { 
+                      setError(err.message);
+                  } finally { 
+                      setIsLoading(false); 
+                  }
               };
               loadData();
           }, [gameId, currentUser]);

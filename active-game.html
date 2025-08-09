@@ -581,13 +581,27 @@
             
             let fileName = modeToFile[game.mode];
             if (fileName) {
-                if (!createdGame?.gameId) {
+                // Try multiple possible field names for the game ID
+                const gameId = createdGame?.gameId || createdGame?.id || createdGame?.game?.id;
+                
+                if (!gameId) {
                     console.error('❌ No gameId in response:', createdGame);
-                    alert('Error: No game ID received from server. Response: ' + JSON.stringify(createdGame));
+                    console.error('❌ Checked fields: gameId, id, game.id');
+                    
+                    // Try to create a simple fallback using timestamp
+                    const fallbackId = `fallback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                    console.log('🔄 Using fallback ID:', fallbackId);
+                    
+                    let url = `${fileName}?gameId=${fallbackId}&fallback=true`;
+                    if(game.mode === 'Examen Simulado') {
+                        url += `&numQuestions=${examConfig.numQuestions}&penalty=${examConfig.penalty}`;
+                    }
+                    console.log('🔗 Navigating with fallback to:', url);
+                    window.location.href = url;
                     return;
                 }
                 
-                let url = `${fileName}?gameId=${createdGame.gameId}`;
+                let url = `${fileName}?gameId=${gameId}`;
                 if(game.mode === 'Examen Simulado') {
                     url += `&numQuestions=${examConfig.numQuestions}&penalty=${examConfig.penalty}`;
                 }
