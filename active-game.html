@@ -549,7 +549,10 @@
         };
         
         const handleStartGame = async () => {
+          alert('🎮 HandleStartGame ejecutándose para: ' + game.mode);
           console.log('🎮 HandleStartGame called for mode:', game.mode);
+          console.log('🎯 Current game object:', game);
+          console.log('👤 Current user:', currentUser);
           
           // Create a simple gameId directly without backend dependency
           const simpleGameId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -576,6 +579,7 @@
                   url += `&numQuestions=${examConfig.numQuestions}&penalty=${examConfig.penalty}`;
               }
               console.log('🔗 Final URL:', url);
+              alert('🔗 Navegando a: ' + url);
               
               // Store game config in localStorage for the game to use
               const gameConfigData = {
