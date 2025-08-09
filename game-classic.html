@@ -260,7 +260,7 @@
               }]);
           };
 
-          const handleFinish = () => {
+          const handleFinish = async () => {
               setGameState('finished');
               setIsConfirmingFinish(false);
               if (currentUser && userAnswers.length > 0) {
