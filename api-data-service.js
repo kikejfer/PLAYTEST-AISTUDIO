@@ -428,4 +428,8 @@ const apiDataService = new APIDataService(getAPIBaseURL());
 // Export para uso en diferentes contextos
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { APIDataService, apiDataService };
+} else if (typeof window !== 'undefined') {
+  // Browser environment - attach to window
+  window.APIDataService = APIDataService;
+  window.apiDataService = apiDataService;
 }
