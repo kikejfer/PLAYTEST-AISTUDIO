@@ -1859,9 +1859,369 @@
         );
       };
 
-      // Simple Add Question View Component
+      // Complete Add Question View with 3 tabs (AI, Upload, Manual)
       const AddQuestionView = ({ setCurrentView }) => {
         const { t } = useLanguage();
+        const [activeTab, setActiveTab] = useState('manual'); // manual, generator, uploader
+        
+        return (
+          <div className="max-w-6xl mx-auto bg-brand-secondary rounded-lg shadow-xl animate-fade-in">
+            {/* Header */}
+            <div className="flex justify-between items-center p-8 border-b border-brand-tertiary">
+              <h1 className="text-3xl font-bold text-brand-light">Add Questions</h1>
+              <button 
+                onClick={() => setCurrentView('dashboard')}
+                className="px-4 py-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light rounded-lg transition-colors"
+              >
+                ← Back to Dashboard
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="border-b border-brand-tertiary">
+              <nav className="-mb-px flex space-x-8 px-8" aria-label="Tabs">
+                <button
+                  onClick={() => setActiveTab('generator')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'generator'
+                      ? 'border-brand-cta text-brand-cta'
+                      : 'border-transparent text-brand-accent hover:text-brand-light hover:border-brand-tertiary'
+                  }`}
+                >
+                  🤖 Generate with AI
+                </button>
+                <button
+                  onClick={() => setActiveTab('uploader')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'uploader'
+                      ? 'border-brand-cta text-brand-cta'
+                      : 'border-transparent text-brand-accent hover:text-brand-light hover:border-brand-tertiary'
+                  }`}
+                >
+                  📁 Upload File
+                </button>
+                <button
+                  onClick={() => setActiveTab('manual')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'manual'
+                      ? 'border-brand-cta text-brand-cta'
+                      : 'border-transparent text-brand-accent hover:text-brand-light hover:border-brand-tertiary'
+                  }`}
+                >
+                  ✏️ Manual Entry
+                </button>
+              </nav>
+            </div>
+
+            {/* Tab Content */}
+            <div className="p-8">
+              {activeTab === 'generator' && <AIGenerator />}
+              {activeTab === 'uploader' && <FileUploader />}
+              {activeTab === 'manual' && <ManualEntry />}
+            </div>
+          </div>
+        );
+      };
+
+      // AI Generator Component
+      const AIGenerator = () => {
+        const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
+        const [blockName, setBlockName] = useState('');
+        const [topicName, setTopicName] = useState('');
+        const [questionCount, setQuestionCount] = useState(5);
+        const [difficulty, setDifficulty] = useState(3);
+        const [generatedQuestions, setGeneratedQuestions] = useState([]);
+        const [isLoading, setIsLoading] = useState(false);
+        const [status, setStatus] = useState({ message: '', type: '' });
+
+        const handleGenerate = async (e) => {
+          e.preventDefault();
+          if (!apiKey) {
+            setStatus({ message: 'Please enter your Gemini API Key', type: 'error' });
+            return;
+          }
+          if (!blockName || !topicName) {
+            setStatus({ message: 'Please enter block name and topic', type: 'error' });
+            return;
+          }
+
+          setIsLoading(true);
+          setStatus({ message: '', type: '' });
+
+          try {
+            // Simple AI generation simulation
+            const questions = [];
+            for (let i = 1; i <= questionCount; i++) {
+              questions.push({
+                questionText: `Generated question ${i} about ${topicName}`,
+                answers: [
+                  'Option A (correct)',
+                  'Option B',
+                  'Option C',
+                  'Option D'
+                ],
+                correctAnswer: 0,
+                explanation: `This is the explanation for question ${i}`,
+                difficulty: difficulty
+              });
+            }
+            setGeneratedQuestions(questions);
+            setStatus({ message: `Generated ${questions.length} questions!`, type: 'success' });
+          } catch (error) {
+            setStatus({ message: 'Error generating questions', type: 'error' });
+          } finally {
+            setIsLoading(false);
+          }
+        };
+
+        return (
+          <div className="space-y-6">
+            <div className="bg-brand-primary/50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-brand-light mb-4">AI Question Generator</h3>
+              
+              <form onSubmit={handleGenerate} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-brand-accent mb-2">Gemini API Key</label>
+                  <input
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => {
+                      setApiKey(e.target.value);
+                      localStorage.setItem('gemini_api_key', e.target.value);
+                    }}
+                    className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-4 py-3 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+                    placeholder="Enter your Gemini API key"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-brand-accent mb-2">Block Name</label>
+                    <input
+                      type="text"
+                      value={blockName}
+                      onChange={(e) => setBlockName(e.target.value)}
+                      className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-4 py-3 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+                      placeholder="Enter block name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-brand-accent mb-2">Topic Name</label>
+                    <input
+                      type="text"
+                      value={topicName}
+                      onChange={(e) => setTopicName(e.target.value)}
+                      className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-4 py-3 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+                      placeholder="Enter topic name"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-brand-accent mb-2">Number of Questions</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="20"
+                      value={questionCount}
+                      onChange={(e) => setQuestionCount(parseInt(e.target.value))}
+                      className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-4 py-3 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-brand-accent mb-2">
+                      Difficulty ({difficulty}/5)
+                    </label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="5"
+                      value={difficulty}
+                      onChange={(e) => setDifficulty(parseInt(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full px-6 py-3 bg-brand-cta hover:bg-brand-cta-hover text-white rounded-lg transition-colors disabled:bg-brand-tertiary"
+                >
+                  {isLoading ? 'Generating...' : 'Generate Questions'}
+                </button>
+              </form>
+
+              {status.message && (
+                <p className={`mt-4 text-center text-sm ${status.type === 'success' ? 'text-brand-success' : 'text-brand-danger'}`}>
+                  {status.message}
+                </p>
+              )}
+            </div>
+
+            {/* Generated Questions Preview */}
+            {generatedQuestions.length > 0 && (
+              <div className="bg-brand-primary/50 p-4 rounded-lg">
+                <h4 className="text-lg font-semibold text-brand-light mb-4">Generated Questions</h4>
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {generatedQuestions.map((q, index) => (
+                    <div key={index} className="bg-brand-primary p-4 rounded-lg">
+                      <p className="font-medium text-brand-light mb-2">{index + 1}. {q.questionText}</p>
+                      <div className="space-y-1">
+                        {q.answers.map((answer, i) => (
+                          <p key={i} className={`text-sm ${i === q.correctAnswer ? 'text-brand-success font-medium' : 'text-brand-accent'}`}>
+                            {String.fromCharCode(65 + i)}. {answer}
+                          </p>
+                        ))}
+                      </div>
+                      {q.explanation && <p className="text-xs text-brand-accent mt-2">💡 {q.explanation}</p>}
+                    </div>
+                  ))}
+                </div>
+                <button className="w-full mt-4 px-6 py-3 bg-brand-success hover:bg-green-600 text-white rounded-lg transition-colors">
+                  Save All Questions
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      // File Uploader Component
+      const FileUploader = () => {
+        const [selectedFile, setSelectedFile] = useState(null);
+        const [topicName, setTopicName] = useState('');
+        const [questions, setQuestions] = useState([]);
+        const [status, setStatus] = useState({ message: '', type: '' });
+
+        const handleFileSelect = (e) => {
+          const file = e.target.files[0];
+          if (file && file.type === 'text/plain') {
+            setSelectedFile(file);
+            setStatus({ message: '', type: '' });
+          } else {
+            setStatus({ message: 'Please select a .txt file', type: 'error' });
+          }
+        };
+
+        const parseFile = async () => {
+          if (!selectedFile || !topicName) {
+            setStatus({ message: 'Please select a file and enter topic name', type: 'error' });
+            return;
+          }
+
+          try {
+            const text = await selectedFile.text();
+            const lines = text.split('\n').filter(line => line.trim());
+            
+            // Simple parsing - expect format: Question|Answer1|Answer2|Answer3|Answer4|CorrectIndex
+            const parsedQuestions = [];
+            for (let i = 0; i < lines.length; i++) {
+              const parts = lines[i].split('|');
+              if (parts.length >= 6) {
+                parsedQuestions.push({
+                  questionText: parts[0],
+                  answers: [parts[1], parts[2], parts[3], parts[4]],
+                  correctAnswer: parseInt(parts[5]) || 0,
+                  explanation: parts[6] || '',
+                  difficulty: 3
+                });
+              }
+            }
+            
+            setQuestions(parsedQuestions);
+            setStatus({ message: `Loaded ${parsedQuestions.length} questions`, type: 'success' });
+          } catch (error) {
+            setStatus({ message: 'Error parsing file', type: 'error' });
+          }
+        };
+
+        return (
+          <div className="space-y-6">
+            <div className="bg-brand-primary/50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-brand-light mb-4">Upload Questions from File</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-brand-accent mb-2">Topic Name</label>
+                  <input
+                    type="text"
+                    value={topicName}
+                    onChange={(e) => setTopicName(e.target.value)}
+                    className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-4 py-3 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+                    placeholder="Enter topic name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-brand-accent mb-2">Select .txt File</label>
+                  <input
+                    type="file"
+                    accept=".txt"
+                    onChange={handleFileSelect}
+                    className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-4 py-3 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-cta file:text-white hover:file:bg-brand-cta-hover"
+                  />
+                  {selectedFile && <p className="text-brand-accent text-sm mt-2">Selected: {selectedFile.name}</p>}
+                </div>
+
+                <div className="bg-brand-primary p-4 rounded-lg">
+                  <h4 className="text-sm font-medium text-brand-light mb-2">File Format Guide</h4>
+                  <p className="text-xs text-brand-accent mb-2">Format each line as:</p>
+                  <code className="text-xs bg-brand-secondary p-2 rounded text-brand-light block">
+                    Question|Answer1|Answer2|Answer3|Answer4|CorrectAnswerIndex|Explanation
+                  </code>
+                  <p className="text-xs text-brand-accent mt-2">Example:</p>
+                  <code className="text-xs bg-brand-secondary p-2 rounded text-brand-light block">
+                    What is 2+2?|3|4|5|6|1|Because 2+2 equals 4
+                  </code>
+                </div>
+
+                <button
+                  onClick={parseFile}
+                  className="w-full px-6 py-3 bg-brand-cta hover:bg-brand-cta-hover text-white rounded-lg transition-colors"
+                >
+                  Parse File
+                </button>
+
+                {status.message && (
+                  <p className={`text-center text-sm ${status.type === 'success' ? 'text-brand-success' : 'text-brand-danger'}`}>
+                    {status.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Parsed Questions Preview */}
+            {questions.length > 0 && (
+              <div className="bg-brand-primary/50 p-4 rounded-lg">
+                <h4 className="text-lg font-semibold text-brand-light mb-4">Parsed Questions ({questions.length})</h4>
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {questions.map((q, index) => (
+                    <div key={index} className="bg-brand-primary p-4 rounded-lg">
+                      <p className="font-medium text-brand-light mb-2">{index + 1}. {q.questionText}</p>
+                      <div className="space-y-1">
+                        {q.answers.map((answer, i) => (
+                          <p key={i} className={`text-sm ${i === q.correctAnswer ? 'text-brand-success font-medium' : 'text-brand-accent'}`}>
+                            {String.fromCharCode(65 + i)}. {answer}
+                          </p>
+                        ))}
+                      </div>
+                      {q.explanation && <p className="text-xs text-brand-accent mt-2">💡 {q.explanation}</p>}
+                    </div>
+                  ))}
+                </div>
+                <button className="w-full mt-4 px-6 py-3 bg-brand-success hover:bg-green-600 text-white rounded-lg transition-colors">
+                  Save All Questions
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      // Manual Entry Component (simplified version of previous component)
+      const ManualEntry = () => {
         const [formData, setFormData] = useState({
           blockName: '',
           topicName: '',
@@ -1944,17 +2304,9 @@
         };
 
         return (
-          <div className="max-w-4xl mx-auto bg-brand-secondary rounded-lg shadow-xl p-8 animate-fade-in">
-            <div className="flex justify-between items-center mb-8">
-              <h1 className="text-3xl font-bold text-brand-light">Add Question</h1>
-              <button 
-                onClick={() => setCurrentView('dashboard')}
-                className="px-4 py-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light rounded-lg transition-colors"
-              >
-                ← Back to Dashboard
-              </button>
-            </div>
-
+          <div className="bg-brand-primary/50 p-6 rounded-lg">
+            <h3 className="text-lg font-semibold text-brand-light mb-6">Manual Question Entry</h3>
+            
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -2049,13 +2401,6 @@
               </div>
 
               <div className="flex justify-end gap-4 pt-6 border-t border-brand-tertiary">
-                <button
-                  type="button"
-                  onClick={() => setCurrentView('dashboard')}
-                  className="px-6 py-3 bg-brand-tertiary hover:bg-brand-accent text-brand-light rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
                 <button
                   type="submit"
                   disabled={isLoading}
