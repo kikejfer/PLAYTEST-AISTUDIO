@@ -1437,7 +1437,7 @@
             <div className="space-y-8">
                 <div className="flex justify-between items-center">
                   <h2 className="text-3xl font-bold text-brand-light">Admin Panel</h2>
-                  <button onClick={() => { console.log('🔧 Navigating to add-question.html'); window.location.href = '/add-question.html'; }} className="flex items-center gap-2 text-sm font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-2 px-4 rounded-md transition-colors">
+                  <button onClick={() => { console.log('🔧 Navigating to add-question view'); setCurrentView('add-question'); }} className="flex items-center gap-2 text-sm font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-2 px-4 rounded-md transition-colors">
                       <PlusCircleIcon className="h-5 w-5" />
                       <span>{t('add_question_button')}</span>
                   </button>
@@ -1858,6 +1858,222 @@
           </header>
         );
       };
+
+      // Simple Add Question View Component
+      const AddQuestionView = ({ setCurrentView }) => {
+        const { t } = useLanguage();
+        const [formData, setFormData] = useState({
+          blockName: '',
+          topicName: '',
+          questionText: '',
+          answers: ['', '', '', ''],
+          correctAnswer: 0,
+          explanation: '',
+          difficulty: 3
+        });
+        const [status, setStatus] = useState({ message: '', type: '' });
+        const [isLoading, setIsLoading] = useState(false);
+
+        const handleInputChange = (e) => {
+          const { name, value } = e.target;
+          setFormData(prev => ({ ...prev, [name]: value }));
+        };
+
+        const handleAnswerChange = (index, value) => {
+          setFormData(prev => ({
+            ...prev,
+            answers: prev.answers.map((ans, i) => i === index ? value : ans)
+          }));
+        };
+
+        const handleSubmit = async (e) => {
+          e.preventDefault();
+          setIsLoading(true);
+          setStatus({ message: '', type: '' });
+
+          try {
+            // Check if block exists
+            const blocks = await apiDataService.fetchAllBlocks();
+            let block = blocks.find(b => b.name.toLowerCase() === formData.blockName.toLowerCase());
+
+            if (!block) {
+              // Create new block
+              block = await apiDataService.createBlock({
+                name: formData.blockName,
+                description: `Block created for ${formData.topicName}`,
+                isPublic: true
+              });
+            }
+
+            // Create question
+            await apiDataService.createQuestion({
+              blockId: block.id,
+              topicName: formData.topicName,
+              questionText: formData.questionText,
+              answers: formData.answers.filter(a => a.trim()),
+              correctAnswer: formData.correctAnswer,
+              explanation: formData.explanation,
+              difficulty: parseInt(formData.difficulty)
+            });
+
+            setStatus({ 
+              message: `Question saved successfully to "${formData.blockName}"!`, 
+              type: 'success' 
+            });
+            
+            // Reset form
+            setFormData({
+              blockName: '',
+              topicName: '',
+              questionText: '',
+              answers: ['', '', '', ''],
+              correctAnswer: 0,
+              explanation: '',
+              difficulty: 3
+            });
+
+          } catch (error) {
+            console.error('Error saving question:', error);
+            setStatus({ 
+              message: 'Error saving question. Please try again.', 
+              type: 'error' 
+            });
+          } finally {
+            setIsLoading(false);
+          }
+        };
+
+        return (
+          <div className="max-w-4xl mx-auto bg-brand-secondary rounded-lg shadow-xl p-8 animate-fade-in">
+            <div className="flex justify-between items-center mb-8">
+              <h1 className="text-3xl font-bold text-brand-light">Add Question</h1>
+              <button 
+                onClick={() => setCurrentView('dashboard')}
+                className="px-4 py-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light rounded-lg transition-colors"
+              >
+                ← Back to Dashboard
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-brand-accent mb-2">Block Name</label>
+                  <input
+                    type="text"
+                    name="blockName"
+                    value={formData.blockName}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-4 py-3 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+                    placeholder="Enter block name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-brand-accent mb-2">Topic Name</label>
+                  <input
+                    type="text"
+                    name="topicName"
+                    value={formData.topicName}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-4 py-3 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+                    placeholder="Enter topic name"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-brand-accent mb-2">Question Text</label>
+                <textarea
+                  name="questionText"
+                  value={formData.questionText}
+                  onChange={handleInputChange}
+                  required
+                  rows="3"
+                  className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-4 py-3 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+                  placeholder="Enter your question"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-brand-accent mb-2">Answers</label>
+                <div className="space-y-3">
+                  {formData.answers.map((answer, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="correctAnswer"
+                        checked={formData.correctAnswer === index}
+                        onChange={() => setFormData(prev => ({ ...prev, correctAnswer: index }))}
+                        className="h-5 w-5 text-brand-cta bg-brand-primary border-brand-tertiary focus:ring-brand-cta"
+                      />
+                      <input
+                        type="text"
+                        value={answer}
+                        onChange={(e) => handleAnswerChange(index, e.target.value)}
+                        required
+                        className="flex-1 bg-brand-primary border border-brand-tertiary rounded-lg px-4 py-3 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+                        placeholder={`Answer ${index + 1}`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-brand-accent mb-2">Explanation (Optional)</label>
+                <textarea
+                  name="explanation"
+                  value={formData.explanation}
+                  onChange={handleInputChange}
+                  rows="2"
+                  className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-4 py-3 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+                  placeholder="Explain why this is the correct answer"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-brand-accent mb-2">
+                  Difficulty ({formData.difficulty}/5)
+                </label>
+                <input
+                  type="range"
+                  name="difficulty"
+                  min="1"
+                  max="5"
+                  value={formData.difficulty}
+                  onChange={handleInputChange}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="flex justify-end gap-4 pt-6 border-t border-brand-tertiary">
+                <button
+                  type="button"
+                  onClick={() => setCurrentView('dashboard')}
+                  className="px-6 py-3 bg-brand-tertiary hover:bg-brand-accent text-brand-light rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="px-6 py-3 bg-brand-cta hover:bg-brand-cta-hover text-white rounded-lg transition-colors disabled:bg-brand-tertiary"
+                >
+                  {isLoading ? 'Saving...' : 'Save Question'}
+                </button>
+              </div>
+
+              {status.message && (
+                <p className={`text-center text-sm ${status.type === 'success' ? 'text-brand-success' : 'text-brand-danger'}`}>
+                  {status.message}
+                </p>
+              )}
+            </form>
+          </div>
+        );
+      };
       
       const App = () => {
         const { t } = useLanguage();
@@ -1975,8 +2191,10 @@
           if (isLoading) { return ( <div className="flex justify-center items-center h-64"> <svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle> <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> </div> ); }
           if (error) { return <div className="text-center text-brand-danger bg-red-500/10 p-4 rounded-lg">{t('error')}: {error}</div>; }
           
-          // Navigation based on currentView - add-question now goes to HTML file directly
-
+          // Handle add-question view
+          if (currentView === 'add-question') {
+            return <AddQuestionView setCurrentView={setCurrentView} />;
+          }
           
           if (currentUser.isAdmin) {
              return <AdminPanel setCurrentView={setCurrentView} />;
