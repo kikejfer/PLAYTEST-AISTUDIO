@@ -30,6 +30,17 @@
     <!-- Tailwind CSS from CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+      // Suppress Tailwind CSS production warning for deployment
+      if (typeof console !== 'undefined' && console.warn) {
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+          if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
+            return; // Suppress this specific warning
+          }
+          originalWarn.apply(console, args);
+        };
+      }
+      
       tailwind.config = {
         theme: {
           extend: {
@@ -515,13 +526,16 @@
                       const dummyGame = {
                           id: gameId,
                           gameType: 'classic',
-                          config: {},
+                          mode: 'Emergency Classic',
+                          config: {
+                              'emergency_block': { topics: 'all' }
+                          },
                           players: [{ userId: currentUser.id, nickname: currentUser.nickname }],
                           createdAt: new Date().toISOString()
                       };
                       setGame(dummyGame);
                       
-                      // Create dummy questions for testing
+                      // Create dummy questions for testing with correct Spanish structure
                       const dummyBlocks = [{
                           id: 'emergency_block',
                           name: 'Emergency Test Block',
@@ -529,15 +543,68 @@
                           questions: [
                               {
                                   id: 1,
-                                  question: '¿Cuál es la capital de España?',
-                                  options: ['Madrid', 'Barcelona', 'Valencia', 'Sevilla'],
-                                  correctAnswer: 'Madrid'
+                                  textoPregunta: '¿Cuál es la capital de España?',
+                                  tema: 'Geografía',
+                                  blockId: 'emergency_block',
+                                  respuestas: [
+                                      { textoRespuesta: 'Madrid', esCorrecta: true },
+                                      { textoRespuesta: 'Barcelona', esCorrecta: false },
+                                      { textoRespuesta: 'Valencia', esCorrecta: false },
+                                      { textoRespuesta: 'Sevilla', esCorrecta: false }
+                                  ],
+                                  explicacionRespuesta: 'Madrid es la capital y ciudad más poblada de España.'
                               },
                               {
                                   id: 2,
-                                  question: '¿Cuánto es 2 + 2?',
-                                  options: ['3', '4', '5', '6'],
-                                  correctAnswer: '4'
+                                  textoPregunta: '¿Cuánto es 2 + 2?',
+                                  tema: 'Matemáticas',
+                                  blockId: 'emergency_block',
+                                  respuestas: [
+                                      { textoRespuesta: '3', esCorrecta: false },
+                                      { textoRespuesta: '4', esCorrecta: true },
+                                      { textoRespuesta: '5', esCorrecta: false },
+                                      { textoRespuesta: '6', esCorrecta: false }
+                                  ],
+                                  explicacionRespuesta: 'La suma básica de 2 + 2 es igual a 4.'
+                              },
+                              {
+                                  id: 3,
+                                  textoPregunta: '¿Cuál es el lenguaje de programación más usado en desarrollo web?',
+                                  tema: 'Programación',
+                                  blockId: 'emergency_block',
+                                  respuestas: [
+                                      { textoRespuesta: 'Python', esCorrecta: false },
+                                      { textoRespuesta: 'Java', esCorrecta: false },
+                                      { textoRespuesta: 'JavaScript', esCorrecta: true },
+                                      { textoRespuesta: 'C++', esCorrecta: false }
+                                  ],
+                                  explicacionRespuesta: 'JavaScript es el lenguaje principal para desarrollo web tanto en frontend como backend.'
+                              },
+                              {
+                                  id: 4,
+                                  textoPregunta: '¿En qué año se fundó Microsoft?',
+                                  tema: 'Historia de la Tecnología',
+                                  blockId: 'emergency_block',
+                                  respuestas: [
+                                      { textoRespuesta: '1975', esCorrecta: true },
+                                      { textoRespuesta: '1976', esCorrecta: false },
+                                      { textoRespuesta: '1980', esCorrecta: false },
+                                      { textoRespuesta: '1985', esCorrecta: false }
+                                  ],
+                                  explicacionRespuesta: 'Microsoft fue fundada por Bill Gates y Paul Allen el 4 de abril de 1975.'
+                              },
+                              {
+                                  id: 5,
+                                  textoPregunta: '¿Cuál es la función principal de un compilador?',
+                                  tema: 'Informática',
+                                  blockId: 'emergency_block',
+                                  respuestas: [
+                                      { textoRespuesta: 'Ejecutar programas', esCorrecta: false },
+                                      { textoRespuesta: 'Traducir código fuente a código máquina', esCorrecta: true },
+                                      { textoRespuesta: 'Depurar errores', esCorrecta: false },
+                                      { textoRespuesta: 'Gestionar memoria', esCorrecta: false }
+                                  ],
+                                  explicacionRespuesta: 'Un compilador traduce el código fuente escrito en un lenguaje de alto nivel a código máquina o bytecode.'
                               }
                           ]
                       }];
