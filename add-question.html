@@ -244,6 +244,11 @@
                   
                   console.log(`🔧 Creating question ${i + 1}:`, questionData);
                   await apiDataService.createQuestion(questionData);
+                  
+                  // Add small delay to avoid rate limiting
+                  if (i < questions.length - 1) {
+                      await new Promise(resolve => setTimeout(resolve, 100));
+                  }
               }
               console.log('✅ All questions saved successfully');
               return simulateDelay({ message: 'Questions added successfully.' });
