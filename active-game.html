@@ -563,6 +563,9 @@
               gameData
             );
             
+            console.log('🎮 Created game response:', createdGame);
+            console.log('🔢 Game ID from response:', createdGame?.gameId);
+            
             // Now navigate with the real backend game ID
             const modeToFile = {
                 'Modo Clásico': 'game-classic.html',
@@ -578,10 +581,17 @@
             
             let fileName = modeToFile[game.mode];
             if (fileName) {
+                if (!createdGame?.gameId) {
+                    console.error('❌ No gameId in response:', createdGame);
+                    alert('Error: No game ID received from server. Response: ' + JSON.stringify(createdGame));
+                    return;
+                }
+                
                 let url = `${fileName}?gameId=${createdGame.gameId}`;
                 if(game.mode === 'Examen Simulado') {
                     url += `&numQuestions=${examConfig.numQuestions}&penalty=${examConfig.penalty}`;
                 }
+                console.log('🔗 Navigating to:', url);
                 window.location.href = url;
             } else {
                 alert(`Game mode "${game.mode}" is not implemented yet.`);

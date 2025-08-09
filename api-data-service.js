@@ -364,7 +364,11 @@ class APIDataService {
         }
       ]
     };
-    return this.createGame(gameData);
+    
+    console.log('🚀 Creating game with data:', gameData);
+    const result = await this.createGame(gameData);
+    console.log('📝 Game creation result:', result);
+    return result;
   }
 
   async addBlockToUser(userId, blockId) {
