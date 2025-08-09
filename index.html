@@ -2849,8 +2849,22 @@
       function emergencyTestGame() {
         console.log('🚨 Emergency test button clicked!');
         const gameId = 'emergency_' + Date.now();
+        
+        // Store game data in localStorage for the game to pick up
+        const gameData = {
+          id: gameId,
+          mode: 'Emergency Classic',
+          simple: true,
+          emergency: true,
+          created: Date.now()
+        };
+        
+        localStorage.setItem('emergency_game', JSON.stringify(gameData));
+        localStorage.setItem('force_emergency_mode', 'true');
+        
         const url = 'game-classic.html?gameId=' + gameId + '&simple=true&emergency=true';
         console.log('🔗 Emergency navigation to:', url);
+        console.log('💾 Stored emergency game data:', gameData);
         alert('🚨 Navigating to: ' + url);
         window.location.href = url;
       }

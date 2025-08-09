@@ -439,10 +439,33 @@
               console.log('🔍 Search params:', window.location.search);
               
               const params = new URLSearchParams(window.location.search);
-              const id = params.get('gameId');
-              const isSimple = params.get('simple') === 'true';
-              const isFallback = params.get('fallback') === 'true';
-              const isEmergency = params.get('emergency') === 'true';
+              let id = params.get('gameId');
+              let isSimple = params.get('simple') === 'true';
+              let isFallback = params.get('fallback') === 'true';
+              let isEmergency = params.get('emergency') === 'true';
+              
+              // Check localStorage if URL params are missing
+              const forceEmergency = localStorage.getItem('force_emergency_mode') === 'true';
+              const emergencyGame = localStorage.getItem('emergency_game');
+              
+              if (!id && (forceEmergency || emergencyGame)) {
+                  console.log('🔄 No URL params found, checking localStorage...');
+                  if (emergencyGame) {
+                      const gameData = JSON.parse(emergencyGame);
+                      console.log('💾 Found emergency game in localStorage:', gameData);
+                      id = gameData.id;
+                      isSimple = gameData.simple || true;
+                      isEmergency = gameData.emergency || true;
+                      // Clear the localStorage data
+                      localStorage.removeItem('emergency_game');
+                  }
+                  if (forceEmergency && !id) {
+                      id = 'emergency_localStorage_' + Date.now();
+                      isEmergency = true;
+                      isSimple = true;
+                  }
+                  localStorage.removeItem('force_emergency_mode');
+              }
               
               console.log('🎮 Game loading with params:', { id, isSimple, isFallback, isEmergency });
               console.log('📋 All URL params:', Object.fromEntries(params.entries()));
