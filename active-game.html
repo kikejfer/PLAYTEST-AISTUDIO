@@ -549,70 +549,47 @@
         };
         
         const handleStartGame = async () => {
-          try {
-            // Create game in backend first
-            const gameData = {
-              mode: game.mode,
-              config: game.config,
-              examConfig: game.mode === 'Examen Simulado' ? examConfig : undefined
-            };
-            
-            const createdGame = await dataService.createGameForUser(
-              currentUser.id, 
-              currentUser.nickname, 
-              gameData
-            );
-            
-            console.log('🎮 Created game response:', createdGame);
-            console.log('🔢 Game ID from response:', createdGame?.gameId);
-            
-            // Now navigate with the real backend game ID
-            const modeToFile = {
-                'Modo Clásico': 'game-classic.html',
-                'Modo Contrarreloj': 'game-time-trial.html',
-                'Modo Vidas': 'game-lives.html',
-                'Por Niveles': 'game-by-levels.html',
-                'Racha de Aciertos': 'game-streak.html',
-                'Examen Simulado': 'game-exam.html',
-                'Duelo': 'game-duel.html',
-                'Maratón': 'game-marathon.html',
-                'Trivial': 'game-trivial.html',
-            };
-            
-            let fileName = modeToFile[game.mode];
-            if (fileName) {
-                // Try multiple possible field names for the game ID
-                const gameId = createdGame?.gameId || createdGame?.id || createdGame?.game?.id;
-                
-                if (!gameId) {
-                    console.error('❌ No gameId in response:', createdGame);
-                    console.error('❌ Checked fields: gameId, id, game.id');
-                    
-                    // Try to create a simple fallback using timestamp
-                    const fallbackId = `fallback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                    console.log('🔄 Using fallback ID:', fallbackId);
-                    
-                    let url = `${fileName}?gameId=${fallbackId}&fallback=true`;
-                    if(game.mode === 'Examen Simulado') {
-                        url += `&numQuestions=${examConfig.numQuestions}&penalty=${examConfig.penalty}`;
-                    }
-                    console.log('🔗 Navigating with fallback to:', url);
-                    window.location.href = url;
-                    return;
-                }
-                
-                let url = `${fileName}?gameId=${gameId}`;
-                if(game.mode === 'Examen Simulado') {
-                    url += `&numQuestions=${examConfig.numQuestions}&penalty=${examConfig.penalty}`;
-                }
-                console.log('🔗 Navigating to:', url);
-                window.location.href = url;
-            } else {
-                alert(`Game mode "${game.mode}" is not implemented yet.`);
-            }
-          } catch (error) {
-            console.error('Failed to create game:', error);
-            alert('Error creating game: ' + error.message);
+          console.log('🎮 HandleStartGame called for mode:', game.mode);
+          
+          // Create a simple gameId directly without backend dependency
+          const simpleGameId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          console.log('🔢 Generated simple gameId:', simpleGameId);
+          
+          const modeToFile = {
+              'Modo Clásico': 'game-classic.html',
+              'Modo Contrarreloj': 'game-time-trial.html',
+              'Modo Vidas': 'game-lives.html',
+              'Por Niveles': 'game-by-levels.html',
+              'Racha de Aciertos': 'game-streak.html',
+              'Examen Simulado': 'game-exam.html',
+              'Duelo': 'game-duel.html',
+              'Maratón': 'game-marathon.html',
+              'Trivial': 'game-trivial.html',
+          };
+          
+          let fileName = modeToFile[game.mode];
+          console.log('📁 Target file:', fileName);
+          
+          if (fileName) {
+              let url = `${fileName}?gameId=${simpleGameId}&simple=true`;
+              if(game.mode === 'Examen Simulado') {
+                  url += `&numQuestions=${examConfig.numQuestions}&penalty=${examConfig.penalty}`;
+              }
+              console.log('🔗 Final URL:', url);
+              
+              // Store game config in localStorage for the game to use
+              const gameConfigData = {
+                  id: simpleGameId,
+                  mode: game.mode,
+                  config: game.config,
+                  created: Date.now()
+              };
+              localStorage.setItem(`game_${simpleGameId}`, JSON.stringify(gameConfigData));
+              console.log('💾 Stored game config in localStorage');
+              
+              window.location.href = url;
+          } else {
+              alert(`Game mode "${game.mode}" is not implemented yet.`);
           }
         };
         

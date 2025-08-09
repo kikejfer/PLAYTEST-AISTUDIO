@@ -437,11 +437,16 @@
           useEffect(() => {
               const params = new URLSearchParams(window.location.search);
               const id = params.get('gameId');
+              const isSimple = params.get('simple') === 'true';
               const isFallback = params.get('fallback') === 'true';
+              
+              console.log('🎮 Game loading with params:', { id, isSimple, isFallback });
               
               if (id) {
                   setGameId(id);
-                  if (isFallback) {
+                  if (isSimple) {
+                      console.log('🎯 Using simple local game ID:', id);
+                  } else if (isFallback) {
                       console.log('🔄 Using fallback game ID:', id);
                   }
               } else { 
@@ -455,12 +460,35 @@
               const loadData = async () => {
                   try {
                       const params = new URLSearchParams(window.location.search);
+                      const isSimple = params.get('simple') === 'true';
                       const isFallback = params.get('fallback') === 'true';
                       
                       let fetchedGame;
                       const fetchedBlocks = await dataService.fetchAllBlocks();
+                      console.log('📚 Loaded blocks:', fetchedBlocks.length);
                       
-                      if (isFallback) {
+                      if (isSimple) {
+                          console.log('🎯 Loading simple mode - checking localStorage');
+                          // Try to load from localStorage first
+                          const storedGame = localStorage.getItem(`game_${gameId}`);
+                          if (storedGame) {
+                              fetchedGame = JSON.parse(storedGame);
+                              console.log('💾 Loaded game from localStorage:', fetchedGame);
+                          } else {
+                              console.log('🔧 Creating default simple game');
+                              // Create default game with available blocks
+                              const gameConfig = {};
+                              fetchedBlocks.slice(0, 3).forEach(block => {
+                                  gameConfig[block.id] = { topics: 'all' };
+                              });
+                              fetchedGame = {
+                                  id: gameId,
+                                  mode: 'Modo Clásico',
+                                  config: gameConfig,
+                                  simple: true
+                              };
+                          }
+                      } else if (isFallback) {
                           console.log('🔄 Creating fallback game data');
                           // Create a fallback game with all available blocks
                           const gameConfig = {};
@@ -475,13 +503,16 @@
                               fallback: true
                           };
                       } else {
+                          console.log('🌐 Fetching game from API');
                           fetchedGame = await dataService.fetchGame(gameId);
                           if (!fetchedGame) throw new Error("Game not found.");
                       }
                       
                       setGame(fetchedGame);
                       setBlocks(fetchedBlocks);
+                      console.log('✅ Game data loaded successfully');
                   } catch (err) { 
+                      console.error('❌ Error loading game data:', err);
                       setError(err.message);
                   } finally { 
                       setIsLoading(false); 
