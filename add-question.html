@@ -195,15 +195,14 @@
           
           // Create block using API
           const blockData = {
-              nombre_corto: blockName,
-              nombre_largo: `${blockName} (Custom)`,
-              tipo_bloque: 'EXTERNO',
-              url_imagen_bloque: `https://picsum.photos/seed/${encodeURIComponent(blockName)}/400/200`,
-              is_public: isPublic
+              name: blockName,
+              description: `${blockName} - Custom block created with questions`,
+              isPublic: isPublic
           };
           
           console.log('🔧 Creating block via API:', blockData);
-          const createdBlock = await apiDataService.createBlock(blockData);
+          const response = await apiDataService.createBlock(blockData);
+          const createdBlock = response.block || response; // Handle different response formats
           console.log('✅ Block created:', createdBlock);
           
           if (questions && questions.length > 0) {
@@ -211,13 +210,11 @@
               for (let i = 0; i < questions.length; i++) {
                   const question = questions[i];
                   const questionData = {
-                      block_id: createdBlock.id,
-                      texto_pregunta: question.pregunta,
-                      respuestas: question.respuestas,
-                      respuesta_correcta: question.respuestas.findIndex(r => r.esCorrecta),
-                      explicacion: question.explicacion,
-                      topic: question.tema || 'General',
-                      numero: i + 1
+                      blockId: createdBlock.id,
+                      textoPregunta: question.pregunta || question.textoPregunta,
+                      tema: question.tema || 'General',
+                      respuestas: question.respuestas || [],
+                      difficulty: question.dificultad || 1
                   };
                   
                   console.log(`🔧 Creating question ${i + 1}:`, questionData);
