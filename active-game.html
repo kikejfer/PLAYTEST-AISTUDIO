@@ -549,6 +549,8 @@
         };
         
         const handleStartGame = async () => {
+          console.log('🔥 CRITICAL: handleStartGame function called!');
+          window.alert('🔥 CRITICAL: handleStartGame function called!');
           alert('🎮 HandleStartGame ejecutándose para: ' + game.mode);
           console.log('🎮 HandleStartGame called for mode:', game.mode);
           console.log('🎯 Current game object:', game);
@@ -680,7 +682,11 @@
                             <MarathonRankingPreview scores={marathonScores} t={t} />
                         </div>
                     </div>
-                    <button onClick={handleStartGame} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                    <button onClick={() => { 
+                        console.log('🖱️ Button clicked! totalQuestions:', totalQuestions);
+                        console.log('🖱️ Button disabled?', totalQuestions === 0);
+                        handleStartGame();
+                    }} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
                          {t('game_page_start')} ({t('game_page_total_questions')} {totalQuestions})
                     </button>
                      <p className="text-center text-xs text-brand-accent mt-4">{t('game_motivational_tip')}</p>
@@ -694,7 +700,11 @@
                             <DuelRankingPreview scores={duelScores} t={t} />
                         </div>
                     </div>
-                    <button onClick={handleStartGame} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                    <button onClick={() => { 
+                        console.log('🖱️ Button clicked! totalQuestions:', totalQuestions);
+                        console.log('🖱️ Button disabled?', totalQuestions === 0);
+                        handleStartGame();
+                    }} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
                          {t('game_page_start')} ({t('game_page_total_questions')} {totalQuestions})
                     </button>
                     <p className="text-center text-xs text-brand-accent mt-4">{t('game_motivational_tip')}</p>
@@ -708,7 +718,11 @@
                             <TrivialRankingPreview scores={trivialScores} t={t} />
                         </div>
                     </div>
-                    <button onClick={handleStartGame} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                    <button onClick={() => { 
+                        console.log('🖱️ Button clicked! totalQuestions:', totalQuestions);
+                        console.log('🖱️ Button disabled?', totalQuestions === 0);
+                        handleStartGame();
+                    }} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
                          {t('game_page_start')} ({t('game_page_total_questions')} {totalQuestions})
                     </button>
                     <p className="text-center text-xs text-brand-accent mt-4">{t('game_motivational_tip')}</p>
@@ -722,7 +736,11 @@
                         <TimeTrialRankingPreview scores={timeTrialScores} t={t} />
                       </div>
                     </div>
-                    <button onClick={handleStartGame} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                    <button onClick={() => { 
+                        console.log('🖱️ Button clicked! totalQuestions:', totalQuestions);
+                        console.log('🖱️ Button disabled?', totalQuestions === 0);
+                        handleStartGame();
+                    }} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
                          {t('game_page_start')} ({t('game_page_total_questions')} {totalQuestions})
                     </button>
                     <p className="text-center text-xs text-brand-accent mt-4">{t('game_motivational_tip')}</p>
@@ -736,7 +754,11 @@
                         <LivesRankingPreview scores={livesScores} t={t} />
                       </div>
                     </div>
-                    <button onClick={handleStartGame} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                    <button onClick={() => { 
+                        console.log('🖱️ Button clicked! totalQuestions:', totalQuestions);
+                        console.log('🖱️ Button disabled?', totalQuestions === 0);
+                        handleStartGame();
+                    }} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
                          {t('game_page_start')} ({t('game_page_total_questions')} {totalQuestions})
                     </button>
                 </div>
@@ -749,7 +771,11 @@
                             <StreakRankingPreview scores={streakScores} t={t} />
                         </div>
                     </div>
-                    <button onClick={handleStartGame} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                    <button onClick={() => { 
+                        console.log('🖱️ Button clicked! totalQuestions:', totalQuestions);
+                        console.log('🖱️ Button disabled?', totalQuestions === 0);
+                        handleStartGame();
+                    }} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
                          {t('game_page_start')} ({t('game_page_total_questions')} {totalQuestions})
                     </button>
                 </div>
@@ -788,7 +814,11 @@
                           <ExamRankingPreview scores={examScores} t={t} />
                         </div>
                     </div>
-                    <button onClick={handleStartGame} disabled={totalQuestions < examConfig.numQuestions} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                    <button onClick={() => { 
+                        console.log('🖱️ Exam Button clicked! totalQuestions:', totalQuestions);
+                        console.log('🖱️ Exam Button disabled?', totalQuestions < examConfig.numQuestions);
+                        handleStartGame();
+                    }} disabled={totalQuestions < examConfig.numQuestions} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
                          {t('game_page_start')} ({totalQuestions < examConfig.numQuestions ? t('exam_start_button_not_enough_questions', {count: examConfig.numQuestions}) : `${t('game_page_total_questions')} ${totalQuestions}`})
                     </button>
                     <p className="text-center text-xs text-brand-accent mt-4">{t('game_motivational_tip')}</p>
@@ -813,7 +843,11 @@
                       <h3 className="text-lg font-semibold text-brand-accent">{t('game_page_total_questions')}</h3>
                       <p className="text-6xl font-extrabold text-brand-light my-4">{totalQuestions}</p>
                        <button 
-                        onClick={handleStartGame} 
+                        onClick={() => { 
+                            console.log('🖱️ Default Button clicked! totalQuestions:', totalQuestions);
+                            console.log('🖱️ Default Button disabled?', totalQuestions === 0);
+                            handleStartGame();
+                        }} 
                         disabled={totalQuestions === 0}
                         className="w-full mt-4 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
                          {t('game_page_start')}
