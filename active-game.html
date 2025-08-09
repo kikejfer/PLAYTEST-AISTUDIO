@@ -578,7 +578,7 @@
             
             let fileName = modeToFile[game.mode];
             if (fileName) {
-                let url = `${fileName}?gameId=${createdGame.id}`;
+                let url = `${fileName}?gameId=${createdGame.gameId}`;
                 if(game.mode === 'Examen Simulado') {
                     url += `&numQuestions=${examConfig.numQuestions}&penalty=${examConfig.penalty}`;
                 }
