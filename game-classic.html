@@ -442,13 +442,16 @@
               const id = params.get('gameId');
               const isSimple = params.get('simple') === 'true';
               const isFallback = params.get('fallback') === 'true';
+              const isEmergency = params.get('emergency') === 'true';
               
-              console.log('🎮 Game loading with params:', { id, isSimple, isFallback });
+              console.log('🎮 Game loading with params:', { id, isSimple, isFallback, isEmergency });
               console.log('📋 All URL params:', Object.fromEntries(params.entries()));
               
               if (id) {
                   setGameId(id);
-                  if (isSimple) {
+                  if (isEmergency) {
+                      console.log('🚨 Using emergency game ID:', id);
+                  } else if (isSimple) {
                       console.log('🎯 Using simple local game ID:', id);
                   } else if (isFallback) {
                       console.log('🔄 Using fallback game ID:', id);
@@ -456,8 +459,14 @@
               } else { 
                   console.error('❌ No gameId found in URL params');
                   console.error('❌ Available params:', [...params.entries()]);
-                  setError("No game ID provided."); 
-                  setIsLoading(false); 
+                  
+                  // EMERGENCY FALLBACK: Create a game ID if none provided
+                  const emergencyId = 'fallback_' + Date.now();
+                  console.log('🆘 Creating emergency fallback game ID:', emergencyId);
+                  setGameId(emergencyId);
+                  
+                  // Still show error but don't stop loading
+                  setError("No game ID provided - using emergency fallback: " + emergencyId); 
               }
           }, []);
           

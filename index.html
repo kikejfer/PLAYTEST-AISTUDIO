@@ -2837,6 +2837,25 @@
       );
 
     </script>
+    
+    <!-- EMERGENCY TEST BUTTON -->
+    <div id="emergency-test" style="position: fixed; top: 10px; right: 10px; z-index: 9999; background: red; padding: 10px; border-radius: 5px;">
+      <button onclick="emergencyTestGame()" style="background: darkred; color: white; padding: 10px; border: none; border-radius: 3px; cursor: pointer; font-weight: bold;">
+        🚨 EMERGENCY GAME TEST
+      </button>
+    </div>
+    
+    <script>
+      function emergencyTestGame() {
+        console.log('🚨 Emergency test button clicked!');
+        const gameId = 'emergency_' + Date.now();
+        const url = 'game-classic.html?gameId=' + gameId + '&simple=true&emergency=true';
+        console.log('🔗 Emergency navigation to:', url);
+        alert('🚨 Navigating to: ' + url);
+        window.location.href = url;
+      }
+    </script>
+    
     <noscript>This application requires JavaScript to run.</noscript>
 </body>
 </html>
