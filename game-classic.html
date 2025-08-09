@@ -472,7 +472,49 @@
           
           useEffect(() => {
               if (!gameId || !currentUser) return;
+              
               const loadData = async () => {
+                  // Check if this is an emergency/local game
+                  const isLocalGame = gameId.startsWith('emergency_') || gameId.startsWith('local_') || gameId.startsWith('test_') || gameId.startsWith('fallback_');
+                  
+                  if (isLocalGame) {
+                      console.log('🏠 Loading local/emergency game, bypassing backend');
+                      // Create dummy game data for local games
+                      const dummyGame = {
+                          id: gameId,
+                          gameType: 'classic',
+                          config: {},
+                          players: [{ userId: currentUser.id, nickname: currentUser.nickname }],
+                          createdAt: new Date().toISOString()
+                      };
+                      setGame(dummyGame);
+                      
+                      // Create dummy questions for testing
+                      const dummyBlocks = [{
+                          id: 'emergency_block',
+                          name: 'Emergency Test Block',
+                          topic: 'Test Questions',
+                          questions: [
+                              {
+                                  id: 1,
+                                  question: '¿Cuál es la capital de España?',
+                                  options: ['Madrid', 'Barcelona', 'Valencia', 'Sevilla'],
+                                  correctAnswer: 'Madrid'
+                              },
+                              {
+                                  id: 2,
+                                  question: '¿Cuánto es 2 + 2?',
+                                  options: ['3', '4', '5', '6'],
+                                  correctAnswer: '4'
+                              }
+                          ]
+                      }];
+                      setBlocks(dummyBlocks);
+                      setIsLoading(false);
+                      return;
+                  }
+                  
+                  // Regular backend loading for normal games
                   try {
                       const params = new URLSearchParams(window.location.search);
                       const isSimple = params.get('simple') === 'true';
