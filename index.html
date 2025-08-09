@@ -2895,6 +2895,17 @@
           const loginResponse = await apiDataService.login('test_user', 'test123');
           console.log('✅ Login successful:', loginResponse);
           
+          // Verify session is properly saved
+          console.log('🔑 Verifying session storage...');
+          const sessionData = localStorage.getItem('playtest_session');
+          const tokenData = localStorage.getItem('playtest_auth_token');
+          console.log('💾 Session data:', sessionData);
+          console.log('🎟️ Token data:', tokenData ? 'Present' : 'Missing');
+          
+          if (!sessionData || !tokenData) {
+            throw new Error('Authentication data not properly saved');
+          }
+          
           // Create a test game with actual backend data
           const gameConfig = {
             gameType: 'classic',
@@ -2908,11 +2919,19 @@
           const game = await apiDataService.createGameForUser(loginResponse.user.id, loginResponse.user.nickname, gameConfig);
           console.log('✅ Game created successfully:', game);
           
-          // Navigate to the game
+          if (!game || !game.id) {
+            throw new Error('Game creation failed - no game ID returned');
+          }
+          
+          // Navigate to the game with a small delay to ensure session is saved
           const url = `active-game.html?gameId=${game.id}`;
           console.log('🔗 Normal game navigation to:', url);
-          alert('🎮 Normal game created! Navigating to: ' + url);
-          window.location.href = url;
+          alert('🎮 Normal game created! ID: ' + game.id + '\nNavigating to: ' + url);
+          
+          // Small delay to ensure localStorage is written
+          setTimeout(() => {
+            window.location.href = url;
+          }, 500);
           
         } catch (error) {
           console.error('❌ Normal game test failed:', error);

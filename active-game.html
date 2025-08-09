@@ -911,12 +911,25 @@
           const [blockName, setBlockName] = useState('');
 
           useEffect(() => {
-              if (!currentUser) return;
+              console.log('🔄 Active game useEffect triggered, currentUser:', currentUser);
+              if (!currentUser) {
+                  console.warn('⚠️ No current user, skipping game load');
+                  return;
+              }
               const loadData = async () => {
                   try {
+                      console.log('🌐 Active game page URL:', window.location.href);
+                      console.log('🔍 URL search params:', window.location.search);
+                      
                       const params = new URLSearchParams(window.location.search);
                       const gameId = params.get('gameId');
-                      if (!gameId) throw new Error("No game ID provided.");
+                      console.log('🎮 Extracted gameId:', gameId);
+                      
+                      if (!gameId) {
+                          console.error('❌ No gameId found in URL params');
+                          console.error('📋 All URL params:', [...params.entries()]);
+                          throw new Error("No game ID provided.");
+                      }
 
                       const [fetchedGame, fetchedBlocks] = await Promise.all([
                           dataService.fetchGame(gameId),
