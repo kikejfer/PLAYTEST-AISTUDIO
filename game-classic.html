@@ -477,8 +477,17 @@
                   // Check if this is an emergency/local game
                   const isLocalGame = gameId.startsWith('emergency_') || gameId.startsWith('local_') || gameId.startsWith('test_') || gameId.startsWith('fallback_');
                   
+                  console.log('🔍 Game ID analysis:', { gameId, isLocalGame });
+                  console.log('🔍 Game ID prefixes check:', {
+                      emergency: gameId.startsWith('emergency_'),
+                      local: gameId.startsWith('local_'),
+                      test: gameId.startsWith('test_'),
+                      fallback: gameId.startsWith('fallback_')
+                  });
+                  
                   if (isLocalGame) {
                       console.log('🏠 Loading local/emergency game, bypassing backend');
+                      console.log('🎮 Creating dummy game for gameId:', gameId);
                       // Create dummy game data for local games
                       const dummyGame = {
                           id: gameId,
@@ -509,8 +518,13 @@
                               }
                           ]
                       }];
+                      
+                      console.log('🏆 Setting dummy game:', dummyGame);
+                      console.log('📚 Setting dummy blocks:', dummyBlocks);
+                      setGame(dummyGame);
                       setBlocks(dummyBlocks);
                       setIsLoading(false);
+                      console.log('✅ Local game setup complete');
                       return;
                   }
                   
@@ -575,7 +589,13 @@
                       setIsLoading(false); 
                   }
               };
-              loadData();
+              
+              console.log('🚀 Starting loadData for gameId:', gameId, 'currentUser:', currentUser?.nickname);
+              loadData().catch(error => {
+                  console.error('❌ Error in loadData:', error);
+                  setError('Failed to load game: ' + error.message);
+                  setIsLoading(false);
+              });
           }, [gameId, currentUser]);
           
           const gameQuestions = useMemo(() => {
