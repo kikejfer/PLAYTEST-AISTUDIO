@@ -1277,9 +1277,9 @@
                           <h3 className="text-xl font-bold text-brand-light">Bloques Cargados</h3>
                        </div>
                        <div className="flex items-center gap-2 flex-shrink-0">
-                         <button onClick={onOpenAddBlockModal} className="text-sm font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1.5 px-3 rounded-md transition-colors">
+                         <a href="available-blocks.html" className="text-sm font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1.5 px-3 rounded-md transition-colors inline-block text-center">
                             {t('block_management_add_available')}
-                         </button>
+                         </a>
                          <button onClick={() => window.location.href = './add-question.html'} className="text-sm font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-1.5 px-3 rounded-md transition-colors inline-block">
                             {t('add_question_button')}
                          </button>
@@ -1354,10 +1354,34 @@
           );
       };
 
-      const CreatedBlocksManagement = ({ blocks, setCurrentView }) => {
+      const CreatedBlocksManagement = ({ blocks, setCurrentView, onDeleteBlock }) => {
           const { t } = useLanguage();
+          const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+
+          const handleDeleteClick = (blockId) => {
+            setConfirmingDeleteId(blockId);
+          };
+
+          const handleConfirmDelete = () => {
+            if (confirmingDeleteId && onDeleteBlock) {
+              onDeleteBlock(confirmingDeleteId);
+              setConfirmingDeleteId(null);
+            }
+          };
+
           return (
               <div className="bg-brand-secondary p-6 rounded-xl shadow-lg flex flex-col">
+                  {confirmingDeleteId && (
+                    <ConfirmationDialog
+                      title={t('delete_block_prompt_title')}
+                      message={t('delete_block_confirm')}
+                      confirmText={t('delete_question_prompt_confirm')}
+                      cancelText={t('delete_question_prompt_cancel')}
+                      onConfirm={handleConfirmDelete}
+                      onCancel={() => setConfirmingDeleteId(null)}
+                      danger={true}
+                    />
+                  )}
                   <div className="flex items-center justify-between mb-4 flex-shrink-0">
                       <div className="flex items-center">
                           <img src="./Imagenes/Creados.png" alt="Created Blocks" className="h-10 w-10 mr-3" />
@@ -1370,14 +1394,21 @@
                   {blocks.length > 0 ? (
                       <div className="space-y-3 overflow-y-auto max-h-96 pr-2 flex-grow">
                           {blocks.slice(0, 5).map(block => (
-                              <div key={block.id} className="flex items-center justify-between p-3 rounded-md bg-brand-primary">
+                              <div key={block.id} className="flex items-center justify-between p-3 rounded-md bg-brand-primary group">
                                   <div className="flex items-center gap-3 overflow-hidden flex-grow">
                                       <img className="h-10 w-16 rounded object-cover flex-shrink-0" src={block.urlImagenBloque} alt={block.nombreCorto} />
                                       <div className="overflow-hidden">
                                           <p className="font-semibold text-brand-light truncate">{block.nombreCorto}</p>
-                                          <p className="text-xs text-brand-accent">{t('block_management_questions', {count: block.totalPreguntas})}</p>
+                                          <p className="text-xs text-brand-accent">{t('block_management_questions', {count: block.totalPreguntas || block.questionCount || 0})}</p>
                                       </div>
                                   </div>
+                                  <button
+                                      onClick={(e) => { e.stopPropagation(); handleDeleteClick(block.id); }}
+                                      className="p-2 rounded-full text-brand-danger/80 hover:bg-brand-danger/20 hover:text-brand-danger opacity-0 group-hover:opacity-100 transition-opacity"
+                                      aria-label={`${t('delete')} ${block.nombreCorto}`}
+                                  >
+                                      <TrashIcon className="h-5 w-5"/>
+                                  </button>
                               </div>
                           ))}
                       </div>
@@ -1480,8 +1511,7 @@
             </div>
             <div className="lg:col-span-1 space-y-8">
               <UserBlockManagement blocks={blocks} onViewBlock={onViewBlock} onDeleteBlock={onDeleteBlock} onOpenAddBlockModal={onOpenAddBlockModal} onOpenStatsModal={onOpenStatsModal} setCurrentView={setCurrentView} />
-              <AvailableBlocksManagement blocks={availableBlocks} loadedBlockIds={loadedBlockIds} onLoadBlock={onLoadBlock} onUnloadBlock={onUnloadBlock} />
-              <CreatedBlocksManagement blocks={createdBlocks} setCurrentView={setCurrentView} />
+              <CreatedBlocksManagement blocks={createdBlocks} setCurrentView={setCurrentView} onDeleteBlock={onDeleteBlock} />
             </div>
           </div>
         </div>

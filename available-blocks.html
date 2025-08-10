@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PLAYTEST - Bloques Disponibles</title>
+
+    <!-- Embedded Global Stylesheet -->
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      }
+      .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: #1B263B; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb { background: #415A77; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: #778DA9; }
+      * { scrollbar-width: thin; scrollbar-color: #415A77 #1B263B; }
+    </style>
+
+    <!-- Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-primary': '#0D1B2A',
+              'brand-secondary': '#1B263B',
+              'brand-tertiary': '#415A77',
+              'brand-accent': '#778DA9',
+              'brand-light': '#E0E1DD',
+              'brand-cta': '#3B82F6',
+              'brand-cta-hover': '#2563EB',
+              'brand-success': '#10B981',
+              'brand-danger': '#EF4444',
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Import Map -->
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client"
+  }
+}
+</script>
+  </head>
+  <body class="bg-brand-primary text-brand-light">
+    <div id="root"></div>
+
+    <!-- Babel Standalone -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- API Data Service -->
+    <script src="./api-data-service.js"></script>
+
+    <!-- Main application script -->
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect, useContext, createContext } from 'react';
+      import ReactDOM from 'react-dom/client';
+
+      // Language context
+      const translations = {
+        es: {
+          page_title: 'Bloques Disponibles',
+          back_to_dashboard: 'Volver al Dashboard',
+          search_placeholder: 'Buscar bloques...',
+          load_block: 'Cargar',
+          unload_block: 'Descargar', 
+          loaded: 'Cargado',
+          questions_count: '{count} preguntas',
+          by_user: 'por {user}',
+          no_blocks: 'No hay bloques disponibles',
+          no_results: 'No se encontraron bloques que coincidan con la búsqueda',
+          loading: 'Cargando...',
+          public_blocks: 'Bloques Públicos Disponibles',
+          load_success: 'Bloque cargado exitosamente',
+          unload_success: 'Bloque descargado exitosamente',
+          error_loading: 'Error al cargar el bloque',
+          error_unloading: 'Error al descargar el bloque'
+        },
+        en: {
+          page_title: 'Available Blocks',
+          back_to_dashboard: 'Back to Dashboard',
+          search_placeholder: 'Search blocks...',
+          load_block: 'Load',
+          unload_block: 'Unload',
+          loaded: 'Loaded',
+          questions_count: '{count} questions',
+          by_user: 'by {user}',
+          no_blocks: 'No available blocks',
+          no_results: 'No blocks found matching the search',
+          loading: 'Loading...',
+          public_blocks: 'Available Public Blocks',
+          load_success: 'Block loaded successfully',
+          unload_success: 'Block unloaded successfully',
+          error_loading: 'Error loading block',
+          error_unloading: 'Error unloading block'
+        }
+      };
+
+      const LanguageContext = createContext();
+      const LanguageProvider = ({ children }) => {
+        const [language, setLanguage] = useState(() => localStorage.getItem('playtest_lang') || 'es');
+        const t = (key, replacements = {}) => {
+          let translation = translations[language][key] || translations['en'][key] || key;
+          Object.keys(replacements).forEach(placeholder => {
+            translation = translation.replace(`{${placeholder}}`, replacements[placeholder]);
+          });
+          return translation;
+        };
+        return React.createElement(LanguageContext.Provider, { value: { language, setLanguage, t } }, children);
+      };
+      const useLanguage = () => useContext(LanguageContext);
+
+      // Main component
+      const AvailableBlocksPage = () => {
+        const { t } = useLanguage();
+        const [availableBlocks, setAvailableBlocks] = useState([]);
+        const [loadedBlockIds, setLoadedBlockIds] = useState([]);
+        const [isLoading, setIsLoading] = useState(true);
+        const [searchTerm, setSearchTerm] = useState('');
+        const [loadingActions, setLoadingActions] = useState({});
+        const [message, setMessage] = useState('');
+
+        useEffect(() => {
+          loadData();
+        }, []);
+
+        const loadData = async () => {
+          try {
+            setIsLoading(true);
+            const [available, profile] = await Promise.all([
+              apiDataService.fetchAvailableBlocks(),
+              apiDataService.getUserProfile()
+            ]);
+            
+            setAvailableBlocks(available);
+            setLoadedBlockIds(profile.loadedBlocks || []);
+          } catch (error) {
+            console.error('Error loading data:', error);
+          } finally {
+            setIsLoading(false);
+          }
+        };
+
+        const handleLoadBlock = async (blockId) => {
+          setLoadingActions(prev => ({ ...prev, [blockId]: 'loading' }));
+          try {
+            await apiDataService.loadBlock(blockId);
+            setMessage(t('load_success'));
+            await loadData(); // Refresh data
+          } catch (error) {
+            console.error('Error loading block:', error);
+            setMessage(t('error_loading'));
+          } finally {
+            setLoadingActions(prev => ({ ...prev, [blockId]: null }));
+            setTimeout(() => setMessage(''), 3000);
+          }
+        };
+
+        const handleUnloadBlock = async (blockId) => {
+          setLoadingActions(prev => ({ ...prev, [blockId]: 'unloading' }));
+          try {
+            await apiDataService.unloadBlock(blockId);
+            setMessage(t('unload_success'));
+            await loadData(); // Refresh data
+          } catch (error) {
+            console.error('Error unloading block:', error);
+            setMessage(t('error_unloading'));
+          } finally {
+            setLoadingActions(prev => ({ ...prev, [blockId]: null }));
+            setTimeout(() => setMessage(''), 3000);
+          }
+        };
+
+        const filteredBlocks = availableBlocks.filter(block =>
+          block.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          block.creatorNickname?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        if (isLoading) {
+          return (
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-cta mx-auto mb-4"></div>
+                <p className="text-brand-light">{t('loading')}</p>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="min-h-screen p-6 animate-fade-in">
+            <div className="max-w-6xl mx-auto">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                  <a 
+                    href="index.html" 
+                    className="flex items-center text-brand-accent hover:text-brand-light transition-colors"
+                  >
+                    <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                    </svg>
+                    {t('back_to_dashboard')}
+                  </a>
+                  <div className="h-6 w-px bg-brand-tertiary"></div>
+                  <h1 className="text-3xl font-bold text-brand-light">{t('page_title')}</h1>
+                </div>
+                
+                {/* Search */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder={t('search_placeholder')}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-80 px-4 py-2 bg-brand-secondary border border-brand-tertiary rounded-lg text-brand-light placeholder-brand-accent focus:outline-none focus:border-brand-cta"
+                  />
+                  <svg className="absolute right-3 top-3 h-4 w-4 text-brand-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Message */}
+              {message && (
+                <div className={`mb-6 p-4 rounded-lg ${message.includes('Error') ? 'bg-brand-danger/20 text-red-300' : 'bg-brand-success/20 text-green-300'}`}>
+                  {message}
+                </div>
+              )}
+
+              {/* Blocks Grid */}
+              <div className="bg-brand-secondary rounded-xl p-6">
+                <h2 className="text-xl font-bold text-brand-light mb-6 flex items-center">
+                  <img src="./Imagenes/Disponibles.png" alt="Available" className="h-8 w-8 mr-3" />
+                  {t('public_blocks')} ({filteredBlocks.length})
+                </h2>
+
+                {filteredBlocks.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-brand-accent text-lg">
+                      {searchTerm ? t('no_results') : t('no_blocks')}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredBlocks.map(block => {
+                      const isLoaded = loadedBlockIds.includes(block.id);
+                      const actionLoading = loadingActions[block.id];
+                      
+                      return (
+                        <div key={block.id} className="bg-brand-primary p-5 rounded-lg border border-brand-tertiary hover:border-brand-accent transition-colors">
+                          <div className="flex justify-between items-start mb-3">
+                            <h3 className="font-semibold text-brand-light text-lg leading-tight">{block.name}</h3>
+                            {isLoaded && (
+                              <span className="text-xs bg-brand-success/20 text-green-300 px-2 py-1 rounded-full">
+                                {t('loaded')}
+                              </span>
+                            )}
+                          </div>
+                          
+                          <p className="text-brand-accent text-sm mb-3 line-clamp-2">
+                            {block.description || 'Sin descripción'}
+                          </p>
+                          
+                          <div className="flex justify-between items-center mb-4">
+                            <span className="text-xs text-brand-accent">
+                              {t('questions_count', { count: block.questionCount || 0 })}
+                            </span>
+                            <span className="text-xs text-brand-accent">
+                              {t('by_user', { user: block.creatorNickname || 'Usuario' })}
+                            </span>
+                          </div>
+                          
+                          <button
+                            onClick={() => isLoaded ? handleUnloadBlock(block.id) : handleLoadBlock(block.id)}
+                            disabled={!!actionLoading}
+                            className={`w-full py-2 px-4 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                              isLoaded
+                                ? 'bg-brand-danger/20 text-red-300 hover:bg-brand-danger/30'
+                                : 'bg-brand-cta hover:bg-brand-cta-hover text-white'
+                            }`}
+                          >
+                            {actionLoading ? (
+                              <div className="flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                                {actionLoading === 'loading' ? 'Cargando...' : 'Descargando...'}
+                              </div>
+                            ) : (
+                              isLoaded ? t('unload_block') : t('load_block')
+                            )}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      // App component with language provider
+      const App = () => {
+        return React.createElement(LanguageProvider, null, React.createElement(AvailableBlocksPage));
+      };
+
+      // Render app
+      ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+    </script>
+  </body>
+</html>
