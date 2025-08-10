@@ -18,6 +18,7 @@ CREATE TABLE user_profiles (
     answer_history JSONB DEFAULT '[]',
     stats JSONB DEFAULT '{}',
     preferences JSONB DEFAULT '{}',
+    loaded_blocks JSONB DEFAULT '[]',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
