@@ -512,7 +512,11 @@
             
             let count = 0;
             for (const [blockId, blockConfig] of Object.entries(game.config)) {
-                const block = blocks.find(b => b.id === blockId);
+                // Fix: Handle both number IDs (backend) and string IDs (config keys)
+                const block = blocks.find(b => 
+                    b.id === parseInt(blockId) ||  // Backend blocks have numeric IDs
+                    b.id === blockId               // String IDs for compatibility
+                );
                 if (!block || !block.questions) continue;
                 
                 if (blockConfig.topics === 'all') {
@@ -525,7 +529,11 @@
         }, [game, blocks]);
         
         const getGameConfigDetails = useCallback((blockId, blockConfig) => {
-            const block = blocks.find(b => b.id === blockId);
+            // Fix: Handle both number IDs (backend) and string IDs (config keys)
+            const block = blocks.find(b => 
+                b.id === parseInt(blockId) ||  // Backend blocks have numeric IDs
+                b.id === blockId               // String IDs for compatibility
+            );
             if (!block) return null;
             const topicInfo = blockConfig.topics === 'all' 
                 ? t('game_setup_all_topics')
