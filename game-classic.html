@@ -280,23 +280,33 @@
                       timeElapsed: timeElapsed
                   };
                   try {
+                      console.log('💾 Saving game results for gameId:', game.id);
+                      console.log('🎯 Game results:', gameResults);
+                      
                       await dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
+                      console.log('✅ User stats updated successfully');
+                      
                       // Also save classic game score
-                      await dataService.saveClassicScore(game.id, {
+                      const scoreData = {
                           score: userAnswers.filter(a => a.result === 'ACIERTO').length,
                           totalQuestions: userAnswers.length,
                           timeElapsed: timeElapsed,
                           answers: userAnswers
-                      });
+                      };
+                      console.log('📊 Saving score data:', scoreData);
+                      await dataService.saveClassicScore(game.id, scoreData);
+                      console.log('✅ Classic score saved successfully');
                       
                       // Mark game as completed for history tracking
+                      console.log('🏁 Marking game as completed, gameId:', game.id);
                       try {
                           await dataService.updateGame(game.id, { status: 'completed' });
+                          console.log('✅ Game marked as completed successfully');
                       } catch (updateError) {
-                          console.warn('⚠️ Failed to update game status to completed:', updateError);
+                          console.error('❌ Failed to update game status to completed:', updateError);
                       }
                   } catch (error) {
-                      console.error('Failed to save game results:', error);
+                      console.error('❌ Failed to save game results:', error);
                   }
               }
           };

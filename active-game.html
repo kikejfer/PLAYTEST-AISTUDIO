@@ -650,27 +650,9 @@
           </div>
         );
 
-        // DEBUG: Test button that's always enabled
-        const handleTestStartGame = () => {
-            console.log('🔥 TEST BUTTON CLICKED!');
-            alert('🔥 TEST BUTTON CLICKED!');
-            const gameId = `test_${Date.now()}`;
-            const url = `game-classic.html?gameId=${gameId}&simple=true`;
-            console.log('🔗 Test navigation to:', url);
-            window.location.href = url;
-        };
 
         return (
           <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 animate-fade-in">
-            {/* DEBUG: Test button always enabled */}
-            <div className="mb-4 p-4 bg-red-600 text-white rounded-lg">
-                <button 
-                    onClick={handleTestStartGame}
-                    className="w-full bg-red-800 hover:bg-red-900 text-white font-bold py-2 px-4 rounded">
-                    🧪 TEST - Crear Juego Clásico (Siempre Activo)
-                </button>
-                <p className="text-sm mt-2">Total Questions: {totalQuestions} | Current User: {currentUser?.nickname || 'No user'}</p>
-            </div>
             {confirmingDelete && (
                 <ConfirmationDialog
                     title={t('delete_game_prompt_title')}
