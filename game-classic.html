@@ -704,21 +704,48 @@
           }, [gameId, currentUser]);
           
           const gameQuestions = useMemo(() => {
-              if (!game || !game.config || !blocks || blocks.length === 0) return [];
+              console.log('🧩 gameQuestions useMemo triggered');
+              console.log('🎮 Game:', game);
+              console.log('📚 Blocks:', blocks);
+              
+              if (!game || !game.config || !blocks || blocks.length === 0) {
+                  console.log('❌ Missing data - game:', !!game, 'config:', !!game?.config, 'blocks:', blocks?.length);
+                  return [];
+              }
+              
               let questions = [];
+              console.log('🔍 Game config entries:', Object.entries(game.config));
+              
               for (const [blockId, blockConfig] of Object.entries(game.config)) {
-                  const block = blocks.find(b => b.id === blockId);
-                  if (!block || !block.questions) continue;
+                  console.log('🔍 Looking for block:', blockId, 'type:', typeof blockId);
+                  console.log('📋 Available blocks:', blocks.map(b => ({ id: b.id, type: typeof b.id, name: b.name })));
+                  
+                  // Fix: Convert blockId to number for comparison since backend IDs are numbers
+                  const block = blocks.find(b => b.id === parseInt(blockId));
+                  console.log('🎯 Found block:', block ? { id: block.id, name: block.name, questionsCount: block.questions?.length } : 'NOT FOUND');
+                  
+                  if (!block || !block.questions) {
+                      console.log('⚠️ Skipping block - missing or no questions');
+                      continue;
+                  }
                   
                   const questionsWithMeta = block.questions.map(q => ({ ...q, blockId: block.id }));
+                  console.log('📝 Questions with meta:', questionsWithMeta.length);
 
                   if (blockConfig.topics === 'all') {
+                      console.log('✅ Adding all topics questions:', questionsWithMeta.length);
                       questions.push(...questionsWithMeta);
                   } else if (Array.isArray(blockConfig.topics)) {
-                      questions.push(...questionsWithMeta.filter(q => blockConfig.topics.includes(q.tema)));
+                      const filtered = questionsWithMeta.filter(q => blockConfig.topics.includes(q.tema));
+                      console.log('✅ Adding filtered questions:', filtered.length, 'from topics:', blockConfig.topics);
+                      questions.push(...filtered);
                   }
               }
-              return questions.sort(() => Math.random() - 0.5);
+              
+              console.log('🎯 Total questions before shuffle:', questions.length);
+              const shuffled = questions.sort(() => Math.random() - 0.5);
+              console.log('🎲 Final shuffled questions:', shuffled.length);
+              return shuffled;
           }, [game, blocks]);
 
           const renderContent = () => {
