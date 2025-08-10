@@ -197,7 +197,7 @@
           // General
           header_title: 'Aplicación PLAYTEST', header_subtitle: 'La forma más divertida de estudiar', language: 'Idioma', english: 'Inglés', spanish: 'Español',
           add_question_title: 'Agregar Pregunta', add_question_desc: 'Crea preguntas para tus bloques usando IA, subiendo un fichero o de forma manual.', add_question_button: 'Añadir Preguntas',
-          game_setup_title: 'Configuración de partida', game_setup_category: 'Modalidad', game_setup_training: 'Entrenamiento', game_setup_competition: 'Competición', game_setup_mode: 'Juego', game_setup_blocks_topics: 'Selección de bloques', game_setup_configure: 'Configurar', game_setup_not_selected: 'No seleccionado', game_setup_all_topics: 'Todos los temas', game_setup_topics_selected: '{count} tema(s) seleccionado(s)', game_setup_button_create: 'Nueva Partida',
+          game_setup_title: 'Configuración de partida', game_setup_category: 'Modalidad', game_setup_training: 'Entrenamiento', game_setup_competition: 'Competición', game_setup_mode: 'Juego', game_setup_blocks_topics: 'Selección de bloques', game_setup_configure: 'Configurar', game_setup_not_selected: 'No seleccionado', game_setup_all_topics: 'Todos los temas', game_setup_topics_selected: '{count} tema(s) seleccionado(s)', game_setup_button_create: 'Nueva Partida', game_setup_button_emergency: 'Juego de Emergencia',
           game_mode_classic: 'Modo Clásico', game_mode_timetrial: 'Modo Contrarreloj', game_mode_lives: 'Modo Vidas', game_mode_levels: 'Por Niveles', game_mode_streak: 'Racha de Aciertos', game_mode_exam: 'Examen Simulado', game_mode_duel: 'Duelo', game_mode_marathon: 'Maratón', game_mode_trivial: 'Trivial',
           active_games_title: 'Juegos Activos', active_games_none: 'No hay partidas activas.', active_games_create_new: 'Crea una nueva partida en el panel de configuración.', active_games_view_all: 'Ver Todos los Juegos ({count})',
           block_management_title: 'Bloques Cargados', block_management_questions: '{count} preguntas', block_management_view_all: 'View All Blocks ({count})', block_management_add_available: 'Agregar Bloques Disponibles',
@@ -248,7 +248,7 @@
           // General
           header_title: 'PLAYTEST App', header_subtitle: 'The most fun way to study', language: 'Language', english: 'English', spanish: 'Spanish',
           add_question_title: 'Add Question', add_question_desc: 'Create questions for your blocks using AI, uploading a file, or manually.', add_question_button: 'Add Questions',
-          game_setup_title: 'Game Setup', game_setup_category: 'Category', game_setup_training: 'Training', game_setup_competition: 'Competition', game_setup_mode: 'Game Mode', game_setup_blocks_topics: 'Block Selection', game_setup_configure: 'Configure', game_setup_not_selected: 'Not selected', game_setup_all_topics: 'All Topics', game_setup_topics_selected: '{count} topic(s) selected', game_setup_button_create: 'New Game',
+          game_setup_title: 'Game Setup', game_setup_category: 'Category', game_setup_training: 'Training', game_setup_competition: 'Competition', game_setup_mode: 'Game Mode', game_setup_blocks_topics: 'Block Selection', game_setup_configure: 'Configure', game_setup_not_selected: 'Not selected', game_setup_all_topics: 'All Topics', game_setup_topics_selected: '{count} topic(s) selected', game_setup_button_create: 'New Game', game_setup_button_emergency: 'Emergency Game',
           game_mode_classic: 'Classic Mode', game_mode_timetrial: 'Time Trial Mode', game_mode_lives: 'Lives Mode', game_mode_levels: 'By Levels', game_mode_streak: 'Streak Mode', game_mode_exam: 'Exam Simulation', game_mode_duel: 'Duel', game_mode_marathon: 'Marathon', game_mode_trivial: 'Trivial',
           active_games_title: 'Active Games', active_games_none: 'There are no active games.', active_games_create_new: 'Create a new game in the setup panel.', active_games_view_all: 'View All Games ({count})',
           block_management_title: 'Loaded Blocks', block_management_questions: '{count} questions', block_management_view_all: 'View All Blocks ({count})', block_management_add_available: 'Add Available Blocks',
@@ -882,6 +882,29 @@
 
               setConfiguredBlocks({}); setChallengedUserId('');
           };
+          
+          const handleEmergencyGame = () => {
+              console.log('🚨 Emergency game button clicked!');
+              const gameId = 'emergency_' + Date.now();
+              
+              // Create emergency game data
+              const emergencyGameData = {
+                  id: gameId,
+                  mode: 'Emergency Classic',
+                  simple: true,
+                  emergency: true,
+                  created: Date.now()
+              };
+              
+              // Store in localStorage for the game to pick up
+              localStorage.setItem('emergency_game', JSON.stringify(emergencyGameData));
+              localStorage.setItem('force_emergency_mode', 'true');
+              
+              // Navigate to emergency game
+              const url = `game-classic.html?gameId=${gameId}&simple=true&emergency=true`;
+              console.log('🚨 Navigating to emergency game:', url);
+              window.location.href = url;
+          };
 
           const handleRandomChallenge = () => {
               if (challengeableUsers.length === 0) return;
@@ -986,9 +1009,18 @@
                       
                       {challengeStatus && <p className="text-center text-sm text-brand-success animate-pulse">{challengeStatus}</p>}
                       
-                      <button onClick={handleGameAction} disabled={buttonDisabled} className="w-full mt-2 bg-brand-cta text-white font-bold py-2.5 px-4 rounded-lg hover:bg-brand-cta-hover transition-colors disabled:bg-brand-tertiary disabled:cursor-not-allowed">
-                          {buttonText}
-                      </button>
+                      <div className="space-y-2">
+                          <button onClick={handleGameAction} disabled={buttonDisabled} className="w-full mt-2 bg-brand-cta text-white font-bold py-2.5 px-4 rounded-lg hover:bg-brand-cta-hover transition-colors disabled:bg-brand-tertiary disabled:cursor-not-allowed">
+                              {buttonText}
+                          </button>
+                          
+                          {!isCompetitionMode && (
+                              <button onClick={handleEmergencyGame} className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                                  <span>🚨</span>
+                                  <span>{t('game_setup_button_emergency')}</span>
+                              </button>
+                          )}
+                      </div>
                   </div>
               </div>
           );
@@ -2491,10 +2523,33 @@
 
         const handleCreateGame = async (gameConfig) => { 
             try { 
-                const newGame = await dataService.createGameForUser(currentUser.id, currentUser.nickname, gameConfig);
+                console.log('🎮 Creating new game with config:', gameConfig);
+                
+                // Use the API service to create a proper game with backend integration
+                const newGame = await apiDataService.createGameForUser(currentUser.id, currentUser.nickname, gameConfig);
+                console.log('✅ Game created successfully:', newGame);
+                
+                if (!newGame || !newGame.id) {
+                    throw new Error('Game creation failed - no game ID returned');
+                }
+                
+                // Store game ID in localStorage as backup for navigation
+                localStorage.setItem('current_game_id', newGame.id);
+                localStorage.setItem('current_game_mode', 'normal');
+                
                 await loadData();
-                onNavigateToGame(newGame);
+                
+                // Navigate directly to game-classic.html for classic mode games
+                if (gameConfig.mode === 'Modo Clásico' || gameConfig.gameType === 'classic') {
+                    const url = `game-classic.html?gameId=${newGame.id}`;
+                    console.log('🎯 Navigating directly to classic game:', url);
+                    window.location.href = url;
+                } else {
+                    // For other game modes, use the existing navigation
+                    onNavigateToGame(newGame);
+                }
             } catch (err) { 
+                console.error('❌ Game creation failed:', err);
                 setError(err instanceof Error ? `Failed to create game: ${err.message}` : 'Unknown API error.'); 
             } 
         };
@@ -2847,122 +2902,6 @@
         </React.StrictMode>
       );
 
-    </script>
-    
-    <!-- TEST BUTTONS -->
-    <div id="test-buttons" style="position: fixed; top: 10px; right: 10px; z-index: 9999; display: flex; flex-direction: column; gap: 5px;">
-      <div style="background: red; padding: 10px; border-radius: 5px;">
-        <button onclick="emergencyTestGame()" style="background: darkred; color: white; padding: 10px; border: none; border-radius: 3px; cursor: pointer; font-weight: bold;">
-          🚨 EMERGENCY GAME TEST
-        </button>
-      </div>
-      <div style="background: blue; padding: 10px; border-radius: 5px;">
-        <button onclick="normalTestGame()" style="background: darkblue; color: white; padding: 10px; border: none; border-radius: 3px; cursor: pointer; font-weight: bold;">
-          🎮 NORMAL GAME TEST
-        </button>
-      </div>
-    </div>
-    
-    <script>
-      function emergencyTestGame() {
-        console.log('🚨 Emergency test button clicked!');
-        const gameId = 'emergency_' + Date.now();
-        
-        // Store game data in localStorage for the game to pick up
-        const gameData = {
-          id: gameId,
-          mode: 'Emergency Classic',
-          simple: true,
-          emergency: true,
-          created: Date.now()
-        };
-        
-        localStorage.setItem('emergency_game', JSON.stringify(gameData));
-        localStorage.setItem('force_emergency_mode', 'true');
-        
-        const url = 'game-classic.html?gameId=' + gameId + '&simple=true&emergency=true';
-        console.log('🔗 Emergency navigation to:', url);
-        console.log('💾 Stored emergency game data:', gameData);
-        alert('🚨 Navigating to: ' + url);
-        window.location.href = url;
-      }
-
-      async function normalTestGame() {
-        console.log('🎮 Normal test game button clicked!');
-        
-        try {
-          // First register/login a test user
-          const loginResponse = await apiDataService.login('test_user', 'test123');
-          console.log('✅ Login successful:', loginResponse);
-          
-          // Verify session is properly saved
-          console.log('🔑 Verifying session storage...');
-          const sessionData = localStorage.getItem('playtest_session');
-          const tokenData = localStorage.getItem('playtest_auth_token');
-          console.log('💾 Session data:', sessionData);
-          console.log('🎟️ Token data:', tokenData ? 'Present' : 'Missing');
-          
-          if (!sessionData || !tokenData) {
-            throw new Error('Authentication data not properly saved');
-          }
-          
-          // Create a test game with actual backend data
-          // IMPORTANT: Only send gameType and config to backend, not mode
-          const gameConfig = {
-            gameType: 'classic',
-            config: {
-              '4': { topics: 'all' }  // Using block 4 (PER) which we know exists
-            }
-          };
-          
-          console.log('🎲 Creating game with config:', gameConfig);
-          const game = await apiDataService.createGameForUser(loginResponse.user.id, loginResponse.user.nickname, gameConfig);
-          console.log('✅ Game created successfully:', game);
-          
-          if (!game || !game.id) {
-            throw new Error('Game creation failed - no game ID returned');
-          }
-          
-          // Store gameId in localStorage as backup in case URL params get lost
-          console.log('💾 Storing gameId in localStorage as backup:', game.id);
-          localStorage.setItem('current_game_id', game.id);
-          localStorage.setItem('current_game_mode', 'normal');
-          localStorage.setItem('localStorage_test', 'test_value_' + Date.now());
-          
-          // Verify localStorage was written
-          const storedGameId = localStorage.getItem('current_game_id');
-          const storedMode = localStorage.getItem('current_game_mode');
-          const testValue = localStorage.getItem('localStorage_test');
-          console.log('✅ Verification - stored gameId:', storedGameId);
-          console.log('✅ Verification - stored mode:', storedMode);
-          console.log('✅ Verification - test value:', testValue);
-          
-          if (storedGameId !== String(game.id)) {
-            throw new Error('localStorage failed to save gameId properly');
-          }
-          
-          // Navigate directly to game-classic.html bypassing active-game.html
-          // This avoids the URL parameter loss issue in Render
-          const baseUrl = window.location.origin;
-          const url = `${baseUrl}/game-classic.html?gameId=${game.id}`;
-          console.log('🔗 Direct navigation to game-classic:', url);
-          console.log('🎯 Game ID for navigation:', game.id);
-          console.log('🏠 Current location before navigation:', window.location.href);
-          console.log('🌍 Base URL:', baseUrl);
-          
-          alert('🎮 Normal game created! ID: ' + game.id + '\nDirect navigation to: ' + url);
-          
-          // Navigate directly without localStorage dependency
-          setTimeout(() => {
-            console.log('🚀 About to navigate directly to game-classic:', url);
-            window.location.assign(url);
-          }, 500);
-          
-        } catch (error) {
-          console.error('❌ Normal game test failed:', error);
-          alert('❌ Error: ' + error.message);
-        }
-      }
     </script>
     
     <noscript>This application requires JavaScript to run.</noscript>

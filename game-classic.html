@@ -704,7 +704,7 @@
           }, [gameId, currentUser]);
           
           const gameQuestions = useMemo(() => {
-              console.log('🧩 gameQuestions useMemo triggered');
+              console.log('🧩 gameQuestions useMemo triggered - v2');
               console.log('🎮 Game:', game);
               console.log('🎮 Game.config specifically:', game?.config);
               console.log('📚 Blocks:', blocks);
@@ -721,8 +721,11 @@
                   console.log('🔍 Looking for block:', blockId, 'type:', typeof blockId);
                   console.log('📋 Available blocks:', blocks.map(b => ({ id: b.id, type: typeof b.id, name: b.name })));
                   
-                  // Fix: Convert blockId to number for comparison since backend IDs are numbers
-                  const block = blocks.find(b => b.id === parseInt(blockId));
+                  // Fix: Handle both number IDs (backend) and string IDs (emergency blocks)
+                  const block = blocks.find(b => 
+                      b.id === parseInt(blockId) ||  // Backend blocks have numeric IDs
+                      b.id === blockId               // Emergency blocks have string IDs
+                  );
                   console.log('🎯 Found block:', block ? { id: block.id, name: block.name, questionsCount: block.questions?.length } : 'NOT FOUND');
                   
                   if (!block || !block.questions) {
