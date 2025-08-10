@@ -549,16 +549,13 @@
         };
         
         const handleStartGame = async () => {
-          console.log('🔥 CRITICAL: handleStartGame function called!');
-          window.alert('🔥 CRITICAL: handleStartGame function called!');
-          alert('🎮 HandleStartGame ejecutándose para: ' + game.mode);
           console.log('🎮 HandleStartGame called for mode:', game.mode);
           console.log('🎯 Current game object:', game);
           console.log('👤 Current user:', currentUser);
           
-          // Create a simple gameId directly without backend dependency
-          const simpleGameId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-          console.log('🔢 Generated simple gameId:', simpleGameId);
+          // Use the existing gameId from the backend (don't create a new one)
+          const gameId = game.id;
+          console.log('🆔 Using existing backend gameId:', gameId);
           
           const modeToFile = {
               'Modo Clásico': 'game-classic.html',
@@ -576,24 +573,15 @@
           console.log('📁 Target file:', fileName);
           
           if (fileName) {
-              let url = `${fileName}?gameId=${simpleGameId}&simple=true`;
+              // Use the real gameId from backend (not simple/local mode)
+              let url = `${fileName}?gameId=${gameId}`;
               if(game.mode === 'Examen Simulado') {
                   url += `&numQuestions=${examConfig.numQuestions}&penalty=${examConfig.penalty}`;
               }
               console.log('🔗 Final URL:', url);
-              console.log('🔗 URL components:', { fileName, simpleGameId, mode: game.mode });
-              alert('🔗 Navegando a: ' + url);
+              console.log('🔗 URL components:', { fileName, gameId, mode: game.mode });
               
-              // Store game config in localStorage for the game to use
-              const gameConfigData = {
-                  id: simpleGameId,
-                  mode: game.mode,
-                  config: game.config,
-                  created: Date.now()
-              };
-              localStorage.setItem(`game_${simpleGameId}`, JSON.stringify(gameConfigData));
-              console.log('💾 Stored game config in localStorage:', gameConfigData);
-              
+              // No need to store in localStorage - the game will fetch from backend using gameId
               console.log('🚀 Initiating navigation to:', url);
               window.location.href = url;
           } else {
