@@ -2937,7 +2937,7 @@
           console.log('✅ Verification - stored mode:', storedMode);
           console.log('✅ Verification - test value:', testValue);
           
-          if (storedGameId !== game.id) {
+          if (storedGameId !== String(game.id)) {
             throw new Error('localStorage failed to save gameId properly');
           }
           
