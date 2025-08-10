@@ -410,8 +410,8 @@ class APIDataService {
     
     // Create properly formatted game data for backend
     const gameData = {
-      gameType: modeToType[gameConfig.mode] || gameConfig.mode || 'classic',
-      config: gameConfig,
+      gameType: modeToType[gameConfig.mode] || gameConfig.gameType || 'classic',
+      config: gameConfig.config || gameConfig,  // Extract just the config part
       players: [
         {
           userId: userId,
