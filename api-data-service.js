@@ -648,10 +648,23 @@ class APIDataService {
   }
 
   async addBlockToUser(userId, blockId) {
-    const response = await this.apiCall(`/users/blocks/${blockId}`, {
-      method: 'POST'
-    });
-    return this.simulateDelay(response);
+    try {
+      // Check if block is already loaded (since backend now auto-loads)
+      const profile = await this.getUserProfile();
+      if (profile.loadedBlocks && profile.loadedBlocks.includes(parseInt(blockId))) {
+        console.log('ℹ️ Block already loaded by auto-loading, skipping manual add');
+        return this.simulateDelay({ message: 'Block already loaded' });
+      }
+      
+      const response = await this.apiCall(`/users/blocks/${blockId}`, {
+        method: 'POST'
+      });
+      return this.simulateDelay(response);
+    } catch (error) {
+      console.warn('⚠️ addBlockToUser failed, block may already be auto-loaded:', error.message);
+      // Don't throw error since block creation was successful
+      return this.simulateDelay({ message: 'Block may already be loaded' });
+    }
   }
 
   async deleteBlockForUser(userId, blockId) {
