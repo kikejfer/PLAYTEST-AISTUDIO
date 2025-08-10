@@ -223,9 +223,8 @@
               console.log('✅ All questions created successfully');
           }
 
-          // Auto-add block to creator's blocks (via API)
-          await apiDataService.addBlockToUser(creatorId, createdBlock.id);
-          console.log('✅ Block added to user profile');
+          // Block is automatically loaded by the backend when created
+          console.log('✅ Block created and auto-loaded by backend');
           
           return { ...createdBlock, totalPreguntas: questions.length, questions: questions };
       };
