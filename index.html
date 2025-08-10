@@ -1274,7 +1274,7 @@
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                        <div className="flex items-center">
                           <img src="./Imagenes/Cargados.png" alt="Loaded Blocks" className="h-10 w-10 mr-3" />
-                          <h3 className="text-xl font-bold text-brand-light">{t('block_management_title')}</h3>
+                          <h3 className="text-xl font-bold text-brand-light">Bloques Cargados</h3>
                        </div>
                        <div className="flex items-center gap-2 flex-shrink-0">
                          <button onClick={onOpenAddBlockModal} className="text-sm font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1.5 px-3 rounded-md transition-colors">
@@ -1394,8 +1394,83 @@
               </div>
           );
       };
+      
+      const AvailableBlocksManagement = ({ blocks, loadedBlockIds, onLoadBlock, onUnloadBlock }) => {
+          const { t } = useLanguage();
+          const [loading, setLoading] = useState({});
+          
+          const handleLoadBlock = async (blockId) => {
+              setLoading(prev => ({ ...prev, [blockId]: true }));
+              try {
+                  await onLoadBlock(blockId);
+              } catch (error) {
+                  console.error('Error loading block:', error);
+              } finally {
+                  setLoading(prev => ({ ...prev, [blockId]: false }));
+              }
+          };
 
-      const UserDashboard = ({ blocks, createdBlocks, games, challenges, gameHistory, onViewBlock, onCreateGame, onSendChallenge, onDeleteGame, onNavigateToGame, onDeleteBlock, onOpenAddBlockModal, onAcceptChallenge, onDeclineChallenge, onOpenStatsModal, setCurrentView }) => (
+          const handleUnloadBlock = async (blockId) => {
+              setLoading(prev => ({ ...prev, [blockId]: true }));
+              try {
+                  await onUnloadBlock(blockId);
+              } catch (error) {
+                  console.error('Error unloading block:', error);
+              } finally {
+                  setLoading(prev => ({ ...prev, [blockId]: false }));
+              }
+          };
+
+          return (
+              <div className="bg-brand-secondary p-6 rounded-xl shadow-lg flex flex-col">
+                  <div className="flex items-center justify-between mb-4 flex-shrink-0">
+                      <div className="flex items-center">
+                          <img src="./Imagenes/Disponibles.png" alt="Available Blocks" className="h-10 w-10 mr-3" />
+                          <h3 className="text-xl font-bold text-brand-light">Bloques Disponibles</h3>
+                      </div>
+                  </div>
+                  {blocks.length > 0 ? (
+                      <div className="space-y-3 overflow-y-auto max-h-96 pr-2 flex-grow">
+                          {blocks.slice(0, 8).map(block => {
+                              const isLoaded = loadedBlockIds.includes(block.id);
+                              const isLoading = loading[block.id];
+                              return (
+                                  <div key={block.id} className="flex items-center justify-between p-3 rounded-md bg-brand-primary">
+                                      <div className="flex items-center gap-3 overflow-hidden flex-grow">
+                                          <img className="h-10 w-16 rounded object-cover flex-shrink-0" src={block.urlImagenBloque} alt={block.nombreCorto || block.name} />
+                                          <div className="overflow-hidden">
+                                              <p className="font-semibold text-brand-light truncate">{block.nombreCorto || block.name}</p>
+                                              <p className="text-xs text-brand-accent">{block.questionCount} preguntas</p>
+                                              <p className="text-xs text-brand-tertiary">Por {block.creatorNickname}</p>
+                                          </div>
+                                      </div>
+                                      <button 
+                                          onClick={() => isLoaded ? handleUnloadBlock(block.id) : handleLoadBlock(block.id)}
+                                          disabled={isLoading}
+                                          className={`text-xs font-bold py-1 px-3 rounded-md transition-colors ${
+                                              isLoaded 
+                                                  ? 'bg-red-500/80 hover:bg-red-500 text-white' 
+                                                  : 'bg-brand-cta hover:bg-brand-accent text-white'
+                                          } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                      >
+                                          {isLoading ? '...' : isLoaded ? 'Descargar' : 'Cargar'}
+                                      </button>
+                                  </div>
+                              );
+                          })}
+                      </div>
+                  ) : (
+                      <div className="text-center py-6 flex-grow flex items-center justify-center">
+                        <div>
+                          <p className="text-brand-accent">No hay bloques públicos disponibles</p>
+                        </div>
+                      </div>
+                  )}
+              </div>
+          );
+      };
+
+      const UserDashboard = ({ blocks, createdBlocks, availableBlocks, loadedBlockIds, games, challenges, gameHistory, onViewBlock, onCreateGame, onSendChallenge, onDeleteGame, onNavigateToGame, onDeleteBlock, onOpenAddBlockModal, onAcceptChallenge, onDeclineChallenge, onOpenStatsModal, onLoadBlock, onUnloadBlock, setCurrentView }) => (
         <div className="space-y-8 animate-fade-in">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-2 space-y-8">
@@ -1405,6 +1480,7 @@
             </div>
             <div className="lg:col-span-1 space-y-8">
               <UserBlockManagement blocks={blocks} onViewBlock={onViewBlock} onDeleteBlock={onDeleteBlock} onOpenAddBlockModal={onOpenAddBlockModal} onOpenStatsModal={onOpenStatsModal} setCurrentView={setCurrentView} />
+              <AvailableBlocksManagement blocks={availableBlocks} loadedBlockIds={loadedBlockIds} onLoadBlock={onLoadBlock} onUnloadBlock={onUnloadBlock} />
               <CreatedBlocksManagement blocks={createdBlocks} setCurrentView={setCurrentView} />
             </div>
           </div>
@@ -2477,6 +2553,8 @@
         const [isAddBlockModalOpen, setIsAddBlockModalOpen] = useState(false);
         const [statModalBlock, setStatModalBlock] = useState(null);
         const [allGlobalBlocks, setAllGlobalBlocks] = useState([]);
+        const [availableBlocks, setAvailableBlocks] = useState([]);
+        const [createdBlocks, setCreatedBlocks] = useState([]);
         const [allUsers, setAllUsers] = useState([]);
 
         const loadData = useCallback(async () => {
@@ -2484,17 +2562,37 @@
           try {
             setError(null);
             setIsLoading(true);
-            const [fetchedGames, allBlocks, users, fetchedChallenges, history, userProfile] = await Promise.all([ 
+            const [fetchedGames, users, fetchedChallenges, history, userProfile, loadedBlocks, createdBlocks, availableBlocks] = await Promise.all([ 
               dataService.fetchGamesForUser(currentUser.id),
-              dataService.fetchAllBlocks(),
               dataService.fetchAllUsers(),
               dataService.fetchChallengesForUser(currentUser.id),
               dataService.fetchGameHistory(currentUser.id),
               apiDataService.getUserProfile(),
+              apiDataService.fetchLoadedBlocks(),
+              apiDataService.fetchCreatedBlocks(),
+              apiDataService.fetchAvailableBlocks(),
             ]);
 
-            // Combine blocks with user stats to create fetchedBlocks
-            const fetchedBlocks = allBlocks.map(block => {
+            // Add user stats to loaded blocks
+            const fetchedBlocks = loadedBlocks.map(block => {
+              const studyProgress = userProfile.stats?.consolidation?.byBlock?.[block.id] ?? 0;
+              
+              const uniqueTopics = [...new Set(block.questions.map(q => q.tema).filter(Boolean))].sort();
+              const topicsWithStats = uniqueTopics.map(topicName => {
+                const topicKey = `${block.id}_${topicName}`;
+                const score = userProfile.stats?.consolidation?.byTopic?.[topicKey] ?? 0;
+                return { name: topicName, score: Math.round(score) };
+              });
+
+              return {
+                ...block,
+                studyProgress: Math.round(studyProgress),
+                topicsWithStats,
+              };
+            });
+
+            // Add user stats to created blocks as well
+            const fetchedCreatedBlocks = createdBlocks.map(block => {
               const studyProgress = userProfile.stats?.consolidation?.byBlock?.[block.id] ?? 0;
               
               const uniqueTopics = [...new Set(block.questions.map(q => q.tema).filter(Boolean))].sort();
@@ -2512,7 +2610,9 @@
             });
             setBlocks(fetchedBlocks);
             setGames(fetchedGames);
-            setAllGlobalBlocks(allBlocks);
+            setAllGlobalBlocks(availableBlocks); // Keep this for compatibility
+            setAvailableBlocks(availableBlocks);
+            setCreatedBlocks(fetchedCreatedBlocks);
             setAllUsers(users);
             setChallenges(fetchedChallenges);
             setGameHistory(history);
@@ -2579,6 +2679,24 @@
         const handleOpenAddBlockModal = () => setIsAddBlockModalOpen(true);
         const handleCloseAddBlockModal = () => setIsAddBlockModalOpen(false);
 
+        const handleLoadBlock = async (blockId) => {
+            try {
+                await apiDataService.loadBlock(blockId);
+                await loadData(); // Refresh data to show updated loaded blocks
+            } catch (err) {
+                setError(err instanceof Error ? `Failed to load block: ${err.message}` : 'Unknown API error.');
+            }
+        };
+
+        const handleUnloadBlock = async (blockId) => {
+            try {
+                await apiDataService.unloadBlock(blockId);
+                await loadData(); // Refresh data to show updated loaded blocks
+            } catch (err) {
+                setError(err instanceof Error ? `Failed to unload block: ${err.message}` : 'Unknown API error.');
+            }
+        };
+
         const handleAddBlock = async (blockId) => {
             try {
                 await dataService.addBlockToUser(currentUser.id, blockId);
@@ -2607,7 +2725,7 @@
             }
         };
 
-        const createdBlocks = useMemo(() => allGlobalBlocks.filter(b => b.creatorId === currentUser.id), [allGlobalBlocks, currentUser.id]);
+        // createdBlocks now comes from state, no need for useMemo
 
         const renderContent = () => {
           if (isLoading) { return ( <div className="flex justify-center items-center h-64"> <svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle> <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> </div> ); }
@@ -2626,6 +2744,8 @@
               <UserDashboard
                   blocks={blocks}
                   createdBlocks={createdBlocks}
+                  availableBlocks={availableBlocks}
+                  loadedBlockIds={blocks.map(block => block.id)}
                   games={games}
                   challenges={challenges}
                   gameHistory={gameHistory}
@@ -2637,6 +2757,8 @@
                   onDeleteBlock={handleDeleteBlock}
                   onOpenAddBlockModal={handleOpenAddBlockModal}
                   onOpenStatsModal={setStatModalBlock}
+                  onLoadBlock={handleLoadBlock}
+                  onUnloadBlock={handleUnloadBlock}
                   onAcceptChallenge={handleAcceptChallenge}
                   onDeclineChallenge={handleDeclineChallenge}
                   setCurrentView={setCurrentView}

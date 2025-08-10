@@ -101,6 +101,34 @@ class APIDataService {
     return this.simulateDelay(blocks);
   }
 
+  async fetchAvailableBlocks() {
+    const blocks = await this.apiCall('/blocks/available');
+    return this.simulateDelay(blocks);
+  }
+
+  async fetchCreatedBlocks() {
+    const blocks = await this.apiCall('/blocks/created');
+    return this.simulateDelay(blocks);
+  }
+
+  async fetchLoadedBlocks() {
+    // Get user profile to see which blocks are loaded
+    const profile = await this.apiCall('/users/profile');
+    const loadedBlockIds = profile.loadedBlocks || [];
+    
+    if (loadedBlockIds.length === 0) {
+      return this.simulateDelay([]);
+    }
+    
+    // Get all available blocks and filter by loaded IDs
+    const availableBlocks = await this.apiCall('/blocks/available');
+    const loadedBlocks = availableBlocks.filter(block => 
+      loadedBlockIds.includes(block.id)
+    );
+    
+    return this.simulateDelay(loadedBlocks);
+  }
+
   async createBlock(blockData) {
     const response = await this.apiCall('/blocks', {
       method: 'POST',
@@ -119,6 +147,20 @@ class APIDataService {
 
   async deleteBlock(blockId) {
     const response = await this.apiCall(`/blocks/${blockId}`, {
+      method: 'DELETE'
+    });
+    return this.simulateDelay(response);
+  }
+
+  async loadBlock(blockId) {
+    const response = await this.apiCall(`/blocks/${blockId}/load`, {
+      method: 'POST'
+    });
+    return this.simulateDelay(response);
+  }
+
+  async unloadBlock(blockId) {
+    const response = await this.apiCall(`/blocks/${blockId}/load`, {
       method: 'DELETE'
     });
     return this.simulateDelay(response);
