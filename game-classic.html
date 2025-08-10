@@ -706,6 +706,7 @@
           const gameQuestions = useMemo(() => {
               console.log('🧩 gameQuestions useMemo triggered');
               console.log('🎮 Game:', game);
+              console.log('🎮 Game.config specifically:', game?.config);
               console.log('📚 Blocks:', blocks);
               
               if (!game || !game.config || !blocks || blocks.length === 0) {
