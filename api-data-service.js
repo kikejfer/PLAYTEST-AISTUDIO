@@ -166,11 +166,13 @@ class APIDataService {
         'trivial': 'Trivial'
       };
       
-      games.forEach(game => {
-        if (game.gameType) {
-          game.mode = typeToMode[game.gameType] || game.gameType;
-        }
-      });
+      // Transform each game properly without corrupting original
+      const transformedGames = games.map(game => ({
+        ...game,
+        mode: game.gameType ? typeToMode[game.gameType] || game.gameType : game.mode
+      }));
+      
+      return this.simulateDelay(transformedGames);
     }
     
     return this.simulateDelay(games);
@@ -194,7 +196,13 @@ class APIDataService {
         'trivial': 'Trivial'
       };
       
-      game.mode = typeToMode[game.gameType] || game.gameType;
+      // Create a new object to avoid corrupting the original
+      const transformedGame = {
+        ...game,
+        mode: typeToMode[game.gameType] || game.gameType
+      };
+      
+      return this.simulateDelay(transformedGame);
     }
     
     return this.simulateDelay(game);
