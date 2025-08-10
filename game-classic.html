@@ -458,8 +458,23 @@
               // Check localStorage if URL params are missing
               const forceEmergency = localStorage.getItem('force_emergency_mode') === 'true';
               const emergencyGame = localStorage.getItem('emergency_game');
+              const normalGameId = localStorage.getItem('current_game_id');
+              const normalGameMode = localStorage.getItem('current_game_mode');
               
-              if (!id && (forceEmergency || emergencyGame)) {
+              console.log('🔍 localStorage check - forceEmergency:', forceEmergency);
+              console.log('🔍 localStorage check - emergencyGame:', emergencyGame);
+              console.log('🔍 localStorage check - normalGameId:', normalGameId);
+              console.log('🔍 localStorage check - normalGameMode:', normalGameMode);
+              
+              if (!id && normalGameId && normalGameMode === 'normal') {
+                  console.log('🎮 Using normal game ID from localStorage:', normalGameId);
+                  id = normalGameId;
+                  isSimple = false;
+                  isEmergency = false;
+                  // Clean up localStorage after use
+                  localStorage.removeItem('current_game_id');
+                  localStorage.removeItem('current_game_mode');
+              } else if (!id && (forceEmergency || emergencyGame)) {
                   console.log('🔄 No URL params found, checking localStorage...');
                   if (emergencyGame) {
                       const gameData = JSON.parse(emergencyGame);

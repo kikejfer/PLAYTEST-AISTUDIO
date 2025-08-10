@@ -928,10 +928,22 @@
                       // Fallback: check localStorage if gameId is missing from URL
                       if (!gameId) {
                           console.warn('⚠️ No gameId found in URL params, checking localStorage...');
+                          
+                          // Debug localStorage contents
+                          console.log('🔍 All localStorage keys:', Object.keys(localStorage));
+                          console.log('🔍 localStorage length:', localStorage.length);
+                          for (let i = 0; i < localStorage.length; i++) {
+                              const key = localStorage.key(i);
+                              const value = localStorage.getItem(key);
+                              console.log(`🔍 localStorage[${key}] = ${value}`);
+                          }
+                          
                           const backupGameId = localStorage.getItem('current_game_id');
                           const gameMode = localStorage.getItem('current_game_mode');
+                          const testValue = localStorage.getItem('localStorage_test');
                           console.log('💾 Backup gameId from localStorage:', backupGameId);
                           console.log('🎯 Game mode from localStorage:', gameMode);
+                          console.log('🧪 Test value from localStorage:', testValue);
                           
                           if (backupGameId) {
                               gameId = backupGameId;
