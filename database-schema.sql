@@ -41,6 +41,7 @@ CREATE TABLE questions (
     text_question TEXT NOT NULL,
     topic VARCHAR(100),
     difficulty INTEGER DEFAULT 1,
+    explanation TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
