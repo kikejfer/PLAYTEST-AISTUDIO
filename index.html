@@ -2907,9 +2907,9 @@
           }
           
           // Create a test game with actual backend data
+          // IMPORTANT: Only send gameType and config to backend, not mode
           const gameConfig = {
             gameType: 'classic',
-            mode: 'Modo Clásico',
             config: {
               '4': { topics: 'all' }  // Using block 4 (PER) which we know exists
             }
