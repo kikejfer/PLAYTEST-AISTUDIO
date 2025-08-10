@@ -2539,15 +2539,8 @@
                 
                 await loadData();
                 
-                // Navigate directly to game-classic.html for classic mode games
-                if (gameConfig.mode === 'Modo Clásico' || gameConfig.gameType === 'classic') {
-                    const url = `game-classic.html?gameId=${newGame.id}`;
-                    console.log('🎯 Navigating directly to classic game:', url);
-                    window.location.href = url;
-                } else {
-                    // For other game modes, use the existing navigation
-                    onNavigateToGame(newGame);
-                }
+                // Navigate to active-game.html to show the game setup screen first
+                onNavigateToGame(newGame);
             } catch (err) { 
                 console.error('❌ Game creation failed:', err);
                 setError(err instanceof Error ? `Failed to create game: ${err.message}` : 'Unknown API error.'); 

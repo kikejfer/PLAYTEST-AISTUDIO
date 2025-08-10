@@ -390,8 +390,13 @@ class APIDataService {
   }
 
   async fetchGameHistory(userId) {
-    // Temporary workaround - return empty array since /games/history route doesn't exist
-    return this.simulateDelay([]);
+    try {
+      const history = await this.apiCall('/games/history');
+      return this.simulateDelay(history || []);
+    } catch (error) {
+      console.warn('⚠️ Game history fetch failed, returning empty array:', error.message);
+      return this.simulateDelay([]);
+    }
   }
 
   async createGameForUser(userId, nickname, gameConfig) {
