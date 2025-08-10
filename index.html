@@ -2923,14 +2923,26 @@
             throw new Error('Game creation failed - no game ID returned');
           }
           
+          // Store gameId in localStorage as backup in case URL params get lost
+          console.log('💾 Storing gameId in localStorage as backup:', game.id);
+          localStorage.setItem('current_game_id', game.id);
+          localStorage.setItem('current_game_mode', 'normal');
+          
           // Navigate to the game with a small delay to ensure session is saved
-          const url = `active-game.html?gameId=${game.id}`;
+          const baseUrl = window.location.origin;
+          const url = `${baseUrl}/active-game.html?gameId=${game.id}`;
           console.log('🔗 Normal game navigation to:', url);
+          console.log('🎯 Game ID for navigation:', game.id);
+          console.log('🏠 Current location before navigation:', window.location.href);
+          console.log('🌍 Base URL:', baseUrl);
+          
           alert('🎮 Normal game created! ID: ' + game.id + '\nNavigating to: ' + url);
           
           // Small delay to ensure localStorage is written
           setTimeout(() => {
-            window.location.href = url;
+            console.log('🚀 About to navigate to:', url);
+            console.log('🔄 Using window.location.assign for better compatibility');
+            window.location.assign(url);
           }, 500);
           
         } catch (error) {

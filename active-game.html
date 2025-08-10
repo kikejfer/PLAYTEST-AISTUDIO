@@ -922,13 +922,28 @@
                       console.log('🔍 URL search params:', window.location.search);
                       
                       const params = new URLSearchParams(window.location.search);
-                      const gameId = params.get('gameId');
-                      console.log('🎮 Extracted gameId:', gameId);
+                      let gameId = params.get('gameId');
+                      console.log('🎮 Extracted gameId from URL:', gameId);
                       
+                      // Fallback: check localStorage if gameId is missing from URL
                       if (!gameId) {
-                          console.error('❌ No gameId found in URL params');
-                          console.error('📋 All URL params:', [...params.entries()]);
-                          throw new Error("No game ID provided.");
+                          console.warn('⚠️ No gameId found in URL params, checking localStorage...');
+                          const backupGameId = localStorage.getItem('current_game_id');
+                          const gameMode = localStorage.getItem('current_game_mode');
+                          console.log('💾 Backup gameId from localStorage:', backupGameId);
+                          console.log('🎯 Game mode from localStorage:', gameMode);
+                          
+                          if (backupGameId) {
+                              gameId = backupGameId;
+                              console.log('✅ Using backup gameId:', gameId);
+                              // Clean up localStorage after use
+                              localStorage.removeItem('current_game_id');
+                              localStorage.removeItem('current_game_mode');
+                          } else {
+                              console.error('❌ No gameId found in URL params or localStorage');
+                              console.error('📋 All URL params:', [...params.entries()]);
+                              throw new Error("No game ID provided.");
+                          }
                       }
 
                       const [fetchedGame, fetchedBlocks] = await Promise.all([
