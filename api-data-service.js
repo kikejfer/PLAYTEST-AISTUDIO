@@ -149,37 +149,46 @@ class APIDataService {
 
   async fetchLoadedBlocks() {
     try {
-      // Get user profile to see which blocks are loaded
-      const profile = await this.apiCall('/users/profile');
-      const loadedBlockIds = profile.loadedBlocks || [];
-      
-      if (loadedBlockIds.length === 0) {
-        return this.simulateDelay([]);
-      }
-      
-      // Try to get available blocks first, fallback to all blocks
-      let availableBlocks;
-      try {
-        availableBlocks = await this.apiCall('/blocks/available');
-      } catch (error) {
-        console.warn('⚠️ /blocks/available failed in fetchLoadedBlocks, trying /blocks');
-        try {
-          availableBlocks = await this.apiCall('/blocks');
-        } catch (fallbackError) {
-          console.error('❌ All blocks endpoints failed in fetchLoadedBlocks:', fallbackError.message);
-          return this.simulateDelay([]);
-        }
-      }
-      
-      const loadedBlocks = availableBlocks.filter(block => 
-        loadedBlockIds.includes(block.id)
-      );
-      
+      console.log('🔍 fetchLoadedBlocks: Calling /blocks/loaded endpoint');
+      const loadedBlocks = await this.apiCall('/blocks/loaded');
+      console.log('✅ fetchLoadedBlocks: Got', loadedBlocks.length, 'loaded blocks');
       return this.simulateDelay(loadedBlocks);
     } catch (error) {
-      console.error('❌ Failed to fetch loaded blocks, using empty array:', error);
-      // Ultimate fallback - return empty array
-      return this.simulateDelay([]);
+      console.error('❌ Failed to fetch loaded blocks from /blocks/loaded, using fallback method:', error.message);
+      
+      // Fallback: Use the old method
+      try {
+        // Get user profile to see which blocks are loaded
+        const profile = await this.apiCall('/users/profile');
+        const loadedBlockIds = profile.loadedBlocks || [];
+        
+        if (loadedBlockIds.length === 0) {
+          return this.simulateDelay([]);
+        }
+        
+        // Try to get available blocks first, fallback to all blocks
+        let availableBlocks;
+        try {
+          availableBlocks = await this.apiCall('/blocks/available');
+        } catch (error) {
+          console.warn('⚠️ /blocks/available failed in fetchLoadedBlocks, trying /blocks');
+          try {
+            availableBlocks = await this.apiCall('/blocks');
+          } catch (fallbackError) {
+            console.error('❌ All blocks endpoints failed in fetchLoadedBlocks:', fallbackError.message);
+            return this.simulateDelay([]);
+          }
+        }
+        
+        const loadedBlocks = availableBlocks.filter(block => 
+          loadedBlockIds.includes(block.id)
+        );
+        
+        return this.simulateDelay(loadedBlocks);
+      } catch (fallbackError) {
+        console.error('❌ Fallback method also failed, using empty array:', fallbackError);
+        return this.simulateDelay([]);
+      }
     }
   }
 
