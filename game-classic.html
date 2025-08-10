@@ -475,12 +475,27 @@
               
               if (!id && normalGameId && normalGameMode === 'normal') {
                   console.log('🎮 Using normal game ID from localStorage:', normalGameId);
-                  id = normalGameId;
-                  isSimple = false;
-                  isEmergency = false;
-                  // Clean up localStorage after use
-                  localStorage.removeItem('current_game_id');
-                  localStorage.removeItem('current_game_mode');
+                  
+                  // Check if the localStorage data is recent (within last 5 minutes)
+                  const timestamp = localStorage.getItem('navigation_timestamp');
+                  const isRecent = timestamp && (Date.now() - parseInt(timestamp)) < 5 * 60 * 1000;
+                  
+                  if (isRecent) {
+                      id = normalGameId;
+                      isSimple = false;
+                      isEmergency = false;
+                      console.log('✅ Using recent localStorage gameId:', normalGameId);
+                      
+                      // Clean up localStorage after successful use
+                      localStorage.removeItem('current_game_id');
+                      localStorage.removeItem('current_game_mode');
+                      localStorage.removeItem('navigation_timestamp');
+                  } else {
+                      console.log('⏰ localStorage gameId is too old, ignoring');
+                      localStorage.removeItem('current_game_id');
+                      localStorage.removeItem('current_game_mode');
+                      localStorage.removeItem('navigation_timestamp');
+                  }
               } else if (!id && (forceEmergency || emergencyGame)) {
                   console.log('🔄 No URL params found, checking localStorage...');
                   if (emergencyGame) {

@@ -589,7 +589,12 @@
               console.log('🔗 Final URL:', url);
               console.log('🔗 URL components:', { fileName, gameId, mode: game.mode });
               
-              // No need to store in localStorage - the game will fetch from backend using gameId
+              // Store gameId in localStorage as backup in case URL params get lost by Render
+              localStorage.setItem('current_game_id', gameId);
+              localStorage.setItem('current_game_mode', 'normal');
+              localStorage.setItem('navigation_timestamp', Date.now().toString());
+              console.log('💾 Stored gameId in localStorage as backup:', gameId);
+              
               console.log('🚀 Initiating navigation to:', url);
               window.location.href = url;
           } else {
