@@ -1761,7 +1761,7 @@
             if (!currentUser || !block) return;
             try {
               setIsLoading(true);
-              const data = await dataService.fetchDetailedHistoryForBlock(currentUser.id, block.id);
+              const data = await apiDataService.fetchDetailedHistoryForBlock(currentUser.id, block.id);
               setHistory(data);
             } catch (err) {
               setError("Failed to load statistics.");
@@ -2484,14 +2484,32 @@
           try {
             setError(null);
             setIsLoading(true);
-            const [fetchedBlocks, fetchedGames, allBlocks, users, fetchedChallenges, history] = await Promise.all([ 
-              dataService.fetchBlocksForUser(currentUser.id), 
+            const [fetchedGames, allBlocks, users, fetchedChallenges, history, userProfile] = await Promise.all([ 
               dataService.fetchGamesForUser(currentUser.id),
               dataService.fetchAllBlocks(),
               dataService.fetchAllUsers(),
               dataService.fetchChallengesForUser(currentUser.id),
               dataService.fetchGameHistory(currentUser.id),
+              apiDataService.getUserProfile(),
             ]);
+
+            // Combine blocks with user stats to create fetchedBlocks
+            const fetchedBlocks = allBlocks.map(block => {
+              const studyProgress = userProfile.stats?.consolidation?.byBlock?.[block.id] ?? 0;
+              
+              const uniqueTopics = [...new Set(block.questions.map(q => q.tema).filter(Boolean))].sort();
+              const topicsWithStats = uniqueTopics.map(topicName => {
+                const topicKey = `${block.id}_${topicName}`;
+                const score = userProfile.stats?.consolidation?.byTopic?.[topicKey] ?? 0;
+                return { name: topicName, score: Math.round(score) };
+              });
+
+              return {
+                ...block,
+                studyProgress: Math.round(studyProgress),
+                topicsWithStats,
+              };
+            });
             setBlocks(fetchedBlocks);
             setGames(fetchedGames);
             setAllGlobalBlocks(allBlocks);
