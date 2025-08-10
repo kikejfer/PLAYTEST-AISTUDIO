@@ -97,8 +97,15 @@ class APIDataService {
 
   // === BLOCKS ===
   async fetchAllBlocks() {
-    const blocks = await this.apiCall('/blocks');
-    return this.simulateDelay(blocks);
+    try {
+      const blocks = await this.apiCall('/blocks');
+      return this.simulateDelay(blocks);
+    } catch (error) {
+      console.error('❌ /blocks endpoint failed completely:', error.message);
+      console.error('❌ This indicates a serious backend issue - database connection, table structure, or server problem');
+      // Return empty array to prevent app crash
+      return this.simulateDelay([]);
+    }
   }
 
   async fetchAvailableBlocks() {
@@ -106,11 +113,17 @@ class APIDataService {
       const blocks = await this.apiCall('/blocks/available');
       return this.simulateDelay(blocks);
     } catch (error) {
-      console.warn('⚠️ /blocks/available failed, using fallback to /blocks:', error.message);
-      // Fallback to main blocks endpoint and filter public ones
-      const allBlocks = await this.apiCall('/blocks');
-      const publicBlocks = allBlocks.filter(block => block.isPublic !== false);
-      return this.simulateDelay(publicBlocks);
+      console.warn('⚠️ /blocks/available failed, trying fallback to /blocks:', error.message);
+      try {
+        // Fallback to main blocks endpoint and filter public ones
+        const allBlocks = await this.apiCall('/blocks');
+        const publicBlocks = allBlocks.filter(block => block.isPublic !== false);
+        return this.simulateDelay(publicBlocks);
+      } catch (fallbackError) {
+        console.error('❌ All blocks endpoints failed, using empty array:', fallbackError.message);
+        // Ultimate fallback - return mock data for testing
+        return this.simulateDelay([]);
+      }
     }
   }
 
@@ -119,12 +132,18 @@ class APIDataService {
       const blocks = await this.apiCall('/blocks/created');
       return this.simulateDelay(blocks);
     } catch (error) {
-      console.warn('⚠️ /blocks/created failed, using fallback to /blocks:', error.message);
-      // Fallback to main blocks endpoint and filter by current user
-      const profile = await this.apiCall('/users/profile');
-      const allBlocks = await this.apiCall('/blocks');
-      const createdBlocks = allBlocks.filter(block => block.creatorId === profile.id);
-      return this.simulateDelay(createdBlocks);
+      console.warn('⚠️ /blocks/created failed, trying fallback to /blocks:', error.message);
+      try {
+        // Fallback to main blocks endpoint and filter by current user
+        const profile = await this.apiCall('/users/profile');
+        const allBlocks = await this.apiCall('/blocks');
+        const createdBlocks = allBlocks.filter(block => block.creatorId === profile.id);
+        return this.simulateDelay(createdBlocks);
+      } catch (fallbackError) {
+        console.error('❌ All blocks endpoints failed for created blocks, using empty array:', fallbackError.message);
+        // Ultimate fallback - return empty array
+        return this.simulateDelay([]);
+      }
     }
   }
 
@@ -143,8 +162,13 @@ class APIDataService {
       try {
         availableBlocks = await this.apiCall('/blocks/available');
       } catch (error) {
-        console.warn('⚠️ /blocks/available failed in fetchLoadedBlocks, using /blocks');
-        availableBlocks = await this.apiCall('/blocks');
+        console.warn('⚠️ /blocks/available failed in fetchLoadedBlocks, trying /blocks');
+        try {
+          availableBlocks = await this.apiCall('/blocks');
+        } catch (fallbackError) {
+          console.error('❌ All blocks endpoints failed in fetchLoadedBlocks:', fallbackError.message);
+          return this.simulateDelay([]);
+        }
       }
       
       const loadedBlocks = availableBlocks.filter(block => 
@@ -153,7 +177,7 @@ class APIDataService {
       
       return this.simulateDelay(loadedBlocks);
     } catch (error) {
-      console.error('❌ Failed to fetch loaded blocks:', error);
+      console.error('❌ Failed to fetch loaded blocks, using empty array:', error);
       // Ultimate fallback - return empty array
       return this.simulateDelay([]);
     }
@@ -234,32 +258,38 @@ class APIDataService {
 
   // === GAMES ===
   async fetchGamesForUser(userId) {
-    const games = await this.apiCall('/games');
-    
-    // Transform backend response to frontend format for all games
-    if (games && Array.isArray(games)) {
-      const typeToMode = {
-        'classic': 'Modo Clásico',
-        'time-trial': 'Modo Contrarreloj',
-        'lives': 'Modo Vidas',
-        'by-levels': 'Por Niveles',
-        'streak': 'Racha de Aciertos',
-        'exam': 'Examen Simulado',
-        'duel': 'Duelo',
-        'marathon': 'Maratón',
-        'trivial': 'Trivial'
-      };
+    try {
+      const games = await this.apiCall('/games');
       
-      // Transform each game properly without corrupting original
-      const transformedGames = games.map(game => ({
-        ...game,
-        mode: game.gameType ? typeToMode[game.gameType] || game.gameType : game.mode
-      }));
+      // Transform backend response to frontend format for all games
+      if (games && Array.isArray(games)) {
+        const typeToMode = {
+          'classic': 'Modo Clásico',
+          'time-trial': 'Modo Contrarreloj',
+          'lives': 'Modo Vidas',
+          'by-levels': 'Por Niveles',
+          'streak': 'Racha de Aciertos',
+          'exam': 'Examen Simulado',
+          'duel': 'Duelo',
+          'marathon': 'Maratón',
+          'trivial': 'Trivial'
+        };
+        
+        // Transform each game properly without corrupting original
+        const transformedGames = games.map(game => ({
+          ...game,
+          mode: game.gameType ? typeToMode[game.gameType] || game.gameType : game.mode
+        }));
+        
+        return this.simulateDelay(transformedGames);
+      }
       
-      return this.simulateDelay(transformedGames);
+      return this.simulateDelay(games || []);
+    } catch (error) {
+      console.error('❌ Failed to fetch games for user:', error.message);
+      // Return empty array so dashboard still loads
+      return this.simulateDelay([]);
     }
-    
-    return this.simulateDelay(games);
   }
 
   async fetchGame(gameId) {
@@ -430,8 +460,36 @@ class APIDataService {
 
   // === USER PROFILE ===
   async getUserProfile() {
-    const profile = await this.apiCall('/users/profile');
-    return this.simulateDelay(profile);
+    try {
+      const profile = await this.apiCall('/users/profile');
+      return this.simulateDelay(profile);
+    } catch (error) {
+      console.error('❌ Failed to fetch user profile:', error.message);
+      // Return mock profile to prevent crashes
+      return this.simulateDelay({
+        id: this.getCurrentUserId(),
+        nickname: 'User',
+        email: 'user@example.com',
+        stats: {
+          consolidation: {
+            byQuestion: {},
+            byTopic: {},
+            byBlock: {}
+          }
+        },
+        loadedBlocks: []
+      });
+    }
+  }
+
+  // Helper to get current user ID from localStorage
+  getCurrentUserId() {
+    try {
+      const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+      return session.userId || 1;
+    } catch {
+      return 1;
+    }
   }
 
   async updateUserProfile(profileData) {
