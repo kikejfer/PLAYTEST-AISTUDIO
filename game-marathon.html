@@ -450,7 +450,7 @@
                     totalTimePlayedSec: Math.floor((Date.now() - gameStartTime.current) / 1000),
                     questionStats: userAnswers
                  };
-                dataService.saveMarathonScore(currentUser.id, currentUser.nickname, scoreData);
+                dataService.saveMarathonScore(game.id, scoreData);
 
                 const answersForStats = userAnswers.map(answer => ({
                     ...answer,

@@ -714,6 +714,18 @@ class APIDataService {
     }
   }
 
+  async fetchMarathonScores(gameId) {
+    try {
+      console.log('📊 Fetching Marathon scores for game:', gameId);
+      const ranking = await this.apiCall(`/games/${gameId}/ranking`);
+      console.log('✅ Marathon scores loaded:', ranking.length, 'entries');
+      return this.simulateDelay(ranking);
+    } catch (error) {
+      console.error('❌ Failed to fetch Marathon scores:', error);
+      return this.simulateDelay([]);
+    }
+  }
+
   async fetchLivesScores(gameId) {
     console.log('⚠️ fetchLivesScores: returning empty array (not implemented yet)');
     return this.simulateDelay([]);
