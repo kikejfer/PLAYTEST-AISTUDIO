@@ -80,7 +80,6 @@
       // Polyfill 'process' for browser environment.
       globalThis.process = globalThis.process || { env: {} };
       
-      console.log("🔧 ADD-QUESTION.HTML loaded successfully!");
 
       import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
       import ReactDOM from 'react-dom/client';
@@ -177,7 +176,6 @@
           }
       };
       const createBlockWithQuestions = async (blockName, questions, isPublic = true) => {
-          console.log('🔧 Creating block with questions:', blockName);
           const sessionString = localStorage.getItem('playtest_session');
           const token = localStorage.getItem('playtest_auth_token');
           
@@ -191,7 +189,6 @@
           }
           
           const creatorId = session.userId;
-          console.log('🔧 Creator ID:', creatorId);
           
           // Create block using API
           const blockData = {
@@ -200,13 +197,11 @@
               isPublic: isPublic
           };
           
-          console.log('🔧 Creating block via API:', blockData);
           const response = await apiDataService.createBlock(blockData);
           const createdBlock = response.block || response; // Handle different response formats
           console.log('✅ Block created:', createdBlock);
           
           if (questions && questions.length > 0) {
-              console.log('🔧 Adding questions to block...');
               for (let i = 0; i < questions.length; i++) {
                   const question = questions[i];
                   const questionData = {
@@ -217,9 +212,6 @@
                       difficulty: question.dificultad || 1
                   };
                   
-                  console.log(`🔧 Creating question ${i + 1}:`, questionData);
-                  console.log(`🔧 Original question tema:`, question.tema);
-                  console.log(`🔧 Full original question:`, question);
                   await apiDataService.createQuestion(questionData);
               }
               console.log('✅ All questions created successfully');
@@ -232,7 +224,6 @@
       };
       const saveQuestionsToBlock = async (blockId, questions) => {
           try {
-              console.log('🔧 Saving questions to block:', blockId);
               for (let i = 0; i < questions.length; i++) {
                   const question = questions[i];
                   const questionData = {
@@ -243,7 +234,6 @@
                       difficulty: question.dificultad || question.difficulty || 1
                   };
                   
-                  console.log(`🔧 Creating question ${i + 1}:`, questionData);
                   await apiDataService.createQuestion(questionData);
                   
                   // Add small delay to avoid rate limiting
@@ -541,8 +531,6 @@
                     const text = await fileInfo.file.text();
                     if (!text) continue;
                     const parsedQuestions = parseQuestionsFromFile(text, fileInfo.topicName.trim()).map(q => ({ ...q, blockName: fileInfo.blockName.trim() }));
-                    console.log(`🔧 Processed file ${fileInfo.file.name} with topic: ${fileInfo.topicName}`);
-                    console.log(`🔧 Questions from this file:`, parsedQuestions.map(q => ({ pregunta: q.textoPregunta, tema: q.tema })));
                     allParsedQuestions.push(...parsedQuestions);
                 }
                 if (allParsedQuestions.length === 0) throw new Error(t('uploader_status_no_questions'));
@@ -957,11 +945,9 @@
       };
 
       const AppWrapper = () => {
-          console.log('🔧 [add-question.html] AppWrapper component initialized');
           const [currentUser, setCurrentUser] = useState(null);
           const [isLoading, setIsLoading] = useState(true);
           
-          console.log('🔧 [add-question.html] Current state - isLoading:', isLoading, 'currentUser:', currentUser);
 
           useEffect(() => {
             console.log('🔍 [add-question.html] Checking for existing session...');
@@ -1018,10 +1004,8 @@
             checkSession();
           }, []);
 
-          console.log('🔧 [add-question.html] Render check - isLoading:', isLoading, 'currentUser:', !!currentUser);
           
           if (isLoading) {
-            console.log('🔧 [add-question.html] Still loading, showing spinner...');
             return (
                <div className="flex justify-center items-center h-screen"> <svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle> <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> </div>
             )
