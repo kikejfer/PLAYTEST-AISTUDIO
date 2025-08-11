@@ -331,7 +331,6 @@
                     totalTimePlayedSec: Math.floor((Date.now() - gameStartTime.current) / 1000),
                     questionStats: userAnswers
                  };
-                dataService.saveMarathonScore(game.id, scoreData);
 
                 const answersForStats = userAnswers.map(answer => ({
                     ...answer,
@@ -344,18 +343,20 @@
                     answers: answersForStats,
                     blocksInfo: 'Marathon Mode'
                 };
+                
                 (async () => {
-
                   try {
-
+                    // Save marathon score to PostgreSQL
+                    await dataService.saveMarathonScore(game.id, scoreData);
+                    console.log('✅ Marathon score saved to PostgreSQL');
+                    
+                    // Save user stats to PostgreSQL  
                     await dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
-
+                    console.log('✅ Marathon user stats saved to PostgreSQL');
                   } catch (error) {
-
-                    console.error('Failed to save game results:', error);
-
+                    console.error('❌ Failed to save Marathon game results to PostgreSQL:', error);
+                    // No fallback to localStorage - API must work for proper data persistence
                   }
-
                 })();
             }
           }, [gameState, currentUser, userAnswers, game.id, timeLeft, questions.length, game.config, t]);
