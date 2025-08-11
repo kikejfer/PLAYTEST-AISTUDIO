@@ -259,9 +259,13 @@
                  const answersForStats = userAnswers.map(answer => ({
                     ...answer,
                     result: answer.isCorrect ? 'ACIERTO' : 'FALLO',
+                    blockId: answer.blockId || 'unknown',
+                    questionId: answer.questionId || answer.id,
+                    topicName: answer.topicName || answer.tema || 'unknown'
                  }));
                  const gameResults = {
-                    answers: answersForStats
+                    answers: answersForStats,
+                    blocksInfo: blocks?.map(b => b.nombre).join(', ') || 'Unknown'
                 };
                 (async () => {
                   try {
@@ -270,8 +274,8 @@
                     await dataService.saveTimeTrialScore(game.id, {
                       score: userAnswers.filter(a => a.isCorrect).length,
                       totalQuestions: userAnswers.length,
-                      timeRemaining: timeRemaining,
-                      timeLimit: game.timeLimit || 60,
+                      timeRemaining: timeLeft,
+                      timeLimit: game.timeLimit || initialTime,
                       answers: answersForStats
                     });
                   } catch (error) {
@@ -279,7 +283,7 @@
                   }
                 })();
             }
-          }, [gameState, currentUser, userAnswers, game]);
+          }, [gameState, currentUser, userAnswers, game, timeLeft, blocks, initialTime]);
 
           useEffect(() => {
             setQuestionStartTime(Date.now());
@@ -335,25 +339,8 @@
                   console.log('✅ Time Trial results saved to API');
               } catch (error) {
                   console.error('❌ Failed to save game results to API:', error);
-                  // Fallback to localStorage if API fails
-                  const score = {
-                      correct: correctAnswers,
-                      incorrect: wrongAnswers,
-                      total: userAnswers.length,
-                      date: new Date().toISOString(),
-                  };
-                  
-                  const historyKey = `playtest_timetrial_scores_${game.id}`;
-                  try {
-                      const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
-                      history.push(score);
-                      history.sort((a, b) => b.correct - a.correct || a.incorrect - b.incorrect);
-                      const top5 = history.slice(0, 5);
-                      localStorage.setItem(historyKey, JSON.stringify(top5));
-                      console.log('⚠️ Saved to localStorage as fallback');
-                  } catch (e) {
-                      console.error("Failed to save score history", e);
-                  }
+                  // No fallback to localStorage - API must work for proper data persistence
+                  throw error;
               }
           };
 
