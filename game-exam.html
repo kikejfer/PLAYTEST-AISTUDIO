@@ -304,7 +304,11 @@
                   }
                   
                   try {
-                      const gameResults = { answers: answersForStats, score: parseFloat(finalScore) };
+                      const gameResults = { 
+                          answers: answersForStats, 
+                          score: parseFloat(finalScore),
+                          blocksInfo: 'Exam Mode'
+                      };
                       await dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
                   } catch (error) {
                       console.error("Failed to update user stats:", error);

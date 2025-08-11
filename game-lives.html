@@ -250,8 +250,14 @@
                   const answersForStats = userAnswers.map(answer => ({
                       ...answer,
                       result: answer.isCorrect ? 'ACIERTO' : 'FALLO',
+                      blockId: answer.blockId || 'unknown',
+                      questionId: answer.questionId || answer.id || 'unknown',
+                      topicName: answer.topicName || answer.tema || 'unknown'
                   }));
-                  const gameResults = { answers: answersForStats };
+                  const gameResults = { 
+                      answers: answersForStats,
+                      blocksInfo: 'Lives Mode'
+                  };
                   
                   try {
                       if (answersForStats.length > 0) {

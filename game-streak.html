@@ -247,9 +247,13 @@
                  const answersForStats = userAnswers.map(answer => ({
                     ...answer,
                     result: answer.isCorrect ? 'ACIERTO' : 'FALLO',
+                    blockId: answer.blockId || 'unknown',
+                    questionId: answer.questionId || answer.id || 'unknown',
+                    topicName: answer.topicName || answer.tema || 'unknown'
                  }));
                  const gameResults = {
-                    answers: answersForStats
+                    answers: answersForStats,
+                    blocksInfo: 'Streak Mode'
                 };
                 (async () => {
                   try {
