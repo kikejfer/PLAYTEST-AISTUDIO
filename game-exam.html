@@ -453,8 +453,23 @@
           useEffect(() => {
               const params = new URLSearchParams(window.location.search);
               const id = params.get('gameId');
-              if (id) setGameId(id);
-              else { setError("No game ID provided."); setIsLoading(false); }
+              
+              if (id) {
+                  setGameId(id);
+              } else {
+                  // Check localStorage if URL params are missing
+                  const normalGameId = localStorage.getItem('current_game_id');
+                  const normalGameMode = localStorage.getItem('current_game_mode');
+                  
+                  if (normalGameId) {
+                      console.log('🎮 Using game ID from localStorage (mode: ' + normalGameMode + '):', normalGameId);
+                      setGameId(normalGameId);
+                  } else {
+                      console.error('❌ No game ID found in URL or localStorage');
+                      setError("No game ID provided."); 
+                      setIsLoading(false);
+                  }
+              }
 
               const numQuestions = parseInt(params.get('numQuestions'), 10) || 60;
               const penalty = parseInt(params.get('penalty'), 10); // can be 0, so no default fallback needed like numQ
