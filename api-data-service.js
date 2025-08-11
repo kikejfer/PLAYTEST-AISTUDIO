@@ -702,10 +702,16 @@ class APIDataService {
   }
 
   // === GAME MODE SCORE FETCHERS ===
-  // Métodos temporales que devuelven arrays vacíos hasta implementar el backend
   async fetchTimeTrialScores(gameId) {
-    console.log('⚠️ fetchTimeTrialScores: returning empty array (not implemented yet)');
-    return this.simulateDelay([]);
+    try {
+      console.log('📊 Fetching Time Trial scores for game:', gameId);
+      const ranking = await this.apiCall(`/games/${gameId}/ranking`);
+      console.log('✅ Time Trial scores loaded:', ranking.length, 'entries');
+      return this.simulateDelay(ranking);
+    } catch (error) {
+      console.error('❌ Failed to fetch Time Trial scores:', error);
+      return this.simulateDelay([]);
+    }
   }
 
   async fetchLivesScores(gameId) {
