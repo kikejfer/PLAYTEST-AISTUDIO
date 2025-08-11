@@ -700,6 +700,38 @@ class APIDataService {
     const history = await this.apiCall(`/blocks/${blockId}/history`);
     return this.simulateDelay(history);
   }
+
+  // === GAME MODE SCORE FETCHERS ===
+  // Métodos temporales que devuelven arrays vacíos hasta implementar el backend
+  async fetchTimeTrialScores(gameId) {
+    console.log('⚠️ fetchTimeTrialScores: returning empty array (not implemented yet)');
+    return this.simulateDelay([]);
+  }
+
+  async fetchLivesScores(gameId) {
+    console.log('⚠️ fetchLivesScores: returning empty array (not implemented yet)');
+    return this.simulateDelay([]);
+  }
+
+  async fetchStreakScores(gameId) {
+    console.log('⚠️ fetchStreakScores: returning empty array (not implemented yet)');
+    return this.simulateDelay([]);
+  }
+
+  async fetchExamScores(gameId) {
+    console.log('⚠️ fetchExamScores: returning empty array (not implemented yet)');
+    return this.simulateDelay([]);
+  }
+
+  async fetchDuelScores(gameId) {
+    console.log('⚠️ fetchDuelScores: returning empty array (not implemented yet)');
+    return this.simulateDelay([]);
+  }
+
+  async fetchTrivialScores(gameId) {
+    console.log('⚠️ fetchTrivialScores: returning empty array (not implemented yet)');
+    return this.simulateDelay([]);
+  }
 }
 
 // Configuración de la URL base según el entorno
