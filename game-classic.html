@@ -297,6 +297,23 @@
                       await dataService.saveClassicScore(game.id, scoreData);
                       console.log('✅ Classic score saved successfully');
                       
+                      // Update user statistics and answer history
+                      console.log('📈 Updating user statistics...');
+                      try {
+                          await dataService.updateUserStats(currentUser.id, game.id, {
+                              answers: userAnswers.map(answer => ({
+                                  blockId: parseInt(block.id),
+                                  questionId: answer.questionId,
+                                  topicName: answer.topic || 'Unknown',
+                                  result: answer.correct ? 'ACIERTO' : 'FALLO',
+                                  responseTime: answer.responseTime || 0
+                              }))
+                          }, 'classic');
+                          console.log('✅ User statistics updated successfully');
+                      } catch (statsError) {
+                          console.error('❌ Failed to update user statistics:', statsError);
+                      }
+                      
                       // Mark game as completed for history tracking
                       console.log('🏁 Marking game as completed, gameId:', game.id);
                       try {
