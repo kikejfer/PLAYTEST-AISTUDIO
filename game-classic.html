@@ -287,9 +287,11 @@
                       console.log('✅ User stats updated successfully');
                       
                       // Also save classic game score
+                      const totalAnswered = userAnswers.filter(a => a.result !== 'BLANCO' && a.result !== 'BLANK').length;
                       const scoreData = {
                           score: userAnswers.filter(a => a.result === 'ACIERTO').length,
                           totalQuestions: userAnswers.length,
+                          totalAnswered: totalAnswered,
                           timeElapsed: timeElapsed,
                           answers: userAnswers
                       };
