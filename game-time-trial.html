@@ -254,36 +254,7 @@
               return () => clearInterval(timerId);
           }, [gameState, isPaused, timeLeft, t]);
 
-           useEffect(() => {
-            if (gameState === 'finished' && currentUser && userAnswers.length > 0) {
-                 const answersForStats = userAnswers.map(answer => ({
-                    ...answer,
-                    result: answer.isCorrect ? 'ACIERTO' : 'FALLO',
-                    blockId: answer.blockId || 'unknown',
-                    questionId: answer.questionId || answer.id,
-                    topicName: answer.topicName || answer.tema || 'unknown'
-                 }));
-                 const gameResults = {
-                    answers: answersForStats,
-                    blocksInfo: blocks?.map(b => b.nombre).join(', ') || 'Unknown'
-                };
-                (async () => {
-                  try {
-                    await dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
-                    // Also save time trial score
-                    await dataService.saveTimeTrialScore(game.id, {
-                      score: userAnswers.filter(a => a.isCorrect).length,
-                      totalQuestions: userAnswers.length,
-                      timeRemaining: timeLeft,
-                      timeLimit: game.timeLimit || initialTime,
-                      answers: answersForStats
-                    });
-                  } catch (error) {
-                    console.error('Failed to save game results:', error);
-                  }
-                })();
-            }
-          }, [gameState, currentUser, userAnswers, game, timeLeft, blocks, initialTime]);
+          // Game saving is handled in handleFinish function
 
           useEffect(() => {
             setQuestionStartTime(Date.now());
@@ -322,6 +293,11 @@
               const correctAnswers = userAnswers.filter(a => a.isCorrect).length;
               const wrongAnswers = userAnswers.length - correctAnswers;
               
+              if (!currentUser || !game) {
+                  console.error('❌ Missing currentUser or game data');
+                  return;
+              }
+              
               try {
                   const gameResults = {
                       gameId: game.id,
@@ -335,8 +311,18 @@
                   };
                   
                   // Save game results to user stats via API
-                  await apiDataService.updateUserStats(gameResults, 'time-trial');
-                  console.log('✅ Time Trial results saved to API');
+                  await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
+                  console.log('✅ Time Trial user stats saved to API');
+                  
+                  // Also save time trial score
+                  await apiDataService.saveTimeTrialScore(game.id, {
+                      score: userAnswers.filter(a => a.isCorrect).length,
+                      totalQuestions: userAnswers.length,
+                      timeRemaining: 0, // Game finished manually
+                      timeLimit: initialTime,
+                      answers: gameResults.answers
+                  });
+                  console.log('✅ Time Trial score saved to API');
               } catch (error) {
                   console.error('❌ Failed to save game results to API:', error);
                   // No fallback to localStorage - API must work for proper data persistence
