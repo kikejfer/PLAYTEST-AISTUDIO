@@ -326,9 +326,9 @@
                   const gameResults = {
                       gameId: game.id,
                       answers: userAnswers.map(answer => ({
-                          blockId: answer.blockId,
-                          questionId: answer.question.id,
-                          topicName: answer.question.tema,
+                          blockId: answer.blockId || 'unknown',
+                          questionId: answer.questionId || answer.id || 'unknown',
+                          topicName: answer.topicName || answer.tema || 'unknown',
                           result: answer.isCorrect ? 'ACIERTO' : 'FALLO',
                           responseTime: answer.responseTime || 0
                       }))
