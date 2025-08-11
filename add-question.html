@@ -218,6 +218,8 @@
                   };
                   
                   console.log(`🔧 Creating question ${i + 1}:`, questionData);
+                  console.log(`🔧 Original question tema:`, question.tema);
+                  console.log(`🔧 Full original question:`, question);
                   await apiDataService.createQuestion(questionData);
               }
               console.log('✅ All questions created successfully');
@@ -539,6 +541,8 @@
                     const text = await fileInfo.file.text();
                     if (!text) continue;
                     const parsedQuestions = parseQuestionsFromFile(text, fileInfo.topicName.trim()).map(q => ({ ...q, blockName: fileInfo.blockName.trim() }));
+                    console.log(`🔧 Processed file ${fileInfo.file.name} with topic: ${fileInfo.topicName}`);
+                    console.log(`🔧 Questions from this file:`, parsedQuestions.map(q => ({ pregunta: q.textoPregunta, tema: q.tema })));
                     allParsedQuestions.push(...parsedQuestions);
                 }
                 if (allParsedQuestions.length === 0) throw new Error(t('uploader_status_no_questions'));
