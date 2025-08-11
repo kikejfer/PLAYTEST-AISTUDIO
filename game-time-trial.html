@@ -493,10 +493,34 @@
           const [gameId, setGameId] = useState(null);
 
           useEffect(() => {
+              console.log('🎮 Time Trial game initialization...');
               const params = new URLSearchParams(window.location.search);
-              const id = params.get('gameId');
-              if (id) setGameId(id);
-              else { setError("No game ID provided."); setIsLoading(false); }
+              let id = params.get('gameId');
+              
+              console.log('🔍 URL gameId:', id);
+              
+              // Check localStorage if URL params are missing
+              const normalGameId = localStorage.getItem('current_game_id');
+              const normalGameMode = localStorage.getItem('current_game_mode');
+              
+              console.log('🔍 localStorage check - normalGameId:', normalGameId);
+              console.log('🔍 localStorage check - normalGameMode:', normalGameMode);
+              
+              // Accept various mode names for Time Trial
+              const timeTrialModes = ['time-trial', 'timetrial', 'contrarreloj', 'Modo Contrarreloj'];
+              if (!id && normalGameId && (timeTrialModes.includes(normalGameMode) || normalGameMode === 'normal')) {
+                  console.log('🎮 Using game ID from localStorage (mode: ' + normalGameMode + '):', normalGameId);
+                  id = normalGameId;
+              }
+              
+              if (id) {
+                  console.log('✅ Using gameId:', id);
+                  setGameId(id);
+              } else { 
+                  console.error('❌ No game ID found in URL or localStorage');
+                  setError("No game ID provided."); 
+                  setIsLoading(false); 
+              }
           }, []);
           
           useEffect(() => {
