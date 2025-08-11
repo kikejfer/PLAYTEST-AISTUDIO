@@ -1277,11 +1277,22 @@
                                           {expandedBlockId === block.id ? t('available_blocks_hide_details') : t('available_blocks_view_details')}
                                        </button>
                                         <button
+                                            onClick={(e) => { e.stopPropagation(); window.location.href = `block-questions.html?blockId=${block.id}&returnUrl=index.html&viewMode=edit`; }}
+                                            className="p-2 rounded-full text-brand-cta/80 hover:bg-brand-cta/20 hover:text-brand-cta opacity-0 group-hover:opacity-100 transition-opacity"
+                                            aria-label={`Edit ${block.nombreCorto}`}
+                                        >
+                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                        </button>
+                                        <button
                                             onClick={(e) => { e.stopPropagation(); handleDeleteClick(block.id); }}
                                             className="p-2 rounded-full text-brand-danger/80 hover:bg-brand-danger/20 hover:text-brand-danger opacity-0 group-hover:opacity-100 transition-opacity"
                                             aria-label={`${t('delete')} ${block.nombreCorto}`}
                                         >
-                                            <TrashIcon className="h-5 w-5"/>
+                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
                                         </button>
                                     </div>
                                 </div>
@@ -2659,9 +2670,15 @@
                 localStorage.setItem('current_game_id', newGame.id);
                 localStorage.setItem('current_game_mode', 'normal');
                 
+                console.log('🔄 Reloading data to update Partidas Activas...');
                 await loadData();
                 
                 console.log('✅ Game configuration saved and available in "Partidas Activas" section');
+                console.log('🎯 Current games after load:', games);
+                
+                // Add a small delay to ensure data has been updated in the UI
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
                 // Navigate to game automatically while keeping it saved in Partidas Activas
                 onNavigateToGame(newGame);
             } catch (err) { 
