@@ -538,15 +538,25 @@
             if (!block) return null;
             const topicInfo = blockConfig.topics === 'all' 
                 ? t('game_setup_all_topics')
-                : t('game_setup_topics_selected', {count: blockConfig.topics.length});
+                : Array.isArray(blockConfig.topics) && blockConfig.topics.length <= 3
+                    ? blockConfig.topics.join(', ')
+                    : t('game_setup_topics_selected', {count: blockConfig.topics.length});
+            
+            // Calculate question count for this block configuration
+            const questionCount = blockConfig.topics === 'all' 
+                ? block.questions.length
+                : Array.isArray(blockConfig.topics)
+                    ? block.questions.filter(q => blockConfig.topics.includes(q.tema)).length
+                    : 0;
             
             return (
               <li key={blockId} className="flex items-center gap-4 p-3 bg-brand-primary rounded-lg">
                 <img src={block.urlImagenBloque} alt={block.nombreCorto} className="h-10 w-16 object-cover rounded-md" />
-                <div>
+                <div className="flex-grow">
                   <p className="font-semibold text-brand-light">{block.nombreCorto}</p>
                   <p className="text-xs text-brand-accent">{t('admin_blocks_by')} {block.creatorNickname}</p>
                   <p className="text-xs text-brand-accent mt-1">{topicInfo}</p>
+                  <p className="text-xs text-brand-success mt-1">{questionCount} preguntas</p>
                 </div>
               </li>
             );
@@ -949,13 +959,23 @@
 
                       if (!fetchedGame) throw new Error("Game not found.");
                       
+                      // Calculate block names for all game modes
+                      if (fetchedGame.config && Object.keys(fetchedGame.config).length > 0) {
+                          const blockIds = Object.keys(fetchedGame.config);
+                          const blockNames = blockIds.map(blockId => {
+                              const block = fetchedBlocks.find(b => 
+                                  b.id === parseInt(blockId) || b.id === blockId
+                              );
+                              return block ? block.nombreCorto : `Block ${blockId}`;
+                          }).join(', ');
+                          setBlockName(blockNames);
+                      }
+
                       if (fetchedGame.mode === 'Maratón') {
                           const mainBlockId = Object.keys(fetchedGame.config)[0];
                           if (mainBlockId) {
                               const scores = await dataService.fetchMarathonScores(mainBlockId);
                               setMarathonScores(scores);
-                              const mainBlock = fetchedBlocks.find(b => b.id === mainBlockId);
-                              if (mainBlock) setBlockName(mainBlock.nombreCorto);
                           }
                       }
 
