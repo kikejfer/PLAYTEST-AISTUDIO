@@ -532,6 +532,8 @@
                           dataService.fetchAllBlocks() 
                         ]);
                       if (!fetchedGame) throw new Error("Game not found.");
+                      console.log('🎮 Loaded game:', fetchedGame);
+                      console.log('📦 Loaded blocks:', fetchedBlocks.length, 'blocks');
                       setGame(fetchedGame);
                       setBlocks(fetchedBlocks);
                   } catch (err) { setError(err.message);
@@ -541,10 +543,18 @@
           }, [gameId, currentUser]);
           
           const gameQuestions = useMemo(() => {
-              if (!game || !game.config || !blocks || blocks.length === 0) return [];
+              console.log('🔍 Processing game questions...');
+              console.log('🎮 Game:', game);
+              console.log('📦 Blocks:', blocks?.length || 0);
+              if (!game || !game.config || !blocks || blocks.length === 0) {
+                  console.log('❌ Missing data - game:', !!game, 'config:', !!game?.config, 'blocks:', blocks?.length || 0);
+                  return [];
+              }
               let questions = [];
               for (const [blockId, blockConfig] of Object.entries(game.config)) {
+                  console.log('🔍 Processing blockId:', blockId, 'config:', blockConfig);
                   const block = blocks.find(b => b.id === blockId);
+                  console.log('📦 Found block:', !!block, 'questions:', block?.questions?.length || 0);
                   if (!block || !block.questions) continue;
                   
                   const questionsWithMeta = block.questions.map(q => ({ ...q, blockId: block.id }));
@@ -555,6 +565,7 @@
                       questions.push(...questionsWithMeta.filter(q => blockConfig.topics.includes(q.tema)));
                   }
               }
+              console.log('✅ Final questions count:', questions.length);
               return questions.sort(() => Math.random() - 0.5);
           }, [game, blocks]);
           
