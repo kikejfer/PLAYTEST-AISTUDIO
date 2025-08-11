@@ -2687,8 +2687,8 @@
                 
                 await loadData();
                 
-                // Navigate to active-game.html to show the game setup screen first
-                onNavigateToGame(newGame);
+                console.log('✅ Game configuration saved. Game is now available in "Partidas Activas" section');
+                // Don't navigate automatically - let user choose when to play from Partidas Activas
             } catch (err) { 
                 console.error('❌ Game creation failed:', err);
                 setError(err instanceof Error ? `Failed to create game: ${err.message}` : 'Unknown API error.'); 
