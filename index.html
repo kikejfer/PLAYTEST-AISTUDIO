@@ -2687,8 +2687,9 @@
                 
                 await loadData();
                 
-                console.log('✅ Game configuration saved. Game is now available in "Partidas Activas" section');
-                // Don't navigate automatically - let user choose when to play from Partidas Activas
+                console.log('✅ Game configuration saved and available in "Partidas Activas" section');
+                // Navigate to game automatically while keeping it saved in Partidas Activas
+                onNavigateToGame(newGame);
             } catch (err) { 
                 console.error('❌ Game creation failed:', err);
                 setError(err instanceof Error ? `Failed to create game: ${err.message}` : 'Unknown API error.'); 
