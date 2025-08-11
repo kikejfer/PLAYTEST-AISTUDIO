@@ -972,11 +972,8 @@
                       }
 
                       if (fetchedGame.mode === 'Maratón') {
-                          const mainBlockId = Object.keys(fetchedGame.config)[0];
-                          if (mainBlockId) {
-                              const scores = await dataService.fetchMarathonScores(mainBlockId);
-                              setMarathonScores(scores);
-                          }
+                          const scores = await dataService.fetchMarathonScores(gameId);
+                          setMarathonScores(scores);
                       }
 
                       if (fetchedGame.mode === 'Modo Contrarreloj') { setTimeTrialScores(await dataService.fetchTimeTrialScores(gameId)); }
