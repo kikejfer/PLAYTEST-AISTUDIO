@@ -1146,6 +1146,27 @@
                               <div className="flex-grow overflow-hidden cursor-pointer" onClick={() => onNavigateToGame(game)}>
                                   <p className="font-semibold text-brand-light truncate">{game.mode}</p>
                                   {statusText && <p className="text-xs font-bold text-amber-400 mt-1">{statusText}</p>}
+                                  
+                                  {/* Configuration Summary */}
+                                  {game.configurationMetadata && (
+                                      <div className="mt-2 p-2 bg-brand-secondary rounded text-center">
+                                          <div className="grid grid-cols-3 gap-2 text-xs">
+                                              <div>
+                                                  <span className="text-brand-accent">Bloques</span>
+                                                  <div className="font-bold text-brand-light">{game.configurationMetadata.summary.blockCount}</div>
+                                              </div>
+                                              <div>
+                                                  <span className="text-brand-accent">Temas</span>
+                                                  <div className="font-bold text-brand-light">{game.configurationMetadata.summary.topicCount}</div>
+                                              </div>
+                                              <div>
+                                                  <span className="text-brand-accent">Preguntas</span>
+                                                  <div className="font-bold text-brand-success">{game.configurationMetadata.summary.questionCount}</div>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  )}
+                                  
                                   <p className="text-xs text-brand-accent truncate mt-1" title={getGameConfigDetails(game.config, game.configurationMetadata)}>
                                     {getGameConfigDetails(game.config, game.configurationMetadata)}
                                   </p>
