@@ -509,7 +509,15 @@
         const [examConfig, setExamConfig] = useState({ numQuestions: 60, penalty: 3 });
 
         const totalQuestions = useMemo(() => {
-            if (!game || !game.config || !blocks || blocks.length === 0) return 0;
+            if (!game || !game.config) return 0;
+            
+            // Use metadata if available (more efficient and accurate)
+            if (game.configurationMetadata?.summary?.questionCount) {
+                return game.configurationMetadata.summary.questionCount;
+            }
+            
+            // Fallback to old calculation if no metadata
+            if (!blocks || blocks.length === 0) return 0;
             
             let count = 0;
             for (const [blockId, blockConfig] of Object.entries(game.config)) {
@@ -529,8 +537,30 @@
             return count;
         }, [game, blocks]);
         
-        const getGameConfigDetails = useCallback((blockId, blockConfig) => {
-            // Fix: Handle both number IDs (backend) and string IDs (config keys)
+        const getGameConfigDetails = useCallback((blockId, blockConfig, blockMetadata) => {
+            // If we have metadata from the new system, use it
+            if (blockMetadata) {
+                const topicInfo = blockMetadata.isAllTopics 
+                    ? t('game_setup_all_topics')
+                    : blockMetadata.selectedTopics.length <= 3
+                        ? blockMetadata.selectedTopics.join(', ')
+                        : t('game_setup_topics_selected', {count: blockMetadata.selectedTopics.length});
+                
+                return (
+                  <li key={blockId} className="flex items-center gap-4 p-3 bg-brand-primary rounded-lg">
+                    <img src={blockMetadata.blockImage} alt={blockMetadata.blockName} className="h-10 w-16 object-cover rounded-md" />
+                    <div className="flex-grow">
+                      <p className="font-semibold text-brand-light">{blockMetadata.blockName}</p>
+                      <p className="text-xs text-brand-accent">{t('admin_blocks_by')} {blockMetadata.creatorNickname}</p>
+                      <p className="text-xs text-brand-accent mt-1">{topicInfo}</p>
+                      <p className="text-xs text-brand-success mt-1">{blockMetadata.questionCount} preguntas</p>
+                      <p className="text-xs text-brand-light/70 mt-1">de {blockMetadata.totalBlockQuestions} preguntas totales</p>
+                    </div>
+                  </li>
+                );
+            }
+
+            // Fallback to old method if no metadata available
             const block = blocks.find(b => 
                 b.id === parseInt(blockId) ||  // Backend blocks have numeric IDs
                 b.id === blockId               // String IDs for compatibility
@@ -654,8 +684,34 @@
             )}
             <div className="bg-brand-primary/50 p-6 rounded-lg">
                 <h3 className="text-xl font-semibold text-brand-light mb-4">{t('game_page_config')}</h3>
+                
+                {/* Configuration Summary */}
+                {game.configurationMetadata && (
+                    <div className="mb-4 p-3 bg-brand-secondary rounded-lg">
+                        <div className="grid grid-cols-3 gap-4 text-center">
+                            <div>
+                                <p className="text-xs text-brand-accent uppercase">Bloques</p>
+                                <p className="text-lg font-bold text-brand-light">{game.configurationMetadata.summary.blockCount}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-brand-accent uppercase">Temas</p>
+                                <p className="text-lg font-bold text-brand-light">{game.configurationMetadata.summary.topicCount}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-brand-accent uppercase">Preguntas</p>
+                                <p className="text-lg font-bold text-brand-success">{game.configurationMetadata.summary.questionCount}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
                 <ul className="space-y-3 max-h-40 overflow-y-auto pr-2">
-                    {Object.entries(game.config).map(([blockId, blockConfig]) => getGameConfigDetails(blockId, blockConfig))}
+                    {Object.entries(game.config).map(([blockId, blockConfig]) => {
+                        const blockMetadata = game.configurationMetadata?.blocks.find(b => 
+                            b.blockId === parseInt(blockId) || b.blockId === blockId
+                        );
+                        return getGameConfigDetails(blockId, blockConfig, blockMetadata);
+                    })}
                 </ul>
             </div>
           </div>
@@ -847,8 +903,34 @@
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="bg-brand-primary/50 p-6 rounded-lg">
                       <h3 className="text-xl font-semibold text-brand-light mb-4">{t('game_page_config')}</h3>
+                      
+                      {/* Configuration Summary */}
+                      {game.configurationMetadata && (
+                          <div className="mb-4 p-3 bg-brand-secondary rounded-lg">
+                              <div className="grid grid-cols-3 gap-4 text-center">
+                                  <div>
+                                      <p className="text-xs text-brand-accent uppercase">Bloques</p>
+                                      <p className="text-lg font-bold text-brand-light">{game.configurationMetadata.summary.blockCount}</p>
+                                  </div>
+                                  <div>
+                                      <p className="text-xs text-brand-accent uppercase">Temas</p>
+                                      <p className="text-lg font-bold text-brand-light">{game.configurationMetadata.summary.topicCount}</p>
+                                  </div>
+                                  <div>
+                                      <p className="text-xs text-brand-accent uppercase">Preguntas</p>
+                                      <p className="text-lg font-bold text-brand-success">{game.configurationMetadata.summary.questionCount}</p>
+                                  </div>
+                              </div>
+                          </div>
+                      )}
+                      
                       <ul className="space-y-3 max-h-60 overflow-y-auto pr-2">
-                        {Object.entries(game.config).map(([blockId, blockConfig]) => getGameConfigDetails(blockId, blockConfig))}
+                        {Object.entries(game.config).map(([blockId, blockConfig]) => {
+                            const blockMetadata = game.configurationMetadata?.blocks.find(b => 
+                                b.blockId === parseInt(blockId) || b.blockId === blockId
+                            );
+                            return getGameConfigDetails(blockId, blockConfig, blockMetadata);
+                        })}
                       </ul>
                     </div>
 

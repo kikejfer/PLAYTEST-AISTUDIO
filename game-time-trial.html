@@ -317,7 +317,8 @@
                   // Also save time trial score
                   await apiDataService.saveTimeTrialScore(game.id, {
                       score: userAnswers.filter(a => a.isCorrect).length,
-                      totalQuestions: userAnswers.length,
+                      totalQuestions: questions.length, // Total questions in configuration, not just answered
+                      questionsAnswered: userAnswers.length, // Questions actually answered
                       timeRemaining: 0, // Game finished manually
                       timeLimit: initialTime,
                       answers: gameResults.answers

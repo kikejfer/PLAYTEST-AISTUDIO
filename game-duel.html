@@ -214,7 +214,7 @@
         const isMyTurn = (turnState.startsWith('p1') && currentUser.id === game.players[0].userId) || (turnState.startsWith('p2') && currentUser.id === game.players[1].userId);
 
         const updateSharedGameState = useCallback((data) => {
-            dataService.updateGame(game.id, data);
+            apiDataService.updateGame(game.id, data);
         }, [game.id]);
 
         const startTurn = useCallback(() => {
@@ -252,15 +252,38 @@
             if (gameState === 'finished' && currentUser) {
                 const finishGame = async () => {
                     try {
-                        if (myAnswersHistory.length > 0) {
-                            const opponent = game.players.find(p => p.userId !== currentUser.id);
-                            const gameResults = { 
-                                answers: myAnswersHistory, 
-                                opponent: opponent?.nickname 
-                            };
-                            await dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
+                        // Save duel score to rankings
+                        const winner = playerScores[0] > playerScores[1] ? game.players[0] : 
+                                      (playerScores[1] > playerScores[0] ? game.players[1] : null);
+                        
+                        const duelScoreData = {
+                            winner: winner ? winner.nickname : 'Draw',
+                            p1: game.players[0].nickname,
+                            p2: game.players[1].nickname,
+                            scores: { p1: playerScores[0], p2: playerScores[1] },
+                            rounds: currentRound,
+                            date: new Date().toISOString()
+                        };
+                        
+                        await apiDataService.saveDuelScore(game.id, duelScoreData);
+                        
+                        // Update user stats for both players
+                        for (const [playerIndex, player] of game.players.entries()) {
+                            const playerAnswers = myAnswersHistory.filter((_, i) => 
+                                (i % 2 === 0 && playerIndex === 0) || (i % 2 === 1 && playerIndex === 1)
+                            );
+                            
+                            if (playerAnswers.length > 0) {
+                                const opponent = game.players.find(p => p.userId !== player.userId);
+                                const gameResults = { 
+                                    answers: playerAnswers, 
+                                    opponent: opponent?.nickname 
+                                };
+                                await apiDataService.updateUserStats(player.userId, game.id, gameResults, game.mode);
+                            }
                         }
-                        await dataService.deleteGame(game.id);
+                        
+                        await apiDataService.deleteGame(game.id);
                     } catch (error) {
                         console.error("Failed to finish duel game:", error);
                     }
@@ -450,8 +473,8 @@
               const loadData = async () => {
                   try {
                        const [fetchedGame, fetchedBlocks] = await Promise.all([ 
-                          dataService.fetchGame(gameId), 
-                          dataService.fetchAllBlocks() 
+                          apiDataService.fetchGame(gameId), 
+                          apiDataService.fetchAllBlocks() 
                         ]);
                       if (!fetchedGame) throw new Error("Game not found or has been declined.");
                       setGame(fetchedGame);
@@ -467,12 +490,31 @@
 
             const prepareQuestions = async () => {
                 let allQuestions = [];
-                for (const [blockId, blockConfig] of Object.entries(game.config)) {
-                    const block = blocks.find(b => b.id === blockId);
-                    if (!block || !block.questions) continue;
-                    const questionsWithMeta = block.questions.map(q => ({...q, blockId: block.id }));
-                    if (blockConfig.topics === 'all') { allQuestions.push(...questionsWithMeta); } 
-                    else if (Array.isArray(blockConfig.topics)) { allQuestions.push(...questionsWithMeta.filter(q => blockConfig.topics.includes(q.tema))); }
+                
+                // Use metadata if available for more efficient loading
+                if (game.configurationMetadata && game.configurationMetadata.blocks) {
+                    for (const blockMetadata of game.configurationMetadata.blocks) {
+                        const block = blocks.find(b => b.id === blockMetadata.blockId);
+                        if (!block || !block.questions) continue;
+                        
+                        const questionsWithMeta = block.questions.map(q => ({...q, blockId: block.id }));
+                        if (blockMetadata.isAllTopics) {
+                            allQuestions.push(...questionsWithMeta);
+                        } else {
+                            allQuestions.push(...questionsWithMeta.filter(q => 
+                                blockMetadata.selectedTopics.includes(q.tema)
+                            ));
+                        }
+                    }
+                } else {
+                    // Fallback to original method
+                    for (const [blockId, blockConfig] of Object.entries(game.config)) {
+                        const block = blocks.find(b => b.id === parseInt(blockId) || b.id === blockId);
+                        if (!block || !block.questions) continue;
+                        const questionsWithMeta = block.questions.map(q => ({...q, blockId: block.id }));
+                        if (blockConfig.topics === 'all') { allQuestions.push(...questionsWithMeta); } 
+                        else if (Array.isArray(blockConfig.topics)) { allQuestions.push(...questionsWithMeta.filter(q => blockConfig.topics.includes(q.tema))); }
+                    }
                 }
 
                 if (game.shuffledQuestionIds) {
@@ -483,7 +525,7 @@
                     const shuffled = allQuestions.sort(() => Math.random() - 0.5);
                     const shuffledIds = shuffled.map(q => q.id);
                     setGameQuestions(shuffled);
-                    await dataService.updateGame(game.id, { shuffledQuestionIds: shuffledIds });
+                    await apiDataService.updateGame(game.id, { shuffledQuestionIds: shuffledIds });
                 }
             };
             prepareQuestions();

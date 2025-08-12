@@ -585,13 +585,41 @@ class APIDataService {
   }
 
   async fetchAllUsers() {
-    // Temporary workaround - return empty array since /users route doesn't exist
-    return this.simulateDelay([]);
+    try {
+      const users = await this.apiCall('/users');
+      return this.simulateDelay(users);
+    } catch (error) {
+      console.warn('⚠️ Failed to fetch all users:', error.message);
+      return this.simulateDelay([]);
+    }
   }
 
   async fetchAllUserProfiles() {
-    // Temporary workaround - return empty array since /users/profiles route doesn't exist
-    return this.simulateDelay([]);
+    try {
+      const profiles = await this.apiCall('/users/profiles');
+      return this.simulateDelay(profiles);
+    } catch (error) {
+      console.warn('⚠️ Failed to fetch all user profiles:', error.message);
+      // Fallback: try to get basic user info and construct profiles
+      try {
+        const users = await this.fetchAllUsers();
+        const profilesMap = {};
+        
+        // Create basic profile structure for each user
+        for (const user of users) {
+          profilesMap[user.id] = {
+            id: user.id,
+            nickname: user.nickname,
+            loadedBlocks: user.loadedBlocks || []
+          };
+        }
+        
+        return this.simulateDelay(profilesMap);
+      } catch (fallbackError) {
+        console.error('❌ All user profile methods failed:', fallbackError.message);
+        return this.simulateDelay({});
+      }
+    }
   }
 
   async fetchAllUsersWithStats() {
@@ -600,8 +628,13 @@ class APIDataService {
   }
 
   async fetchChallengesForUser(userId) {
-    // Temporary workaround - return empty array since /games/challenges route doesn't exist
-    return this.simulateDelay([]);
+    try {
+      const challenges = await this.apiCall('/games/challenges');
+      return this.simulateDelay(challenges);
+    } catch (error) {
+      console.warn('⚠️ Failed to fetch challenges for user:', error.message);
+      return this.simulateDelay([]);
+    }
   }
 
   async fetchGameHistory(userId) {
@@ -612,6 +645,63 @@ class APIDataService {
       console.warn('⚠️ Game history fetch failed, returning empty array:', error.message);
       return this.simulateDelay([]);
     }
+  }
+
+  // Helper function to create detailed configuration metadata
+  async createConfigurationMetadata(gameConfig, allBlocks) {
+    const metadata = {
+      totalQuestions: 0,
+      blocks: [],
+      summary: {
+        blockCount: 0,
+        topicCount: 0,
+        questionCount: 0
+      },
+      createdAt: new Date().toISOString()
+    };
+
+    if (!gameConfig || !allBlocks) {
+      return metadata;
+    }
+
+    for (const [blockId, blockConfig] of Object.entries(gameConfig)) {
+      const block = allBlocks.find(b => 
+        b.id === parseInt(blockId) || b.id === blockId
+      );
+      
+      if (!block) continue;
+
+      let selectedTopics = [];
+      let questionCount = 0;
+
+      if (blockConfig.topics === 'all') {
+        selectedTopics = [...new Set(block.questions.map(q => q.tema))];
+        questionCount = block.questions.length;
+      } else if (Array.isArray(blockConfig.topics)) {
+        selectedTopics = blockConfig.topics;
+        questionCount = block.questions.filter(q => blockConfig.topics.includes(q.tema)).length;
+      }
+
+      const blockMetadata = {
+        blockId: block.id,
+        blockName: block.nombreCorto,
+        blockImage: block.urlImagenBloque,
+        creatorNickname: block.creatorNickname,
+        selectedTopics: selectedTopics,
+        isAllTopics: blockConfig.topics === 'all',
+        questionCount: questionCount,
+        totalBlockQuestions: block.questions.length
+      };
+
+      metadata.blocks.push(blockMetadata);
+      metadata.totalQuestions += questionCount;
+    }
+
+    metadata.summary.blockCount = metadata.blocks.length;
+    metadata.summary.topicCount = metadata.blocks.reduce((count, block) => count + block.selectedTopics.length, 0);
+    metadata.summary.questionCount = metadata.totalQuestions;
+
+    return metadata;
   }
 
   async createGameForUser(userId, nickname, gameConfig) {
@@ -628,10 +718,20 @@ class APIDataService {
       'Trivial': 'trivial'
     };
     
+    // Get blocks information to create detailed configuration metadata
+    let configurationMetadata = null;
+    try {
+      const allBlocks = await this.fetchAllBlocks();
+      configurationMetadata = await this.createConfigurationMetadata(gameConfig.config, allBlocks);
+    } catch (error) {
+      console.warn('⚠️ Failed to create configuration metadata:', error.message);
+    }
+    
     // Create properly formatted game data for backend
     const gameData = {
       gameType: modeToType[gameConfig.mode] || gameConfig.gameType || 'classic',
       config: gameConfig.config || gameConfig,  // Extract just the config part
+      configurationMetadata: configurationMetadata, // Add detailed metadata
       players: [
         {
           userId: userId,
@@ -672,11 +772,23 @@ class APIDataService {
   }
 
   async createChallenge(currentUser, challengedUser, gameConfig) {
+    // Generate configuration metadata for challenges too
+    let configurationMetadata = null;
+    try {
+      const allBlocks = await this.fetchAllBlocks();
+      configurationMetadata = await this.createConfigurationMetadata(gameConfig.config, allBlocks);
+    } catch (error) {
+      console.warn('⚠️ Failed to create configuration metadata for challenge:', error.message);
+    }
+    
     const response = await this.apiCall('/games/challenges', {
       method: 'POST',
       body: JSON.stringify({
         challengedUserId: challengedUser.id,
-        gameConfig
+        gameConfig: {
+          ...gameConfig,
+          configurationMetadata: configurationMetadata
+        }
       })
     });
     return this.simulateDelay(response);

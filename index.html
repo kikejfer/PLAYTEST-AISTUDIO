@@ -231,7 +231,7 @@
           available_blocks_view_details: 'Ver Detalles',
           available_blocks_hide_details: 'Ocultar Detalles',
           pending_challenges: 'Retos Pendientes',
-          stats_modal_title: 'Estadísticas del Bloque: {blockName}', stats_modal_question: 'Pregunta', stats_modal_history: 'Historial (más reciente a la derecha)', stats_modal_no_history: 'No hay historial de respuestas para este bloque.', stats_modal_correct: 'A', stats_modal_incorrect: 'F', stats_modal_blank: 'B', stats_modal_close: 'Cerrar',
+          stats_modal_title: 'Estadísticas del Bloque: {blockName}', stats_modal_question: 'Pregunta', stats_modal_history: 'Historial (1=más reciente, 20=más antigua)', stats_modal_no_history: 'No hay historial de respuestas para este bloque.', stats_modal_correct: 'A', stats_modal_incorrect: 'F', stats_modal_blank: 'B', stats_modal_close: 'Cerrar',
           history_title: 'Historial de Partidas', history_none: 'No has jugado ninguna partida todavía.', history_header_block: 'Bloque', history_header_mode: 'Modalidad', history_header_correct: 'Aciertos', history_header_incorrect: 'Fallos', history_header_blank: 'En Blanco', history_header_date: 'Fecha', history_header_opponent: 'Rival', history_header_score: 'Nota',
           game_status_your_turn: 'Tu turno',
           game_status_opponent_turn: 'Turno de {nickname}',
@@ -282,7 +282,7 @@
           available_blocks_view_details: 'View Details',
           available_blocks_hide_details: 'Hide Details',
           pending_challenges: 'Pending Challenges',
-          stats_modal_title: 'Block Statistics: {blockName}', stats_modal_question: 'Question', stats_modal_history: 'History (most recent on the right)', stats_modal_no_history: 'No answer history available for this block.', stats_modal_correct: 'A', stats_modal_incorrect: 'F', stats_modal_blank: 'B', stats_modal_close: 'Close',
+          stats_modal_title: 'Block Statistics: {blockName}', stats_modal_question: 'Question', stats_modal_history: 'History (1=newest, 20=oldest)', stats_modal_no_history: 'No answer history available for this block.', stats_modal_correct: 'A', stats_modal_incorrect: 'F', stats_modal_blank: 'B', stats_modal_close: 'Close',
           history_title: 'Game History', history_none: "You haven't played any games yet.", history_header_block: 'Block', history_header_mode: 'Mode', history_header_correct: 'Correct', history_header_incorrect: 'Incorrect', history_header_blank: 'Blank', history_header_date: 'Date', history_header_opponent: 'Opponent', history_header_score: 'Score',
           game_status_your_turn: 'Your turn',
           game_status_opponent_turn: "{nickname}'s turn",
@@ -821,8 +821,8 @@
           useEffect(() => {
             const fetchUsersAndProfiles = async () => {
                 const [users, profiles] = await Promise.all([
-                    dataService.fetchAllUsers(),
-                    dataService.fetchAllUserProfiles()
+                    apiDataService.fetchAllUsers(),
+                    apiDataService.fetchAllUserProfiles()
                 ]);
                 setAllUsers(users);
                 setAllProfiles(profiles);
@@ -831,14 +831,19 @@
           }, []);
           
           const challengeableUsers = useMemo(() => {
-              const selectedBlockIds = Object.keys(configuredBlocks);
+              const selectedBlockIds = Object.keys(configuredBlocks).map(id => parseInt(id));
               if (!isCompetitionMode || selectedBlockIds.length === 0) return [];
 
               return allUsers.filter(user => {
                   if (user.isAdmin || user.id === currentUser.id) return false;
                   const profile = allProfiles[user.id];
-                  if (!profile || !profile.loadedBlockIds) return false;
-                  return selectedBlockIds.every(blockId => profile.loadedBlockIds.includes(blockId));
+                  if (!profile || !profile.loadedBlocks) return false;
+                  
+                  // Convert profile.loadedBlocks to numbers for comparison
+                  const userLoadedBlocks = profile.loadedBlocks.map(id => parseInt(id));
+                  
+                  // User must have ALL selected blocks loaded to be challengeable
+                  return selectedBlockIds.every(blockId => userLoadedBlocks.includes(blockId));
               });
           }, [allUsers, allProfiles, configuredBlocks, currentUser.id, isCompetitionMode]);
           
@@ -1038,16 +1043,30 @@
           const { currentUser } = useUser();
           const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
 
-          const getGameConfigDetails = (config) => {
-              if (!config || Object.keys(config).length === 0) return 'No blocks configured';
+          const getGameConfigDetails = (config, metadata) => {
+              if (!config || Object.keys(config).length === 0) return 'Sin configuración de bloques';
+              
+              // Use metadata if available (more detailed)
+              if (metadata && metadata.blocks) {
+                  const blockSummary = metadata.blocks.map(block => {
+                      const topicInfo = block.isAllTopics 
+                          ? 'todos los temas'
+                          : `${block.selectedTopics.length} temas`;
+                      return `${block.blockName} (${topicInfo}, ${block.questionCount} preguntas)`;
+                  }).join(' | ');
+                  
+                  return `${metadata.summary.blockCount} bloques, ${metadata.summary.questionCount} preguntas: ${blockSummary}`;
+              }
+              
+              // Fallback to basic config display
               return Object.entries(config).map(([blockId, blockConfig]) => {
-                  const block = blocks.find(b => b.id === blockId);
-                  const blockName = block ? `${block.nombreCorto}` : 'Unknown Block';
+                  const block = blocks.find(b => b.id === parseInt(blockId) || b.id === blockId);
+                  const blockName = block ? block.nombreCorto : 'Bloque Desconocido';
                   const topicInfo = blockConfig.topics === 'all' 
-                      ? `(${t('game_setup_all_topics')})` 
-                      : `(${t('game_setup_topics_selected', {count: blockConfig.topics.length})})`;
-                  return `${blockName}`;
-              }).join(', ');
+                      ? 'todos los temas' 
+                      : `${Array.isArray(blockConfig.topics) ? blockConfig.topics.length : 0} temas`;
+                  return `${blockName} (${topicInfo})`;
+              }).join(' | ');
           };
 
           const handleDeleteClick = (gameId) => {
@@ -1102,8 +1121,8 @@
                               <SwordsIcon className="h-6 w-6 text-amber-400 flex-shrink-0" />
                               <div className="flex-grow overflow-hidden">
                                 <p className="font-semibold text-brand-light truncate" dangerouslySetInnerHTML={{__html: t('challenge_from', { nickname: `<strong>${challenger.nickname}</strong>`, mode: `<strong>${challenge.mode}</strong>` })}}/>
-                                <p className="text-xs text-brand-accent truncate" title={getGameConfigDetails(challenge.config)}>
-                                  {getGameConfigDetails(challenge.config)}
+                                <p className="text-xs text-brand-accent truncate" title={getGameConfigDetails(challenge.config, challenge.configurationMetadata)}>
+                                  {getGameConfigDetails(challenge.config, challenge.configurationMetadata)}
                                 </p>
                               </div>
                             </div>
@@ -1127,8 +1146,8 @@
                               <div className="flex-grow overflow-hidden cursor-pointer" onClick={() => onNavigateToGame(game)}>
                                   <p className="font-semibold text-brand-light truncate">{game.mode}</p>
                                   {statusText && <p className="text-xs font-bold text-amber-400 mt-1">{statusText}</p>}
-                                  <p className="text-xs text-brand-accent truncate mt-1" title={getGameConfigDetails(game.config)}>
-                                    {getGameConfigDetails(game.config)}
+                                  <p className="text-xs text-brand-accent truncate mt-1" title={getGameConfigDetails(game.config, game.configurationMetadata)}>
+                                    {getGameConfigDetails(game.config, game.configurationMetadata)}
                                   </p>
                               </div>
                               <button
@@ -1528,8 +1547,8 @@
             const fetchData = async () => {
                 try {
                     const [fetchedUsers, fetchedBlocks] = await Promise.all([
-                        dataService.fetchAllUsersWithStats(),
-                        dataService.fetchAllBlocks()
+                        apiDataService.fetchAllUsersWithStats(),
+                        apiDataService.fetchAllBlocks()
                     ]);
                     setUsers(fetchedUsers);
                     setBlocks(fetchedBlocks);
@@ -1918,7 +1937,7 @@
                                                 <span>{t('stats_modal_question')} {q.numero}</span>
                                             </button>
                                         </td>
-                                        {q.results.map((res, i) => (
+                                        {q.results.slice().reverse().map((res, i) => (
                                           <td key={i} className={`w-8 h-8 text-center font-mono text-xs font-bold ${getResultCellClass(res)}`}>{getResultText(res)}</td>
                                         ))}
                                       </tr>
@@ -2578,10 +2597,10 @@
             setError(null);
             setIsLoading(true);
             const [fetchedGames, users, fetchedChallenges, history, userProfile, loadedBlocks, createdBlocks, availableBlocks] = await Promise.all([ 
-              dataService.fetchGamesForUser(currentUser.id),
-              dataService.fetchAllUsers(),
-              dataService.fetchChallengesForUser(currentUser.id),
-              dataService.fetchGameHistory(currentUser.id),
+              apiDataService.fetchGamesForUser(currentUser.id),
+              apiDataService.fetchAllUsers(),
+              apiDataService.fetchChallengesForUser(currentUser.id),
+              apiDataService.fetchGameHistory(currentUser.id),
               apiDataService.getUserProfile(),
               apiDataService.fetchLoadedBlocks(),
               apiDataService.fetchCreatedBlocks(),
@@ -2688,15 +2707,15 @@
         };
         const handleSendChallenge = async (challengedUser, gameConfig) => {
             try {
-                await dataService.createChallenge(currentUser, challengedUser, gameConfig);
+                await apiDataService.createChallenge(currentUser, challengedUser, gameConfig);
                 await loadData(); // To refresh game list if needed
             } catch (err) {
                  setError(err instanceof Error ? `Failed to send challenge: ${err.message}` : 'Unknown API error.'); 
             }
         };
 
-        const handleDeleteGame = async (gameId) => { try { await dataService.deleteGameForUser(currentUser.id, gameId); await loadData(); } catch (err) { setError(err instanceof Error ? `Failed to delete game: ${err.message}` : 'Unknown API error.'); } };
-        const handleDeleteBlock = async (blockId) => { try { await dataService.deleteBlockForUser(currentUser.id, blockId); await loadData(); } catch (err) { setError(err instanceof Error ? `Failed to delete block: ${err.message}` : 'Unknown API error.'); } };
+        const handleDeleteGame = async (gameId) => { try { await apiDataService.deleteGameForUser(currentUser.id, gameId); await loadData(); } catch (err) { setError(err instanceof Error ? `Failed to delete game: ${err.message}` : 'Unknown API error.'); } };
+        const handleDeleteBlock = async (blockId) => { try { await apiDataService.deleteBlockForUser(currentUser.id, blockId); await loadData(); } catch (err) { setError(err instanceof Error ? `Failed to delete block: ${err.message}` : 'Unknown API error.'); } };
         
         const handleOpenAddBlockModal = () => setIsAddBlockModalOpen(true);
         const handleCloseAddBlockModal = () => setIsAddBlockModalOpen(false);
@@ -2721,7 +2740,7 @@
 
         const handleAddBlock = async (blockId) => {
             try {
-                await dataService.addBlockToUser(currentUser.id, blockId);
+                await apiDataService.addBlockToUser(currentUser.id, blockId);
                 await loadData();
             } catch (err) {
                 setError(err instanceof Error ? `Failed to add block: ${err.message}` : 'Unknown API error.'); 
@@ -2730,7 +2749,7 @@
 
         const handleAcceptChallenge = async (gameId) => {
             try {
-                const acceptedGame = await dataService.acceptChallenge(currentUser.id, gameId);
+                const acceptedGame = await apiDataService.acceptChallenge(currentUser.id, gameId);
                 await loadData();
                 onNavigateToGame(acceptedGame);
             } catch (err) {
@@ -2740,7 +2759,7 @@
 
         const handleDeclineChallenge = async (gameId) => {
              try {
-                await dataService.declineChallenge(currentUser.id, gameId);
+                await apiDataService.declineChallenge(currentUser.id, gameId);
                 await loadData();
             } catch (err) {
                  setError(err instanceof Error ? `Failed to decline challenge: ${err.message}` : 'Unknown API error.');
@@ -2860,7 +2879,7 @@
           e.preventDefault(); setIsLoading(true); setError('');
           try {
             console.log('🔐 Attempting login with:', loginData.nickname);
-            const response = await dataService.login(loginData.nickname, loginData.password);
+            const response = await apiDataService.login(loginData.nickname, loginData.password);
             console.log('🔐 Login API response:', response);
             
             if (response && response.user && response.token) {
@@ -2883,7 +2902,7 @@
           
           try {
             const { confirmPassword, ...newUserPayload } = registerData;
-            const response = await dataService.registerUser(newUserPayload);
+            const response = await apiDataService.register(newUserPayload.nickname, newUserPayload.password, newUserPayload.email);
             if (response && response.user && response.token) {
               onLogin(response.user, registerData.remember);
             } else {

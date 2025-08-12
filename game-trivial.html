@@ -296,14 +296,41 @@
             const loadData = async () => {
                 try {
                      const [fetchedGame, fetchedBlocks] = await Promise.all([ 
-                        dataService.fetchGame(gameId), 
-                        dataService.fetchAllBlocks() 
+                        apiDataService.fetchGame(gameId), 
+                        apiDataService.fetchAllBlocks() 
                       ]);
                     if (!fetchedGame) throw new Error("Game not found or has been declined.");
 
-                    const gameQuestions = fetchedBlocks
-                      .filter(b => fetchedGame.config[b.id])
-                      .flatMap(b => b.questions.map(q => ({...q, blockId: b.id})));
+                    let gameQuestions = [];
+                    
+                    // Use metadata if available for more efficient loading
+                    if (fetchedGame.configurationMetadata && fetchedGame.configurationMetadata.blocks) {
+                        for (const blockMetadata of fetchedGame.configurationMetadata.blocks) {
+                            const block = fetchedBlocks.find(b => b.id === blockMetadata.blockId);
+                            if (!block || !block.questions) continue;
+                            
+                            const questionsWithMeta = block.questions.map(q => ({...q, blockId: block.id }));
+                            if (blockMetadata.isAllTopics) {
+                                gameQuestions.push(...questionsWithMeta);
+                            } else {
+                                gameQuestions.push(...questionsWithMeta.filter(q => 
+                                    blockMetadata.selectedTopics.includes(q.tema)
+                                ));
+                            }
+                        }
+                    } else {
+                        // Fallback to original method
+                        for (const [blockId, blockConfig] of Object.entries(fetchedGame.config)) {
+                            const block = fetchedBlocks.find(b => b.id === parseInt(blockId) || b.id === blockId);
+                            if (!block || !block.questions) continue;
+                            const questionsWithMeta = block.questions.map(q => ({...q, blockId: block.id }));
+                            if (blockConfig.topics === 'all') { 
+                                gameQuestions.push(...questionsWithMeta); 
+                            } else if (Array.isArray(blockConfig.topics)) { 
+                                gameQuestions.push(...questionsWithMeta.filter(q => blockConfig.topics.includes(q.tema))); 
+                            }
+                        }
+                    }
                       
                     setQuestions(gameQuestions);
 
@@ -408,7 +435,7 @@
           const updateSharedGameState = useCallback((data) => {
               const updatedGame = { ...game, ...data };
               setGame(updatedGame);
-              dataService.updateGame(game.id, updatedGame);
+              apiDataService.updateGame(game.id, updatedGame);
           }, [game]);
           
           const onSpinEnd = useCallback((resultTopic) => {
@@ -564,7 +591,7 @@
                                   answers: gameAnswers.filter(a => a.player === idx)
                               }))
                           };
-                          await dataService.saveTrivialScore(game.id, scoreData);
+                          await apiDataService.saveTrivialScore(game.id, scoreData);
                           
                           for (const [playerIndex, player] of game.players.entries()) {
                               const playerAnswers = gameAnswers.filter(a => a.player === playerIndex);
@@ -577,7 +604,7 @@
                               }));
                               
                               const gameResults = { answers: answersForStats };
-                              await dataService.updateUserStats(player.userId, game.id, gameResults, "Trivial");
+                              await apiDataService.updateUserStats(player.userId, game.id, gameResults, "Trivial");
                           }
                       } catch (error) {
                           console.error("Failed to finish trivial game:", error);
