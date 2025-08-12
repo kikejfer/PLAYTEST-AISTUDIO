@@ -266,11 +266,13 @@
                   const questionData = {
                       blockId: blockId,
                       textoPregunta: question.textoPregunta || question.pregunta,
-                      tema: question.tema || 'General', 
+                      tema: question.tema, 
                       respuestas: question.respuestas || [],
-                      difficulty: question.dificultad || question.difficulty || 1
+                      difficulty: question.dificultad || question.difficulty || 1,
+                      explicacionRespuesta: question.explicacionRespuesta || ''
                   };
                   
+                  console.log(`💾 Saving question ${i + 1}/${questions.length} with topic: "${questionData.tema}"`);
                   await apiDataService.createQuestion(questionData);
                   
                   // Add small delay to avoid rate limiting
