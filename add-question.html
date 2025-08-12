@@ -210,10 +210,16 @@
                       textoPregunta: question.pregunta || question.textoPregunta,
                       tema: question.tema || 'General',
                       respuestas: question.respuestas || [],
-                      difficulty: question.dificultad || 1
+                      difficulty: question.dificultad || 1,
+                      explicacionRespuesta: question.explicacionRespuesta || null
                   };
                   
-                  console.log(`💾 Saving question ${i+1}/${questions.length} with tema: "${questionData.tema}"`);
+                  console.log(`💾 Saving question ${i+1}/${questions.length}:`, {
+                      tema: questionData.tema,
+                      difficulty: questionData.difficulty,
+                      hasExplanation: !!questionData.explicacionRespuesta,
+                      explanation: questionData.explicacionRespuesta ? questionData.explicacionRespuesta.substring(0, 50) + '...' : 'None'
+                  });
                   
                   await apiDataService.createQuestion(questionData);
               }
@@ -229,7 +235,17 @@
                     acc[q.tema] = (acc[q.tema] || 0) + 1;
                     return acc;
                   }, {});
-                  console.log('📊 Saved topics distribution:', topicCounts);
+                  
+                  const withExplanations = savedBlock.questions.filter(q => q.explicacionRespuesta && q.explicacionRespuesta.trim()).length;
+                  const difficultyDistribution = savedBlock.questions.reduce((acc, q) => {
+                    acc[q.difficulty || 1] = (acc[q.difficulty || 1] || 0) + 1;
+                    return acc;
+                  }, {});
+                  
+                  console.log('📊 Saved data verification:');
+                  console.log('  - Topics:', topicCounts);
+                  console.log('  - With explanations:', withExplanations, '/', savedBlock.questions.length);
+                  console.log('  - Difficulty levels:', difficultyDistribution);
                 } else {
                   console.log('❌ Could not fetch saved block questions');
                 }
