@@ -284,7 +284,7 @@
                       console.log('💾 Saving game results for gameId:', game.id);
                       console.log('🎯 Game results:', gameResults);
                       
-                      await dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
+                      await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
                       console.log('✅ User stats updated successfully');
                       
                       // Also save classic game score
@@ -297,20 +297,24 @@
                           answers: userAnswers
                       };
                       console.log('📊 Saving score data:', scoreData);
-                      await dataService.saveClassicScore(game.id, scoreData);
+                      await apiDataService.saveClassicScore(game.id, scoreData);
                       console.log('✅ Classic score saved successfully');
                       
                       // Update user statistics and answer history
                       console.log('📈 Updating user statistics...');
                       try {
-                          await dataService.updateUserStats(currentUser.id, game.id, {
-                              answers: userAnswers.map(answer => ({
-                                  blockId: parseInt(block.id),
-                                  questionId: answer.questionId,
-                                  topicName: answer.topic || 'Unknown',
-                                  result: answer.correct ? 'ACIERTO' : 'FALLO',
-                                  responseTime: answer.responseTime || 0
-                              }))
+                          await apiDataService.updateUserStats(currentUser.id, game.id, {
+                              answers: userAnswers.map(answer => {
+                                  const question = questions.find(q => q.id === answer.questionId);
+                                  const block = blocks.find(b => b.questions && b.questions.some(q => q.id === answer.questionId));
+                                  return {
+                                      blockId: block ? parseInt(block.id) : null,
+                                      questionId: answer.questionId,
+                                      topicName: question ? question.tema : 'Unknown',
+                                      result: answer.correct ? 'ACIERTO' : 'FALLO',
+                                      responseTime: answer.responseTime || 0
+                                  };
+                              })
                           }, 'classic');
                           console.log('✅ User statistics updated successfully');
                       } catch (statsError) {
@@ -694,7 +698,7 @@
                       const isFallback = params.get('fallback') === 'true';
                       
                       let fetchedGame;
-                      const fetchedBlocks = await dataService.fetchAllBlocks();
+                      const fetchedBlocks = await apiDataService.fetchAllBlocks();
                       console.log('📚 Loaded blocks:', fetchedBlocks.length);
                       
                       if (isSimple) {
@@ -734,7 +738,7 @@
                           };
                       } else {
                           console.log('🌐 Fetching game from API');
-                          fetchedGame = await dataService.fetchGame(gameId);
+                          fetchedGame = await apiDataService.fetchGame(gameId);
                           if (!fetchedGame) throw new Error("Game not found.");
                       }
                       

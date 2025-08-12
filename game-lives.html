@@ -261,12 +261,12 @@
                   
                   try {
                       if (answersForStats.length > 0) {
-                          await dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
+                          await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
                       }
               
                       const correctAnswers = userAnswers.filter(a => a.isCorrect).length;
                       const score = { correct: correctAnswers, date: new Date().toISOString() };
-                      await dataService.saveLivesScore(game.id, score);
+                      await apiDataService.saveLivesScore(game.id, score);
                   } catch (error) {
                       console.error("Failed to save lives mode scores:", error);
                   }
@@ -498,8 +498,8 @@
               const loadData = async () => {
                   try {
                        const [fetchedGame, fetchedBlocks] = await Promise.all([ 
-                          dataService.fetchGame(gameId), 
-                          dataService.fetchAllBlocks() 
+                          apiDataService.fetchGame(gameId), 
+                          apiDataService.fetchAllBlocks() 
                         ]);
                       if (!fetchedGame) throw new Error("Game not found.");
                       setGame(fetchedGame);

@@ -629,7 +629,7 @@ class APIDataService {
 
   async fetchChallengesForUser(userId) {
     try {
-      const challenges = await this.apiCall('/games/challenges');
+      const challenges = await this.apiCall(`/games/challenges/${userId}`);
       return this.simulateDelay(challenges);
     } catch (error) {
       console.warn('⚠️ Failed to fetch challenges for user:', error.message);
@@ -639,7 +639,7 @@ class APIDataService {
 
   async fetchGameHistory(userId) {
     try {
-      const history = await this.apiCall('/games/history');
+      const history = await this.apiCall(`/games/history/${userId}`);
       return this.simulateDelay(history || []);
     } catch (error) {
       console.warn('⚠️ Game history fetch failed, returning empty array:', error.message);

@@ -267,7 +267,7 @@
                         const gameResults = {
                             answers: answersForStats
                         };
-                        await dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
+                        await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
                     } catch (error) {
                         console.error("Failed to update by-levels game stats:", error);
                     }
@@ -504,8 +504,8 @@
               const loadData = async () => {
                   try {
                        const [fetchedGame, fetchedBlocks] = await Promise.all([ 
-                          dataService.fetchGame(gameId), 
-                          dataService.fetchAllBlocks() 
+                          apiDataService.fetchGame(gameId), 
+                          apiDataService.fetchAllBlocks() 
                         ]);
                       if (!fetchedGame) throw new Error("Game not found.");
                       setGame(fetchedGame);

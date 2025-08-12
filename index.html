@@ -1264,16 +1264,18 @@
                       danger={true}
                     />
                   )}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-                       <div className="flex items-center">
-                          <img src="./Imagenes/Cargados.png" alt="Loaded Blocks" className="h-10 w-10 mr-3" />
-                          <h3 className="text-xl font-bold text-brand-light">Bloques Cargados</h3>
+                  <div className="mb-4">
+                       <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center">
+                            <img src="./Imagenes/Cargados.png" alt="Loaded Blocks" className="h-10 w-10 mr-3" />
+                            <h3 className="text-xl font-bold text-brand-light">Bloques Cargados</h3>
+                          </div>
                        </div>
-                       <div className="flex items-center gap-2 flex-shrink-0">
-                         <a href="available-blocks.html" className="text-sm font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1.5 px-3 rounded-md transition-colors inline-block text-center">
+                       <div className="flex flex-col sm:flex-row gap-2">
+                         <a href="available-blocks.html" className="text-xs font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-2 px-3 rounded-md transition-colors text-center flex-1">
                             {t('block_management_add_available')}
                          </a>
-                         <button onClick={() => window.location.href = './add-question.html'} className="text-sm font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-1.5 px-3 rounded-md transition-colors inline-block">
+                         <button onClick={() => window.location.href = './add-question.html'} className="text-xs font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-2 px-3 rounded-md transition-colors flex-1">
                             {t('add_question_button')}
                          </button>
                        </div>

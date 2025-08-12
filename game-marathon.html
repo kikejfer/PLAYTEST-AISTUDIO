@@ -347,11 +347,11 @@
                 (async () => {
                   try {
                     // Save marathon score to PostgreSQL
-                    await dataService.saveMarathonScore(game.id, scoreData);
+                    await apiDataService.saveMarathonScore(game.id, scoreData);
                     console.log('✅ Marathon score saved to PostgreSQL');
                     
                     // Save user stats to PostgreSQL  
-                    await dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
+                    await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
                     console.log('✅ Marathon user stats saved to PostgreSQL');
                   } catch (error) {
                     console.error('❌ Failed to save Marathon game results to PostgreSQL:', error);
@@ -527,8 +527,8 @@
               const loadData = async () => {
                   try {
                        const [fetchedGame, fetchedBlocks] = await Promise.all([ 
-                          dataService.fetchGame(gameId), 
-                          dataService.fetchAllBlocks() 
+                          apiDataService.fetchGame(gameId), 
+                          apiDataService.fetchAllBlocks() 
                         ]);
                       if (!fetchedGame) throw new Error("Game not found.");
                       console.log('🎮 Marathon - Loaded game:', fetchedGame);

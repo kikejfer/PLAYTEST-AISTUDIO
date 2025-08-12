@@ -257,9 +257,9 @@
                 };
                 (async () => {
                   try {
-                    await dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
+                    await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
                     // Also save streak game score
-                    await dataService.saveStreakScore(game.id, {
+                    await apiDataService.saveStreakScore(game.id, {
                       maxStreak: maxStreak,
                       finalStreak: currentStreak,
                       totalQuestions: userAnswers.length,
@@ -484,8 +484,8 @@
               const loadData = async () => {
                   try {
                        const [fetchedGame, fetchedBlocks] = await Promise.all([ 
-                          dataService.fetchGame(gameId), 
-                          dataService.fetchAllBlocks() 
+                          apiDataService.fetchGame(gameId), 
+                          apiDataService.fetchAllBlocks() 
                         ]);
                       if (!fetchedGame) throw new Error("Game not found.");
                       setGame(fetchedGame);

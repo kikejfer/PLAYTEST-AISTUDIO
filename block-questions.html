@@ -319,7 +319,7 @@
             } finally {
               setIsLoading(false);
             }
-          }, [blockId]);
+          }, [blockId, fetchBlockById]);
 
           useEffect(() => {
               const params = new URLSearchParams(window.location.search);
@@ -335,8 +335,10 @@
           }, []);
 
           useEffect(() => {
-            loadBlockData();
-          }, [loadBlockData]);
+            if (blockId) {
+              loadBlockData();
+            }
+          }, [blockId]);
 
           const handleUpdateQuestion = async (question) => {
               if (isReadOnly) return;

@@ -710,7 +710,21 @@
                         const blockMetadata = game.configurationMetadata?.blocks.find(b => 
                             b.blockId === parseInt(blockId) || b.blockId === blockId
                         );
-                        return getGameConfigDetails(blockId, blockConfig, blockMetadata);
+                        return (
+                            <li key={blockId}>
+                                {getGameConfigDetails(blockId, blockConfig, blockMetadata)}
+                                {blockMetadata && (
+                                    <details className="mt-2">
+                                        <summary className="cursor-pointer text-xs text-brand-accent hover:text-brand-light">
+                                            + Ver temas ({blockMetadata.selectedTopics.length})
+                                        </summary>
+                                        <div className="mt-1 ml-3 text-xs text-brand-accent">
+                                            {blockMetadata.selectedTopics.join(', ')}
+                                        </div>
+                                    </details>
+                                )}
+                            </li>
+                        );
                     })}
                 </ul>
             </div>
@@ -929,7 +943,21 @@
                             const blockMetadata = game.configurationMetadata?.blocks.find(b => 
                                 b.blockId === parseInt(blockId) || b.blockId === blockId
                             );
-                            return getGameConfigDetails(blockId, blockConfig, blockMetadata);
+                            return (
+                                <li key={blockId}>
+                                    {getGameConfigDetails(blockId, blockConfig, blockMetadata)}
+                                    {blockMetadata && (
+                                        <details className="mt-2">
+                                            <summary className="cursor-pointer text-xs text-brand-accent hover:text-brand-light">
+                                                + Ver temas ({blockMetadata.selectedTopics.length})
+                                            </summary>
+                                            <div className="mt-1 ml-3 text-xs text-brand-accent">
+                                                {blockMetadata.selectedTopics.join(', ')}
+                                            </div>
+                                        </details>
+                                    )}
+                                </li>
+                            );
                         })}
                       </ul>
                     </div>

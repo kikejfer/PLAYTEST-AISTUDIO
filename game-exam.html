@@ -272,7 +272,7 @@
               };
 
               try {
-                  await dataService.saveExamScore(game.id, scoreData);
+                  await apiDataService.saveExamScore(game.id, scoreData);
               } catch (e) {
                   console.error("Failed to save exam score", e);
               }
@@ -309,7 +309,7 @@
                           score: parseFloat(finalScore),
                           blocksInfo: 'Exam Mode'
                       };
-                      await dataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
+                      await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
                   } catch (error) {
                       console.error("Failed to update user stats:", error);
                   }
@@ -481,8 +481,8 @@
               const loadData = async () => {
                   try {
                        const [fetchedGame, fetchedBlocks] = await Promise.all([ 
-                          dataService.fetchGame(gameId), 
-                          dataService.fetchAllBlocks() 
+                          apiDataService.fetchGame(gameId), 
+                          apiDataService.fetchAllBlocks() 
                         ]);
                       if (!fetchedGame) throw new Error("Game not found.");
                       setGame(fetchedGame);
