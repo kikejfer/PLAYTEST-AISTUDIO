@@ -741,10 +741,58 @@ class APIDataService {
       ]
     };
     
+    // CRITICAL: Save game configuration for Active Games panel
+    try {
+      await this.saveGameConfiguration(gameData.gameType, gameData.config, configurationMetadata);
+      console.log('✅ Game configuration saved for Active Games panel');
+    } catch (configError) {
+      console.warn('⚠️ Failed to save game configuration:', configError.message);
+    }
+    
     console.log('🚀 Creating game with data:', gameData);
     const result = await this.createGame(gameData);
     console.log('📝 Game creation result:', result);
     return result;
+  }
+
+  // === GAME CONFIGURATIONS (Active Games functionality) ===
+  async saveGameConfiguration(gameType, config, metadata) {
+    try {
+      const response = await this.apiCall('/games/configurations', {
+        method: 'POST',
+        body: JSON.stringify({
+          gameType: gameType,
+          config: config,
+          configurationMetadata: metadata
+        })
+      });
+      return this.simulateDelay(response);
+    } catch (error) {
+      console.warn('⚠️ Failed to save game configuration:', error.message);
+      throw error;
+    }
+  }
+
+  async fetchGameConfigurations() {
+    try {
+      const configurations = await this.apiCall('/games/configurations');
+      return this.simulateDelay(configurations || []);
+    } catch (error) {
+      console.warn('⚠️ Failed to fetch game configurations, returning empty array:', error.message);
+      return this.simulateDelay([]);
+    }
+  }
+
+  async deleteGameConfiguration(configId) {
+    try {
+      const response = await this.apiCall(`/games/configurations/${configId}`, {
+        method: 'DELETE'
+      });
+      return this.simulateDelay(response);
+    } catch (error) {
+      console.warn('⚠️ Failed to delete game configuration:', error.message);
+      throw error;
+    }
   }
 
   async addBlockToUser(userId, blockId) {
