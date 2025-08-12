@@ -222,7 +222,7 @@
               // Debug: Fetch the block to see what was actually saved
               console.log('🔍 Fetching saved block to verify topics...');
               try {
-                const savedBlocks = await apiDataService.fetchBlocks();
+                const savedBlocks = await apiDataService.fetchLoadedBlocks();
                 const savedBlock = savedBlocks.find(b => b.id === createdBlock.id);
                 if (savedBlock && savedBlock.questions) {
                   const topicCounts = savedBlock.questions.reduce((acc, q) => {
