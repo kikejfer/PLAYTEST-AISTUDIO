@@ -261,12 +261,39 @@
       };
       const saveQuestionsToBlock = async (blockId, questions) => {
           try {
+              // CRITICAL: Validate topic preservation before saving
+              if (questions.length === 0) {
+                  throw new Error('No questions to save');
+              }
+              
+              // CRITICAL: Ensure all questions have topics and log for verification
+              const topicValidation = questions.map((q, idx) => ({
+                  index: idx,
+                  tema: q.tema,
+                  hasValidTopic: q.tema && q.tema.trim() && q.tema !== 'General'
+              }));
+              
+              const invalidTopics = topicValidation.filter(v => !v.hasValidTopic);
+              if (invalidTopics.length > 0) {
+                  console.error('🚨 CRITICAL: Questions with invalid/missing topics detected:', invalidTopics);
+                  console.error('🚨 All topics in batch:', topicValidation.map(v => v.tema));
+                  throw new Error(`Topic validation failed: ${invalidTopics.length} questions have invalid topics`);
+              }
+              
+              console.log('✅ Topic validation passed. Unique topics in batch:', [...new Set(questions.map(q => q.tema))]);
+              
               for (let i = 0; i < questions.length; i++) {
                   const question = questions[i];
+                  
+                  // CRITICAL: Never allow tema to be undefined, null, empty, or 'General' 
+                  if (!question.tema || question.tema.trim() === '' || question.tema === 'General') {
+                      throw new Error(`CRITICAL ERROR: Question ${i + 1} has invalid topic: "${question.tema}". Topic separation functionality compromised.`);
+                  }
+                  
                   const questionData = {
                       blockId: blockId,
                       textoPregunta: question.textoPregunta || question.pregunta,
-                      tema: question.tema, 
+                      tema: question.tema.trim(), // CRITICAL: Preserve exact topic from filename parsing
                       respuestas: question.respuestas || [],
                       difficulty: question.dificultad || question.difficulty || 1,
                       explicacionRespuesta: question.explicacionRespuesta || ''
@@ -474,6 +501,14 @@
           );
       
           const parseQuestionsFromFile = (text, topic) => {
+              // CRITICAL: Validate topic parameter to ensure filename parsing worked correctly
+              if (!topic || topic.trim() === '' || topic === 'General') {
+                  throw new Error(`CRITICAL: Invalid topic "${topic}" passed to parseQuestionsFromFile. Topic separation functionality compromised.`);
+              }
+              
+              const cleanTopic = topic.trim();
+              console.log(`📝 parseQuestionsFromFile called with topic: "${cleanTopic}"`);
+              
               const questions = []; const lines = text.replace(/\r\n/g, '\n').split('\n');
               let i = 0;
               while (i < lines.length) {
@@ -488,7 +523,8 @@
                           const nextLine = lines[i + 1].trim();
                           if (nextLine.length > 0 && !nextLine.includes('##')) { explicacionRespuesta = nextLine; i++; }
                       }
-                      questions.push({ textoPregunta: questionText, dificultad: 1, respuestas: respuestas, explicacionRespuesta: explicacionRespuesta, tema: topic, });
+                      // CRITICAL: Preserve exact topic from filename parsing
+                      questions.push({ textoPregunta: questionText, dificultad: 1, respuestas: respuestas, explicacionRespuesta: explicacionRespuesta, tema: cleanTopic, });
                   }
                   i++;
               }
@@ -537,10 +573,20 @@
                   const newQueue = files.map(file => {
                       const match = file.name.match(fileRegex);
                       if (match) { 
-                          const fileInfo = { file, blockName: match[1].replace(/-/g, ' '), topicName: match[2].replace(/-/g, ' ') };
-                          console.log(`📂 Parsed file: ${file.name} -> Block: "${fileInfo.blockName}", Topic: "${fileInfo.topicName}"`);
+                          const blockName = match[1].replace(/-/g, ' ').trim();
+                          const topicName = match[2].replace(/-/g, ' ').trim();
+                          
+                          // CRITICAL: Validate extracted topic name
+                          if (!blockName || !topicName || topicName === 'General') {
+                              console.error(`🚨 CRITICAL: Invalid filename format for ${file.name}. Block: "${blockName}", Topic: "${topicName}"`);
+                              throw new Error(`File "${file.name}" has invalid format. Topic separation requires format: "BlockName_TopicName.txt"`);
+                          }
+                          
+                          const fileInfo = { file, blockName, topicName };
+                          console.log(`📂 ✅ VALIDATED file: ${file.name} -> Block: "${fileInfo.blockName}", Topic: "${fileInfo.topicName}"`);
                           return fileInfo;
                       }
+                      console.warn(`⚠️ File "${file.name}" doesn't match required format "BlockName_TopicName.txt"`);
                       return null;
                   }).filter(Boolean);
       
@@ -573,9 +619,28 @@
                 for (const fileInfo of filesToProcess) {
                     const text = await fileInfo.file.text();
                     if (!text) continue;
+                    
                     console.log(`📄 Processing file: ${fileInfo.file.name} with topic: "${fileInfo.topicName}"`);
+                    
+                    // CRITICAL: Validate topic before processing
+                    if (!fileInfo.topicName || fileInfo.topicName.trim() === '' || fileInfo.topicName === 'General') {
+                        throw new Error(`CRITICAL: File "${fileInfo.file.name}" has invalid topic "${fileInfo.topicName}". Topic separation compromised.`);
+                    }
+                    
                     const parsedQuestions = parseQuestionsFromFile(text, fileInfo.topicName.trim()).map(q => ({ ...q, blockName: fileInfo.blockName.trim() }));
-                    console.log(`📋 Parsed ${parsedQuestions.length} questions with topics:`, [...new Set(parsedQuestions.map(q => q.tema))]);
+                    
+                    // CRITICAL: Validate all questions got the correct topic
+                    const topicsInFile = [...new Set(parsedQuestions.map(q => q.tema))];
+                    if (topicsInFile.length !== 1 || topicsInFile[0] !== fileInfo.topicName.trim()) {
+                        console.error('🚨 CRITICAL: Topic mismatch in parsed questions:', {
+                            expected: fileInfo.topicName.trim(),
+                            found: topicsInFile,
+                            fileName: fileInfo.file.name
+                        });
+                        throw new Error(`Topic validation failed for "${fileInfo.file.name}". Expected: "${fileInfo.topicName.trim()}", Found: ${topicsInFile.join(', ')}`);
+                    }
+                    
+                    console.log(`✅ ${fileInfo.file.name}: ${parsedQuestions.length} questions with topic "${fileInfo.topicName}"`);
                     allParsedQuestions.push(...parsedQuestions);
                 }
                 if (allParsedQuestions.length === 0) throw new Error(t('uploader_status_no_questions'));
