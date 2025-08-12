@@ -218,6 +218,24 @@
                   await apiDataService.createQuestion(questionData);
               }
               console.log('✅ All questions created successfully');
+              
+              // Debug: Fetch the block to see what was actually saved
+              console.log('🔍 Fetching saved block to verify topics...');
+              try {
+                const savedBlocks = await apiDataService.fetchBlocks();
+                const savedBlock = savedBlocks.find(b => b.id === createdBlock.id);
+                if (savedBlock && savedBlock.questions) {
+                  const topicCounts = savedBlock.questions.reduce((acc, q) => {
+                    acc[q.tema] = (acc[q.tema] || 0) + 1;
+                    return acc;
+                  }, {});
+                  console.log('📊 Saved topics distribution:', topicCounts);
+                } else {
+                  console.log('❌ Could not fetch saved block questions');
+                }
+              } catch (err) {
+                console.log('❌ Error fetching saved block:', err.message);
+              }
           }
 
           // Block is automatically loaded by the backend when created
