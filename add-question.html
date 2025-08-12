@@ -498,7 +498,11 @@
                   const fileRegex = /^([^_]+)_([^_\.]+)\.txt$/i;
                   const newQueue = files.map(file => {
                       const match = file.name.match(fileRegex);
-                      if (match) { return { file, blockName: match[1].replace(/-/g, ' '), topicName: match[2].replace(/-/g, ' ') }; }
+                      if (match) { 
+                          const fileInfo = { file, blockName: match[1].replace(/-/g, ' '), topicName: match[2].replace(/-/g, ' ') };
+                          console.log(`📂 Parsed file: ${file.name} -> Block: "${fileInfo.blockName}", Topic: "${fileInfo.topicName}"`);
+                          return fileInfo;
+                      }
                       return null;
                   }).filter(Boolean);
       
@@ -531,7 +535,9 @@
                 for (const fileInfo of filesToProcess) {
                     const text = await fileInfo.file.text();
                     if (!text) continue;
+                    console.log(`📄 Processing file: ${fileInfo.file.name} with topic: "${fileInfo.topicName}"`);
                     const parsedQuestions = parseQuestionsFromFile(text, fileInfo.topicName.trim()).map(q => ({ ...q, blockName: fileInfo.blockName.trim() }));
+                    console.log(`📋 Parsed ${parsedQuestions.length} questions with topics:`, [...new Set(parsedQuestions.map(q => q.tema))]);
                     allParsedQuestions.push(...parsedQuestions);
                 }
                 if (allParsedQuestions.length === 0) throw new Error(t('uploader_status_no_questions'));
