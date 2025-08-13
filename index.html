@@ -1572,7 +1572,7 @@
           );
       };
 
-      const UserDashboard = ({ blocks, createdBlocks, availableBlocks, loadedBlockIds, games, challenges, gameHistory, onViewBlock, onCreateGame, onSendChallenge, onDeleteGame, onNavigateToGame, onDeleteBlock, onOpenAddBlockModal, onAcceptChallenge, onDeclineChallenge, onOpenStatsModal, onLoadBlock, onUnloadBlock, setCurrentView }) => (
+      const UserDashboard = ({ blocks, createdBlocks, availableBlocks, loadedBlockIds, games, gameConfigurations, challenges, gameHistory, onViewBlock, onCreateGame, onSendChallenge, onDeleteGame, onNavigateToGame, onDeleteBlock, onOpenAddBlockModal, onAcceptChallenge, onDeclineChallenge, onOpenStatsModal, onLoadBlock, onUnloadBlock, handleDeleteConfiguration, onRepeatConfiguration, setCurrentView }) => (
         <div className="space-y-8 animate-fade-in">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-2 space-y-8">
@@ -2885,6 +2885,7 @@
                   availableBlocks={availableBlocks}
                   loadedBlockIds={blocks.map(block => block.id)}
                   games={games}
+                  gameConfigurations={gameConfigurations}
                   challenges={challenges}
                   gameHistory={gameHistory}
                   onViewBlock={viewBlockQuestions}
@@ -2899,6 +2900,8 @@
                   onUnloadBlock={handleUnloadBlock}
                   onAcceptChallenge={handleAcceptChallenge}
                   onDeclineChallenge={handleDeclineChallenge}
+                  handleDeleteConfiguration={handleDeleteConfiguration}
+                  onRepeatConfiguration={onRepeatConfiguration}
                   setCurrentView={setCurrentView}
               />
           );
