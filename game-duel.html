@@ -472,14 +472,22 @@
 
               const loadData = async () => {
                   try {
+                      console.log('🔄 Duel - Loading game ID:', gameId);
                        const [fetchedGame, fetchedBlocks] = await Promise.all([ 
                           apiDataService.fetchGame(gameId), 
                           apiDataService.fetchAllBlocks() 
                         ]);
-                      if (!fetchedGame) throw new Error("Game not found or has been declined.");
+                      if (!fetchedGame) {
+                          console.error('❌ Duel - Game not found, clearing localStorage');
+                          localStorage.removeItem('current_game_id');
+                          localStorage.removeItem('current_game_mode');
+                          throw new Error("Game not found - cleared from localStorage");
+                      }
                       setGame(fetchedGame);
                       setBlocks(fetchedBlocks);
-                  } catch (err) { setError(err.message);
+                  } catch (err) { 
+                      console.error('❌ Duel - LoadData error:', err.message);
+                      setError(err.message);
                   } finally { setIsLoading(false); }
               };
               loadData();

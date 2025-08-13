@@ -295,11 +295,17 @@
         useEffect(() => {
             const loadData = async () => {
                 try {
+                    console.log('🔄 Trivial - Loading game ID:', gameId);
                      const [fetchedGame, fetchedBlocks] = await Promise.all([ 
                         apiDataService.fetchGame(gameId), 
                         apiDataService.fetchAllBlocks() 
                       ]);
-                    if (!fetchedGame) throw new Error("Game not found or has been declined.");
+                    if (!fetchedGame) {
+                        console.error('❌ Trivial - Game not found, clearing localStorage');
+                        localStorage.removeItem('current_game_id');
+                        localStorage.removeItem('current_game_mode');
+                        throw new Error("Game not found - cleared from localStorage");
+                    }
 
                     let gameQuestions = [];
                     
@@ -346,7 +352,9 @@
                         startTime: fetchedGame.startTime || Date.now()
                     };
                     setGame(initialisedGame);
-                } catch (err) { setError(err.message);
+                } catch (err) { 
+                    console.error('❌ Trivial - LoadData error:', err.message);
+                    setError(err.message);
                 } finally { setIsLoading(false); }
             };
             loadData();

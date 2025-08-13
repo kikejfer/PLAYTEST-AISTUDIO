@@ -501,16 +501,24 @@
               if (!gameId || !currentUser) return;
               const loadData = async () => {
                   try {
+                      console.log('🔄 Time Trial - Loading game ID:', gameId);
                       const [fetchedGame, fetchedBlocks] = await Promise.all([ 
                           dataService.fetchGame(gameId), 
                           dataService.fetchAllBlocks() 
                         ]);
-                      if (!fetchedGame) throw new Error("Game not found.");
+                      if (!fetchedGame) {
+                          console.error('❌ Time Trial - Game not found, clearing localStorage');
+                          localStorage.removeItem('current_game_id');
+                          localStorage.removeItem('current_game_mode');
+                          throw new Error("Game not found - cleared from localStorage");
+                      }
                       console.log('🎮 Loaded game:', fetchedGame);
                       console.log('📦 Loaded blocks:', fetchedBlocks.length, 'blocks');
                       setGame(fetchedGame);
                       setBlocks(fetchedBlocks);
-                  } catch (err) { setError(err.message);
+                  } catch (err) { 
+                      console.error('❌ Time Trial - LoadData error:', err.message);
+                      setError(err.message);
                   } finally { setIsLoading(false); }
               };
               loadData();

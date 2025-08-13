@@ -526,16 +526,24 @@
               if (!gameId) return;
               const loadData = async () => {
                   try {
+                      console.log('🔄 Marathon - Loading game ID:', gameId);
                        const [fetchedGame, fetchedBlocks] = await Promise.all([ 
                           apiDataService.fetchGame(gameId), 
                           apiDataService.fetchAllBlocks() 
                         ]);
-                      if (!fetchedGame) throw new Error("Game not found.");
+                      if (!fetchedGame) {
+                          console.error('❌ Marathon - Game not found, clearing localStorage');
+                          localStorage.removeItem('current_game_id');
+                          localStorage.removeItem('current_game_mode');
+                          throw new Error("Game not found - cleared from localStorage");
+                      }
                       console.log('🎮 Marathon - Loaded game:', fetchedGame);
                       console.log('📦 Marathon - Loaded blocks:', fetchedBlocks.length, 'blocks');
                       setGame(fetchedGame);
                       setBlocks(fetchedBlocks);
-                  } catch (err) { setError(err.message);
+                  } catch (err) { 
+                      console.error('❌ Marathon - LoadData error:', err.message);
+                      setError(err.message);
                   } finally { setIsLoading(false); }
               };
               loadData();

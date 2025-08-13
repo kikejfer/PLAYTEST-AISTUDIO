@@ -737,16 +737,21 @@
                               fallback: true
                           };
                       } else {
-                          console.log('🌐 Fetching game from API');
+                          console.log('🌐 Fetching game from API, gameId:', gameId);
                           fetchedGame = await apiDataService.fetchGame(gameId);
-                          if (!fetchedGame) throw new Error("Game not found.");
+                          if (!fetchedGame) {
+                              console.error('❌ Classic - Game not found, clearing localStorage');
+                              localStorage.removeItem('current_game_id');
+                              localStorage.removeItem('current_game_mode');
+                              throw new Error("Game not found - cleared from localStorage");
+                          }
                       }
                       
                       setGame(fetchedGame);
                       setBlocks(fetchedBlocks);
                       console.log('✅ Game data loaded successfully');
                   } catch (err) { 
-                      console.error('❌ Error loading game data:', err);
+                      console.error('❌ Classic - LoadData error:', err.message);
                       setError(err.message);
                   } finally { 
                       setIsLoading(false); 
