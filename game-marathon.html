@@ -526,7 +526,7 @@
               if (!gameId) return;
               const loadData = async () => {
                   try {
-                      console.log('🔄 Marathon - Loading game ID:', gameId);
+                      console.log('🔄 Marathon [v2] - Loading game ID:', gameId);
                        const [fetchedGame, fetchedBlocks] = await Promise.all([ 
                           apiDataService.fetchGame(gameId), 
                           apiDataService.fetchAllBlocks() 
