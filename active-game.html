@@ -636,8 +636,10 @@
               localStorage.setItem('navigation_timestamp', Date.now().toString());
               console.log('💾 Stored gameId in localStorage as backup:', gameId);
               
-              console.log('🚀 Initiating navigation to:', url);
+              console.log('🚀 [NAVIGATION] Initiating navigation to:', url);
+              console.log('🚀 [NAVIGATION] Current location before navigation:', window.location.href);
               window.location.href = url;
+              console.log('🚀 [NAVIGATION] Navigation command issued');
           } else {
               alert(`Game mode "${game.mode}" is not implemented yet.`);
           }

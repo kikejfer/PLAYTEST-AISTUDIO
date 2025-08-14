@@ -516,8 +516,12 @@
           const [gameId, setGameId] = useState(null);
 
           useEffect(() => {
+              console.log('🏁 [MARATHON START] Marathon component mounted');
+              console.log('🏁 [MARATHON START] Current URL:', window.location.href);
               const params = new URLSearchParams(window.location.search);
+              console.log('🏁 [MARATHON START] URL params:', [...params.entries()]);
               const id = params.get('gameId');
+              console.log('🏁 [MARATHON START] Extracted gameId:', id);
               if (id) setGameId(id);
               else { setError("No game ID provided."); setIsLoading(false); }
           }, []);
