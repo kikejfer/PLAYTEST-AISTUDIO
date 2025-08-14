@@ -514,6 +514,7 @@
           const [isLoading, setIsLoading] = useState(true);
           const [error, setError] = useState(null);
           const [gameId, setGameId] = useState(null);
+          const [gameConfigurations, setGameConfigurations] = useState([]);
 
           useEffect(() => {
               console.log('🏁 [MARATHON START] Marathon component mounted');
@@ -531,9 +532,10 @@
               const loadData = async () => {
                   try {
                       console.log('🔄 Marathon [v2] - Loading game ID:', gameId);
-                       const [fetchedGame, fetchedBlocks] = await Promise.all([ 
+                       const [fetchedGame, fetchedBlocks, fetchedConfigurations] = await Promise.all([ 
                           apiDataService.fetchGame(gameId), 
-                          apiDataService.fetchAllBlocks() 
+                          apiDataService.fetchAllBlocks(),
+                          apiDataService.fetchGameConfigurations()
                         ]);
                       if (!fetchedGame) {
                           console.error('❌ Marathon - Game not found, clearing localStorage');
@@ -543,8 +545,10 @@
                       }
                       console.log('🎮 Marathon - Loaded game:', fetchedGame);
                       console.log('📦 Marathon - Loaded blocks:', fetchedBlocks.length, 'blocks');
+                      console.log('⚙️ Marathon - Loaded configurations:', fetchedConfigurations.length, 'configurations');
                       setGame(fetchedGame);
                       setBlocks(fetchedBlocks);
+                      setGameConfigurations(fetchedConfigurations);
                   } catch (err) { 
                       console.error('❌ Marathon - LoadData error:', err.message);
                       setError(err.message);
