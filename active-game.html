@@ -1062,12 +1062,18 @@
                           }
                       }
 
+                      console.log('🔄 Active Game - Loading game ID:', gameId);
                       const [fetchedGame, fetchedBlocks] = await Promise.all([
                           dataService.fetchGame(gameId),
                           dataService.fetchAllBlocks()
                       ]);
 
-                      if (!fetchedGame) throw new Error("Game not found.");
+                      if (!fetchedGame) {
+                          console.error('❌ Active Game - Game not found, clearing localStorage');
+                          localStorage.removeItem('current_game_id');
+                          localStorage.removeItem('current_game_mode');
+                          throw new Error("Game not found - cleared from localStorage");
+                      }
                       
                       // Calculate block names for all game modes
                       if (fetchedGame.config && Object.keys(fetchedGame.config).length > 0) {
@@ -1096,6 +1102,7 @@
                       setGame(fetchedGame);
                       setBlocks(fetchedBlocks);
                   } catch (err) {
+                      console.error('❌ Active Game - LoadData error:', err.message);
                       setError(err.message);
                   } finally {
                       setIsLoading(false);
