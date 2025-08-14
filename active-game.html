@@ -597,7 +597,7 @@
       };
 
 
-      const GamePage = ({ game, blocks, onDeleteGame, marathonScores, timeTrialScores, livesScores, streakScores, examScores, duelScores, trivialScores, blockName }) => {
+      const GamePage = ({ game, blocks, onDeleteGame, marathonScores, timeTrialScores, livesScores, streakScores, examScores, duelScores, trivialScores, blockName, setShowGameplay }) => {
         const { t } = useLanguage();
         const { currentUser } = useUser();
         const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -1252,7 +1252,7 @@
                   );
               }
               if (error) { return <div className="text-center text-brand-danger bg-red-500/10 p-4 rounded-lg">{t('error')}: {error}</div>; }
-              return <GamePage game={game} blocks={blocks} onDeleteGame={handleDeleteGame} marathonScores={marathonScores} timeTrialScores={timeTrialScores} livesScores={livesScores} streakScores={streakScores} examScores={examScores} duelScores={duelScores} trivialScores={trivialScores} blockName={blockName} />;
+              return <GamePage game={game} blocks={blocks} onDeleteGame={handleDeleteGame} marathonScores={marathonScores} timeTrialScores={timeTrialScores} livesScores={livesScores} streakScores={streakScores} examScores={examScores} duelScores={duelScores} trivialScores={trivialScores} blockName={blockName} setShowGameplay={setShowGameplay} />;
           };
 
           return (
