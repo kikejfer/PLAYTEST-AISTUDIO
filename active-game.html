@@ -1067,6 +1067,10 @@
                           dataService.fetchGame(gameId),
                           dataService.fetchAllBlocks()
                       ]);
+                      
+                      console.log('📦 Active Game - Received game:', fetchedGame);
+                      console.log('📦 Active Game - Game type:', typeof fetchedGame);
+                      console.log('📦 Active Game - Game keys:', fetchedGame ? Object.keys(fetchedGame) : 'null');
 
                       if (!fetchedGame) {
                           console.error('❌ Active Game - Game not found, clearing localStorage');

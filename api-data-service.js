@@ -303,7 +303,9 @@ class APIDataService {
 
   async fetchGame(gameId) {
     try {
+      console.log('🔍 fetchGame - Requesting game ID:', gameId);
       const game = await this.apiCall(`/games/${gameId}`);
+      console.log('📦 fetchGame - Raw response:', game);
       
       // Transform backend response to frontend format
       if (game) {
@@ -326,9 +328,11 @@ class APIDataService {
           mode: typeToMode[game.gameType] || game.gameType
         };
         
+        console.log('✅ fetchGame - Returning transformed game:', transformedGame);
         return this.simulateDelay(transformedGame);
       }
       
+      console.log('⚠️ fetchGame - No game data, returning raw response:', game);
       return this.simulateDelay(game);
     } catch (error) {
       console.error('❌ Failed to fetch game:', gameId, error.message);
