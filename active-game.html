@@ -1120,10 +1120,17 @@
 
           useEffect(() => {
               if (game) {
+                  console.log('🔍 [AUTO NAVIGATION CHECK] Game mode:', game.mode, 'gameState:', game.gameState, 'status:', game.status);
                   const isInProgress = (game.mode === 'Duelo' || game.mode === 'Trivial') && (game.gameState || game.turnState || (game.round && game.round > 0));
+                  const isMarathonInProgress = (game.mode === 'Maratón') && (game.gameState || game.status === 'active');
+                  
                   if (isInProgress) {
                       const targetPage = game.mode === 'Duelo' ? 'game-duel.html' : 'game-trivial.html';
+                      console.log('🚀 [AUTO NAVIGATION] Navigating to in-progress game:', targetPage);
                       window.location.href = `${targetPage}?gameId=${game.id}`;
+                  } else if (isMarathonInProgress) {
+                      console.log('🚀 [AUTO NAVIGATION] Navigating to Marathon game with gameId:', game.id);
+                      window.location.href = `game-marathon.html?gameId=${game.id}`;
                   }
               }
           }, [game]);
