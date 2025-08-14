@@ -517,10 +517,20 @@
           }, [gameId, currentUser]);
           
           const gameQuestions = useMemo(() => {
-              if (!game || !game.config || !blocks || blocks.length === 0) return [];
+              console.log('🔍 By-Levels - Processing game questions...');
+              console.log('🎮 By-Levels - Game:', game);
+              console.log('📦 By-Levels - Blocks:', blocks?.length || 0);
+              if (!game || !game.config || !blocks || blocks.length === 0) {
+                  console.log('❌ By-Levels - Missing data - game:', !!game, 'config:', !!game?.config, 'blocks:', blocks?.length || 0);
+                  return [];
+              }
               let questions = [];
               for (const [blockId, blockConfig] of Object.entries(game.config)) {
-                  const block = blocks.find(b => b.id === blockId);
+                  console.log('🔍 By-Levels - Processing blockId:', blockId, 'type:', typeof blockId);
+                  const block = blocks.find(b => 
+                      b.id === parseInt(blockId) || b.id === blockId
+                  );
+                  console.log('📦 By-Levels - Found block:', !!block, 'questions:', block?.questions?.length || 0);
                   if (!block || !block.questions) continue;
                   const questionsWithMeta = block.questions.map(q => ({...q, blockId: block.id, dificultad: q.dificultad || q.difficulty }));
                   if (blockConfig.topics === 'all') {
@@ -529,6 +539,7 @@
                     questions.push(...questionsWithMeta.filter(q => blockConfig.topics.includes(q.tema)));
                   }
               }
+              console.log('✅ By-Levels - Final questions count:', questions.length);
               return questions;
           }, [game, blocks]);
 
