@@ -481,6 +481,101 @@
         );
       };
 
+      // Componente Marathon integrado - SOLUCIÓN SIMPLE
+      const MarathonGameplay = ({ game, blocks, t, onBack }) => {
+        const [questions, setQuestions] = useState([]);
+        const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+        const [score, setScore] = useState(0);
+        const [gameFinished, setGameFinished] = useState(false);
+
+        useEffect(() => {
+          console.log('🎮 Marathon Gameplay - Game:', game);
+          console.log('📦 Marathon Gameplay - Blocks:', blocks?.length);
+          
+          if (!game || !blocks || blocks.length === 0) {
+            console.log('❌ Marathon Gameplay - Missing data');
+            return;
+          }
+
+          // Procesar preguntas del juego
+          let gameQuestions = [];
+          for (const [blockId, blockConfig] of Object.entries(game.config)) {
+            const block = blocks.find(b => b.id === parseInt(blockId) || b.id === blockId);
+            if (block && block.questions) {
+              gameQuestions.push(...block.questions.map(q => ({...q, blockId: block.id})));
+            }
+          }
+          
+          console.log('✅ Marathon Gameplay - Loaded questions:', gameQuestions.length);
+          setQuestions(gameQuestions);
+        }, [game, blocks]);
+
+        if (gameFinished) {
+          return (
+            <div className="text-center p-8">
+              <h2 className="text-3xl font-bold text-brand-success mb-4">¡Juego Terminado!</h2>
+              <p className="text-xl text-brand-light mb-4">Puntuación: {score}/{questions.length}</p>
+              <button onClick={onBack} className="bg-brand-cta text-white px-6 py-3 rounded-lg">
+                Volver al Dashboard
+              </button>
+            </div>
+          );
+        }
+
+        if (questions.length === 0) {
+          return (
+            <div className="text-center p-8">
+              <p className="text-xl text-brand-accent">Cargando preguntas...</p>
+            </div>
+          );
+        }
+
+        const currentQuestion = questions[currentQuestionIndex];
+        
+        return (
+          <div className="max-w-4xl mx-auto p-6">
+            <div className="bg-brand-secondary rounded-xl p-6">
+              <div className="mb-4">
+                <p className="text-brand-accent">Pregunta {currentQuestionIndex + 1} de {questions.length}</p>
+                <p className="text-brand-success">Puntuación: {score}</p>
+              </div>
+              
+              <h2 className="text-2xl text-brand-light mb-6">{currentQuestion.textoPregunta}</h2>
+              
+              <div className="space-y-3">
+                {currentQuestion.respuestas.map((respuesta, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      const isCorrect = respuesta.esCorrecta;
+                      if (isCorrect) setScore(score + 1);
+                      
+                      setTimeout(() => {
+                        if (currentQuestionIndex + 1 >= questions.length) {
+                          setGameFinished(true);
+                        } else {
+                          setCurrentQuestionIndex(currentQuestionIndex + 1);
+                        }
+                      }, 1000);
+                    }}
+                    className="w-full p-4 text-left bg-brand-primary hover:bg-brand-accent text-brand-light rounded-lg transition-colors"
+                  >
+                    {respuesta.texto}
+                  </button>
+                ))}
+              </div>
+              
+              <button 
+                onClick={onBack}
+                className="mt-6 bg-brand-tertiary text-brand-light px-4 py-2 rounded-lg"
+              >
+                Salir del Juego
+              </button>
+            </div>
+          </div>
+        );
+      };
+
       const TrivialRankingPreview = ({ scores, t }) => {
         const formatDate = (dateString) => new Date(dateString).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
         if (scores.length === 0) return <p className="text-center py-8 text-brand-accent">{t('ranking_no_scores')}</p>;
@@ -768,9 +863,8 @@
                         </div>
                     </div>
                     <button onClick={() => { 
-                        console.log('🖱️ Button clicked! totalQuestions:', totalQuestions);
-                        console.log('🖱️ Button disabled?', totalQuestions === 0);
-                        handleStartGame();
+                        console.log('🖱️ Marathon button clicked! Starting integrated gameplay');
+                        setShowGameplay(true);
                     }} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
                          {t('game_page_start')} ({t('game_page_total_questions')} {totalQuestions})
                     </button>
@@ -1015,6 +1109,7 @@
           const [duelScores, setDuelScores] = useState([]);
           const [trivialScores, setTrivialScores] = useState([]);
           const [blockName, setBlockName] = useState('');
+          const [showGameplay, setShowGameplay] = useState(false); // Para mostrar el juego en lugar de navegar
 
           useEffect(() => {
               console.log('🔄 Active game useEffect triggered, currentUser:', currentUser);
@@ -1120,18 +1215,13 @@
 
           useEffect(() => {
               if (game) {
-                  console.log('🔍 [AUTO NAVIGATION CHECK] Game mode:', game.mode, 'gameState:', game.gameState, 'status:', game.status);
+                  // Solo navegar automáticamente para Duelo y Trivial que realmente necesitan continuación
                   const isInProgress = (game.mode === 'Duelo' || game.mode === 'Trivial') && (game.gameState || game.turnState || (game.round && game.round > 0));
-                  const isMarathonInProgress = (game.mode === 'Maratón') && (game.gameState || game.status === 'active');
-                  
                   if (isInProgress) {
                       const targetPage = game.mode === 'Duelo' ? 'game-duel.html' : 'game-trivial.html';
-                      console.log('🚀 [AUTO NAVIGATION] Navigating to in-progress game:', targetPage);
                       window.location.href = `${targetPage}?gameId=${game.id}`;
-                  } else if (isMarathonInProgress) {
-                      console.log('🚀 [AUTO NAVIGATION] Navigating to Marathon game with gameId:', game.id);
-                      window.location.href = `game-marathon.html?gameId=${game.id}`;
                   }
+                  // NO navegar automáticamente para Marathon - que se quede en active-game
               }
           }, [game]);
 
@@ -1145,7 +1235,13 @@
           };
 
           const renderContent = () => {
-              if (isLoading) { return <div className="flex justify-center items-center h-64"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>; }
+              if (isLoading) { return <div className="flex justify-center items-center h-64"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>; }
+              
+              // Mostrar componente Marathon integrado si el usuario hizo clic en jugar
+              if (showGameplay && game && game.mode === 'Maratón') {
+                  return <MarathonGameplay game={game} blocks={blocks} t={t} onBack={() => setShowGameplay(false)} />;
+              }
+              
               if (game && (game.mode === 'Duelo' || game.mode === 'Trivial') && (game.gameState || game.turnState || (game.round && game.round > 0))) {
                   return (
                       <div className="flex flex-col justify-center items-center h-64 text-center">
