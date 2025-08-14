@@ -1137,96 +1137,77 @@
                   </div>
                 )}
                 
-                {/* CRITICAL: Show saved game configurations AND active games */}
-                {(gameConfigurations.length > 0 || activeGames.length > 0) ? (
+                {/* CRITICAL: Show saved game configurations ONLY */}
+                {gameConfigurations.length > 0 ? (
                   <ul className="space-y-3">
-                      {/* Show saved configurations first */}
-                      {gameConfigurations.slice(0, 3).map(config => (
-                          <li key={`config-${config.id}`} className="flex items-center justify-between p-3 rounded-md bg-brand-primary hover:bg-brand-tertiary/40 transition-colors group border-l-4 border-brand-cta">
-                              <div className="flex-grow overflow-hidden cursor-pointer" onClick={() => onRepeatConfiguration(config)}>
-                                  <div className="flex items-center gap-2">
-                                      <p className="font-semibold text-brand-light truncate">{config.gameMode}</p>
-                                      <span className="text-xs bg-brand-cta px-2 py-0.5 rounded text-white">Configuración</span>
+                      {/* Show saved configurations */}
+                      {gameConfigurations.slice(0, 5).map(config => {
+                          const gameMode = config.game_type || config.gameType || 'Partida';
+                          const modeDisplayMap = {
+                              'classic': 'Modo Clásico',
+                              'time-trial': 'Modo Contrarreloj',
+                              'lives': 'Modo Vidas',
+                              'by-levels': 'Por Niveles',
+                              'streak': 'Racha de Aciertos',
+                              'exam': 'Examen Simulado',
+                              'duel': 'Duelo',
+                              'marathon': 'Maratón',
+                              'trivial': 'Trivial'
+                          };
+                          const displayMode = modeDisplayMap[gameMode] || gameMode;
+                          
+                          return (
+                          <li key={`config-${config.id}`} className="p-3 rounded-md bg-brand-primary border-l-4 border-brand-cta">
+                              <div className="flex items-center justify-between">
+                                  <div className="flex-grow">
+                                      <div className="flex items-center gap-2 mb-2">
+                                          <p className="font-semibold text-brand-light">{displayMode}</p>
+                                          <span className="text-xs bg-brand-cta px-2 py-0.5 rounded text-white">Configuración Guardada</span>
+                                      </div>
+                                      
+                                      {/* Configuration Summary */}
+                                      {config.configuration_metadata && (
+                                          <div className="p-2 bg-brand-secondary rounded text-center">
+                                              <div className="grid grid-cols-3 gap-2 text-xs">
+                                                  <div>
+                                                      <span className="text-brand-accent">Bloques</span>
+                                                      <div className="font-bold text-brand-light">{config.configuration_metadata.summary?.blockCount || 0}</div>
+                                                  </div>
+                                                  <div>
+                                                      <span className="text-brand-accent">Temas</span>
+                                                      <div className="font-bold text-brand-light">{config.configuration_metadata.summary?.topicCount || 0}</div>
+                                                  </div>
+                                                  <div>
+                                                      <span className="text-brand-accent">Preguntas</span>
+                                                      <div className="font-bold text-brand-light">{config.configuration_metadata.summary?.questionCount || 0}</div>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      )}
+                                      
+                                      {/* Action Buttons */}
+                                      <div className="flex gap-2 mt-3">
+                                          <button 
+                                              onClick={() => onRepeatConfiguration(config)}
+                                              className="flex-1 bg-brand-cta hover:bg-brand-cta-hover text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+                                          >
+                                              🎮 Jugar Nueva Partida
+                                          </button>
+                                          <button 
+                                              onClick={() => handleDeleteConfiguration(config.id)} 
+                                              className="bg-brand-danger/20 hover:bg-brand-danger/40 text-brand-danger font-semibold py-2 px-3 rounded-lg transition-colors text-sm"
+                                              title="Eliminar configuración"
+                                          >
+                                              <TrashIcon className="h-4 w-4" />
+                                          </button>
+                                      </div>
                                   </div>
-                                  
-                                  {/* Configuration Summary */}
-                                  {config.metadata && (
-                                      <div className="mt-2 p-2 bg-brand-secondary rounded text-center">
-                                          <div className="grid grid-cols-3 gap-2 text-xs">
-                                              <div>
-                                                  <span className="text-brand-accent">Bloques</span>
-                                                  <div className="font-bold text-brand-light">{config.metadata.summary.blockCount}</div>
-                                              </div>
-                                              <div>
-                                                  <span className="text-brand-accent">Temas</span>
-                                                  <div className="font-bold text-brand-light">{config.metadata.summary.topicCount}</div>
-                                              </div>
-                                              <div>
-                                                  <span className="text-brand-accent">Preguntas</span>
-                                                  <div className="font-bold text-brand-light">{config.metadata.summary.questionCount}</div>
-                                              </div>
-                                          </div>
-                                          <p className="text-xs text-brand-tertiary mt-1">
-                                              Usada {config.useCount} vez(es)
-                                          </p>
-                                      </div>
-                                  )}
                               </div>
-                              <button 
-                                  onClick={(e) => {e.stopPropagation(); handleDeleteConfiguration(config.id);}} 
-                                  className="ml-3 text-brand-danger hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
-                                  title="Eliminar configuración"
-                              >
-                                  <TrashIcon className="h-5 w-5" />
-                              </button>
                           </li>
-                      ))}
-                      
-                      {/* Show active games */}
-                      {activeGames.slice(0, Math.max(0, 5 - gameConfigurations.length)).map(game => {
-                        const statusText = getGameStatusText(game, currentUser, t);
-                        return (
-                          <li key={game.id} className="flex items-center justify-between p-3 rounded-md bg-brand-primary hover:bg-brand-tertiary/40 transition-colors group">
-                              <div className="flex-grow overflow-hidden cursor-pointer" onClick={() => onNavigateToGame(game)}>
-                                  <p className="font-semibold text-brand-light truncate">{game.mode}</p>
-                                  {statusText && <p className="text-xs font-bold text-amber-400 mt-1">{statusText}</p>}
-                                  
-                                  {/* Configuration Summary */}
-                                  {game.configurationMetadata && (
-                                      <div className="mt-2 p-2 bg-brand-secondary rounded text-center">
-                                          <div className="grid grid-cols-3 gap-2 text-xs">
-                                              <div>
-                                                  <span className="text-brand-accent">Bloques</span>
-                                                  <div className="font-bold text-brand-light">{game.configurationMetadata.summary.blockCount}</div>
-                                              </div>
-                                              <div>
-                                                  <span className="text-brand-accent">Temas</span>
-                                                  <div className="font-bold text-brand-light">{game.configurationMetadata.summary.topicCount}</div>
-                                              </div>
-                                              <div>
-                                                  <span className="text-brand-accent">Preguntas</span>
-                                                  <div className="font-bold text-brand-success">{game.configurationMetadata.summary.questionCount}</div>
-                                              </div>
-                                          </div>
-                                      </div>
-                                  )}
-                                  
-                                  <p className="text-xs text-brand-accent truncate mt-1" title={getGameConfigDetails(game.config, game.configurationMetadata)}>
-                                    {getGameConfigDetails(game.config, game.configurationMetadata)}
-                                  </p>
-                              </div>
-                              <button
-                                  onClick={(e) => { e.stopPropagation(); handleDeleteClick(game.id); }}
-                                  className="flex-shrink-0 ml-4 p-2 rounded-full text-brand-danger/70 hover:bg-brand-danger/20 hover:text-brand-danger transition-colors opacity-0 group-hover:opacity-100"
-                                  aria-label={`${t('delete')} partida ${game.id}`}
-                              >
-                                  <TrashIcon className="h-5 w-5" />
-                              </button>
-                          </li>
-                        )
+                          )
                       })}
                   </ul>
-              ) : pendingChallenges.length === 0 && (
+              ) : (
                   <div className="text-center py-6 flex-grow flex items-center justify-center">
                     <div>
                       <p className="text-brand-accent">{t('active_games_none')}</p>
@@ -2850,13 +2831,28 @@
         const onRepeatConfiguration = async (config) => {
             try {
                 console.log('🔄 Repeating saved configuration:', config);
+                
+                // Map gameType back to mode for frontend compatibility
+                const gameType = config.game_type || config.gameType;
+                const typeToModeMap = {
+                    'classic': 'Modo Clásico',
+                    'time-trial': 'Modo Contrarreloj',
+                    'lives': 'Modo Vidas',
+                    'by-levels': 'Por Niveles',
+                    'streak': 'Racha de Aciertos',
+                    'exam': 'Examen Simulado',
+                    'duel': 'Duelo',
+                    'marathon': 'Maratón',
+                    'trivial': 'Trivial'
+                };
+                
                 // Create new game with the saved configuration
                 const gameConfig = {
-                    mode: config.gameMode,
+                    mode: typeToModeMap[gameType] || 'Modo Clásico',
                     config: config.config
                 };
                 
-                await onCreateGame(gameConfig);
+                await handleCreateGame(gameConfig);
                 console.log('✅ New game created from saved configuration');
             } catch (err) {
                 setError(err instanceof Error ? `Failed to repeat configuration: ${err.message}` : 'Unknown API error.');
