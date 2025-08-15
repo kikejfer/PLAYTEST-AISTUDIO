@@ -9,7 +9,11 @@
       "Bash(rm:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npm audit:*)",
+      "Bash(node:*)",
+      "Bash(npm start)",
+      "Bash(\"taskkill\" \"/PID\" \"24024\")"
     ],
     "deny": []
   }
