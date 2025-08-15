@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Soporte - PlayTest</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group label.required::after {
+            content: " *";
+            color: #e74c3c;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-control.invalid {
+            border-color: #e74c3c;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        select.form-control {
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23666" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 12px;
+            appearance: none;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+        }
+
+        .alert-info {
+            background: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-color: #ffeaa7;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+
+        .redirect-link {
+            color: #667eea;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .redirect-link:hover {
+            color: #5a6fd8;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #e1e8ed;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload-area:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #667eea;
+            background: #e3f2fd;
+        }
+
+        .file-upload-icon {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .file-upload-text {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .file-upload-subtext {
+            color: #999;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .file-list {
+            margin-top: 15px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .file-icon {
+            margin-right: 8px;
+            color: #667eea;
+        }
+
+        .file-name {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: #666;
+            margin-left: 8px;
+        }
+
+        .file-remove {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .file-remove:hover {
+            background: #c0392b;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .priority-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .priority-baja { background: #28a745; }
+        .priority-media { background: #ffc107; }
+        .priority-alta { background: #dc3545; }
+
+        .markdown-help {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .markdown-help details {
+            cursor: pointer;
+        }
+
+        .markdown-help summary {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .markdown-examples {
+            font-family: monospace;
+            background: #fff;
+            padding: 8px;
+            border-radius: 3px;
+            margin-top: 5px;
+        }
+
+        .form-actions {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header, .content {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 id="form-title">Formulario de Soporte</h1>
+            <p class="subtitle" id="form-subtitle">Describe tu problema y te ayudaremos a resolverlo</p>
+        </div>
+        
+        <div class="content">
+            <!-- Mensaje informativo dinámico -->
+            <div id="info-message" class="alert alert-info">
+                <!-- El contenido se carga dinámicamente -->
+            </div>
+
+            <form id="support-form" enctype="multipart/form-data">
+                <!-- Sección de Origen -->
+                <div class="form-section">
+                    <h3>Información del Problema</h3>
+                    
+                    <input type="hidden" id="origin-type" name="originType">
+                    <input type="hidden" id="block-id" name="blockId">
+                    
+                    <div class="form-group">
+                        <label for="category" class="required">Categoría del Problema</label>
+                        <select id="category" name="categoryId" class="form-control" required>
+                            <option value="">Selecciona una categoría...</option>
+                        </select>
+                        <div class="priority-info" style="margin-top: 8px; font-size: 12px; color: #666;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="title" class="required">Título del Problema</label>
+                        <input type="text" id="title" name="title" class="form-control" 
+                               placeholder="Describe brevemente el problema" required maxlength="200">
+                        <small style="color: #666;">Máximo 200 caracteres</small>
+                    </div>
+                </div>
+
+                <!-- Sección de Descripción -->
+                <div class="form-section">
+                    <h3>Descripción Detallada</h3>
+                    
+                    <div class="form-group">
+                        <label for="description" class="required">Descripción del Problema</label>
+                        <textarea id="description" name="description" class="form-control" 
+                                  placeholder="Describe el problema con el mayor detalle posible. Incluye pasos para reproducirlo, qué esperabas que pasara, y qué pasó en realidad." 
+                                  required minlength="20"></textarea>
+                        <div class="markdown-help">
+                            <details>
+                                <summary>💡 Puedes usar formato Markdown</summary>
+                                <div class="markdown-examples">
+                                    **Negrita** → <strong>Negrita</strong><br>
+                                    *Cursiva* → <em>Cursiva</em><br>
+                                    `Código` → <code>Código</code><br>
+                                    [Enlace](url) → <a href="#">Enlace</a><br>
+                                    - Lista<br>
+                                    - De elementos
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección de Adjuntos -->
+                <div class="form-section">
+                    <h3>Archivos Adjuntos (Opcional)</h3>
+                    
+                    <div class="form-group">
+                        <label>Añadir Capturas de Pantalla o Documentos</label>
+                        
+                        <div class="file-upload-area" id="file-upload-area">
+                            <div class="file-upload-icon">📁</div>
+                            <div class="file-upload-text">
+                                Arrastra archivos aquí o haz clic para seleccionar
+                            </div>
+                            <div class="file-upload-subtext">
+                                Máximo 5 archivos, 10MB cada uno<br>
+                                Formatos: JPG, PNG, PDF, DOC, TXT, ZIP
+                            </div>
+                        </div>
+                        
+                        <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt,.zip,.rar" style="display: none;">
+                        
+                        <div id="file-list" class="file-list"></div>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="form-actions">
+                    <button type="button" id="back-btn" class="btn btn-secondary" style="margin-right: 15px;">
+                        ← Volver
+                    </button>
+                    <button type="submit" id="submit-btn" class="btn btn-primary">
+                        Enviar Reporte
+                    </button>
+                </div>
+            </form>
+
+            <!-- Loading y mensajes -->
+            <div id="loading" class="loading">
+                <div>Enviando reporte...</div>
+                <div style="margin-top: 10px;">⏳</div>
+            </div>
+
+            <div id="error-message" class="alert alert-error" style="display: none;">
+            </div>
+
+            <div id="success-message" class="alert alert-success" style="display: none;">
+            </div>
+        </div>
+    </div>
+
+    <script src="api-data-service.js"></script>
+    <script>
+        // Variables globales
+        let selectedFiles = [];
+        let currentOriginType = 'global'; // Por defecto
+        let currentBlockId = null;
+        let categories = [];
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeForm();
+            setupEventListeners();
+        });
+
+        function initializeForm() {
+            // Detectar origen desde URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const originType = urlParams.get('type') || 'global';
+            const blockId = urlParams.get('blockId');
+            
+            currentOriginType = originType;
+            currentBlockId = blockId;
+            
+            // Configurar formulario según origen
+            document.getElementById('origin-type').value = originType;
+            if (blockId) {
+                document.getElementById('block-id').value = blockId;
+            }
+            
+            // Cargar configuración específica
+            if (originType === 'global') {
+                setupGlobalSupport();
+            } else if (originType === 'block') {
+                setupBlockSupport(blockId);
+            }
+            
+            loadCategories(originType);
+        }
+
+        function setupGlobalSupport() {
+            document.getElementById('form-title').textContent = 'Soporte Técnico Global';
+            document.getElementById('form-subtitle').textContent = 'Reportar problemas técnicos generales del sistema';
+            
+            document.getElementById('info-message').innerHTML = `
+                <strong>ℹ️ Soporte Técnico Global</strong><br>
+                Este formulario es para problemas técnicos generales del programa (bugs, errores de sistema, problemas de acceso, etc.).<br><br>
+                Si tu problema es sobre el <strong>contenido de un bloque específico</strong> (preguntas incorrectas, sugerencias de mejora, etc.), 
+                <span class="redirect-link" onclick="redirectToBlockSupport()">usa el botón 'Reportar Problema' desde el bloque correspondiente</span>.
+            `;
+        }
+
+        async function setupBlockSupport(blockId) {
+            if (!blockId) {
+                showError('ID de bloque no especificado');
+                return;
+            }
+
+            try {
+                // Obtener información del bloque
+                const response = await fetch(`/api/blocks/${blockId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const block = await response.json();
+                    
+                    document.getElementById('form-title').textContent = 'Reportar Problema del Bloque';
+                    document.getElementById('form-subtitle').textContent = `Bloque: ${block.name}`;
+                    
+                    document.getElementById('info-message').innerHTML = `
+                        <strong>📝 Problema de Bloque Específico</strong><br>
+                        Este formulario es para problemas específicos del bloque <strong>"${block.name}"</strong> 
+                        (preguntas incorrectas, contenido, sugerencias, etc.).<br><br>
+                        Si tu problema es <strong>técnico general del programa</strong> (bugs, errores de sistema, etc.), 
+                        <span class="redirect-link" onclick="redirectToGlobalSupport()">usa el botón 'Soporte Técnico' del menú principal</span>.
+                    `;
+                } else {
+                    throw new Error('Bloque no encontrado');
+                }
+            } catch (error) {
+                console.error('Error cargando bloque:', error);
+                showError('Error al cargar información del bloque');
+            }
+        }
+
+        async function loadCategories(originType) {
+            try {
+                const response = await fetch(`/api/communication/categories/${originType}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    categories = await response.json();
+                    populateCategorySelect(categories);
+                } else {
+                    throw new Error('Error al cargar categorías');
+                }
+            } catch (error) {
+                console.error('Error cargando categorías:', error);
+                showError('Error al cargar las categorías del formulario');
+            }
+        }
+
+        function populateCategorySelect(categories) {
+            const categorySelect = document.getElementById('category');
+            categorySelect.innerHTML = '<option value="">Selecciona una categoría...</option>';
+
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                option.dataset.priority = category.priority;
+                option.dataset.description = category.description || '';
+                categorySelect.appendChild(option);
+            });
+        }
+
+        function setupEventListeners() {
+            // Cambio de categoría
+            document.getElementById('category').addEventListener('change', function() {
+                const selectedOption = this.selectedOptions[0];
+                const priorityInfo = document.querySelector('.priority-info');
+                
+                if (selectedOption && selectedOption.value) {
+                    const priority = selectedOption.dataset.priority;
+                    const description = selectedOption.dataset.description;
+                    
+                    priorityInfo.innerHTML = `
+                        <span class="priority-indicator priority-${priority}"></span>
+                        Prioridad: <strong>${priority.toUpperCase()}</strong>
+                        ${description ? `<br><small>${description}</small>` : ''}
+                    `;
+
+                    // Verificar si es una categoría de redirección
+                    checkRedirectionCategory(selectedOption.textContent);
+                } else {
+                    priorityInfo.innerHTML = '';
+                }
+            });
+
+            // Gestión de archivos
+            const fileUploadArea = document.getElementById('file-upload-area');
+            const fileInput = document.getElementById('file-input');
+
+            fileUploadArea.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', handleFileSelection);
+
+            // Drag and drop
+            fileUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.add('dragover');
+            });
+
+            fileUploadArea.addEventListener('dragleave', () => {
+                fileUploadArea.classList.remove('dragover');
+            });
+
+            fileUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.remove('dragover');
+                
+                const files = Array.from(e.dataTransfer.files);
+                addFiles(files);
+            });
+
+            // Envío del formulario
+            document.getElementById('support-form').addEventListener('submit', handleFormSubmit);
+
+            // Botón volver
+            document.getElementById('back-btn').addEventListener('click', () => {
+                window.history.back();
+            });
+        }
+
+        function checkRedirectionCategory(categoryName) {
+            const redirectCategories = {
+                'Problema con contenido de bloque específico': () => redirectToBlockSupport(),
+                'Problema técnico general (no del bloque)': () => redirectToGlobalSupport()
+            };
+
+            if (redirectCategories[categoryName]) {
+                showRedirectionWarning(categoryName, redirectCategories[categoryName]);
+            }
+        }
+
+        function showRedirectionWarning(categoryName, redirectAction) {
+            const infoMessage = document.getElementById('info-message');
+            infoMessage.className = 'alert alert-warning';
+            infoMessage.innerHTML = `
+                <strong>⚠️ Redirección Recomendada</strong><br>
+                Has seleccionado "${categoryName}".<br>
+                Te recomendamos usar el formulario más apropiado para tu problema.<br><br>
+                <button type="button" class="btn btn-primary" onclick="performRedirection()">
+                    Ir al formulario correcto
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="cancelRedirection()" style="margin-left: 10px;">
+                    Continuar aquí
+                </button>
+            `;
+
+            window.pendingRedirection = redirectAction;
+        }
+
+        function performRedirection() {
+            if (window.pendingRedirection) {
+                window.pendingRedirection();
+            }
+        }
+
+        function cancelRedirection() {
+            // Restaurar mensaje original
+            if (currentOriginType === 'global') {
+                setupGlobalSupport();
+            } else {
+                setupBlockSupport(currentBlockId);
+            }
+            delete window.pendingRedirection;
+        }
+
+        function redirectToBlockSupport() {
+            const blockId = prompt('Ingresa el ID del bloque donde encontraste el problema:');
+            if (blockId) {
+                window.location.href = `support-form.html?type=block&blockId=${blockId}`;
+            }
+        }
+
+        function redirectToGlobalSupport() {
+            window.location.href = 'support-form.html?type=global';
+        }
+
+        function handleFileSelection(event) {
+            const files = Array.from(event.target.files);
+            addFiles(files);
+        }
+
+        function addFiles(files) {
+            for (const file of files) {
+                if (selectedFiles.length >= 5) {
+                    showError('Máximo 5 archivos permitidos');
+                    break;
+                }
+
+                if (file.size > 10 * 1024 * 1024) { // 10MB
+                    showError(`El archivo "${file.name}" es demasiado grande (máximo 10MB)`);
+                    continue;
+                }
+
+                selectedFiles.push(file);
+            }
+
+            updateFileList();
+            document.getElementById('file-input').value = ''; // Limpiar input
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFileList();
+        }
+
+        function updateFileList() {
+            const fileList = document.getElementById('file-list');
+            
+            if (selectedFiles.length === 0) {
+                fileList.innerHTML = '';
+                return;
+            }
+
+            fileList.innerHTML = selectedFiles.map((file, index) => `
+                <div class="file-item">
+                    <div class="file-info">
+                        <span class="file-icon">📎</span>
+                        <span class="file-name">${file.name}</span>
+                        <span class="file-size">(${formatFileSize(file.size)})</span>
+                    </div>
+                    <button type="button" class="file-remove" onclick="removeFile(${index})">
+                        ✕
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            const form = event.target;
+
+            // Validaciones
+            if (!validateForm()) {
+                return;
+            }
+
+            // Mostrar loading
+            showLoading(true);
+
+            // Preparar datos del formulario
+            formData.append('originType', currentOriginType);
+            if (currentBlockId) {
+                formData.append('blockId', currentBlockId);
+            }
+            formData.append('categoryId', form.categoryId.value);
+            formData.append('title', form.title.value);
+            formData.append('description', form.description.value);
+
+            // Añadir archivos
+            selectedFiles.forEach(file => {
+                formData.append('attachments', file);
+            });
+
+            try {
+                const response = await fetch('/api/communication/tickets', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showSuccess(`
+                        ✅ <strong>Reporte enviado exitosamente</strong><br>
+                        Número de ticket: <strong>${result.ticket.ticketNumber}</strong><br>
+                        Recibirás actualizaciones sobre el estado de tu reporte.
+                    `);
+                    
+                    // Limpiar formulario
+                    form.reset();
+                    selectedFiles = [];
+                    updateFileList();
+                    
+                    // Redirigir después de 3 segundos
+                    setTimeout(() => {
+                        window.location.href = 'tickets-list.html';
+                    }, 3000);
+                } else {
+                    throw new Error(result.error || 'Error al enviar el reporte');
+                }
+
+            } catch (error) {
+                console.error('Error enviando reporte:', error);
+                showError('Error al enviar el reporte: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function validateForm() {
+            let isValid = true;
+
+            // Validar campos requeridos
+            const requiredFields = ['category', 'title', 'description'];
+            
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                const value = field.value.trim();
+                
+                if (!value) {
+                    field.classList.add('invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('invalid');
+                }
+            });
+
+            // Validar longitud mínima de descripción
+            const description = document.getElementById('description').value.trim();
+            if (description.length < 20) {
+                document.getElementById('description').classList.add('invalid');
+                showError('La descripción debe tener al menos 20 caracteres');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            const form = document.getElementById('support-form');
+            const submitBtn = document.getElementById('submit-btn');
+
+            if (show) {
+                loading.style.display = 'block';
+                form.style.display = 'none';
+                submitBtn.disabled = true;
+            } else {
+                loading.style.display = 'none';
+                form.style.display = 'block';
+                submitBtn.disabled = false;
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.innerHTML = message;
+            errorDiv.style.display = 'block';
+
+            // Auto-hide después de 10 segundos
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 10000);
+
+            // Scroll hacia el error
+            errorDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.innerHTML = message;
+            successDiv.style.display = 'block';
+
+            // Scroll hacia el mensaje
+            successDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Función para limpiar mensajes al interactuar
+        document.addEventListener('input', function() {
+            document.getElementById('error-message').style.display = 'none';
+        });
+    </script>
+</body>
+</html>

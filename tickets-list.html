@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Tickets - PlayTest</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-icon {
+            padding: 8px 12px;
+            font-size: 16px;
+        }
+
+        .notifications-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .notifications-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .notifications-header h3 {
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .unread-badge {
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .notification-item {
+            padding: 12px;
+            border-left: 4px solid #667eea;
+            background: #f8f9fa;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .notification-item:hover {
+            background: #e9ecef;
+        }
+
+        .notification-item.unread {
+            background: #e3f2fd;
+            border-left-color: #2196f3;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .notification-message {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .filters-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .form-control {
+            padding: 8px 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .tickets-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .section-header h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .tickets-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .ticket-item {
+            padding: 20px;
+            border-bottom: 1px solid #e1e8ed;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .ticket-item:hover {
+            background: #f8f9fa;
+        }
+
+        .ticket-item:last-child {
+            border-bottom: none;
+        }
+
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .ticket-number {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .ticket-title {
+            color: #333;
+            margin: 5px 0;
+            font-size: 15px;
+        }
+
+        .ticket-meta {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .ticket-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .status-abierto { background: #e3f2fd; color: #1976d2; }
+        .status-en_progreso { background: #fff3e0; color: #f57c00; }
+        .status-esperando_respuesta { background: #fce4ec; color: #c2185b; }
+        .status-resuelto { background: #e8f5e8; color: #388e3c; }
+        .status-cerrado { background: #f5f5f5; color: #757575; }
+
+        .priority-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .priority-baja { background: #4caf50; }
+        .priority-media { background: #ff9800; }
+        .priority-alta { background: #f44336; }
+
+        .ticket-preview {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .ticket-stats {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .pagination {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            background: #f8f9fa;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #f8f9fa;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .current-page {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 40px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .ticket-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .ticket-meta {
+                flex-wrap: wrap;
+            }
+        }
+
+        /* Scroll personalizado */
+        .tickets-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .tickets-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .tickets-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .tickets-container::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>Mis Tickets de Soporte</h1>
+                <p>Gestiona tus reportes y conversaciones de soporte</p>
+            </div>
+            <div class="header-actions">
+                <a href="support-form.html?type=global" class="btn btn-primary">
+                    🛠️ Soporte Técnico
+                </a>
+                <button class="btn btn-secondary btn-icon" onclick="refreshData()">🔄</button>
+                <button class="btn btn-secondary btn-icon" onclick="goBack()">←</button>
+            </div>
+        </div>
+
+        <!-- Panel de Notificaciones -->
+        <div class="notifications-panel" id="notifications-panel" style="display: none;">
+            <div class="notifications-header">
+                <h3>
+                    🔔 Notificaciones
+                    <span class="unread-badge" id="unread-badge">0</span>
+                </h3>
+                <button class="btn btn-secondary" style="font-size: 12px; padding: 5px 10px;" onclick="markAllNotificationsRead()">
+                    Marcar todas como leídas
+                </button>
+            </div>
+            <div id="notifications-list">
+                <!-- Las notificaciones se cargan dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="total-tickets">0</div>
+                <div class="stat-label">Total de Tickets</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="open-tickets">0</div>
+                <div class="stat-label">Tickets Abiertos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="resolved-tickets">0</div>
+                <div class="stat-label">Tickets Resueltos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avg-response-time">0h</div>
+                <div class="stat-label">Tiempo Promedio de Respuesta</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters-section">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label>Buscar</label>
+                    <input type="text" id="search-input" class="form-control" placeholder="Buscar por título o número...">
+                </div>
+                <div class="filter-group">
+                    <label>Estado</label>
+                    <select id="status-filter" class="form-control">
+                        <option value="">Todos los estados</option>
+                        <option value="abierto">Abierto</option>
+                        <option value="en_progreso">En Progreso</option>
+                        <option value="esperando_respuesta">Esperando Respuesta</option>
+                        <option value="resuelto">Resuelto</option>
+                        <option value="cerrado">Cerrado</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Prioridad</label>
+                    <select id="priority-filter" class="form-control">
+                        <option value="">Todas las prioridades</option>
+                        <option value="alta">Alta</option>
+                        <option value="media">Media</option>
+                        <option value="baja">Baja</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button class="btn btn-primary" onclick="applyFilters()">Filtrar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Tickets -->
+        <div class="tickets-section">
+            <div class="section-header">
+                <h2>Tickets de Soporte</h2>
+                <div id="results-info" style="font-size: 14px; color: #666; margin-top: 5px;">
+                    <!-- Información de resultados -->
+                </div>
+            </div>
+            
+            <div class="tickets-container" id="tickets-container">
+                <div class="loading">Cargando tickets...</div>
+            </div>
+            
+            <div class="pagination" id="pagination" style="display: none;">
+                <!-- Controles de paginación se generan dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <script src="api-data-service.js"></script>
+    <script>
+        // Variables globales
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentFilters = {
+            search: '',
+            status: '',
+            priority: ''
+        };
+        let tickets = [];
+        let notifications = [];
+        let pollingInterval = null;
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializePage();
+            setupEventListeners();
+            startPolling();
+        });
+
+        async function initializePage() {
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                await Promise.all([
+                    loadTickets(),
+                    loadNotifications(),
+                    loadStats()
+                ]);
+
+            } catch (error) {
+                console.error('Error inicializando página:', error);
+                showError('Error al cargar los datos');
+            }
+        }
+
+        async function loadTickets(page = 1) {
+            try {
+                const params = new URLSearchParams({
+                    page: page,
+                    limit: 10,
+                    ...currentFilters
+                });
+
+                const response = await fetch(`/api/communication/tickets?${params}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar tickets');
+                }
+
+                const data = await response.json();
+                tickets = data.tickets;
+                currentPage = data.pagination.page;
+                totalPages = data.pagination.pages;
+
+                renderTickets(tickets);
+                renderPagination(data.pagination);
+                updateResultsInfo(data.pagination);
+
+            } catch (error) {
+                console.error('Error cargando tickets:', error);
+                showError('Error al cargar los tickets');
+            }
+        }
+
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/api/communication/notifications?limit=5', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    notifications = data.notifications;
+                    renderNotifications(data.notifications, data.unreadCount);
+                }
+            } catch (error) {
+                console.error('Error cargando notificaciones:', error);
+            }
+        }
+
+        async function loadStats() {
+            // Calcular estadísticas básicas desde los tickets cargados
+            // En una implementación completa, esto vendría del backend
+            const stats = {
+                total: tickets.length,
+                open: tickets.filter(t => ['abierto', 'en_progreso'].includes(t.status)).length,
+                resolved: tickets.filter(t => t.status === 'resuelto').length,
+                avgResponseTime: '2h' // Placeholder
+            };
+
+            updateStatsDisplay(stats);
+        }
+
+        function renderNotifications(notifications, unreadCount) {
+            const notificationsPanel = document.getElementById('notifications-panel');
+            const unreadBadge = document.getElementById('unread-badge');
+            const notificationsList = document.getElementById('notifications-list');
+
+            if (unreadCount > 0) {
+                notificationsPanel.style.display = 'block';
+                unreadBadge.textContent = unreadCount;
+                unreadBadge.style.display = 'inline-block';
+            } else {
+                unreadBadge.style.display = 'none';
+            }
+
+            if (notifications.length === 0) {
+                notificationsList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">No hay notificaciones</div>';
+                return;
+            }
+
+            notificationsList.innerHTML = notifications.map(notification => `
+                <div class="notification-item ${!notification.is_read ? 'unread' : ''}" 
+                     onclick="handleNotificationClick('${notification.id}', '${notification.action_url || '#'}')">
+                    <div class="notification-title">${notification.title}</div>
+                    <div class="notification-message">${notification.message}</div>
+                    <div class="notification-time">${formatDate(notification.created_at)}</div>
+                    ${notification.ticket_number ? 
+                        `<div style="margin-top: 5px; font-size: 12px; color: #667eea;">Ticket: ${notification.ticket_number}</div>` 
+                        : ''
+                    }
+                </div>
+            `).join('');
+        }
+
+        function renderTickets(tickets) {
+            const container = document.getElementById('tickets-container');
+            
+            if (tickets.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <h3>No hay tickets</h3>
+                        <p>No tienes tickets de soporte con los filtros aplicados.</p>
+                        <div style="margin-top: 20px;">
+                            <a href="support-form.html?type=global" class="btn btn-primary">
+                                Crear primer ticket
+                            </a>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = tickets.map(ticket => `
+                <div class="ticket-item" onclick="openTicket('${ticket.id}')">
+                    <div class="ticket-header">
+                        <div>
+                            <div class="ticket-number">${ticket.ticket_number}</div>
+                            <div class="ticket-title">${ticket.title}</div>
+                        </div>
+                        <div class="ticket-status status-${ticket.status}">
+                            ${ticket.status.replace('_', ' ')}
+                        </div>
+                    </div>
+                    
+                    <div class="ticket-meta">
+                        <span class="priority-indicator priority-${ticket.priority}"></span>
+                        <span>Prioridad: ${ticket.priority}</span>
+                        <span>Categoría: ${ticket.category_name}</span>
+                        <span>Tipo: ${ticket.origin_type === 'global' ? 'Técnico' : 'Bloque'}</span>
+                        ${ticket.assigned_nickname ? 
+                            `<span>Asignado a: ${ticket.assigned_nickname}</span>` 
+                            : '<span>Sin asignar</span>'
+                        }
+                    </div>
+                    
+                    ${ticket.last_message ? `
+                    <div class="ticket-preview">
+                        <strong>Último mensaje:</strong> ${truncateText(ticket.last_message, 120)}
+                    </div>
+                    ` : ''}
+                    
+                    <div class="ticket-stats">
+                        <div class="stat-item">
+                            💬 <span>${ticket.message_count} mensajes</span>
+                        </div>
+                        <div class="stat-item">
+                            📎 <span>${ticket.attachment_count} adjuntos</span>
+                        </div>
+                        <div class="stat-item">
+                            🕒 <span>Actualizado: ${formatRelativeTime(ticket.last_activity)}</span>
+                        </div>
+                        ${ticket.block_name ? `
+                        <div class="stat-item">
+                            📝 <span>Bloque: ${ticket.block_name}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderPagination(pagination) {
+            const paginationContainer = document.getElementById('pagination');
+            
+            if (pagination.pages <= 1) {
+                paginationContainer.style.display = 'none';
+                return;
+            }
+
+            paginationContainer.style.display = 'flex';
+
+            let paginationHTML = '';
+
+            // Botón anterior
+            paginationHTML += `
+                <button onclick="changePage(${pagination.page - 1})" 
+                        ${pagination.page === 1 ? 'disabled' : ''}>
+                    ← Anterior
+                </button>
+            `;
+
+            // Números de página
+            const startPage = Math.max(1, pagination.page - 2);
+            const endPage = Math.min(pagination.pages, pagination.page + 2);
+
+            if (startPage > 1) {
+                paginationHTML += `<button onclick="changePage(1)">1</button>`;
+                if (startPage > 2) {
+                    paginationHTML += '<span style="padding: 8px;">...</span>';
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <button onclick="changePage(${i})" 
+                            ${i === pagination.page ? 'class="current-page"' : ''}>
+                        ${i}
+                    </button>
+                `;
+            }
+
+            if (endPage < pagination.pages) {
+                if (endPage < pagination.pages - 1) {
+                    paginationHTML += '<span style="padding: 8px;">...</span>';
+                }
+                paginationHTML += `<button onclick="changePage(${pagination.pages})">${pagination.pages}</button>`;
+            }
+
+            // Botón siguiente
+            paginationHTML += `
+                <button onclick="changePage(${pagination.page + 1})" 
+                        ${pagination.page === pagination.pages ? 'disabled' : ''}>
+                    Siguiente →
+                </button>
+            `;
+
+            paginationContainer.innerHTML = paginationHTML;
+        }
+
+        function updateResultsInfo(pagination) {
+            const resultsInfo = document.getElementById('results-info');
+            const start = (pagination.page - 1) * pagination.limit + 1;
+            const end = Math.min(pagination.page * pagination.limit, pagination.total);
+            
+            resultsInfo.textContent = `Mostrando ${start}-${end} de ${pagination.total} tickets`;
+        }
+
+        function updateStatsDisplay(stats) {
+            document.getElementById('total-tickets').textContent = stats.total;
+            document.getElementById('open-tickets').textContent = stats.open;
+            document.getElementById('resolved-tickets').textContent = stats.resolved;
+            document.getElementById('avg-response-time').textContent = stats.avgResponseTime;
+        }
+
+        function setupEventListeners() {
+            // Filtros en tiempo real con debounce
+            let searchTimeout;
+            document.getElementById('search-input').addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    currentFilters.search = this.value;
+                    currentPage = 1;
+                    loadTickets(1);
+                }, 500);
+            });
+
+            // Filtros de select
+            document.getElementById('status-filter').addEventListener('change', function() {
+                currentFilters.status = this.value;
+                currentPage = 1;
+                loadTickets(1);
+            });
+
+            document.getElementById('priority-filter').addEventListener('change', function() {
+                currentFilters.priority = this.value;
+                currentPage = 1;
+                loadTickets(1);
+            });
+        }
+
+        function applyFilters() {
+            const searchInput = document.getElementById('search-input');
+            const statusFilter = document.getElementById('status-filter');
+            const priorityFilter = document.getElementById('priority-filter');
+
+            currentFilters = {
+                search: searchInput.value,
+                status: statusFilter.value,
+                priority: priorityFilter.value
+            };
+
+            currentPage = 1;
+            loadTickets(1);
+        }
+
+        function changePage(page) {
+            if (page >= 1 && page <= totalPages) {
+                loadTickets(page);
+                
+                // Scroll al top de los tickets
+                document.getElementById('tickets-container').scrollTop = 0;
+            }
+        }
+
+        function openTicket(ticketId) {
+            window.location.href = `ticket-chat.html?ticketId=${ticketId}`;
+        }
+
+        async function handleNotificationClick(notificationId, actionUrl) {
+            try {
+                // Marcar como leída
+                await fetch(`/api/communication/notifications/${notificationId}/read`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                // Recargar notificaciones
+                await loadNotifications();
+
+                // Navegar si hay URL
+                if (actionUrl && actionUrl !== '#') {
+                    window.location.href = actionUrl;
+                }
+
+            } catch (error) {
+                console.error('Error manejando notificación:', error);
+            }
+        }
+
+        async function markAllNotificationsRead() {
+            try {
+                await fetch('/api/communication/notifications/read-all', {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                await loadNotifications();
+
+            } catch (error) {
+                console.error('Error marcando notificaciones:', error);
+            }
+        }
+
+        function startPolling() {
+            // Polling cada 30 segundos para notificaciones nuevas
+            pollingInterval = setInterval(async () => {
+                await loadNotifications();
+            }, 30000);
+        }
+
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+        }
+
+        async function refreshData() {
+            document.getElementById('tickets-container').innerHTML = '<div class="loading">Actualizando...</div>';
+            await Promise.all([
+                loadTickets(currentPage),
+                loadNotifications(),
+                loadStats()
+            ]);
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function showError(message) {
+            document.getElementById('tickets-container').innerHTML = 
+                `<div class="error">❌ ${message}</div>`;
+        }
+
+        // Funciones auxiliares
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatRelativeTime(dateString) {
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+
+            if (diffMins < 1) return 'hace un momento';
+            if (diffMins < 60) return `hace ${diffMins}m`;
+            if (diffHours < 24) return `hace ${diffHours}h`;
+            if (diffDays < 7) return `hace ${diffDays}d`;
+            return formatDate(dateString);
+        }
+
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
+        }
+
+        // Cleanup al cerrar la página
+        window.addEventListener('beforeunload', function() {
+            stopPolling();
+        });
+    </script>
+</body>
+</html>

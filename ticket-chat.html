@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat de Ticket - PlayTest</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            height: 100vh;
+            overflow: hidden;
+            color: #333;
+        }
+
+        .chat-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Panel lateral con información del ticket */
+        .ticket-sidebar {
+            width: 320px;
+            background: white;
+            border-right: 1px solid #e1e8ed;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ticket-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .ticket-number {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .ticket-title {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .ticket-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .ticket-info {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .info-section {
+            margin-bottom: 25px;
+        }
+
+        .info-section h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .info-item {
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .info-value {
+            color: #333;
+        }
+
+        .status-controls {
+            padding: 20px;
+            border-top: 1px solid #e1e8ed;
+            background: #f8f9fa;
+        }
+
+        .status-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .btn-update-status {
+            width: 100%;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn-update-status:hover {
+            background: #5a6fd8;
+        }
+
+        /* Área principal del chat */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .chat-header {
+            background: white;
+            border-bottom: 1px solid #e1e8ed;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: between;
+        }
+
+        .chat-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+        }
+
+        .btn-icon {
+            padding: 8px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-icon:hover {
+            background: #f8f9fa;
+        }
+
+        /* Área de mensajes */
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.own {
+            margin-left: auto;
+        }
+
+        .message.system {
+            max-width: 60%;
+            margin: 10px auto;
+            text-align: center;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .message.own .message-header {
+            justify-content: flex-end;
+        }
+
+        .sender-name {
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .message-time {
+            color: #999;
+        }
+
+        .message-content {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 18px;
+            border: 1px solid #e1e8ed;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .message.own .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .message.system .message-content {
+            background: #fff3cd;
+            color: #856404;
+            border-color: #ffeaa7;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .message.internal .message-content {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .message.internal::before {
+            content: "🔒 Nota interna";
+            display: block;
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        /* Adjuntos en mensajes */
+        .message-attachments {
+            margin-top: 10px;
+        }
+
+        .attachment-item {
+            display: inline-block;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 10px;
+            border-radius: 10px;
+            margin: 2px;
+            font-size: 12px;
+            color: inherit;
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .attachment-item:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .message:not(.own) .attachment-item {
+            background: #f0f0f0;
+            color: #333;
+            border-color: #ddd;
+        }
+
+        /* Área de escritura */
+        .message-input-area {
+            background: white;
+            border-top: 1px solid #e1e8ed;
+            padding: 15px 20px;
+        }
+
+        .message-composer {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .message-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .message-input {
+            width: 100%;
+            min-height: 40px;
+            max-height: 120px;
+            padding: 10px 45px 10px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 20px;
+            resize: none;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .message-input:focus {
+            border-color: #667eea;
+        }
+
+        .message-input::placeholder {
+            color: #999;
+        }
+
+        .input-actions {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 5px;
+        }
+
+        .input-action-btn {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .input-action-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Indicador de escritura */
+        .typing-indicator {
+            display: none;
+            padding: 10px 20px;
+            color: #666;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        .typing-dots {
+            display: inline-flex;
+            gap: 2px;
+            margin-left: 5px;
+        }
+
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            background: #666;
+            border-radius: 50%;
+            animation: typing 1.5s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        /* Upload de archivos */
+        .file-upload-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-upload-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        .uploaded-files {
+            margin-top: 10px;
+        }
+
+        .uploaded-file {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        .file-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        /* Controles de moderación */
+        .internal-note-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background: #ccc;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #667eea;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(20px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .ticket-sidebar {
+                position: fixed;
+                left: -320px;
+                z-index: 100;
+                height: 100vh;
+                transition: left 0.3s ease;
+            }
+            
+            .ticket-sidebar.show {
+                left: 0;
+            }
+            
+            .chat-main {
+                width: 100%;
+            }
+            
+            .messages-area {
+                padding: 15px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        /* Estados de loading */
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Scroll personalizado */
+        .messages-area::-webkit-scrollbar, .ticket-info::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages-area::-webkit-scrollbar-track, .ticket-info::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .messages-area::-webkit-scrollbar-thumb, .ticket-info::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .messages-area::-webkit-scrollbar-thumb:hover, .ticket-info::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Sidebar con información del ticket -->
+        <div class="ticket-sidebar" id="ticket-sidebar">
+            <div class="ticket-header">
+                <div class="ticket-number" id="ticket-number">Cargando...</div>
+                <div class="ticket-title" id="ticket-title">Cargando información del ticket...</div>
+                <div class="ticket-status" id="ticket-status">-</div>
+            </div>
+            
+            <div class="ticket-info" id="ticket-info">
+                <div class="loading">Cargando detalles...</div>
+            </div>
+            
+            <div class="status-controls" id="status-controls" style="display: none;">
+                <select class="status-select" id="status-select">
+                    <option value="abierto">Abierto</option>
+                    <option value="en_progreso">En Progreso</option>
+                    <option value="esperando_respuesta">Esperando Respuesta</option>
+                    <option value="resuelto">Resuelto</option>
+                    <option value="cerrado">Cerrado</option>
+                </select>
+                <button class="btn-update-status" onclick="updateTicketStatus()">
+                    Actualizar Estado
+                </button>
+            </div>
+        </div>
+
+        <!-- Área principal del chat -->
+        <div class="chat-main">
+            <div class="chat-header">
+                <button class="btn-icon" id="toggle-sidebar" onclick="toggleSidebar()">☰</button>
+                <div class="chat-title" id="chat-title">Chat de Soporte</div>
+                <div class="chat-actions">
+                    <button class="btn-icon" onclick="refreshChat()">🔄</button>
+                    <button class="btn-icon" onclick="goBack()">←</button>
+                </div>
+            </div>
+
+            <div class="messages-area" id="messages-area">
+                <div class="loading">Cargando conversación...</div>
+            </div>
+
+            <div class="typing-indicator" id="typing-indicator">
+                <span>Escribiendo</span>
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+
+            <div class="message-input-area">
+                <!-- Toggle para notas internas (solo para moderadores) -->
+                <div class="internal-note-toggle" id="internal-note-toggle" style="display: none;">
+                    <div class="toggle-switch" id="internal-toggle" onclick="toggleInternalNote()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                    <span>Nota interna (solo visible para el equipo)</span>
+                </div>
+
+                <div class="message-composer">
+                    <div class="message-input-wrapper">
+                        <textarea 
+                            class="message-input" 
+                            id="message-input" 
+                            placeholder="Escribe tu mensaje aquí..."
+                            rows="1"></textarea>
+                        <div class="input-actions">
+                            <button class="input-action-btn" id="attach-btn" onclick="showFileUpload()">📎</button>
+                            <button class="input-action-btn" onclick="showEmojiPicker()">😊</button>
+                        </div>
+                    </div>
+                    <button class="send-button" id="send-button" onclick="sendMessage()">
+                        Enviar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para subir archivos -->
+    <div class="file-upload-modal" id="file-upload-modal">
+        <div class="file-upload-content">
+            <h3>Adjuntar Archivos</h3>
+            <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt,.zip,.rar">
+            <div class="uploaded-files" id="uploaded-files"></div>
+            <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn-secondary" onclick="hideFileUpload()">Cancelar</button>
+                <button class="btn-primary" onclick="uploadFiles()">Subir</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="api-data-service.js"></script>
+    <script>
+        // Variables globales
+        let currentTicketId = null;
+        let currentUser = null;
+        let selectedFiles = [];
+        let isInternalNote = false;
+        let messagesPollingInterval = null;
+        let canModerate = false;
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializeChat();
+            setupEventListeners();
+        });
+
+        async function initializeChat() {
+            try {
+                // Obtener ID del ticket desde la URL
+                const urlParams = new URLSearchParams(window.location.search);
+                currentTicketId = urlParams.get('ticketId');
+                
+                if (!currentTicketId) {
+                    showError('ID de ticket no especificado');
+                    return;
+                }
+
+                // Verificar autenticación
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                // Obtener información del usuario actual
+                const userResponse = await fetch('/api/users/profile', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (userResponse.ok) {
+                    currentUser = await userResponse.json();
+                    
+                    // Verificar si puede moderar (admin o asignado al ticket)
+                    await checkModerationPermissions();
+                }
+
+                // Cargar datos del ticket
+                await loadTicketDetails();
+                
+                // Iniciar polling para mensajes nuevos
+                startMessagesPolling();
+
+            } catch (error) {
+                console.error('Error inicializando chat:', error);
+                showError('Error al inicializar el chat');
+            }
+        }
+
+        async function checkModerationPermissions() {
+            try {
+                const response = await fetch('/api/roles/my-roles', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const roles = await response.json();
+                    canModerate = roles.some(role => 
+                        ['administrador_principal', 'administrador_secundario', 'servicio_tecnico'].includes(role.name)
+                    );
+
+                    if (canModerate) {
+                        document.getElementById('internal-note-toggle').style.display = 'flex';
+                        document.getElementById('status-controls').style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error('Error verificando permisos:', error);
+            }
+        }
+
+        async function loadTicketDetails() {
+            try {
+                const response = await fetch(`/api/communication/tickets/${currentTicketId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        showError('No tienes acceso a este ticket');
+                        return;
+                    }
+                    throw new Error('Error al cargar el ticket');
+                }
+
+                const data = await response.json();
+                renderTicketInfo(data.ticket);
+                renderMessages(data.messages);
+                renderAttachments(data.attachments);
+
+                // Auto-scroll al final
+                scrollToBottom();
+
+            } catch (error) {
+                console.error('Error cargando ticket:', error);
+                showError('Error al cargar los detalles del ticket');
+            }
+        }
+
+        function renderTicketInfo(ticket) {
+            document.getElementById('ticket-number').textContent = ticket.ticket_number;
+            document.getElementById('ticket-title').textContent = ticket.title;
+            document.getElementById('ticket-status').textContent = ticket.status.replace('_', ' ').toUpperCase();
+            document.getElementById('chat-title').textContent = `${ticket.ticket_number} - ${ticket.title}`;
+
+            // Actualizar selector de estado
+            document.getElementById('status-select').value = ticket.status;
+
+            // Renderizar información detallada
+            const infoHTML = `
+                <div class="info-section">
+                    <h4>📊 Información General</h4>
+                    <div class="info-item">
+                        <span class="info-label">Estado:</span>
+                        <span class="info-value">${ticket.status.replace('_', ' ')}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Prioridad:</span>
+                        <span class="info-value">${ticket.priority}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Categoría:</span>
+                        <span class="info-value">${ticket.category_name}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Tipo:</span>
+                        <span class="info-value">${ticket.origin_type === 'global' ? 'Soporte Técnico' : 'Problema de Bloque'}</span>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h4>👥 Participantes</h4>
+                    <div class="info-item">
+                        <span class="info-label">Reportado por:</span>
+                        <span class="info-value">${ticket.creator_nickname}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Asignado a:</span>
+                        <span class="info-value">${ticket.assigned_nickname || 'Sin asignar'}</span>
+                    </div>
+                    ${ticket.escalated_nickname ? `
+                    <div class="info-item">
+                        <span class="info-label">Escalado a:</span>
+                        <span class="info-value">${ticket.escalated_nickname}</span>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <div class="info-section">
+                    <h4>📅 Fechas</h4>
+                    <div class="info-item">
+                        <span class="info-label">Creado:</span>
+                        <span class="info-value">${formatDate(ticket.created_at)}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Última actividad:</span>
+                        <span class="info-value">${formatDate(ticket.last_activity)}</span>
+                    </div>
+                    ${ticket.resolved_at ? `
+                    <div class="info-item">
+                        <span class="info-label">Resuelto:</span>
+                        <span class="info-value">${formatDate(ticket.resolved_at)}</span>
+                    </div>
+                    ` : ''}
+                </div>
+
+                ${ticket.block_name ? `
+                <div class="info-section">
+                    <h4>📝 Bloque Relacionado</h4>
+                    <div class="info-item">
+                        <span class="info-label">Bloque:</span>
+                        <span class="info-value">${ticket.block_name}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Creador del bloque:</span>
+                        <span class="info-value">${ticket.block_creator_nickname}</span>
+                    </div>
+                </div>
+                ` : ''}
+
+                <div class="info-section">
+                    <h4>📈 Estadísticas</h4>
+                    <div class="info-item">
+                        <span class="info-label">Mensajes:</span>
+                        <span class="info-value">${ticket.message_count}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Adjuntos:</span>
+                        <span class="info-value">${ticket.attachment_count}</span>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('ticket-info').innerHTML = infoHTML;
+        }
+
+        function renderMessages(messages) {
+            const messagesArea = document.getElementById('messages-area');
+            
+            if (messages.length === 0) {
+                messagesArea.innerHTML = '<div class="loading">No hay mensajes en esta conversación.</div>';
+                return;
+            }
+
+            const messagesHTML = messages.map(message => {
+                const isOwn = message.sender_id === currentUser.id;
+                const isSystem = message.is_system;
+                const isInternal = message.is_internal;
+                
+                let messageClass = 'message';
+                if (isOwn) messageClass += ' own';
+                if (isSystem) messageClass += ' system';
+                if (isInternal) messageClass += ' internal';
+
+                return `
+                    <div class="${messageClass}">
+                        <div class="message-header">
+                            <span class="sender-name">${message.sender_nickname}</span>
+                            <span class="message-time">${formatTime(message.created_at)}</span>
+                            ${message.edited_at ? '<span class="edited-marker">(editado)</span>' : ''}
+                        </div>
+                        <div class="message-content">
+                            ${formatMessageText(message.message_text)}
+                            ${renderMessageAttachments(message.id)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            messagesArea.innerHTML = messagesHTML;
+        }
+
+        function renderMessageAttachments(messageId) {
+            // Esta función se implementaría para mostrar adjuntos específicos del mensaje
+            // Por ahora retornamos vacío
+            return '';
+        }
+
+        function renderAttachments(attachments) {
+            // Renderizar adjuntos generales del ticket
+            // Se puede mostrar en el sidebar o en mensajes específicos
+        }
+
+        function formatMessageText(text) {
+            // Aplicar formato básico de markdown
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code>$1</code>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatTime(dateString) {
+            return new Date(dateString).toLocaleString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+
+            if (!message && selectedFiles.length === 0) {
+                return;
+            }
+
+            const sendButton = document.getElementById('send-button');
+            sendButton.disabled = true;
+            sendButton.textContent = 'Enviando...';
+
+            try {
+                const formData = new FormData();
+                formData.append('message', message);
+                formData.append('isInternal', isInternalNote);
+
+                // Añadir archivos
+                selectedFiles.forEach(file => {
+                    formData.append('attachments', file);
+                });
+
+                const response = await fetch(`/api/communication/tickets/${currentTicketId}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    messageInput.value = '';
+                    selectedFiles = [];
+                    updateFilesList();
+                    
+                    // Recargar mensajes
+                    await loadTicketDetails();
+                    
+                    // Reset del toggle interno
+                    if (isInternalNote) {
+                        toggleInternalNote();
+                    }
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error al enviar mensaje');
+                }
+
+            } catch (error) {
+                console.error('Error enviando mensaje:', error);
+                alert('Error al enviar el mensaje: ' + error.message);
+            } finally {
+                sendButton.disabled = false;
+                sendButton.textContent = 'Enviar';
+            }
+        }
+
+        async function updateTicketStatus() {
+            const newStatus = document.getElementById('status-select').value;
+            
+            try {
+                const response = await fetch(`/api/communication/tickets/${currentTicketId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (response.ok) {
+                    await loadTicketDetails();
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error al actualizar estado');
+                }
+
+            } catch (error) {
+                console.error('Error actualizando estado:', error);
+                alert('Error al actualizar el estado: ' + error.message);
+            }
+        }
+
+        function toggleInternalNote() {
+            isInternalNote = !isInternalNote;
+            const toggle = document.getElementById('internal-toggle');
+            const messageInput = document.getElementById('message-input');
+            
+            if (isInternalNote) {
+                toggle.classList.add('active');
+                messageInput.style.borderColor = '#dc3545';
+                messageInput.placeholder = 'Escribir nota interna (solo visible para el equipo)...';
+            } else {
+                toggle.classList.remove('active');
+                messageInput.style.borderColor = '#e1e8ed';
+                messageInput.placeholder = 'Escribe tu mensaje aquí...';
+            }
+        }
+
+        function showFileUpload() {
+            document.getElementById('file-upload-modal').style.display = 'flex';
+        }
+
+        function hideFileUpload() {
+            document.getElementById('file-upload-modal').style.display = 'none';
+        }
+
+        function setupEventListeners() {
+            // Enter para enviar mensaje
+            document.getElementById('message-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Auto-resize textarea
+            const messageInput = document.getElementById('message-input');
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+
+            // File upload
+            document.getElementById('file-input').addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+                addFiles(files);
+            });
+        }
+
+        function addFiles(files) {
+            for (const file of files) {
+                if (selectedFiles.length >= 5) {
+                    alert('Máximo 5 archivos permitidos');
+                    break;
+                }
+
+                if (file.size > 10 * 1024 * 1024) {
+                    alert(`El archivo "${file.name}" es demasiado grande (máximo 10MB)`);
+                    continue;
+                }
+
+                selectedFiles.push(file);
+            }
+            updateFilesList();
+        }
+
+        function updateFilesList() {
+            const container = document.getElementById('uploaded-files');
+            
+            if (selectedFiles.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = selectedFiles.map((file, index) => `
+                <div class="uploaded-file">
+                    <span>${file.name} (${formatFileSize(file.size)})</span>
+                    <button class="file-remove" onclick="removeFile(${index})">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFilesList();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function startMessagesPolling() {
+            // Polling cada 3 segundos para nuevos mensajes
+            messagesPollingInterval = setInterval(async () => {
+                await loadTicketDetails();
+            }, 3000);
+        }
+
+        function stopMessagesPolling() {
+            if (messagesPollingInterval) {
+                clearInterval(messagesPollingInterval);
+                messagesPollingInterval = null;
+            }
+        }
+
+        function scrollToBottom() {
+            const messagesArea = document.getElementById('messages-area');
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('ticket-sidebar');
+            sidebar.classList.toggle('show');
+        }
+
+        function refreshChat() {
+            loadTicketDetails();
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function showError(message) {
+            document.getElementById('messages-area').innerHTML = 
+                `<div class="error">❌ ${message}</div>`;
+        }
+
+        function showEmojiPicker() {
+            // Implementación básica - se puede expandir
+            const emojis = ['😊', '👍', '👎', '❤️', '😢', '😠', '🎉', '🤔'];
+            const messageInput = document.getElementById('message-input');
+            
+            const emoji = prompt('Selecciona un emoji:', emojis.join(' '));
+            if (emoji && emojis.includes(emoji)) {
+                messageInput.value += emoji;
+                messageInput.focus();
+            }
+        }
+
+        // Cleanup al cerrar la página
+        window.addEventListener('beforeunload', function() {
+            stopMessagesPolling();
+        });
+    </script>
+</body>
+</html>

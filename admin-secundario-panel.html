@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador Secundario - PlayTest</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #667eea;
+            color: white;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .section-content {
+            padding: 20px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-expand {
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .btn-expand:hover {
+            background: #218838;
+        }
+
+        .expandable-row {
+            display: none;
+            background: #f8f9fa;
+        }
+
+        .expandable-row.show {
+            display: table-row;
+        }
+
+        .nested-table {
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .nested-table th {
+            background: #e9ecef;
+            font-size: 14px;
+        }
+
+        .nested-table td {
+            font-size: 14px;
+            padding: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px;
+            }
+
+            .stats-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Panel del Administrador Secundario</h1>
+            <p>Gestión de usuarios asignados</p>
+        </div>
+
+        <!-- Resumen estadístico -->
+        <div class="stats-summary">
+            <div class="stat-card">
+                <div class="stat-number" id="total-profesores">0</div>
+                <div class="stat-label">Profesores/Creadores</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-usuarios">0</div>
+                <div class="stat-label">Usuarios Asignados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-bloques">0</div>
+                <div class="stat-label">Bloques Totales</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-preguntas">0</div>
+                <div class="stat-label">Preguntas Totales</div>
+            </div>
+        </div>
+
+        <!-- Sección 1: Profesores/Creadores Asignados -->
+        <div class="section">
+            <div class="section-header">
+                <span>Profesores/Creadores de Contenido Asignados</span>
+            </div>
+            <div class="section-content">
+                <div class="table-container">
+                    <table id="profesores-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Nickname</th>
+                                <th>Nombre/Apellidos</th>
+                                <th>Email</th>
+                                <th>Núm. Bloques</th>
+                                <th>Núm. Preguntas</th>
+                                <th>Núm. Usuarios</th>
+                            </tr>
+                        </thead>
+                        <tbody id="profesores-tbody">
+                            <!-- Los datos se cargan dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección 2: Usuarios Asignados -->
+        <div class="section">
+            <div class="section-header">
+                <span>Usuarios (Jugadores) Asignados</span>
+            </div>
+            <div class="section-content">
+                <div class="table-container">
+                    <table id="usuarios-table">
+                        <thead>
+                            <tr>
+                                <th>Nickname</th>
+                                <th>Nombre/Apellidos</th>
+                                <th>Email</th>
+                                <th>Núm. Bloques Cargados</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usuarios-tbody">
+                            <!-- Los datos se cargan dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="api-data-service.js"></script>
+    <script>
+        let panelData = {};
+        let expandedRows = new Set();
+
+        // Cargar datos del panel al inicializar
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadPanelData();
+        });
+
+        async function loadPanelData() {
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                const response = await fetch('/api/roles/admin-secundario-panel', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        showError('No tienes permisos para acceder a este panel');
+                        setTimeout(() => window.location.href = 'index.html', 2000);
+                        return;
+                    }
+                    throw new Error('Error al cargar datos del panel');
+                }
+
+                panelData = await response.json();
+                updateStats();
+                renderTables();
+
+            } catch (error) {
+                console.error('Error cargando panel:', error);
+                showError('Error al cargar los datos del panel');
+            }
+        }
+
+        function updateStats() {
+            const totalProfesores = panelData.profesoresAsignados.length;
+            const totalUsuarios = panelData.usuariosAsignados.length;
+            const totalBloques = panelData.profesoresAsignados.reduce((sum, p) => sum + p.bloques_creados, 0);
+            const totalPreguntas = panelData.profesoresAsignados.reduce((sum, p) => sum + p.preguntas_totales, 0);
+
+            document.getElementById('total-profesores').textContent = totalProfesores;
+            document.getElementById('total-usuarios').textContent = totalUsuarios;
+            document.getElementById('total-bloques').textContent = totalBloques;
+            document.getElementById('total-preguntas').textContent = totalPreguntas;
+        }
+
+        function renderTables() {
+            renderProfesoresTable();
+            renderUsuariosTable();
+        }
+
+        function renderProfesoresTable() {
+            const tbody = document.getElementById('profesores-tbody');
+            tbody.innerHTML = '';
+
+            if (panelData.profesoresAsignados.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="7" style="text-align: center; color: #666; padding: 30px;">No tienes profesores/creadores asignados</td>`;
+                tbody.appendChild(row);
+                return;
+            }
+
+            panelData.profesoresAsignados.forEach((profesor, index) => {
+                const row = document.createElement('tr');
+                const isExpanded = expandedRows.has(`profesor-${profesor.id}`);
+                
+                row.innerHTML = `
+                    <td>
+                        <button class="btn btn-expand" onclick="toggleProfesorExpansion(${profesor.id})">
+                            ${isExpanded ? '−' : '+'}
+                        </button>
+                    </td>
+                    <td>${profesor.nickname}</td>
+                    <td>${profesor.email || 'N/A'}</td>
+                    <td>${profesor.email || 'N/A'}</td>
+                    <td>${profesor.bloques_creados}</td>
+                    <td>${profesor.preguntas_totales}</td>
+                    <td>${profesor.usuarios_bloques_publicos}</td>
+                `;
+                tbody.appendChild(row);
+
+                // Fila expandible para bloques (sin luminarias)
+                if (isExpanded) {
+                    const expandRow = document.createElement('tr');
+                    expandRow.className = 'expandable-row show';
+                    expandRow.innerHTML = `
+                        <td colspan="7">
+                            <div id="profesor-blocks-${profesor.id}">
+                                <div class="loading">Cargando bloques...</div>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(expandRow);
+                    loadProfesorBlocks(profesor.id);
+                }
+            });
+        }
+
+        function renderUsuariosTable() {
+            const tbody = document.getElementById('usuarios-tbody');
+            tbody.innerHTML = '';
+
+            if (panelData.usuariosAsignados.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="4" style="text-align: center; color: #666; padding: 30px;">No tienes usuarios asignados</td>`;
+                tbody.appendChild(row);
+                return;
+            }
+
+            panelData.usuariosAsignados.forEach(usuario => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${usuario.nickname}</td>
+                    <td>${usuario.email || 'N/A'}</td>
+                    <td>${usuario.email || 'N/A'}</td>
+                    <td>${usuario.bloques_cargados}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        async function toggleProfesorExpansion(profesorId) {
+            const key = `profesor-${profesorId}`;
+            if (expandedRows.has(key)) {
+                expandedRows.delete(key);
+            } else {
+                expandedRows.add(key);
+            }
+            renderProfesoresTable();
+        }
+
+        async function loadProfesorBlocks(profesorId) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`/api/roles/profesor-blocks/${profesorId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Error al cargar bloques');
+
+                const blocks = await response.json();
+                const container = document.getElementById(`profesor-blocks-${profesorId}`);
+                
+                if (blocks.length === 0) {
+                    container.innerHTML = '<p>No tiene bloques públicos creados</p>';
+                    return;
+                }
+
+                let html = '<table class="nested-table"><thead><tr><th>Bloque</th><th>Núm. Temas</th><th>Total Preguntas</th><th>Usuarios</th><th>Fecha Creación</th><th>Acciones</th></tr></thead><tbody>';
+                
+                blocks.forEach(block => {
+                    html += `
+                        <tr>
+                            <td><strong>${block.name}</strong></td>
+                            <td>${block.num_temas}</td>
+                            <td>${block.total_preguntas}</td>
+                            <td>${block.usuarios_bloque}</td>
+                            <td>${new Date(block.created_at).toLocaleDateString()}</td>
+                            <td>
+                                <button class="btn btn-expand" onclick="showBlockDetails(${block.id})">Ver</button>
+                                <button class="btn btn-expand" onclick="toggleBlockExpansion(${block.id})">Temas</button>
+                            </td>
+                        </tr>
+                        <tr id="block-expansion-${block.id}" style="display: none;">
+                            <td colspan="6">
+                                <div id="block-topics-${block.id}"></div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error cargando bloques:', error);
+                document.getElementById(`profesor-blocks-${profesorId}`).innerHTML = 
+                    '<p style="color: red;">Error al cargar los bloques</p>';
+            }
+        }
+
+        async function toggleBlockExpansion(blockId) {
+            const expansionRow = document.getElementById(`block-expansion-${blockId}`);
+            if (expansionRow.style.display === 'none') {
+                expansionRow.style.display = 'table-row';
+                await loadBlockTopics(blockId);
+            } else {
+                expansionRow.style.display = 'none';
+            }
+        }
+
+        async function loadBlockTopics(blockId) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`/api/roles/block-topics/${blockId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Error al cargar temas');
+
+                const topics = await response.json();
+                const container = document.getElementById(`block-topics-${blockId}`);
+                
+                let html = '<h5>Temas del bloque:</h5><table class="nested-table"><thead><tr><th>Tema</th><th>Núm. Preguntas</th><th>Acciones</th></tr></thead><tbody>';
+                
+                topics.forEach(topic => {
+                    html += `
+                        <tr>
+                            <td>${topic.topic}</td>
+                            <td>${topic.num_preguntas}</td>
+                            <td>
+                                <button class="btn btn-expand" onclick="toggleTopicQuestions(${blockId}, '${topic.topic}')">Preguntas</button>
+                            </td>
+                        </tr>
+                        <tr id="topic-questions-${blockId}-${topic.topic.replace(/\s+/g, '_')}" style="display: none;">
+                            <td colspan="3">
+                                <div id="questions-${blockId}-${topic.topic.replace(/\s+/g, '_')}"></div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error cargando temas:', error);
+                document.getElementById(`block-topics-${blockId}`).innerHTML = 
+                    '<p style="color: red;">Error al cargar los temas</p>';
+            }
+        }
+
+        async function toggleTopicQuestions(blockId, topicName) {
+            const topicKey = topicName.replace(/\s+/g, '_');
+            const questionsRow = document.getElementById(`topic-questions-${blockId}-${topicKey}`);
+            
+            if (questionsRow.style.display === 'none') {
+                questionsRow.style.display = 'table-row';
+                await loadTopicQuestions(blockId, topicName);
+            } else {
+                questionsRow.style.display = 'none';
+            }
+        }
+
+        async function loadTopicQuestions(blockId, topicName) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`/api/roles/topic-questions/${blockId}/${encodeURIComponent(topicName)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Error al cargar preguntas');
+
+                const questions = await response.json();
+                const topicKey = topicName.replace(/\s+/g, '_');
+                const container = document.getElementById(`questions-${blockId}-${topicKey}`);
+                
+                let html = '<h6>Preguntas del tema:</h6>';
+                
+                questions.forEach((question, index) => {
+                    html += `
+                        <div style="border: 1px solid #ddd; margin: 10px 0; padding: 10px; border-radius: 5px;">
+                            <strong>Pregunta ${index + 1}:</strong> ${question.text_question}<br>
+                            <small>Dificultad: ${question.difficulty}/5</small><br>
+                            <strong>Respuestas:</strong>
+                            <ul>
+                    `;
+                    
+                    question.answers.forEach(answer => {
+                        html += `<li style="color: ${answer.is_correct ? 'green' : 'black'};">${answer.text} ${answer.is_correct ? '✓' : ''}</li>`;
+                    });
+                    
+                    html += `</ul>`;
+                    if (question.explanation) {
+                        html += `<strong>Explicación:</strong> ${question.explanation}`;
+                    }
+                    html += `</div>`;
+                });
+                
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error cargando preguntas:', error);
+                const topicKey = topicName.replace(/\s+/g, '_');
+                document.getElementById(`questions-${blockId}-${topicKey}`).innerHTML = 
+                    '<p style="color: red;">Error al cargar las preguntas</p>';
+            }
+        }
+
+        function showError(message) {
+            const existingError = document.querySelector('.error');
+            if (existingError) existingError.remove();
+
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            document.querySelector('.container').insertBefore(errorDiv, document.querySelector('.section'));
+
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        function showSuccess(message) {
+            const existingSuccess = document.querySelector('.success');
+            if (existingSuccess) existingSuccess.remove();
+
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.textContent = message;
+            document.querySelector('.container').insertBefore(successDiv, document.querySelector('.section'));
+
+            setTimeout(() => successDiv.remove(), 3000);
+        }
+
+        function showBlockDetails(blockId) {
+            // Implementar modal o ventana con detalles completos del bloque
+            alert(`Ver detalles completos del bloque ID: ${blockId}`);
+        }
+    </script>
+</body>
+</html>
