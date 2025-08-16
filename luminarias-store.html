@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda de Luminarias - PlayTest</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .header-left h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .header-left p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .balance-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .balance-amount {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .balance-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 30px;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            height: fit-content;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .content-area {
+            flex: 1;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .role-toggle {
+            margin-bottom: 25px;
+        }
+
+        .toggle-buttons {
+            display: flex;
+            background: #f0f0f0;
+            border-radius: 25px;
+            padding: 4px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            background: transparent;
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .filters {
+            margin-bottom: 25px;
+        }
+
+        .filter-group {
+            margin-bottom: 20px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .categories-list {
+            list-style: none;
+        }
+
+        .categories-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .categories-list li:hover,
+        .categories-list li.active {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .store-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .item-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid #e1e8ed;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .item-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .item-icon.user { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .item-icon.creator { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .item-icon.both { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+
+        .item-type-badge {
+            background: #f8f9fa;
+            color: #666;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .item-name {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .item-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .item-category {
+            display: inline-block;
+            background: #667eea20;
+            color: #667eea;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .item-price {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .price-luminarias {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .price-real {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .item-metadata {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .metadata-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .metadata-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .metadata-label {
+            color: #666;
+            font-weight: 600;
+        }
+
+        .metadata-value {
+            color: #333;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 1px solid #e9ecef;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .insufficient-funds {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .insufficient-funds .btn-primary {
+            background: #dc3545;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .stock-warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ffeaa7;
+        }
+
+        .purchase-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .modal-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .purchase-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .summary-row:last-child {
+            margin-bottom: 0;
+            padding-top: 10px;
+            border-top: 1px solid #e9ecef;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .quantity-input {
+            width: 80px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .qty-btn {
+            width: 35px;
+            height: 35px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qty-btn:hover {
+            background: #f8f9fa;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+
+            .store-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+
+            .balance-display {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>🌟 Tienda de Luminarias</h1>
+                <p>Mejora tu experiencia con nuestros productos y servicios exclusivos</p>
+            </div>
+            <div class="balance-display">
+                <div class="balance-amount" id="balance-amount">0</div>
+                <div class="balance-label">Luminarias disponibles</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="role-toggle">
+                    <h3 style="margin-bottom: 15px;">🎭 Perspectiva</h3>
+                    <div class="toggle-buttons">
+                        <button class="toggle-btn active" onclick="switchRole('user')">
+                            👤 Usuario
+                        </button>
+                        <button class="toggle-btn" onclick="switchRole('creator')">
+                            👨‍🏫 Creador
+                        </button>
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Buscar productos...">
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="price-filter">💰 Precio máximo</label>
+                        <select id="price-filter">
+                            <option value="">Todos los precios</option>
+                            <option value="100">Hasta 100 Luminarias</option>
+                            <option value="500">Hasta 500 Luminarias</option>
+                            <option value="1000">Hasta 1,000 Luminarias</option>
+                            <option value="2000">Hasta 2,000 Luminarias</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="type-filter">🏷️ Tipo de producto</label>
+                        <select id="type-filter">
+                            <option value="">Todos los tipos</option>
+                            <option value="permanent">Permanente</option>
+                            <option value="consumable">Consumible</option>
+                            <option value="subscription">Suscripción</option>
+                            <option value="service">Servicio</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="categories">
+                    <h4 style="margin-bottom: 15px;">📂 Categorías</h4>
+                    <ul class="categories-list" id="categories-list">
+                        <li data-category="" class="active">🔍 Todas las categorías</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div id="store-content">
+                    <div class="loading">🌟 Cargando productos...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de compra -->
+    <div id="purchase-modal" class="purchase-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirmar compra</h3>
+                <button class="close-btn" onclick="closePurchaseModal()">&times;</button>
+            </div>
+
+            <div id="purchase-details"></div>
+
+            <div class="quantity-selector" id="quantity-section" style="display: none;">
+                <label>Cantidad:</label>
+                <button class="qty-btn" onclick="changeQuantity(-1)">−</button>
+                <input type="number" class="quantity-input" id="quantity-input" value="1" min="1" onchange="updatePurchaseSummary()">
+                <button class="qty-btn" onclick="changeQuantity(1)">+</button>
+            </div>
+
+            <div class="purchase-summary" id="purchase-summary"></div>
+
+            <div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="closePurchaseModal()">
+                    Cancelar
+                </button>
+                <button class="btn btn-primary" id="confirm-purchase-btn" onclick="confirmPurchase()">
+                    💫 Confirmar compra
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="api-data-service.js"></script>
+    <script>
+        let currentRole = 'user';
+        let currentBalance = 0;
+        let allItems = [];
+        let filteredItems = [];
+        let selectedItem = null;
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkAuthentication();
+            await loadBalance();
+            await loadStoreItems();
+            setupEventListeners();
+        });
+
+        async function checkAuthentication() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = 'index.html';
+                return;
+            }
+        }
+
+        async function loadBalance() {
+            try {
+                const response = await fetch('/api/luminarias/balance', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const balance = await response.json();
+                    currentBalance = balance.current_balance;
+                    document.getElementById('balance-amount').textContent = currentBalance.toLocaleString();
+                }
+            } catch (error) {
+                console.error('Error cargando balance:', error);
+            }
+        }
+
+        async function loadStoreItems() {
+            try {
+                const response = await fetch(`/api/luminarias/store?target_role=${currentRole}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    allItems = await response.json();
+                    updateCategories();
+                    filterItems();
+                } else {
+                    throw new Error('Error cargando productos');
+                }
+            } catch (error) {
+                console.error('Error cargando tienda:', error);
+                document.getElementById('store-content').innerHTML = `
+                    <div class="empty-state">
+                        <h3>❌ Error cargando productos</h3>
+                        <p>Inténtalo de nuevo más tarde</p>
+                    </div>
+                `;
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('search-input').addEventListener('input', debounce(filterItems, 300));
+            document.getElementById('price-filter').addEventListener('change', filterItems);
+            document.getElementById('type-filter').addEventListener('change', filterItems);
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function switchRole(role) {
+            currentRole = role;
+            
+            // Actualizar botones
+            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Recargar productos
+            loadStoreItems();
+        }
+
+        function updateCategories() {
+            const categories = [...new Set(allItems.map(item => item.category))];
+            const categoriesList = document.getElementById('categories-list');
+            
+            // Mantener "Todas las categorías"
+            const allCategoriesItem = categoriesList.querySelector('[data-category=""]');
+            categoriesList.innerHTML = '';
+            categoriesList.appendChild(allCategoriesItem);
+            
+            // Agregar categorías específicas
+            categories.forEach(category => {
+                const li = document.createElement('li');
+                li.setAttribute('data-category', category);
+                li.textContent = `${getCategoryIcon(category)} ${getCategoryName(category)}`;
+                li.addEventListener('click', () => filterByCategory(category));
+                categoriesList.appendChild(li);
+            });
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                'personalization': '🎨',
+                'game_features': '🎮',
+                'premium_services': '⭐',
+                'creation_tools': '🛠️',
+                'marketing': '📢',
+                'tools': '🔧',
+                'services': '🤝'
+            };
+            return icons[category] || '📦';
+        }
+
+        function getCategoryName(category) {
+            const names = {
+                'personalization': 'Personalización',
+                'game_features': 'Funciones de Juego',
+                'premium_services': 'Servicios Premium',
+                'creation_tools': 'Herramientas de Creación',
+                'marketing': 'Marketing y Promoción',
+                'tools': 'Herramientas',
+                'services': 'Servicios'
+            };
+            return names[category] || category;
+        }
+
+        function filterByCategory(category) {
+            // Actualizar categoría activa
+            document.querySelectorAll('.categories-list li').forEach(li => li.classList.remove('active'));
+            document.querySelector(`[data-category="${category}"]`).classList.add('active');
+            
+            filterItems();
+        }
+
+        function filterItems() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const maxPrice = document.getElementById('price-filter').value;
+            const itemType = document.getElementById('type-filter').value;
+            const selectedCategory = document.querySelector('.categories-list li.active').getAttribute('data-category');
+            
+            filteredItems = allItems.filter(item => {
+                const matchesSearch = !searchTerm || 
+                    item.name.toLowerCase().includes(searchTerm) ||
+                    item.description.toLowerCase().includes(searchTerm);
+                
+                const matchesPrice = !maxPrice || item.price_luminarias <= parseInt(maxPrice);
+                const matchesType = !itemType || item.item_type === itemType;
+                const matchesCategory = !selectedCategory || item.category === selectedCategory;
+                
+                return matchesSearch && matchesPrice && matchesType && matchesCategory;
+            });
+            
+            renderStoreItems();
+        }
+
+        function renderStoreItems() {
+            const container = document.getElementById('store-content');
+            
+            if (filteredItems.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>🔍 No se encontraron productos</h3>
+                        <p>Prueba ajustando los filtros de búsqueda</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const itemsHTML = filteredItems.map(item => renderItemCard(item)).join('');
+            container.innerHTML = `<div class="store-grid">${itemsHTML}</div>`;
+        }
+
+        function renderItemCard(item) {
+            const hasStock = !item.limited_quantity || item.stock_remaining > 0;
+            const canAfford = currentBalance >= item.price_luminarias;
+            const isDisabled = !hasStock || !canAfford;
+            
+            return `
+                <div class="item-card ${isDisabled ? 'insufficient-funds' : ''}">
+                    <div class="item-header">
+                        <div class="item-icon ${item.target_role}">
+                            ${getItemIcon(item.category, item.subcategory)}
+                        </div>
+                        <div class="item-type-badge">${getItemTypeName(item.item_type)}</div>
+                    </div>
+                    
+                    <div class="item-name">${escapeHtml(item.name)}</div>
+                    <div class="item-description">${escapeHtml(item.description)}</div>
+                    
+                    <div class="item-category">${getCategoryIcon(item.category)} ${getCategoryName(item.category)}</div>
+                    
+                    ${!hasStock ? `<div class="stock-warning">⚠️ Agotado (${item.stock_remaining}/${item.limited_quantity})</div>` : ''}
+                    
+                    <div class="item-price">
+                        <div class="price-luminarias">
+                            🌟 ${item.price_luminarias.toLocaleString()} Luminarias
+                        </div>
+                        ${item.price_real_money ? `<div class="price-real">o $${item.price_real_money}</div>` : ''}
+                    </div>
+                    
+                    ${renderItemMetadata(item)}
+                    
+                    <div class="item-actions">
+                        <button class="btn btn-primary" 
+                                ${isDisabled ? 'disabled' : ''} 
+                                onclick="openPurchaseModal(${item.id})">
+                            ${!canAfford ? '💸 Sin fondos' : '🛒 Comprar'}
+                        </button>
+                        <button class="btn btn-secondary" onclick="viewItemDetails(${item.id})">
+                            ℹ️ Detalles
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getItemIcon(category, subcategory) {
+            const icons = {
+                'personalization': {
+                    'avatars': '👤',
+                    'themes': '🎨',
+                    'effects': '✨',
+                    'badges': '🏆'
+                },
+                'game_features': {
+                    'hints': '💡',
+                    'revival': '❤️',
+                    'multipliers': '⚡',
+                    'boosts': '🚀'
+                },
+                'premium_services': {
+                    'tutoring': '👨‍🏫',
+                    'analytics': '📊',
+                    'support': '🛟'
+                },
+                'creation_tools': {
+                    'ai_tools': '🤖',
+                    'analytics': '📈',
+                    'templates': '📋'
+                },
+                'marketing': {
+                    'promotion': '📢',
+                    'newsletter': '📧',
+                    'boost': '🚀'
+                }
+            };
+            
+            return icons[category]?.[subcategory] || icons[category] || '📦';
+        }
+
+        function getItemTypeName(type) {
+            const names = {
+                'permanent': 'Permanente',
+                'consumable': 'Consumible',
+                'subscription': 'Suscripción',
+                'service': 'Servicio'
+            };
+            return names[type] || type;
+        }
+
+        function renderItemMetadata(item) {
+            const metadata = JSON.parse(item.metadata || '{}');
+            let metadataHTML = '<div class="item-metadata">';
+            
+            if (item.duration_days) {
+                metadataHTML += `
+                    <div class="metadata-item">
+                        <span class="metadata-label">Duración:</span>
+                        <span class="metadata-value">${item.duration_days} días</span>
+                    </div>
+                `;
+            }
+            
+            if (item.max_uses) {
+                metadataHTML += `
+                    <div class="metadata-item">
+                        <span class="metadata-label">Usos:</span>
+                        <span class="metadata-value">${item.max_uses}</span>
+                    </div>
+                `;
+            }
+            
+            if (item.limited_quantity) {
+                metadataHTML += `
+                    <div class="metadata-item">
+                        <span class="metadata-label">Stock:</span>
+                        <span class="metadata-value">${item.stock_remaining}/${item.limited_quantity}</span>
+                    </div>
+                `;
+            }
+            
+            if (item.requires_level > 1) {
+                metadataHTML += `
+                    <div class="metadata-item">
+                        <span class="metadata-label">Nivel requerido:</span>
+                        <span class="metadata-value">${item.requires_level}</span>
+                    </div>
+                `;
+            }
+            
+            metadataHTML += '</div>';
+            return metadataHTML;
+        }
+
+        function openPurchaseModal(itemId) {
+            selectedItem = allItems.find(item => item.id === itemId);
+            if (!selectedItem) return;
+            
+            const modal = document.getElementById('purchase-modal');
+            const detailsDiv = document.getElementById('purchase-details');
+            const quantitySection = document.getElementById('quantity-section');
+            
+            detailsDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div class="item-icon ${selectedItem.target_role}" style="width: 60px; height: 60px; font-size: 28px;">
+                        ${getItemIcon(selectedItem.category, selectedItem.subcategory)}
+                    </div>
+                    <div>
+                        <h4>${escapeHtml(selectedItem.name)}</h4>
+                        <p style="color: #666; margin: 5px 0;">${escapeHtml(selectedItem.description)}</p>
+                        <span class="item-category">${getCategoryIcon(selectedItem.category)} ${getCategoryName(selectedItem.category)}</span>
+                    </div>
+                </div>
+            `;
+            
+            // Mostrar selector de cantidad solo para items consumibles
+            if (selectedItem.item_type === 'consumable') {
+                quantitySection.style.display = 'flex';
+                document.getElementById('quantity-input').value = 1;
+            } else {
+                quantitySection.style.display = 'none';
+            }
+            
+            updatePurchaseSummary();
+            modal.style.display = 'flex';
+        }
+
+        function closePurchaseModal() {
+            document.getElementById('purchase-modal').style.display = 'none';
+            selectedItem = null;
+        }
+
+        function changeQuantity(delta) {
+            const input = document.getElementById('quantity-input');
+            const currentValue = parseInt(input.value);
+            const newValue = Math.max(1, currentValue + delta);
+            
+            if (selectedItem.limited_quantity) {
+                input.value = Math.min(newValue, selectedItem.stock_remaining);
+            } else {
+                input.value = newValue;
+            }
+            
+            updatePurchaseSummary();
+        }
+
+        function updatePurchaseSummary() {
+            if (!selectedItem) return;
+            
+            const quantity = parseInt(document.getElementById('quantity-input').value) || 1;
+            const unitPrice = selectedItem.price_luminarias;
+            const totalPrice = unitPrice * quantity;
+            
+            const summaryDiv = document.getElementById('purchase-summary');
+            summaryDiv.innerHTML = `
+                <div class="summary-row">
+                    <span>Precio unitario:</span>
+                    <span>🌟 ${unitPrice.toLocaleString()} Luminarias</span>
+                </div>
+                ${quantity > 1 ? `
+                <div class="summary-row">
+                    <span>Cantidad:</span>
+                    <span>×${quantity}</span>
+                </div>
+                ` : ''}
+                <div class="summary-row">
+                    <span>Total a pagar:</span>
+                    <span>🌟 ${totalPrice.toLocaleString()} Luminarias</span>
+                </div>
+                <div class="summary-row">
+                    <span>Balance actual:</span>
+                    <span>🌟 ${currentBalance.toLocaleString()} Luminarias</span>
+                </div>
+                <div class="summary-row">
+                    <span>Balance después:</span>
+                    <span style="color: ${currentBalance >= totalPrice ? '#28a745' : '#dc3545'}">
+                        🌟 ${(currentBalance - totalPrice).toLocaleString()} Luminarias
+                    </span>
+                </div>
+            `;
+            
+            // Actualizar botón de confirmación
+            const confirmBtn = document.getElementById('confirm-purchase-btn');
+            if (currentBalance < totalPrice) {
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = '💸 Saldo insuficiente';
+                confirmBtn.style.background = '#dc3545';
+            } else {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = '💫 Confirmar compra';
+                confirmBtn.style.background = '';
+            }
+        }
+
+        async function confirmPurchase() {
+            if (!selectedItem) return;
+            
+            const quantity = parseInt(document.getElementById('quantity-input').value) || 1;
+            const confirmBtn = document.getElementById('confirm-purchase-btn');
+            
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = '⏳ Procesando...';
+            
+            try {
+                const response = await fetch('/api/luminarias/store/purchase', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        item_id: selectedItem.id,
+                        quantity: quantity
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    alert(`🎉 ¡Compra realizada exitosamente!\n\n${selectedItem.name} (x${quantity})\nTransacción: ${result.transaction_id}`);
+                    
+                    // Actualizar balance y cerrar modal
+                    await loadBalance();
+                    closePurchaseModal();
+                    
+                    // Recargar items para actualizar stock
+                    await loadStoreItems();
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error en la compra');
+                }
+            } catch (error) {
+                console.error('Error en compra:', error);
+                alert('❌ Error en la compra: ' + error.message);
+            } finally {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = '💫 Confirmar compra';
+            }
+        }
+
+        function viewItemDetails(itemId) {
+            const item = allItems.find(i => i.id === itemId);
+            if (!item) return;
+            
+            const metadata = JSON.parse(item.metadata || '{}');
+            let details = `🛍️ ${item.name}\n\n`;
+            details += `📝 ${item.description}\n\n`;
+            details += `💰 Precio: ${item.price_luminarias} Luminarias\n`;
+            details += `🏷️ Tipo: ${getItemTypeName(item.item_type)}\n`;
+            details += `📂 Categoría: ${getCategoryName(item.category)}\n`;
+            
+            if (item.duration_days) details += `⏱️ Duración: ${item.duration_days} días\n`;
+            if (item.max_uses) details += `🔢 Usos: ${item.max_uses}\n`;
+            if (item.requires_level > 1) details += `📊 Nivel requerido: ${item.requires_level}\n`;
+            
+            alert(details);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('purchase-modal');
+            if (event.target === modal) {
+                closePurchaseModal();
+            }
+        }
+    </script>
+</body>
+</html>

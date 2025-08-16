@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vista Previa del Bloque - PlayTest</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header-actions {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-light {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-light:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .btn-primary {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: #f8f9fa;
+            border-left: 1px solid #e9ecef;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .block-meta {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meta-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .state-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .state-private {
+            background: #6c757d;
+            color: white;
+        }
+
+        .state-public {
+            background: #28a745;
+            color: white;
+        }
+
+        .state-restricted {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .state-archived {
+            background: #dc3545;
+            color: white;
+        }
+
+        .block-description {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .description-text {
+            line-height: 1.6;
+            color: #555;
+            font-size: 15px;
+        }
+
+        .author-observations {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 2px solid #ffd93d;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .author-observations::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ffd93d, #ff6b6b, #4ecdc4, #45b7d1);
+        }
+
+        .observations-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .observations-icon {
+            background: #ff6b6b;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .observations-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+
+        .observations-subtitle {
+            font-size: 13px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .observations-content {
+            background: rgba(255,255,255,0.8);
+            border-radius: 10px;
+            padding: 20px;
+            line-height: 1.7;
+            color: #333;
+            font-size: 15px;
+            white-space: pre-wrap;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .block-tags {
+            margin-bottom: 30px;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .questions-preview {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .question-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .question-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .question-text {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .question-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .sidebar-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 5px;
+        }
+
+        .creator-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .creator-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .creator-details h4 {
+            margin: 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .creator-details p {
+            margin: 2px 0 0 0;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .validation-status {
+            margin-bottom: 20px;
+        }
+
+        .validation-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+
+        .validation-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .validation-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .validation-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .actions-section {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid #e9ecef;
+            }
+
+            .header-actions {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-top: 15px;
+            }
+
+            .meta-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 id="block-title">Cargando bloque...</h1>
+            <div class="header-actions">
+                <button class="btn btn-light" onclick="goBack()">← Volver</button>
+                <button class="btn btn-light" onclick="validateBlock()" id="validate-btn" style="display: none;">
+                    ✅ Validar
+                </button>
+                <a href="#" class="btn btn-primary" id="edit-btn" style="display: none;">
+                    ✏️ Editar
+                </a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="content-area">
+                <div id="main-content">
+                    <div class="loading">📖 Cargando detalles del bloque...</div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div id="sidebar-content">
+                    <div class="loading">Cargando información...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="api-data-service.js"></script>
+    <script>
+        let currentBlock = null;
+        let currentUser = null;
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkAuthentication();
+            await loadCurrentUser();
+            await loadBlockDetails();
+        });
+
+        async function checkAuthentication() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = 'index.html';
+                return;
+            }
+        }
+
+        async function loadCurrentUser() {
+            try {
+                const response = await fetch('/api/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    currentUser = await response.json();
+                }
+            } catch (error) {
+                console.error('Error cargando usuario actual:', error);
+            }
+        }
+
+        async function loadBlockDetails() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const blockId = urlParams.get('id');
+
+                if (!blockId) {
+                    showError('ID de bloque no especificado');
+                    return;
+                }
+
+                const response = await fetch(`/api/blocks/${blockId}/complete`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        showError('Bloque no encontrado');
+                    } else if (response.status === 403) {
+                        showError('No tienes acceso a este bloque');
+                    } else {
+                        showError('Error al cargar el bloque');
+                    }
+                    return;
+                }
+
+                currentBlock = await response.json();
+                renderBlockDetails();
+                
+                // Load questions preview
+                await loadQuestionsPreview(blockId);
+
+            } catch (error) {
+                console.error('Error cargando detalles del bloque:', error);
+                showError('Error al cargar los detalles del bloque');
+            }
+        }
+
+        async function loadQuestionsPreview(blockId) {
+            try {
+                const response = await fetch(`/api/blocks/${blockId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const blockData = await response.json();
+                    const questions = blockData.questions || [];
+                    renderQuestionsPreview(questions.slice(0, 5)); // Mostrar solo las primeras 5
+                }
+            } catch (error) {
+                console.error('Error cargando preguntas:', error);
+            }
+        }
+
+        function renderBlockDetails() {
+            // Actualizar título
+            document.getElementById('block-title').textContent = currentBlock.name;
+            document.title = `${currentBlock.name} - Vista Previa - PlayTest`;
+
+            // Mostrar botones si es el creador
+            if (currentUser && currentBlock.creator_id === currentUser.id) {
+                document.getElementById('validate-btn').style.display = 'inline-block';
+                document.getElementById('edit-btn').style.display = 'inline-block';
+                document.getElementById('edit-btn').href = `edit-block.html?id=${currentBlock.id}`;
+            }
+
+            // Renderizar contenido principal
+            renderMainContent();
+            
+            // Renderizar sidebar
+            renderSidebar();
+        }
+
+        function renderMainContent() {
+            const content = `
+                <!-- Metadatos del bloque -->
+                <div class="block-meta">
+                    <div class="meta-grid">
+                        <div class="meta-item">
+                            <div class="meta-label">Tipo de Bloque</div>
+                            <div class="meta-value">${escapeHtml(currentBlock.block_type || 'No especificado')}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Nivel Educativo</div>
+                            <div class="meta-value">${escapeHtml(currentBlock.education_level || 'No especificado')}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Ámbito</div>
+                            <div class="meta-value">${escapeHtml(currentBlock.scope || 'No especificado')}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Dificultad</div>
+                            <div class="meta-value">${escapeHtml(currentBlock.difficulty_level || 'No especificado')}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Idioma</div>
+                            <div class="meta-value">${getLanguageName(currentBlock.content_language || 'es')}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Estado</div>
+                            <div class="meta-value">
+                                <span class="state-badge state-${currentBlock.block_state || 'private'}">
+                                    ${getStateName(currentBlock.block_state || 'private')}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Área de Conocimiento</div>
+                            <div class="meta-value">${escapeHtml(currentBlock.knowledge_area_name || 'No especificado')}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Creado</div>
+                            <div class="meta-value">${formatDate(currentBlock.created_at)}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Descripción detallada -->
+                <div class="block-description">
+                    <h2 class="section-title">
+                        <span>📋</span>
+                        Descripción Detallada
+                    </h2>
+                    <div class="description-text">
+                        ${escapeHtml(currentBlock.detailed_description || currentBlock.short_description || 'Sin descripción disponible').replace(/\\n/g, '<br>')}
+                    </div>
+                </div>
+
+                <!-- Observaciones del autor (destacado) -->
+                ${currentBlock.author_observations ? `
+                <div class="author-observations">
+                    <div class="observations-header">
+                        <div class="observations-icon">👨‍🏫</div>
+                        <div>
+                            <h2 class="observations-title">Observaciones del Autor</h2>
+                            <p class="observations-subtitle">Guía metodológica y recomendaciones de estudio</p>
+                        </div>
+                    </div>
+                    <div class="observations-content">
+${escapeHtml(currentBlock.author_observations)}
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- Tags -->
+                <div class="block-tags">
+                    <h2 class="section-title">
+                        <span>🏷️</span>
+                        Tags
+                    </h2>
+                    <div class="tags-container">
+                        ${currentBlock.tags && currentBlock.tags.length > 0 
+                            ? currentBlock.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')
+                            : '<span style="color: #666; font-style: italic;">Sin tags asignados</span>'
+                        }
+                    </div>
+                </div>
+
+                <!-- Vista previa de preguntas -->
+                <div class="questions-preview">
+                    <h2 class="section-title">
+                        <span>❓</span>
+                        Vista Previa de Preguntas
+                        <span style="font-size: 0.8em; color: #666; font-weight: normal;">(Primeras 5)</span>
+                    </h2>
+                    <div id="questions-container">
+                        <div style="text-align: center; color: #666; padding: 20px;">
+                            Cargando preguntas...
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('main-content').innerHTML = content;
+        }
+
+        function renderQuestionsPreview(questions) {
+            const container = document.getElementById('questions-container');
+            
+            if (!questions || questions.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: #666; padding: 20px;">
+                        🚫 Este bloque aún no tiene preguntas
+                    </div>
+                `;
+                return;
+            }
+
+            const questionsHTML = questions.map((question, index) => `
+                <div class="question-item">
+                    <div class="question-text">
+                        ${index + 1}. ${escapeHtml(question.textoPregunta || question.text_question)}
+                    </div>
+                    <div class="question-meta">
+                        <span>📚 Tema: ${escapeHtml(question.tema || question.topic || 'Sin tema')}</span>
+                        <span>⭐ Dificultad: ${escapeHtml(question.difficulty || 'Media')}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = questionsHTML;
+        }
+
+        function renderSidebar() {
+            const content = `
+                <!-- Información del creador -->
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">
+                        <span>👤</span>
+                        Creador
+                    </h3>
+                    <div class="creator-info">
+                        <div class="creator-avatar">
+                            ${currentBlock.creator_nickname ? currentBlock.creator_nickname.charAt(0).toUpperCase() : '?'}
+                        </div>
+                        <div class="creator-details">
+                            <h4>${escapeHtml(currentBlock.creator_nickname || 'Usuario desconocido')}</h4>
+                            <p>Creador del bloque</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estadísticas -->
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">
+                        <span>📊</span>
+                        Estadísticas
+                    </h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-value">${currentBlock.question_count || 0}</span>
+                            <span class="stat-label">Preguntas</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">${currentBlock.topic_count || 0}</span>
+                            <span class="stat-label">Temas</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">${currentBlock.user_count || 0}</span>
+                            <span class="stat-label">Usuarios</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">${currentBlock.view_count || 0}</span>
+                            <span class="stat-label">Vistas</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">${currentBlock.download_count || 0}</span>
+                            <span class="stat-label">Descargas</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">${parseFloat(currentBlock.average_rating || 0).toFixed(1)}⭐</span>
+                            <span class="stat-label">Calificación</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fechas importantes -->
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">
+                        <span>📅</span>
+                        Fechas
+                    </h3>
+                    <div style="space-y: 10px;">
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-size: 12px; color: #666; font-weight: 600;">CREADO</div>
+                            <div style="font-size: 14px; color: #333;">${formatDateTime(currentBlock.created_at)}</div>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-size: 12px; color: #666; font-weight: 600;">ACTUALIZADO</div>
+                            <div style="font-size: 14px; color: #333;">${formatDateTime(currentBlock.updated_at)}</div>
+                        </div>
+                        ${currentBlock.publication_date ? `
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-size: 12px; color: #666; font-weight: 600;">PUBLICADO</div>
+                            <div style="font-size: 14px; color: #333;">${formatDateTime(currentBlock.publication_date)}</div>
+                        </div>
+                        ` : ''}
+                        <div>
+                            <div style="font-size: 12px; color: #666; font-weight: 600;">ÚLTIMO CAMBIO</div>
+                            <div style="font-size: 14px; color: #333;">${formatDateTime(currentBlock.last_state_change)}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estado de validación -->
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">
+                        <span>✅</span>
+                        Estado de Validación
+                    </h3>
+                    <div id="validation-status" class="validation-status">
+                        <div style="text-align: center; color: #666; padding: 10px;">
+                            <small>Haz clic en "Validar" para comprobar</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Acciones -->
+                <div class="actions-section">
+                    ${currentUser && currentBlock.creator_id === currentUser.id ? `
+                        <a href="edit-block.html?id=${currentBlock.id}" class="btn btn-primary" style="flex: 1;">
+                            ✏️ Editar Bloque
+                        </a>
+                        <button class="btn btn-warning" onclick="openStateModal()" style="flex: 1;">
+                            🔄 Cambiar Estado
+                        </button>
+                    ` : `
+                        <button class="btn btn-primary" onclick="loadBlock()" style="flex: 1;">
+                            📚 Cargar Bloque
+                        </button>
+                    `}
+                </div>
+            `;
+
+            document.getElementById('sidebar-content').innerHTML = content;
+        }
+
+        async function validateBlock() {
+            const statusDiv = document.getElementById('validation-status');
+            statusDiv.innerHTML = '<div style="text-align: center; color: #666;">🔄 Validando...</div>';
+
+            try {
+                const response = await fetch(`/api/blocks/${currentBlock.id}/validate`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const validation = await response.json();
+                    renderValidationStatus(validation);
+                } else {
+                    statusDiv.innerHTML = '<div class="validation-error">❌ Error al validar</div>';
+                }
+            } catch (error) {
+                console.error('Error validando bloque:', error);
+                statusDiv.innerHTML = '<div class="validation-error">❌ Error al validar</div>';
+            }
+        }
+
+        function renderValidationStatus(validation) {
+            const statusDiv = document.getElementById('validation-status');
+            let html = '';
+
+            if (validation.is_valid) {
+                html += '<div class="validation-item validation-success">✅ Listo para publicar</div>';
+            } else {
+                html += '<div class="validation-item validation-error">❌ No cumple requisitos</div>';
+                
+                validation.missing_fields.forEach(field => {
+                    html += `<div class="validation-item validation-error">⚠️ Falta: ${field}</div>`;
+                });
+            }
+
+            validation.warnings.forEach(warning => {
+                html += `<div class="validation-item validation-warning">⚠️ ${warning}</div>`;
+            });
+
+            statusDiv.innerHTML = html;
+        }
+
+        function getStateName(state) {
+            const stateNames = {
+                'private': 'Privado',
+                'public': 'Público',
+                'restricted': 'Restringido',
+                'archived': 'Archivado'
+            };
+            return stateNames[state] || 'Desconocido';
+        }
+
+        function getLanguageName(code) {
+            const languages = {
+                'es': 'Español',
+                'en': 'Inglés',
+                'fr': 'Francés',
+                'pt': 'Portugués',
+                'it': 'Italiano',
+                'de': 'Alemán'
+            };
+            return languages[code] || code;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Sin fecha';
+            return new Date(dateString).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        function formatDateTime(dateString) {
+            if (!dateString) return 'Sin fecha';
+            return new Date(dateString).toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showError(message) {
+            document.getElementById('main-content').innerHTML = `
+                <div class="error-state">
+                    <h3>❌ ${message}</h3>
+                    <p>Verifica que el bloque existe y tienes acceso a él</p>
+                </div>
+            `;
+            document.getElementById('sidebar-content').innerHTML = '';
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        async function loadBlock() {
+            // Implementar lógica para cargar el bloque en el perfil del usuario
+            alert('Funcionalidad de carga de bloque en desarrollo');
+        }
+
+        function openStateModal() {
+            // Redirigir a la página de gestión de bloques
+            window.location.href = `block-management.html`;
+        }
+    </script>
+</body>
+</html>

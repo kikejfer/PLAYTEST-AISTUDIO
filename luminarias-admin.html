@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración de Luminarias - PlayTest</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .tabs {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .admin-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .config-section {
+            margin-bottom: 30px;
+        }
+
+        .config-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .config-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .config-table th,
+        .config-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .config-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .config-table input {
+            width: 80px;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            text-decoration: none;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .conversions-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .conversions-table th,
+        .conversions-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .conversions-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-processed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #f8f9fa;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-color: #ffeaa7;
+            color: #856404;
+        }
+
+        @media (max-width: 768px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tab-buttons {
+                flex-direction: column;
+            }
+            
+            .conversions-table {
+                font-size: 12px;
+            }
+            
+            .conversions-table th,
+            .conversions-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Administración de Luminarias</h1>
+            <p>Panel de control para gestionar el sistema de moneda dual</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="showTab('stats')">
+                    📊 Estadísticas
+                </button>
+                <button class="tab-btn" onclick="showTab('config')">
+                    ⚙️ Configuración
+                </button>
+                <button class="tab-btn" onclick="showTab('conversions')">
+                    💰 Conversiones
+                </button>
+                <button class="tab-btn" onclick="showTab('users')">
+                    👥 Usuarios
+                </button>
+            </div>
+
+            <!-- Tab: Estadísticas -->
+            <div id="stats-tab" class="tab-content active">
+                <div class="stats-grid" id="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-users">0</div>
+                        <div class="stat-label">Usuarios Totales</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-luminarias">0</div>
+                        <div class="stat-label">Luminarias en Circulación</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-transactions">0</div>
+                        <div class="stat-label">Transacciones Totales</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="pending-conversions">0</div>
+                        <div class="stat-label">Conversiones Pendientes</div>
+                    </div>
+                </div>
+
+                <div class="admin-grid">
+                    <div class="admin-card">
+                        <div class="card-title">📈 Actividad Reciente</div>
+                        <div id="recent-activity">
+                            <div class="loading">Cargando actividad...</div>
+                        </div>
+                    </div>
+
+                    <div class="admin-card">
+                        <div class="card-title">🏆 Top Usuarios</div>
+                        <div id="top-users">
+                            <div class="loading">Cargando usuarios...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Configuración -->
+            <div id="config-tab" class="tab-content">
+                <div class="admin-card">
+                    <div class="card-title">⚙️ Configuración de Valores</div>
+                    
+                    <div class="config-section">
+                        <div class="config-title">
+                            👤 Configuración para Usuarios
+                        </div>
+                        <table class="config-table" id="user-config-table">
+                            <thead>
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Subcategoría</th>
+                                    <th>Mín</th>
+                                    <th>Máx</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="5" class="loading">Cargando configuración...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="config-section">
+                        <div class="config-title">
+                            👨‍🏫 Configuración para Creadores
+                        </div>
+                        <table class="config-table" id="creator-config-table">
+                            <thead>
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Subcategoría</th>
+                                    <th>Mín</th>
+                                    <th>Máx</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="5" class="loading">Cargando configuración...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <button class="btn btn-primary" onclick="saveAllConfigurations()">
+                            💾 Guardar Todas las Configuraciones
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Conversiones -->
+            <div id="conversions-tab" class="tab-content">
+                <div class="admin-card">
+                    <div class="card-title">💰 Gestión de Conversiones</div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label for="conversion-status-filter">Filtrar por estado:</label>
+                        <select id="conversion-status-filter" onchange="filterConversions()">
+                            <option value="">Todas</option>
+                            <option value="pending">Pendientes</option>
+                            <option value="approved">Aprobadas</option>
+                            <option value="rejected">Rechazadas</option>
+                            <option value="processed">Procesadas</option>
+                        </select>
+                    </div>
+
+                    <div id="conversions-container">
+                        <div class="loading">Cargando conversiones...</div>
+                    </div>
+
+                    <div class="pagination" id="conversions-pagination" style="display: none;">
+                        <button id="conv-prev-page" onclick="changeConversionsPage(-1)">← Anterior</button>
+                        <span id="conv-page-info">Página 1 de 1</span>
+                        <button id="conv-next-page" onclick="changeConversionsPage(1)">Siguiente →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Usuarios -->
+            <div id="users-tab" class="tab-content">
+                <div class="admin-card">
+                    <div class="card-title">👥 Gestión de Usuarios</div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <input type="text" id="user-search" placeholder="Buscar usuario por nickname o email..." 
+                               style="width: 300px; padding: 10px; margin-right: 10px;">
+                        <button class="btn btn-primary" onclick="searchUsers()">🔍 Buscar</button>
+                    </div>
+
+                    <div id="users-container">
+                        <div class="loading">Cargando usuarios...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para procesar conversiones -->
+    <div id="process-conversion-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Procesar Conversión</div>
+                <button class="close-btn" onclick="closeModal('process-conversion-modal')">&times;</button>
+            </div>
+            
+            <div id="conversion-details"></div>
+            
+            <form id="process-conversion-form">
+                <div class="form-group">
+                    <label for="conversion-action">Acción</label>
+                    <select id="conversion-action" required>
+                        <option value="">Seleccionar acción</option>
+                        <option value="approve">Aprobar</option>
+                        <option value="reject">Rechazar</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="admin-notes">Notas administrativas</label>
+                    <textarea id="admin-notes" placeholder="Comentarios sobre la decisión..."></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('process-conversion-modal')">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        💰 Procesar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="api-data-service.js"></script>
+    <script>
+        let currentConversionsPage = 1;
+        let conversionsPerPage = 10;
+        let currentConversionsFilter = '';
+        let conversionsData = [];
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkAdminAccess();
+            await loadStats();
+            await loadConfigurations();
+            await loadConversions();
+            setupEventListeners();
+        });
+
+        async function checkAdminAccess() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const profile = await response.json();
+                    if (!profile.role || !['admin', 'super_admin'].includes(profile.role)) {
+                        alert('Acceso denegado. Solo administradores pueden acceder a este panel.');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                } else {
+                    throw new Error('Error verificando permisos');
+                }
+            } catch (error) {
+                console.error('Error verificando acceso admin:', error);
+                window.location.href = 'index.html';
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/luminarias/admin/stats', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('total-users').textContent = stats.total_users.toLocaleString();
+                    document.getElementById('total-luminarias').textContent = stats.total_luminarias.toLocaleString();
+                    document.getElementById('total-transactions').textContent = stats.total_transactions.toLocaleString();
+                    document.getElementById('pending-conversions').textContent = stats.pending_conversions.toLocaleString();
+                } else {
+                    throw new Error('Error cargando estadísticas');
+                }
+            } catch (error) {
+                console.error('Error cargando estadísticas:', error);
+                // Mostrar datos de ejemplo si no hay API
+                document.getElementById('total-users').textContent = '1,234';
+                document.getElementById('total-luminarias').textContent = '2,456,789';
+                document.getElementById('total-transactions').textContent = '15,678';
+                document.getElementById('pending-conversions').textContent = '23';
+            }
+        }
+
+        async function loadConfigurations() {
+            try {
+                const response = await fetch('/api/luminarias/admin/config', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const configs = await response.json();
+                    renderConfigurations(configs);
+                } else {
+                    throw new Error('Error cargando configuraciones');
+                }
+            } catch (error) {
+                console.error('Error cargando configuraciones:', error);
+                renderDefaultConfigurations();
+            }
+        }
+
+        function renderConfigurations(configs) {
+            const userConfigs = configs.filter(c => c.target_role === 'user');
+            const creatorConfigs = configs.filter(c => c.target_role === 'creator');
+
+            renderConfigTable('user-config-table', userConfigs);
+            renderConfigTable('creator-config-table', creatorConfigs);
+        }
+
+        function renderDefaultConfigurations() {
+            const defaultUserConfigs = [
+                { category: 'study_activity', subcategory: 'quiz_completion', min_value: 8, max_value: 80 },
+                { category: 'study_activity', subcategory: 'lesson_completion', min_value: 15, max_value: 60 },
+                { category: 'competition', subcategory: 'ranking_improvement', min_value: 15, max_value: 60 },
+                { category: 'engagement', subcategory: 'daily_login', min_value: 5, max_value: 40 }
+            ];
+
+            const defaultCreatorConfigs = [
+                { category: 'weekly_earnings', subcategory: 'base_amount', min_value: 60, max_value: 270 },
+                { category: 'content_creation', subcategory: 'quiz_creation', min_value: 150, max_value: 750 },
+                { category: 'quality_engagement', subcategory: 'student_feedback', min_value: 15, max_value: 200 }
+            ];
+
+            renderConfigTable('user-config-table', defaultUserConfigs);
+            renderConfigTable('creator-config-table', defaultCreatorConfigs);
+        }
+
+        function renderConfigTable(tableId, configs) {
+            const tbody = document.querySelector(`#${tableId} tbody`);
+            
+            if (configs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">No hay configuraciones disponibles</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = configs.map((config, index) => `
+                <tr data-config-id="${config.id || index}">
+                    <td>${getCategoryDisplayName(config.category)}</td>
+                    <td>${config.subcategory || '-'}</td>
+                    <td>
+                        <input type="number" value="${config.min_value}" 
+                               data-field="min_value" min="0" max="10000">
+                    </td>
+                    <td>
+                        <input type="number" value="${config.max_value}" 
+                               data-field="max_value" min="0" max="10000">
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="updateSingleConfig(this)">
+                            💾 Guardar
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadConversions() {
+            try {
+                const params = new URLSearchParams({
+                    limit: conversionsPerPage,
+                    offset: (currentConversionsPage - 1) * conversionsPerPage
+                });
+
+                if (currentConversionsFilter) {
+                    params.append('status', currentConversionsFilter);
+                }
+
+                const response = await fetch(`/api/luminarias/admin/conversions?${params}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    conversionsData = data.conversions;
+                    renderConversions(conversionsData);
+                    updateConversionsPagination(data.pagination);
+                } else {
+                    throw new Error('Error cargando conversiones');
+                }
+            } catch (error) {
+                console.error('Error cargando conversiones:', error);
+                document.getElementById('conversions-container').innerHTML = `
+                    <div class="empty-state">
+                        <h3>❌ Error cargando conversiones</h3>
+                        <p>No se pudieron cargar las solicitudes de conversión</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderConversions(conversions) {
+            const container = document.getElementById('conversions-container');
+            
+            if (conversions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📭 Sin conversiones</h3>
+                        <p>No hay solicitudes de conversión disponibles</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const conversionsHTML = `
+                <table class="conversions-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Usuario</th>
+                            <th>Luminarias</th>
+                            <th>EUR</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${conversions.map(conversion => `
+                            <tr>
+                                <td>#${conversion.id}</td>
+                                <td>
+                                    <div style="font-weight: 600;">${escapeHtml(conversion.nickname)}</div>
+                                    <div style="font-size: 12px; color: #666;">${escapeHtml(conversion.email)}</div>
+                                    <div style="font-size: 11px; color: #888;">${conversion.creator_level}</div>
+                                </td>
+                                <td>${conversion.luminarias_amount.toLocaleString()} 🌟</td>
+                                <td>
+                                    <div>€${conversion.final_amount}</div>
+                                    <div style="font-size: 11px; color: #666;">Base: €${conversion.eur_amount}</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-${conversion.status}">
+                                        ${getStatusText(conversion.status)}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div>${formatDateTime(conversion.created_at)}</div>
+                                    ${conversion.processed_at ? `<div style="font-size: 11px; color: #666;">Procesado: ${formatDateTime(conversion.processed_at)}</div>` : ''}
+                                </td>
+                                <td>
+                                    ${conversion.status === 'pending' ? `
+                                        <button class="btn btn-sm btn-primary" onclick="showProcessConversionModal(${conversion.id})">
+                                            ⚙️ Procesar
+                                        </button>
+                                    ` : `
+                                        <span style="color: #666; font-size: 12px;">Procesado</span>
+                                    `}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = conversionsHTML;
+        }
+
+        function setupEventListeners() {
+            document.getElementById('process-conversion-form').addEventListener('submit', handleProcessConversion);
+        }
+
+        function showTab(tabName) {
+            // Actualizar botones
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Mostrar contenido
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        function filterConversions() {
+            currentConversionsFilter = document.getElementById('conversion-status-filter').value;
+            currentConversionsPage = 1;
+            loadConversions();
+        }
+
+        function changeConversionsPage(direction) {
+            currentConversionsPage += direction;
+            loadConversions();
+        }
+
+        function updateConversionsPagination(pagination) {
+            const totalPages = Math.ceil(pagination.total / pagination.limit);
+            
+            if (totalPages <= 1) {
+                document.getElementById('conversions-pagination').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('conversions-pagination').style.display = 'flex';
+            document.getElementById('conv-page-info').textContent = `Página ${currentConversionsPage} de ${totalPages}`;
+            document.getElementById('conv-prev-page').disabled = currentConversionsPage === 1;
+            document.getElementById('conv-next-page').disabled = currentConversionsPage === totalPages;
+        }
+
+        function showProcessConversionModal(conversionId) {
+            const conversion = conversionsData.find(c => c.id === conversionId);
+            if (!conversion) return;
+
+            const detailsHTML = `
+                <div class="alert alert-warning">
+                    <strong>⚠️ Revisión de Conversión</strong><br>
+                    Esta acción es irreversible. Asegúrate de verificar todos los detalles antes de procesar.
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h4>Detalles de la Conversión</h4>
+                    <p><strong>ID:</strong> #${conversion.id}</p>
+                    <p><strong>Usuario:</strong> ${escapeHtml(conversion.nickname)} (${escapeHtml(conversion.email)})</p>
+                    <p><strong>Nivel:</strong> ${conversion.creator_level}</p>
+                    <p><strong>Cantidad:</strong> ${conversion.luminarias_amount.toLocaleString()} Luminarias</p>
+                    <p><strong>Valor Base:</strong> €${conversion.eur_amount}</p>
+                    <p><strong>Comisión (20%):</strong> €${conversion.commission_amount}</p>
+                    <p><strong>Total a pagar:</strong> €${conversion.final_amount}</p>
+                    <p><strong>Método de pago:</strong> ${getPaymentMethodName(conversion.payment_method)}</p>
+                    <p><strong>Detalles de pago:</strong> ${escapeHtml(conversion.payment_details)}</p>
+                    ${conversion.notes ? `<p><strong>Notas del usuario:</strong> ${escapeHtml(conversion.notes)}</p>` : ''}
+                </div>
+            `;
+
+            document.getElementById('conversion-details').innerHTML = detailsHTML;
+            document.getElementById('process-conversion-form').dataset.conversionId = conversionId;
+            document.getElementById('process-conversion-modal').classList.add('active');
+        }
+
+        async function handleProcessConversion(e) {
+            e.preventDefault();
+            
+            const conversionId = e.target.dataset.conversionId;
+            const action = document.getElementById('conversion-action').value;
+            const adminNotes = document.getElementById('admin-notes').value;
+            
+            if (!action) {
+                alert('Por favor selecciona una acción');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/luminarias/admin/conversions/${conversionId}/process`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({
+                        action: action,
+                        admin_notes: adminNotes
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`✅ Conversión ${action === 'approve' ? 'aprobada' : 'rechazada'} exitosamente`);
+                    closeModal('process-conversion-modal');
+                    await loadConversions();
+                    await loadStats();
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Error procesando conversión');
+                }
+            } catch (error) {
+                console.error('Error procesando conversión:', error);
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            
+            // Limpiar formularios
+            if (modalId === 'process-conversion-modal') {
+                document.getElementById('process-conversion-form').reset();
+                document.getElementById('conversion-details').innerHTML = '';
+            }
+        }
+
+        function getCategoryDisplayName(category) {
+            const names = {
+                'study_activity': 'Actividad de Estudio',
+                'competition': 'Competición',
+                'engagement': 'Engagement',
+                'bonuses': 'Bonificaciones',
+                'weekly_earnings': 'Ganancias Semanales',
+                'content_creation': 'Creación de Contenido',
+                'quality_engagement': 'Calidad y Engagement'
+            };
+            return names[category] || category;
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': 'Pendiente',
+                'approved': 'Aprobada',
+                'rejected': 'Rechazada',
+                'processed': 'Procesada'
+            };
+            return statusMap[status] || status;
+        }
+
+        function getPaymentMethodName(method) {
+            const methodMap = {
+                'paypal': 'PayPal',
+                'bank_transfer': 'Transferencia Bancaria',
+                'crypto': 'Criptomonedas'
+            };
+            return methodMap[method] || method;
+        }
+
+        function formatDateTime(dateString) {
+            return new Date(dateString).toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
