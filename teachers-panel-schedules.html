@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronogramas Académicos - Panel de Profesores | PLAYTEST</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="navigation-service.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .tabs-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 0;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .tabs-nav {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            overflow-x: auto;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: 160px;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            background: white;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.1);
+        }
+
+        .tab-content {
+            padding: 30px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #f0f0f0;
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .class-selector {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .schedules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .schedule-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .schedule-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .schedule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .schedule-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .schedule-type {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .schedule-dates {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+
+        .timeline-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #667eea;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            padding-left: 30px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -25px;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #667eea;
+        }
+
+        .timeline-date {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 0.9rem;
+        }
+
+        .timeline-content {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 5px;
+            border-left: 3px solid #667eea;
+        }
+
+        .assignments-section {
+            background: #e8f5e8;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .assignments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .assignment-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #28a745;
+            transition: all 0.3s ease;
+        }
+
+        .assignment-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .assignment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .assignment-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .assignment-type {
+            background: #28a745;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .assignment-details {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .assignment-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .pacing-guide {
+            background: #fff3cd;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #ffeaa7;
+        }
+
+        .pacing-week {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .week-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .week-number {
+            font-weight: 700;
+            color: #856404;
+        }
+
+        .week-dates {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .week-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .content-item {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .curriculum-mapper {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .content-distribution {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .milestone-planner {
+            background: #f3e5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 20px;
+            color: #dc3545;
+            background: #f8d7da;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .schedules-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .assignments-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .modal-content {
+                margin: 20px auto;
+                width: 95%;
+            }
+
+            .week-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Panel de Profesores - Cronogramas Académicos y Planificación</h1>
+            <p>Planificación temporal estructurada, asignación inteligente de contenido y gestión de evaluaciones</p>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-nav">
+                <button class="tab-button" onclick="window.location.href='teachers-panel-students.html'">👥 Gestión de Alumnos</button>
+                <button class="tab-button active">📅 Cronogramas</button>
+                <button class="tab-button" onclick="window.location.href='teachers-panel-analytics.html'">📊 Analytics</button>
+                <button class="tab-button" onclick="window.location.href='teachers-panel-interventions.html'">🎯 Intervenciones</button>
+                <button class="tab-button" onclick="window.location.href='teachers-panel-tournaments.html'">🏆 Torneos</button>
+                <button class="tab-button" onclick="window.location.href='teachers-panel-resources.html'">📚 Recursos</button>
+            </div>
+
+            <div class="tab-content">
+                <!-- Selector de Clase -->
+                <div class="class-selector">
+                    <label class="form-label">Seleccionar Clase:</label>
+                    <select id="class-selector" class="form-control" onchange="loadSchedulesForClass(this.value)" style="max-width: 300px;">
+                        <option value="">Seleccionar una clase...</option>
+                    </select>
+                </div>
+
+                <!-- Cronogramas Académicos -->
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">📅 Cronogramas Académicos</h2>
+                        <button class="btn btn-primary" onclick="openScheduleModal()" id="create-schedule-btn" disabled>
+                            ➕ Crear Cronograma
+                        </button>
+                    </div>
+
+                    <div class="schedules-grid" id="schedules-container">
+                        <div class="empty-state">
+                            <span class="icon">📅</span>
+                            <h3>Selecciona una clase</h3>
+                            <p>Elige una clase para ver y gestionar sus cronogramas académicos</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guía de Ritmo (Pacing Guide) -->
+                <div class="pacing-guide" id="pacing-guide-section" style="display: none;">
+                    <h3 style="margin-bottom: 15px;">⏱️ Guía de Ritmo Semanal</h3>
+                    <p style="color: #856404; margin-bottom: 15px;">Distribución de contenido adaptada al progreso de la clase</p>
+                    
+                    <div id="pacing-container">
+                        <div class="loading">Generando guía de ritmo...</div>
+                    </div>
+                </div>
+
+                <!-- Asignaciones de Contenido -->
+                <div class="assignments-section" id="assignments-section" style="display: none;">
+                    <div class="section-header">
+                        <h3 class="section-title">📝 Asignaciones de Contenido</h3>
+                        <button class="btn btn-success" onclick="openAssignmentModal()">
+                            ➕ Nueva Asignación
+                        </button>
+                    </div>
+                    
+                    <div class="assignments-grid" id="assignments-container">
+                        <div class="loading">Cargando asignaciones...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Crear Cronograma -->
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">📅 Crear Cronograma Académico</h3>
+                <button class="close" onclick="closeScheduleModal()">&times;</button>
+            </div>
+
+            <form id="scheduleForm" onsubmit="createSchedule(event)">
+                <input type="hidden" id="schedule-class-id">
+
+                <div class="form-group">
+                    <label class="form-label">Nombre del Cronograma</label>
+                    <input type="text" class="form-control" name="schedule_name" required 
+                           placeholder="Ej: Cronograma Primer Semestre 2024">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Cronograma</label>
+                        <select class="form-control" name="schedule_type" required>
+                            <option value="">Seleccionar tipo</option>
+                            <option value="semester">Semestral</option>
+                            <option value="unit">Por Unidad</option>
+                            <option value="weekly">Semanal</option>
+                            <option value="daily">Diario</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Duración Estimada</label>
+                        <select class="form-control" name="duration" onchange="calculateEndDate()">
+                            <option value="">Seleccionar duración</option>
+                            <option value="4">4 semanas</option>
+                            <option value="8">8 semanas</option>
+                            <option value="12">12 semanas</option>
+                            <option value="16">16 semanas</option>
+                            <option value="20">20 semanas</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Fecha de Inicio</label>
+                        <input type="date" class="form-control" name="start_date" required onchange="calculateEndDate()">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Fecha de Fin</label>
+                        <input type="date" class="form-control" name="end_date" required>
+                    </div>
+                </div>
+
+                <!-- Mapeo Curricular -->
+                <div class="curriculum-mapper">
+                    <h4 style="margin-bottom: 15px;">📚 Mapeo Curricular</h4>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Estándares Curriculares</label>
+                        <textarea class="form-control" name="curriculum_standards" rows="3"
+                                  placeholder='["Resolver ecuaciones lineales", "Comprender geometría básica", "Aplicar estadística descriptiva"]'></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Hitos de Aprendizaje</label>
+                        <textarea class="form-control" name="learning_milestones" rows="3"
+                                  placeholder='[{"semana": 4, "hito": "Dominio de ecuaciones básicas"}, {"semana": 8, "hito": "Comprensión de geometría"}]'></textarea>
+                    </div>
+                </div>
+
+                <!-- Distribución de Contenido -->
+                <div class="content-distribution">
+                    <h4 style="margin-bottom: 15px;">📦 Distribución de Contenido</h4>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Distribución de Bloques por Semana</label>
+                        <textarea class="form-control" name="content_distribution" rows="4"
+                                  placeholder='{"semana_1": [1, 2, 3], "semana_2": [4, 5, 6], "semana_3": [7, 8, 9]}'></textarea>
+                        <small style="color: #666;">IDs de bloques asignados por semana</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Progresión de Dificultad</label>
+                        <textarea class="form-control" name="difficulty_progression" rows="3"
+                                  placeholder='{"semana_1": "básico", "semana_4": "intermedio", "semana_8": "avanzado"}'></textarea>
+                    </div>
+                </div>
+
+                <!-- Planificación de Evaluaciones -->
+                <div class="milestone-planner">
+                    <h4 style="margin-bottom: 15px;">📋 Planificación de Evaluaciones</h4>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Calendario de Evaluaciones</label>
+                        <textarea class="form-control" name="assessment_schedule" rows="3"
+                                  placeholder='[{"fecha": "2024-02-15", "tipo": "quiz", "tema": "Ecuaciones lineales"}, {"fecha": "2024-03-01", "tipo": "examen", "tema": "Álgebra básica"}]'></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Fechas de Exámenes Importantes</label>
+                        <textarea class="form-control" name="exam_dates" rows="2"
+                                  placeholder='{"parcial_1": "2024-03-15", "parcial_2": "2024-05-15", "final": "2024-06-30"}'></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Puntos de Control de Progreso</label>
+                        <textarea class="form-control" name="checkpoint_dates" rows="2"
+                                  placeholder='["2024-02-01", "2024-03-01", "2024-04-01", "2024-05-01"]'></textarea>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeScheduleModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Crear Cronograma</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Nueva Asignación -->
+    <div id="assignmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">📝 Nueva Asignación de Contenido</h3>
+                <button class="close" onclick="closeAssignmentModal()">&times;</button>
+            </div>
+
+            <form id="assignmentForm" onsubmit="createAssignment(event)">
+                <input type="hidden" id="assignment-schedule-id">
+                <input type="hidden" id="assignment-class-id">
+
+                <div class="form-group">
+                    <label class="form-label">Nombre de la Asignación</label>
+                    <input type="text" class="form-control" name="assignment_name" required 
+                           placeholder="Ej: Práctica de Ecuaciones Lineales">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Asignación</label>
+                        <select class="form-control" name="assignment_type" required>
+                            <option value="">Seleccionar tipo</option>
+                            <option value="practice">Práctica</option>
+                            <option value="assessment">Evaluación</option>
+                            <option value="project">Proyecto</option>
+                            <option value="homework">Tarea</option>
+                            <option value="review">Repaso</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Nivel de Dificultad (1-10)</label>
+                        <input type="range" class="form-control" name="difficulty_level" min="1" max="10" value="5" 
+                               oninput="document.getElementById('difficulty-display').textContent = this.value">
+                        <span>Nivel: <span id="difficulty-display">5</span></span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Fecha de Vencimiento</label>
+                        <input type="datetime-local" class="form-control" name="due_date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Duración Estimada (minutos)</label>
+                        <input type="number" class="form-control" name="estimated_duration" min="5" value="30">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Bloques a Asignar (IDs separados por comas)</label>
+                    <input type="text" class="form-control" name="block_ids" 
+                           placeholder="Ej: 1, 2, 3, 5, 8">
+                    <small style="color: #666;">IDs de los bloques de PLAYTEST que quieres asignar</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Objetivos de Aprendizaje</label>
+                    <textarea class="form-control" name="learning_objectives" rows="3"
+                              placeholder='["Resolver ecuaciones de primer grado", "Aplicar propiedades algebraicas", "Verificar soluciones"]'></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Criterios de Éxito</label>
+                    <textarea class="form-control" name="success_criteria" rows="3"
+                              placeholder='["Completar al menos 80% de ejercicios", "Demostrar comprensión conceptual", "Tiempo de resolución adecuado"]'></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Acomodaciones Especiales</label>
+                    <textarea class="form-control" name="accommodations" rows="2"
+                              placeholder='{"tiempo_extra": true, "instrucciones_simplificadas": false, "calculadora_permitida": true}'></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" name="auto_assign" value="true">
+                            <span>Asignación Automática</span>
+                        </label>
+                        <small style="color: #666;">Se asigna automáticamente a todos los estudiantes</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" name="adaptive_difficulty" value="true">
+                            <span>Dificultad Adaptativa</span>
+                        </label>
+                        <small style="color: #666;">La dificultad se adapta al rendimiento del estudiante</small>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeAssignmentModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Crear Asignación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let classes = [];
+        let schedules = [];
+        let assignments = [];
+        let selectedClassId = null;
+        let selectedScheduleId = null;
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadClasses();
+        });
+
+        // Cargar clases del profesor
+        async function loadClasses() {
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    showError('schedules-container', 'No autenticado');
+                    return;
+                }
+
+                const response = await fetch('/api/teachers-panel/classes', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error cargando clases');
+                }
+
+                const data = await response.json();
+                classes = data.classes || [];
+                populateClassSelector();
+
+            } catch (error) {
+                console.error('Error cargando clases:', error);
+                showError('schedules-container', 'Error cargando clases');
+            }
+        }
+
+        // Poblar selector de clases
+        function populateClassSelector() {
+            const selector = document.getElementById('class-selector');
+            selector.innerHTML = '<option value="">Seleccionar una clase...</option>';
+            
+            classes.forEach(classItem => {
+                const option = document.createElement('option');
+                option.value = classItem.id;
+                option.textContent = `${classItem.class_name} (${classItem.subject})`;
+                selector.appendChild(option);
+            });
+        }
+
+        // Cargar cronogramas para una clase
+        async function loadSchedulesForClass(classId) {
+            if (!classId) {
+                document.getElementById('schedules-container').innerHTML = `
+                    <div class="empty-state">
+                        <span class="icon">📅</span>
+                        <h3>Selecciona una clase</h3>
+                        <p>Elige una clase para ver y gestionar sus cronogramas académicos</p>
+                    </div>
+                `;
+                document.getElementById('create-schedule-btn').disabled = true;
+                document.getElementById('pacing-guide-section').style.display = 'none';
+                document.getElementById('assignments-section').style.display = 'none';
+                return;
+            }
+
+            selectedClassId = classId;
+            document.getElementById('create-schedule-btn').disabled = false;
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`/api/teachers-panel/classes/${classId}/schedules`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error cargando cronogramas');
+                }
+
+                const data = await response.json();
+                schedules = data.schedules || [];
+                renderSchedules();
+                
+                // Mostrar secciones adicionales
+                document.getElementById('pacing-guide-section').style.display = 'block';
+                document.getElementById('assignments-section').style.display = 'block';
+                
+                generatePacingGuide();
+                await loadAssignments();
+
+            } catch (error) {
+                console.error('Error cargando cronogramas:', error);
+                showError('schedules-container', 'Error cargando cronogramas');
+            }
+        }
+
+        // Renderizar cronogramas
+        function renderSchedules() {
+            const container = document.getElementById('schedules-container');
+            
+            if (schedules.length === 0) {
+                container.innerHTML = `
+                    <div class="schedule-card">
+                        <div class="empty-state">
+                            <span class="icon">📅</span>
+                            <h3>No hay cronogramas</h3>
+                            <p>Crea tu primer cronograma académico para esta clase</p>
+                            <button class="btn btn-primary" onclick="openScheduleModal()">Crear Cronograma</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = schedules.map(schedule => `
+                <div class="schedule-card">
+                    <div class="schedule-header">
+                        <div>
+                            <div class="schedule-name">${schedule.schedule_name}</div>
+                            <span class="schedule-type">${getScheduleTypeDisplay(schedule.schedule_type)}</span>
+                        </div>
+                    </div>
+
+                    <div class="schedule-dates">
+                        <strong>📅 Período:</strong><br>
+                        <small>Inicio: ${formatDate(schedule.start_date)}</small><br>
+                        <small>Fin: ${formatDate(schedule.end_date)}</small>
+                    </div>
+
+                    ${schedule.learning_milestones ? `
+                        <div class="timeline-container">
+                            <h4 style="margin-bottom: 15px;">🎯 Hitos de Aprendizaje</h4>
+                            <div class="timeline">
+                                ${renderMilestones(schedule.learning_milestones)}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                        <button class="btn btn-sm btn-primary" onclick="viewScheduleDetails(${schedule.id})">
+                            📊 Ver Detalles
+                        </button>
+                        <button class="btn btn-sm btn-success" onclick="selectSchedule(${schedule.id})">
+                            ✅ Seleccionar
+                        </button>
+                        <button class="btn btn-sm btn-warning" onclick="editSchedule(${schedule.id})">
+                            ✏️ Editar
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteSchedule(${schedule.id})">
+                            🗑️ Eliminar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Renderizar hitos de aprendizaje
+        function renderMilestones(milestones) {
+            if (!milestones) return '';
+            
+            try {
+                const milestonesArray = typeof milestones === 'string' ? JSON.parse(milestones) : milestones;
+                return milestonesArray.map(milestone => `
+                    <div class="timeline-item">
+                        <div class="timeline-date">Semana ${milestone.semana}</div>
+                        <div class="timeline-content">${milestone.hito}</div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                return '<div class="timeline-item">Error cargando hitos</div>';
+            }
+        }
+
+        // Generar guía de ritmo
+        function generatePacingGuide() {
+            const container = document.getElementById('pacing-container');
+            
+            // Simular generación de guía de ritmo basada en cronograma
+            const weeks = 16; // Semestre típico
+            const currentDate = new Date();
+            
+            let weekElements = '';
+            for (let week = 1; week <= weeks; week++) {
+                const weekStart = new Date(currentDate);
+                weekStart.setDate(currentDate.getDate() + (week - 1) * 7);
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6);
+                
+                weekElements += `
+                    <div class="pacing-week">
+                        <div class="week-header">
+                            <div class="week-number">Semana ${week}</div>
+                            <div class="week-dates">${formatDateShort(weekStart)} - ${formatDateShort(weekEnd)}</div>
+                        </div>
+                        <div class="week-content">
+                            ${generateWeekContent(week)}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = weekElements;
+        }
+
+        // Generar contenido semanal
+        function generateWeekContent(week) {
+            const topics = [
+                'Conceptos básicos', 'Ejercicios prácticos', 'Evaluación formativa',
+                'Proyectos grupales', 'Revisión conceptual', 'Aplicaciones prácticas',
+                'Resolución de problemas', 'Síntesis y repaso'
+            ];
+            
+            const weekTopics = [];
+            for (let i = 0; i < 3; i++) {
+                const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+                if (!weekTopics.includes(randomTopic)) {
+                    weekTopics.push(randomTopic);
+                }
+            }
+            
+            return weekTopics.map(topic => `
+                <div class="content-item">${topic}</div>
+            `).join('');
+        }
+
+        // Cargar asignaciones
+        async function loadAssignments() {
+            const container = document.getElementById('assignments-container');
+            
+            // Simular carga de asignaciones
+            setTimeout(() => {
+                container.innerHTML = `
+                    <div class="assignment-card">
+                        <div class="assignment-header">
+                            <div>
+                                <div class="assignment-name">Ecuaciones Lineales - Práctica</div>
+                                <span class="assignment-type">Práctica</span>
+                            </div>
+                        </div>
+                        <div class="assignment-details">
+                            <strong>Vencimiento:</strong> 15 de marzo, 2024<br>
+                            <strong>Duración:</strong> 45 minutos<br>
+                            <strong>Bloques:</strong> 3 bloques asignados
+                        </div>
+                        <div class="assignment-actions">
+                            <button class="btn btn-sm btn-primary">📊 Ver Progreso</button>
+                            <button class="btn btn-sm btn-warning">✏️ Editar</button>
+                        </div>
+                    </div>
+
+                    <div class="assignment-card">
+                        <div class="assignment-header">
+                            <div>
+                                <div class="assignment-name">Geometría Básica - Evaluación</div>
+                                <span class="assignment-type">Evaluación</span>
+                            </div>
+                        </div>
+                        <div class="assignment-details">
+                            <strong>Vencimiento:</strong> 22 de marzo, 2024<br>
+                            <strong>Duración:</strong> 60 minutos<br>
+                            <strong>Bloques:</strong> 5 bloques asignados
+                        </div>
+                        <div class="assignment-actions">
+                            <button class="btn btn-sm btn-primary">📊 Ver Progreso</button>
+                            <button class="btn btn-sm btn-warning">✏️ Editar</button>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        // Crear cronograma
+        async function createSchedule(event) {
+            event.preventDefault();
+            
+            try {
+                const formData = new FormData(event.target);
+                
+                const scheduleData = {
+                    class_id: selectedClassId,
+                    schedule_name: formData.get('schedule_name'),
+                    schedule_type: formData.get('schedule_type'),
+                    start_date: formData.get('start_date'),
+                    end_date: formData.get('end_date'),
+                    curriculum_mapping: parseJsonField(formData.get('curriculum_standards')),
+                    learning_milestones: parseJsonField(formData.get('learning_milestones')),
+                    content_distribution: parseJsonField(formData.get('content_distribution')),
+                    difficulty_progression: parseJsonField(formData.get('difficulty_progression')),
+                    assessment_schedule: parseJsonField(formData.get('assessment_schedule')),
+                    exam_dates: parseJsonField(formData.get('exam_dates')),
+                    checkpoint_dates: parseJsonField(formData.get('checkpoint_dates'))
+                };
+
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/teachers-panel/schedules', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(scheduleData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error creando cronograma');
+                }
+
+                closeScheduleModal();
+                await loadSchedulesForClass(selectedClassId);
+                alert('Cronograma académico creado exitosamente');
+
+            } catch (error) {
+                console.error('Error creando cronograma:', error);
+                alert('Error creando cronograma: ' + error.message);
+            }
+        }
+
+        // Crear asignación
+        async function createAssignment(event) {
+            event.preventDefault();
+            
+            try {
+                const formData = new FormData(event.target);
+                
+                // Convertir IDs de bloques a array
+                const blockIdsString = formData.get('block_ids');
+                const blockIds = blockIdsString ? blockIdsString.split(',').map(id => parseInt(id.trim())) : [];
+                
+                const assignmentData = {
+                    schedule_id: selectedScheduleId,
+                    class_id: selectedClassId,
+                    assignment_name: formData.get('assignment_name'),
+                    assignment_type: formData.get('assignment_type'),
+                    block_ids: blockIds,
+                    due_date: formData.get('due_date'),
+                    estimated_duration: parseInt(formData.get('estimated_duration')),
+                    difficulty_level: parseInt(formData.get('difficulty_level')),
+                    learning_objectives: parseJsonField(formData.get('learning_objectives')),
+                    success_criteria: parseJsonField(formData.get('success_criteria')),
+                    accommodations: parseJsonField(formData.get('accommodations')),
+                    auto_assign: formData.get('auto_assign') === 'true',
+                    adaptive_difficulty: formData.get('adaptive_difficulty') === 'true'
+                };
+
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/teachers-panel/assignments', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(assignmentData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error creando asignación');
+                }
+
+                closeAssignmentModal();
+                await loadAssignments();
+                alert('Asignación de contenido creada exitosamente');
+
+            } catch (error) {
+                console.error('Error creando asignación:', error);
+                alert('Error creando asignación: ' + error.message);
+            }
+        }
+
+        // Funciones auxiliares
+        function parseJsonField(fieldValue) {
+            if (!fieldValue) return {};
+            try {
+                return JSON.parse(fieldValue);
+            } catch (e) {
+                console.warn('Error parsing JSON field:', fieldValue);
+                return {};
+            }
+        }
+
+        function getScheduleTypeDisplay(type) {
+            const types = {
+                semester: 'Semestral',
+                unit: 'Por Unidad',
+                weekly: 'Semanal',
+                daily: 'Diario'
+            };
+            return types[type] || type;
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function formatDateShort(date) {
+            return date.toLocaleDateString('es-ES', {
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function calculateEndDate() {
+            const startDate = document.querySelector('[name="start_date"]').value;
+            const duration = document.querySelector('[name="duration"]').value;
+            
+            if (startDate && duration) {
+                const start = new Date(startDate);
+                const end = new Date(start);
+                end.setDate(start.getDate() + (parseInt(duration) * 7)); // weeks to days
+                
+                document.querySelector('[name="end_date"]').value = end.toISOString().split('T')[0];
+            }
+        }
+
+        function selectSchedule(scheduleId) {
+            selectedScheduleId = scheduleId;
+            alert('Cronograma seleccionado para asignaciones');
+        }
+
+        function openScheduleModal() {
+            document.getElementById('schedule-class-id').value = selectedClassId;
+            document.getElementById('scheduleModal').style.display = 'block';
+        }
+
+        function closeScheduleModal() {
+            document.getElementById('scheduleModal').style.display = 'none';
+            document.getElementById('scheduleForm').reset();
+        }
+
+        function openAssignmentModal() {
+            if (!selectedScheduleId) {
+                alert('Primero selecciona un cronograma');
+                return;
+            }
+            document.getElementById('assignment-schedule-id').value = selectedScheduleId;
+            document.getElementById('assignment-class-id').value = selectedClassId;
+            document.getElementById('assignmentModal').style.display = 'block';
+        }
+
+        function closeAssignmentModal() {
+            document.getElementById('assignmentModal').style.display = 'none';
+            document.getElementById('assignmentForm').reset();
+        }
+
+        function showError(containerId, message) {
+            document.getElementById(containerId).innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        // Cerrar modales al hacer click fuera
+        window.onclick = function(event) {
+            const scheduleModal = document.getElementById('scheduleModal');
+            const assignmentModal = document.getElementById('assignmentModal');
+            
+            if (event.target === scheduleModal) {
+                closeScheduleModal();
+            }
+            if (event.target === assignmentModal) {
+                closeAssignmentModal();
+            }
+        }
+    </script>
+</body>
+</html>
