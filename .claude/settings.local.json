@@ -13,8 +13,10 @@
       "Bash(npm audit:*)",
       "Bash(node:*)",
       "Bash(npm start)",
-      "Bash(\"taskkill\" \"/PID\" \"24024\")"
+      "Bash(\"taskkill\" \"/PID\" \"24024\")",
+      "Bash(psql:*)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }
