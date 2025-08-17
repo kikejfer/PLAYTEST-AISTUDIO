@@ -17,8 +17,8 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <title>PLAYTEST Admin Panel v2.2.0</title>
-    <meta name="cache-buster" content="2025-08-17-14:38:00" />
+    <title>PLAYTEST Admin Panel v2.4.0</title>
+    <meta name="cache-buster" content="2025-08-17-16:54:00" />
     <link rel="icon" type="image/png" href="Imagenes/Playtest.png">
 
     <!-- Embedded Global Stylesheet -->
@@ -117,12 +117,19 @@
     <!-- Tailwind CSS from CDN - Development only -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      // Suppress Tailwind CSS production warning for deployment
+      // Suppress development warnings for deployment
       if (typeof console !== 'undefined' && console.warn) {
         const originalWarn = console.warn;
         console.warn = function(...args) {
-          if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
-            return; // Suppress this specific warning
+          if (args[0] && typeof args[0] === 'string') {
+            // Suppress Tailwind CSS production warning
+            if (args[0].includes('cdn.tailwindcss.com should not be used in production')) {
+              return;
+            }
+            // Suppress Babel in-browser warning
+            if (args[0].includes('You are using the in-browser Babel transformer')) {
+              return;
+            }
           }
           originalWarn.apply(console, args);
         };
@@ -181,7 +188,7 @@
       globalThis.process = globalThis.process || { env: {} };
       
       console.log("🎮 PLAYTEST JavaScript loaded successfully!");
-      console.log("📅 Script version: 2025-08-17-v2.3 - CACHE BUSTED - All SVG and redirect fixes applied");
+      console.log("📅 Script version: 2025-08-17-v2.4 - CACHE BUSTED - Console warnings suppressed, SVG fixed, admin redirect corrected");
       
       // Nuclear option: Unregister any service workers that might be caching
       if ('serviceWorker' in navigator) {
@@ -2172,7 +2179,7 @@
                     title="Soporte Técnico Global"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 0 1 9.75 9.75 9.75 0 0 1-9.75 9.75A9.75 0 0 1 2.25 12 2.25 0 0 1 12 2.25z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 0 1 9.75 9.75a9.75 9.75 0 0 1-9.75 9.75A9.75 9.75 0 0 1 2.25 12A9.75 9.75 0 0 1 12 2.25z" />
                     </svg>
                     <span className="hidden sm:inline">Soporte</span>
                   </button>
@@ -2849,9 +2856,9 @@
             console.log('🔀 ADMIN DETECTED - Starting redirect process v2.3');
             
             const url = window.location.href;
-            const shouldRedirect = url.includes('index') || url.includes('localhost:5173');
+            const isInAdminPanel = url.includes('admin-principal-panel.html');
             
-            if (shouldRedirect) {
+            if (!isInAdminPanel) {
               console.log('🎯 REDIRECTING TO ADMIN PANEL NOW');
               const uniqueId = Date.now() + Math.random();
               window.location.href = `admin-principal-panel.html?id=${uniqueId}`;
