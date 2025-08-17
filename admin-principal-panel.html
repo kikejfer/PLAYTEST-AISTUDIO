@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Administrador Principal - PlayTest</title>
-    <link rel="icon" type="image/png" href="Imagenes/Playtest.png">
+    <link rel="icon" type="image/png" href="https://via.placeholder.com/32x32/3B82F6/FFFFFF?text=P">
     
     <!-- Tailwind CSS from CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -583,7 +583,94 @@
 
             } catch (error) {
                 console.error('Error cargando panel:', error);
-                showError('Error al cargar los datos del panel');
+                showError('Error al cargar datos del backend. Mostrando datos de ejemplo.');
+                
+                // Fallback con datos de ejemplo
+                panelData = {
+                    administradoresSecundarios: [
+                        {
+                            id: 1,
+                            nickname: 'admin_sec_1',
+                            first_name: 'Juan',
+                            last_name: 'Pérez',
+                            email: 'juan.perez@ejemplo.com',
+                            assigned_creators_count: 5,
+                            total_blocks_assigned: 25,
+                            total_questions_assigned: 150,
+                            luminarias: 1200
+                        }
+                    ],
+                    profesoresCreadores: [
+                        {
+                            id: 2,
+                            nickname: 'profesor_1',
+                            first_name: 'María',
+                            last_name: 'García',
+                            email: 'maria.garcia@ejemplo.com',
+                            assigned_admin_nickname: 'admin_sec_1',
+                            assigned_admin_id: 1,
+                            blocks_created: 8,
+                            total_questions: 45,
+                            total_users_blocks: 120,
+                            luminarias_actuales: 850,
+                            luminarias_ganadas: 1000,
+                            luminarias_gastadas: 150,
+                            luminarias_abonadas: 0,
+                            luminarias_compradas: 0
+                        },
+                        {
+                            id: 3,
+                            nickname: 'creador_1',
+                            first_name: 'Carlos',
+                            last_name: 'López',
+                            email: 'carlos.lopez@ejemplo.com',
+                            assigned_admin_nickname: 'Sin asignar',
+                            assigned_admin_id: null,
+                            blocks_created: 12,
+                            total_questions: 78,
+                            total_users_blocks: 200,
+                            luminarias_actuales: 650,
+                            luminarias_ganadas: 800,
+                            luminarias_gastadas: 150,
+                            luminarias_abonadas: 0,
+                            luminarias_compradas: 0
+                        }
+                    ],
+                    usuarios: [
+                        {
+                            id: 4,
+                            nickname: 'jugador_1',
+                            first_name: 'Ana',
+                            last_name: 'Martínez',
+                            email: 'ana.martinez@ejemplo.com',
+                            assigned_admin_nickname: 'admin_sec_1',
+                            assigned_admin_id: 1,
+                            blocks_loaded: 15,
+                            luminarias_actuales: 320,
+                            luminarias_ganadas: 400,
+                            luminarias_gastadas: 80,
+                            luminarias_abonadas: 0,
+                            luminarias_compradas: 0
+                        },
+                        {
+                            id: 5,
+                            nickname: 'estudiante_1',
+                            first_name: 'Diego',
+                            last_name: 'Rodríguez',
+                            email: 'diego.rodriguez@ejemplo.com',
+                            assigned_admin_nickname: 'Sin asignar',
+                            assigned_admin_id: null,
+                            blocks_loaded: 8,
+                            luminarias_actuales: 180,
+                            luminarias_ganadas: 250,
+                            luminarias_gastadas: 70,
+                            luminarias_abonadas: 0,
+                            luminarias_compradas: 0
+                        }
+                    ]
+                };
+                
+                renderTables();
             }
         }
 
