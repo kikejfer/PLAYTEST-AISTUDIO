@@ -17,8 +17,8 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <title>PLAYTEST Admin Panel v2.4.0</title>
-    <meta name="cache-buster" content="2025-08-17-16:54:00" />
+    <title>PLAYTEST Admin Panel v2.5.0</title>
+    <meta name="cache-buster" content="2025-08-17-17:01:00" />
     <link rel="icon" type="image/png" href="Imagenes/Playtest.png">
 
     <!-- Embedded Global Stylesheet -->
@@ -188,7 +188,7 @@
       globalThis.process = globalThis.process || { env: {} };
       
       console.log("🎮 PLAYTEST JavaScript loaded successfully!");
-      console.log("📅 Script version: 2025-08-17-v2.4 - CACHE BUSTED - Console warnings suppressed, SVG fixed, admin redirect corrected");
+      console.log("📅 Script version: 2025-08-17-v2.5 - CACHE BUSTED - Fixed admin redirect loop by correcting token storage and retrieval");
       
       // Nuclear option: Unregister any service workers that might be caching
       if ('serviceWorker' in navigator) {
@@ -3223,7 +3223,7 @@
             
             if (response && response.user && response.token) {
               console.log('✅ Login successful, user data:', response.user);
-              onLogin(response.user, loginData.remember);
+              onLogin(response.user, response.token, loginData.remember);
             } else {
               console.log('❌ Login failed - invalid response structure');
               setError(t('auth_error_invalid_credentials'));
@@ -3243,7 +3243,7 @@
             const { confirmPassword, ...newUserPayload } = registerData;
             const response = await apiDataService.register(newUserPayload.nickname, newUserPayload.password, newUserPayload.email);
             if (response && response.user && response.token) {
-              onLogin(response.user, registerData.remember);
+              onLogin(response.user, response.token, registerData.remember);
             } else {
               setError(t('auth_error_generic'));
             }
@@ -3342,16 +3342,18 @@
           setIsLoading(false);
         }, []);
 
-        const handleLogin = (user, remember) => {
-          console.log('handleLogin called with:', user, remember);
+        const handleLogin = (user, token, remember) => {
+          console.log('handleLogin called with:', user, 'token:', token ? 'exists' : 'missing', 'remember:', remember);
           
-          // Always save session data FIRST (both for remember and non-remember)
+          // Save both session data AND auth token
           const sessionData = { 
             userId: user.id, 
             nickname: user.nickname
           };
           localStorage.setItem('playtest_session', JSON.stringify(sessionData));
+          localStorage.setItem('playtest_auth_token', token);
           console.log('💾 Saved session data:', sessionData);
+          console.log('💾 Saved auth token:', token ? 'YES' : 'NO');
           
           // Verify it was saved correctly
           const savedSession = localStorage.getItem('playtest_session');

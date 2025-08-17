@@ -325,11 +325,15 @@
 
         async function loadPanelData() {
             try {
-                const token = localStorage.getItem('authToken');
+                // Check both possible token names for compatibility
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
                 if (!token) {
+                    console.log('❌ No authentication token found, redirecting to login');
                     window.location.href = 'index.html';
                     return;
                 }
+                
+                console.log('✅ Token found, loading admin panel data');
 
                 const response = await fetch('/api/roles/admin-principal-panel', {
                     headers: {
