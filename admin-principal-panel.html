@@ -372,6 +372,7 @@
             <h1>Panel del Administrador Principal</h1>
             <p>Gestión completa del sistema de roles y usuarios de PlayTest</p>
             <button onclick="debugUsers()" style="margin-top: 10px; padding: 5px 10px; background: #EF4444; color: white; border: none; border-radius: 3px; cursor: pointer;">🔍 Debug Usuarios</button>
+            <button onclick="debugPanelQueries()" style="margin-top: 10px; margin-left: 10px; padding: 5px 10px; background: #8B5CF6; color: white; border: none; border-radius: 3px; cursor: pointer;">🔍 Debug Consultas</button>
         </div>
 
         <!-- Sección 1: Administradores Secundarios -->
@@ -1137,6 +1138,45 @@
         function showBlockDetails(blockId) {
             // Implementar modal o ventana con detalles completos del bloque
             alert(`Ver detalles completos del bloque ID: ${blockId}`);
+        }
+
+        async function debugPanelQueries() {
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/debug-panel-queries`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Debug Panel Queries:', data);
+                    
+                    alert(`🔍 DEBUG CONSULTAS PANEL
+
+📊 Usuarios encontrados: ${data.usuarios_count}
+📊 Creadores encontrados: ${data.creadores_count}
+
+Ver detalles completos en consola (F12)`);
+                    
+                    console.table('Usuarios query result:', data.usuarios_query_result);
+                    console.table('Creadores query result:', data.creadores_query_result);
+                    
+                } else {
+                    const error = await response.json();
+                    alert(`Error debug consultas: ${error.error}`);
+                }
+                
+            } catch (error) {
+                console.error('Error en debug consultas:', error);
+                alert('Error obteniendo debug consultas: ' + error.message);
+            }
         }
 
         async function debugUsers() {
