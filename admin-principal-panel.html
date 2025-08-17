@@ -581,6 +581,12 @@
                     usuarios: data.usuarios || []
                 };
                 
+                console.log('Panel Data loaded:', {
+                    admins: panelData.administradoresSecundarios.length,
+                    creadores: panelData.profesoresCreadores.length,
+                    usuarios: panelData.usuarios.length
+                });
+                
                 renderTables();
 
             } catch (error) {
