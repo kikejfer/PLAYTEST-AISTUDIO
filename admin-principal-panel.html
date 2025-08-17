@@ -371,6 +371,7 @@
         <div class="header">
             <h1>Panel del Administrador Principal</h1>
             <p>Gestión completa del sistema de roles y usuarios de PlayTest</p>
+            <button onclick="debugUsers()" style="margin-top: 10px; padding: 5px 10px; background: #EF4444; color: white; border: none; border-radius: 3px; cursor: pointer;">🔍 Debug Usuarios</button>
         </div>
 
         <!-- Sección 1: Administradores Secundarios -->
@@ -391,6 +392,7 @@
                                 <th>Núm. Bloques Totales</th>
                                 <th>Núm. Preguntas Totales</th>
                                 <th class="luminarias">Luminarias</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="admins-tbody">
@@ -419,6 +421,7 @@
                                 <th>Núm. Preguntas</th>
                                 <th>Admin. Secundario Asignado</th>
                                 <th class="luminarias">Luminarias</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="profesores-tbody">
@@ -444,6 +447,7 @@
                                 <th>Núm. Bloques Cargados</th>
                                 <th>Admin. Secundario Asignado</th>
                                 <th class="luminarias">Luminarias</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="usuarios-tbody">
@@ -686,6 +690,10 @@
                 const roleDisplay = admin.role_name === 'administrador_principal' ? 'Administrador Principal' : 'Administrador Secundario';
                 const fullName = [admin.first_name, admin.last_name].filter(Boolean).join(' ') || 'No especificado';
                 const row = document.createElement('tr');
+                const deleteButton = admin.role_name === 'administrador_principal' 
+                    ? '<span style="color: #9CA3AF;">Protegido</span>' 
+                    : `<button onclick="deleteUser(${admin.id}, '${admin.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️ Borrar</button>`;
+                
                 row.innerHTML = `
                     <td><strong>${admin.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
                     <td><span style="color: ${admin.role_name === 'administrador_principal' ? '#3B82F6' : '#10B981'};">${roleDisplay}</span></td>
@@ -694,6 +702,7 @@
                     <td>${admin.total_blocks_assigned || 0}</td>
                     <td>${admin.total_questions_assigned || 0}</td>
                     <td class="luminarias">${admin.luminarias || 0}</td>
+                    <td>${deleteButton}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -729,6 +738,9 @@
                     <td class="luminarias">
                         ${profesor.luminarias_actuales || 0}
                     </td>
+                    <td>
+                        <button onclick="deleteUser(${profesor.id}, '${profesor.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️ Borrar</button>
+                    </td>
                 `;
                 tbody.appendChild(row);
 
@@ -737,7 +749,7 @@
                     const expandRow = document.createElement('tr');
                     expandRow.className = 'expandable-row show';
                     expandRow.innerHTML = `
-                        <td colspan="8">
+                        <td colspan="9">
                             <div id="profesor-blocks-${profesor.id}">
                                 <div class="loading">Cargando bloques...</div>
                             </div>
@@ -768,6 +780,9 @@
                     </td>
                     <td class="luminarias">
                         ${usuario.luminarias_actuales || 0}
+                    </td>
+                    <td>
+                        <button onclick="deleteUser(${usuario.id}, '${usuario.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️ Borrar</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -1116,6 +1131,114 @@
         function showBlockDetails(blockId) {
             // Implementar modal o ventana con detalles completos del bloque
             alert(`Ver detalles completos del bloque ID: ${blockId}`);
+        }
+
+        async function debugUsers() {
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/debug-users`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Debug Users:', data);
+                    
+                    alert(`🔍 DEBUG USUARIOS
+
+📊 Total usuarios: ${data.all_users.length}
+👥 Usuarios con roles: ${data.users_with_roles.length}
+📝 Usuarios con bloques: ${data.users_with_blocks.length}
+👤 Perfiles creados: ${data.profiles_count}
+
+Ver detalles en consola (F12)`);
+                    
+                    console.table('Todos los usuarios:', data.all_users);
+                    console.table('Usuarios con roles:', data.users_with_roles);
+                    console.table('Usuarios con bloques:', data.users_with_blocks);
+                    
+                } else {
+                    const error = await response.json();
+                    alert(`Error debug: ${error.error}`);
+                }
+                
+            } catch (error) {
+                console.error('Error en debug usuarios:', error);
+                alert('Error obteniendo debug: ' + error.message);
+            }
+        }
+
+        async function deleteUser(userId, nickname) {
+            if (!confirm(`⚠️ ADVERTENCIA: ACCIÓN IRREVERSIBLE
+
+¿Estás seguro de que quieres borrar COMPLETAMENTE al usuario "${nickname}"?
+
+Esto eliminará:
+✗ La cuenta del usuario
+✗ Todos sus bloques creados
+✗ Su perfil y estadísticas
+✗ Todas sus preguntas
+✗ Su historial de respuestas
+✗ Toda información asociada
+
+Esta acción NO se puede deshacer.
+
+¿Continuar?`)) {
+                return;
+            }
+
+            if (!confirm(`CONFIRMACIÓN FINAL
+
+Escribe "CONFIRMAR" en la siguiente ventana para borrar definitivamente al usuario "${nickname}"`)) {
+                return;
+            }
+
+            const confirmation = prompt(`Para confirmar el borrado, escribe exactamente: CONFIRMAR`);
+            if (confirmation !== 'CONFIRMAR') {
+                alert('Borrado cancelado. Confirmación incorrecta.');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/delete-user/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert(`✅ Usuario "${nickname}" borrado exitosamente
+
+${result.deleted_data.join('\n')}
+
+Total elementos eliminados: ${result.total_deleted}`);
+                    
+                    // Recargar el panel
+                    window.location.reload();
+                } else {
+                    alert(`❌ Error borrando usuario: ${result.error}`);
+                }
+                
+            } catch (error) {
+                console.error('Error borrando usuario:', error);
+                alert('❌ Error: ' + error.message);
+            }
         }
 
     </script>
