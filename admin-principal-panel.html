@@ -373,6 +373,7 @@
             <p>Gestión completa del sistema de roles y usuarios de PlayTest</p>
             <button onclick="debugUsers()" style="margin-top: 10px; padding: 5px 10px; background: #EF4444; color: white; border: none; border-radius: 3px; cursor: pointer;">🔍 Debug Usuarios</button>
             <button onclick="debugPanelQueries()" style="margin-top: 10px; margin-left: 10px; padding: 5px 10px; background: #8B5CF6; color: white; border: none; border-radius: 3px; cursor: pointer;">🔍 Debug Consultas</button>
+            <button onclick="loadTempPanel()" style="margin-top: 10px; margin-left: 10px; padding: 5px 10px; background: #10B981; color: white; border: none; border-radius: 3px; cursor: pointer;">🔧 Usar Panel Temporal</button>
         </div>
 
         <!-- Sección 1: Administradores Secundarios -->
@@ -1176,6 +1177,50 @@ Ver detalles completos en consola (F12)`);
             } catch (error) {
                 console.error('Error en debug consultas:', error);
                 alert('Error obteniendo debug consultas: ' + error.message);
+            }
+        }
+
+        async function loadTempPanel() {
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/admin-principal-panel-temp`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Temp Panel Data:', data);
+                    
+                    // Cargar datos directamente
+                    panelData = {
+                        administradoresSecundarios: data.adminSecundarios || [],
+                        profesoresCreadores: data.profesoresCreadores || [],
+                        usuarios: data.usuarios || []
+                    };
+                    
+                    renderTables();
+                    
+                    alert(`✅ Panel temporal cargado exitosamente!
+                    
+Administradores: ${panelData.administradoresSecundarios.length}
+Creadores: ${panelData.profesoresCreadores.length}
+Usuarios: ${panelData.usuarios.length}`);
+                    
+                } else {
+                    const error = await response.json();
+                    alert(`Error panel temporal: ${error.error}`);
+                }
+                
+            } catch (error) {
+                console.error('Error cargando panel temporal:', error);
+                alert('Error: ' + error.message);
             }
         }
 
