@@ -371,9 +371,6 @@
         <div class="header">
             <h1>Panel del Administrador Principal</h1>
             <p>Gestión completa del sistema de roles y usuarios de PlayTest</p>
-            <button onclick="debugBasic()" style="margin-top: 10px; padding: 5px 10px; background: #10B981; color: white; border: none; border-radius: 3px; cursor: pointer;">🔧 Test Backend</button>
-            <button onclick="debugUserInfo()" style="margin-top: 10px; margin-left: 10px; padding: 5px 10px; background: #F59E0B; color: white; border: none; border-radius: 3px; cursor: pointer;">🔍 Debug Usuario</button>
-            <button onclick="setupRoles()" style="margin-top: 10px; margin-left: 10px; padding: 5px 10px; background: #3B82F6; color: white; border: none; border-radius: 3px; cursor: pointer;">⚙️ Crear Roles</button>
         </div>
 
         <!-- Sección 1: Administradores Secundarios -->
@@ -1033,7 +1030,7 @@
                 const API_BASE_URL = window.location.hostname.includes('onrender.com') 
                     ? 'https://playtest-backend.onrender.com' 
                     : '';
-                const searchResponse = await fetch(`${API_BASE_URL}/api/admin/search-users?q=${encodeURIComponent(nickname)}`, {
+                const searchResponse = await fetch(`${API_BASE_URL}/api/roles-updated/search-users?q=${encodeURIComponent(nickname)}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -1055,7 +1052,7 @@
                 }
 
                 // Create admin secundario
-                const response = await fetch(`${API_BASE_URL}/api/admin/administradores-secundarios`, {
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/add-admin-secundario`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -1063,8 +1060,7 @@
                     },
                     body: JSON.stringify({
                         user_id: user.id,
-                        nickname: user.nickname,
-                        email: user.email
+                        nickname: user.nickname
                     })
                 });
 
@@ -1123,152 +1119,6 @@
             alert(`Ver detalles completos del bloque ID: ${blockId}`);
         }
 
-        async function debugBasic() {
-            try {
-                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
-                    ? 'https://playtest-backend.onrender.com' 
-                    : '';
-                
-                const response = await fetch(`${API_BASE_URL}/api/roles-updated/debug-basic`);
-                const data = await response.json();
-                
-                console.log('Basic Debug:', data);
-                
-                if (response.ok && data.database_connected) {
-                    alert(`✅ BACKEND FUNCIONANDO CORRECTAMENTE
-                    
-🗄️ Base de datos: Conectada
-⏰ Hora servidor: ${new Date(data.server_time).toLocaleString()}
-💾 PostgreSQL: ${data.postgres_version.split(' ')[0]} ${data.postgres_version.split(' ')[1]}
-
-El backend está operativo. El problema está en autenticación o permisos.`);
-                } else {
-                    alert(`❌ PROBLEMA EN BACKEND
-                    
-Error: ${data.error}
-Estado: ${data.status}
-DB Conectada: ${data.database_connected}
-
-El backend tiene problemas fundamentales.`);
-                }
-                
-            } catch (error) {
-                console.error('Error en test básico:', error);
-                alert('❌ BACKEND NO RESPONDE\n\nError: ' + error.message + '\n\nEl backend no está funcionando o no es accesible.');
-            }
-        }
-
-        async function debugUserInfo() {
-            try {
-                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
-                    ? 'https://playtest-backend.onrender.com' 
-                    : '';
-                
-                if (!token) {
-                    alert('❌ NO HAY TOKEN DE AUTENTICACIÓN\n\nNo se encontró token en localStorage. El usuario no está autenticado correctamente.');
-                    return;
-                }
-                
-                const response = await fetch(`${API_BASE_URL}/api/roles-updated/debug-user-info`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                const data = await response.json();
-                console.log('User Debug Info:', data);
-                
-                if (response.ok && data.status === 'OK') {
-                    alert(`✅ INFORMACIÓN DE USUARIO
-
-👤 Usuario:
-- ID: ${data.user?.id}
-- Nickname: ${data.user?.nickname}
-- Email: ${data.user?.email}
-
-🎭 Roles en DB: ${data.roles_count} roles disponibles
-
-🔑 Token decodificado:
-- User ID: ${data.auth_user?.id}
-- Nickname: ${data.auth_user?.nickname}
-
-⏰ Timestamp: ${new Date(data.timestamp).toLocaleString()}`);
-                } else {
-                    alert(`❌ ERROR EN AUTENTICACIÓN
-
-Error: ${data.error || 'Desconocido'}
-Detalles: ${data.details || 'No disponible'}
-Paso: ${data.step || 'General'}
-User ID: ${data.user_id || 'No disponible'}
-
-Problema: ${data.error?.includes('roles') ? 'Tabla de roles faltante' : 'Autenticación o permisos'}`);
-                }
-                
-            } catch (error) {
-                console.error('Error en debug usuario:', error);
-                alert('❌ ERROR EN DEBUG USUARIO\n\nError: ' + error.message);
-            }
-        }
-
-        async function setupRoles() {
-            if (!confirm('¿Crear tablas de roles y asignar permisos de administrador?\n\nEsto creará:\n- Tabla roles\n- Tabla user_roles\n- 5 roles básicos\n- Asignará rol de administrador principal')) {
-                return;
-            }
-
-            try {
-                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
-                    ? 'https://playtest-backend.onrender.com' 
-                    : '';
-                
-                if (!token) {
-                    alert('❌ NO HAY TOKEN DE AUTENTICACIÓN\n\nDebes estar autenticado para crear roles.');
-                    return;
-                }
-                
-                const response = await fetch(`${API_BASE_URL}/api/roles-updated/setup-roles`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                const data = await response.json();
-                console.log('Setup Roles Result:', data);
-                
-                if (response.ok && data.success) {
-                    alert(`✅ ROLES CREADOS EXITOSAMENTE
-
-📊 Roles creados: ${data.roles_created}
-👤 Usuario: ${data.user_id}
-🎭 Roles asignados: ${data.user_roles.join(', ')}
-
-⏰ Completado: ${new Date(data.timestamp).toLocaleString()}
-
-¡Ya puedes usar el panel de administración!`);
-                    
-                    // Recargar el panel después del setup
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
-                    
-                } else {
-                    alert(`❌ ERROR CREANDO ROLES
-
-Error: ${data.error || 'Desconocido'}
-Detalles: ${data.details || 'No disponible'}
-
-El setup de roles falló.`);
-                }
-                
-            } catch (error) {
-                console.error('Error en setup roles:', error);
-                alert('❌ ERROR EN SETUP ROLES\n\nError: ' + error.message);
-            }
-        }
     </script>
 </body>
 </html>
