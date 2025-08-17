@@ -555,7 +555,91 @@
                     ? 'https://playtest-backend.onrender.com' 
                     : '';
                 
-                const response = await fetch(`${API_BASE_URL}/api/roles-updated/admin-principal-panel-emergency`, {
+                // Intentar primero el endpoint de emergencia, si falla usar debug
+                let response;
+                try {
+                    response = await fetch(`${API_BASE_URL}/api/roles-updated/admin-principal-panel-emergency`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                } catch (error) {
+                    console.log('Emergency endpoint failed, using debug fallback');
+                }
+
+                // Si el endpoint de emergencia falla (404), usar debug como fallback
+                if (!response || !response.ok) {
+                    console.log('Using debug fallback for panel data');
+                    const debugResponse = await fetch(`${API_BASE_URL}/api/roles-updated/debug-users`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (debugResponse.ok) {
+                        const debugData = await debugResponse.json();
+                        
+                        // Crear datos del panel desde debug
+                        const allUsers = debugData.all_users;
+                        const usersWithBlocks = debugData.users_with_blocks;
+                        const blockCreatorIds = new Set(usersWithBlocks.map(u => u.id));
+                        
+                        // AdminPrincipal como administrador
+                        const adminSecundarios = allUsers
+                            .filter(user => user.nickname === 'AdminPrincipal')
+                            .map(user => ({
+                                id: user.id,
+                                nickname: user.nickname,
+                                email: user.email || 'Sin email',
+                                first_name: '', last_name: '',
+                                assigned_creators_count: 0, total_blocks_assigned: 0, total_questions_assigned: 0, luminarias: 0,
+                                role_name: 'administrador_principal'
+                            }));
+
+                        // Usuarios con bloques como creadores
+                        const profesoresCreadores = usersWithBlocks
+                            .filter(user => user.nickname !== 'AdminPrincipal')
+                            .map(user => ({
+                                id: user.id, nickname: user.nickname, email: user.email || 'Sin email',
+                                first_name: '', last_name: '', assigned_admin_id: 0, assigned_admin_nickname: 'Sin asignar',
+                                blocks_created: user.block_count || 1, total_questions: 0, total_users_blocks: 0,
+                                luminarias_actuales: 0, luminarias_ganadas: 0, luminarias_gastadas: 0, luminarias_abonadas: 0, luminarias_compradas: 0,
+                                role_name: 'creador_contenido'
+                            }));
+
+                        // Usuarios sin bloques
+                        const usuarios = allUsers
+                            .filter(user => user.nickname !== 'AdminPrincipal' && !blockCreatorIds.has(user.id))
+                            .map(user => ({
+                                id: user.id, nickname: user.nickname, email: user.email || 'Sin email',
+                                first_name: '', last_name: '', assigned_admin_id: 0, assigned_admin_nickname: 'Sin asignar', blocks_loaded: 0,
+                                luminarias_actuales: 0, luminarias_ganadas: 0, luminarias_gastadas: 0, luminarias_abonadas: 0, luminarias_compradas: 0,
+                                role_name: 'usuario'
+                            }));
+
+                        panelData = {
+                            administradoresSecundarios: adminSecundarios,
+                            profesoresCreadores: profesoresCreadores,
+                            usuarios: usuarios
+                        };
+                        
+                        console.log('Panel Data loaded from debug fallback:', {
+                            admins: panelData.administradoresSecundarios.length,
+                            creadores: panelData.profesoresCreadores.length,
+                            usuarios: panelData.usuarios.length
+                        });
+                        
+                        renderTables();
+                        return; // Salir aquí para evitar el procesamiento normal
+                    } else {
+                        throw new Error('Both emergency and debug endpoints failed');
+                    }
+                }
+
+                // Procesamiento normal si el endpoint de emergencia funciona
+                response = await fetch(`${API_BASE_URL}/api/roles-updated/admin-principal-panel-emergency`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
