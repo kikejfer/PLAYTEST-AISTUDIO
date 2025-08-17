@@ -14,7 +14,8 @@
       "Bash(node:*)",
       "Bash(npm start)",
       "Bash(\"taskkill\" \"/PID\" \"24024\")",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash(sed:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

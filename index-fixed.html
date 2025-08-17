@@ -181,17 +181,7 @@
       globalThis.process = globalThis.process || { env: {} };
       
       console.log("🎮 PLAYTEST JavaScript loaded successfully!");
-      console.log("📅 Script version: 2025-08-17-v2.3 - CACHE BUSTED - All SVG and redirect fixes applied");
-      
-      // Nuclear option: Unregister any service workers that might be caching
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-          registrations.forEach(registration => {
-            registration.unregister();
-            console.log('🗑️ Unregistered service worker:', registration.scope);
-          });
-        });
-      }
+      console.log("📅 Script version: 2025-08-17-v2.2 - All SVG and redirect fixes applied");
 
       // Force browser cache clear for admin redirect fix
       console.log("🧹 Clearing browser caches and session data for admin redirect fix...");
@@ -2843,20 +2833,33 @@
         const { t } = useLanguage();
         const { currentUser } = useUser();
         
-        // ADMIN REDIRECT LOGIC v2.3 - Completely rewritten to avoid cache issues
+        // Check if user is AdminPrincipal and redirect to admin panel
         useEffect(() => {
-          if (currentUser?.nickname === 'AdminPrincipal') {
-            console.log('🔀 ADMIN DETECTED - Starting redirect process v2.3');
+          if (currentUser && currentUser.nickname === 'AdminPrincipal') {
+            console.log('🔀 AdminPrincipal detected, checking current location...');
             
-            const url = window.location.href;
-            const shouldRedirect = url.includes('index') || url.includes('localhost:5173');
+            const currentFile = window.location.href;
+            const isInGameInterface = currentFile.includes('index.html') || 
+                                    currentFile.endsWith('/') || 
+                                    currentFile.includes('localhost:5173');
             
-            if (shouldRedirect) {
-              console.log('🎯 REDIRECTING TO ADMIN PANEL NOW');
-              const uniqueId = Date.now() + Math.random();
-              window.location.href = `admin-principal-panel.html?id=${uniqueId}`;
+            // Clear any old redirect timestamps
+            sessionStorage.removeItem('lastAdminRedirect');
+            
+            if (isInGameInterface) {
+              console.log('👤 AdminPrincipal in game interface, redirecting to admin panel...');
+              // Force cache clear and immediate redirect
+              const timestamp = Date.now();
+              console.log('🚀 Forcing redirect with timestamp:', timestamp);
+              
+              // Clear all possible caches before redirect
+              if ('caches' in window) {
+                caches.keys().then(names => names.forEach(name => caches.delete(name)));
+              }
+              
+              window.location.replace(`admin-principal-panel.html?t=${timestamp}&nocache=true`);
             } else {
-              console.log('✅ Admin already in correct location');
+              console.log('✅ AdminPrincipal already in correct panel');
             }
           }
         }, [currentUser]);

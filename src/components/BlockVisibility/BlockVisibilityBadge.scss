@@ -1,0 +1,144 @@
+.visibility-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+
+  &.small {
+    padding: 2px 6px;
+    font-size: 10px;
+    border-radius: 8px;
+    
+    .visibility-icon {
+      font-size: 10px;
+    }
+  }
+
+  &.medium {
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 12px;
+    
+    .visibility-icon {
+      font-size: 12px;
+    }
+  }
+
+  &.large {
+    padding: 6px 12px;
+    font-size: 14px;
+    border-radius: 16px;
+    
+    .visibility-icon {
+      font-size: 14px;
+    }
+  }
+
+  .visibility-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .visibility-label {
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  // Estados de visibilidad
+  &.visibility-private {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    color: white;
+    border: 1px solid #9ca3af;
+
+    &:hover {
+      background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
+    }
+  }
+
+  &.visibility-public {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: 1px solid #34d399;
+
+    &:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+    }
+  }
+
+  &.visibility-restricted {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    border: 1px solid #fbbf24;
+
+    &:hover {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+    }
+  }
+
+  &.visibility-archived {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    border: 1px solid #a78bfa;
+
+    &:hover {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
+    }
+  }
+
+  &.visibility-unknown {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border: 1px solid #f87171;
+
+    &:hover {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+    }
+  }
+}
+
+// Animaciones
+@keyframes visibility-change {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.visibility-badge.changing {
+  animation: visibility-change 0.3s ease;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .visibility-badge {
+    &.large {
+      padding: 4px 8px;
+      font-size: 12px;
+      
+      .visibility-icon {
+        font-size: 12px;
+      }
+    }
+  }
+}

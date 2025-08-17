@@ -1,0 +1,395 @@
+.report-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  padding: 20px;
+
+  .report-modal {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: modalEnter 0.3s ease;
+
+    .modal-header {
+      background: #7c3aed;
+      color: white;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .close-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
+      }
+    }
+
+    .modal-content {
+      padding: 24px;
+      overflow-y: auto;
+      max-height: calc(90vh - 80px);
+
+      .form-group {
+        margin-bottom: 20px;
+
+        .form-label {
+          display: block;
+          margin-bottom: 6px;
+          font-weight: 500;
+          color: #374151;
+          font-size: 14px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+          width: 100%;
+          padding: 12px 14px;
+          border: 2px solid #e5e7eb;
+          border-radius: 8px;
+          font-size: 14px;
+          background: white;
+          transition: all 0.2s ease;
+
+          &:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+          }
+
+          &.error {
+            border-color: #ef4444;
+          }
+
+          &::placeholder {
+            color: #9ca3af;
+          }
+        }
+
+        .form-textarea {
+          resize: vertical;
+          min-height: 100px;
+        }
+
+        .character-count {
+          text-align: right;
+          font-size: 12px;
+          color: #6b7280;
+          margin-top: 4px;
+        }
+
+        .violation-description {
+          margin-top: 6px;
+          padding: 8px 12px;
+          background: #f3f4f6;
+          border-radius: 6px;
+          border-left: 3px solid #7c3aed;
+
+          small {
+            color: #6b7280;
+            font-size: 12px;
+            line-height: 1.4;
+          }
+        }
+
+        .error-message {
+          display: block;
+          color: #ef4444;
+          font-size: 12px;
+          margin-top: 4px;
+          font-weight: 500;
+        }
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      .evidence-list {
+        .evidence-item {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 8px;
+          align-items: center;
+
+          .form-input {
+            flex: 1;
+            margin-bottom: 0;
+          }
+
+          .remove-evidence-btn {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+
+            &:hover {
+              background: #fecaca;
+              transform: scale(1.05);
+            }
+          }
+        }
+      }
+
+      .add-evidence-btn {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #059669;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #dcfce7;
+          transform: translateY(-1px);
+        }
+      }
+
+      .submit-error {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        color: #dc2626;
+        font-size: 14px;
+        margin-bottom: 20px;
+
+        .error-icon {
+          font-size: 16px;
+        }
+      }
+
+      .warning-notice {
+        display: flex;
+        gap: 12px;
+        padding: 16px;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 8px;
+        margin-bottom: 20px;
+
+        .warning-icon {
+          font-size: 20px;
+          color: #f59e0b;
+          flex-shrink: 0;
+        }
+
+        .warning-content {
+          flex: 1;
+
+          p {
+            margin: 0 0 8px;
+            font-weight: 600;
+            color: #92400e;
+          }
+
+          ul {
+            margin: 0;
+            padding-left: 16px;
+            color: #78350f;
+
+            li {
+              font-size: 13px;
+              line-height: 1.4;
+              margin-bottom: 4px;
+
+              &:last-child {
+                margin-bottom: 0;
+              }
+            }
+          }
+        }
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+
+        .btn {
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 14px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          border: none;
+          min-width: 120px;
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+          }
+
+          &.btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+
+            &:hover:not(:disabled) {
+              background: #e5e7eb;
+            }
+          }
+
+          &.btn-primary {
+            background: #7c3aed;
+            color: white;
+
+            &:hover:not(:disabled) {
+              background: #6d28d9;
+              transform: translateY(-1px);
+              box-shadow: 0 4px 8px rgba(124, 58, 237, 0.3);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Animaciones
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .report-modal-overlay {
+    padding: 10px;
+
+    .report-modal {
+      max-width: 100%;
+      border-radius: 12px;
+
+      .modal-header {
+        padding: 16px 20px;
+
+        h3 {
+          font-size: 16px;
+        }
+      }
+
+      .modal-content {
+        padding: 20px 16px;
+
+        .form-row {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .evidence-item {
+          flex-direction: column;
+          align-items: stretch;
+
+          .remove-evidence-btn {
+            align-self: flex-end;
+            width: auto;
+            padding: 8px 12px;
+          }
+        }
+
+        .modal-actions {
+          flex-direction: column;
+
+          .btn {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .report-modal-overlay {
+    padding: 5px;
+
+    .report-modal {
+      border-radius: 8px;
+
+      .modal-header {
+        padding: 12px 16px;
+      }
+
+      .modal-content {
+        padding: 16px 12px;
+
+        .form-group {
+          margin-bottom: 16px;
+        }
+
+        .warning-notice {
+          padding: 12px;
+
+          .warning-content {
+            p {
+              font-size: 13px;
+            }
+
+            ul li {
+              font-size: 12px;
+            }
+          }
+        }
+      }
+    }
+  }
+}

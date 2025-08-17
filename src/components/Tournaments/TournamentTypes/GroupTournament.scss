@@ -1,0 +1,656 @@
+.group-tournament {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  &.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #6b7280;
+
+    .loading-spinner {
+      font-size: 48px;
+      margin-bottom: 16px;
+      animation: spin 1s linear infinite;
+    }
+
+    p {
+      font-size: 16px;
+      margin: 0;
+    }
+  }
+
+  .tournament-header {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    padding: 32px;
+
+    .tournament-info {
+      margin-bottom: 24px;
+
+      .tournament-title {
+        margin: 0 0 8px;
+        font-size: 28px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .tournament-type {
+          background: rgba(255, 255, 255, 0.2);
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 14px;
+          font-weight: 500;
+          backdrop-filter: blur(10px);
+        }
+      }
+
+      .tournament-description {
+        margin: 0 0 20px;
+        font-size: 16px;
+        opacity: 0.9;
+        line-height: 1.5;
+      }
+
+      .phase-status {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 16px;
+        backdrop-filter: blur(10px);
+
+        .phase-info {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 12px;
+
+          .phase-label {
+            font-size: 16px;
+            font-weight: 600;
+
+            &.groups-active {
+              color: #34d399;
+            }
+
+            &.knockout-active {
+              color: #fbbf24;
+            }
+
+            &.finished {
+              color: #a78bfa;
+            }
+
+            &.preparation {
+              color: #60a5fa;
+            }
+          }
+
+          .phase-description {
+            font-size: 14px;
+            opacity: 0.8;
+          }
+        }
+
+        .progress-bar {
+          height: 8px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 4px;
+          overflow: hidden;
+
+          .progress-fill {
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+          }
+        }
+      }
+    }
+
+    .tournament-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 16px;
+
+      .stat-card {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        padding: 16px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+
+        .stat-value {
+          display: block;
+          font-size: 24px;
+          font-weight: 700;
+          margin-bottom: 4px;
+        }
+
+        .stat-label {
+          display: block;
+          font-size: 12px;
+          opacity: 0.8;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+      }
+    }
+  }
+
+  .phase-navigation {
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 20px 24px;
+
+    .phase-btn {
+      flex: 1;
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: #6b7280;
+
+      &:hover:not(:disabled) {
+        border-color: #8b5cf6;
+        background: #faf5ff;
+      }
+
+      &.active {
+        background: #8b5cf6;
+        border-color: #8b5cf6;
+        color: white;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+      }
+
+      &.current:not(.active) {
+        border-color: #fbbf24;
+        background: #fffbeb;
+        color: #92400e;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f9fafb;
+      }
+
+      .phase-icon {
+        font-size: 24px;
+      }
+
+      .phase-text {
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .phase-progress {
+        font-size: 12px;
+        opacity: 0.8;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 2px 8px;
+        border-radius: 10px;
+      }
+
+      &.active .phase-progress {
+        background: rgba(255, 255, 255, 0.3);
+      }
+    }
+
+    .phase-separator {
+      margin: 0 16px;
+
+      .arrow {
+        font-size: 20px;
+        color: #d1d5db;
+        transition: all 0.3s ease;
+
+        &.active {
+          color: #8b5cf6;
+          transform: scale(1.2);
+        }
+      }
+    }
+  }
+
+  .tournament-content {
+    padding: 24px;
+
+    .groups-phase {
+      .groups-overview {
+        margin-bottom: 24px;
+
+        h3 {
+          margin: 0 0 20px;
+          font-size: 20px;
+          font-weight: 600;
+          color: #1f2937;
+        }
+
+        .groups-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 16px;
+
+          .group-card {
+            background: #f8fafc;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            &:hover {
+              border-color: #8b5cf6;
+              transform: translateY(-2px);
+              box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+            }
+
+            &.selected {
+              border-color: #8b5cf6;
+              background: #faf5ff;
+            }
+
+            &.completed {
+              border-color: #10b981;
+              background: #ecfdf5;
+            }
+
+            .group-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 12px;
+
+              .group-name {
+                margin: 0;
+                font-size: 16px;
+                font-weight: 600;
+                color: #1f2937;
+              }
+
+              .group-status {
+                font-size: 18px;
+                
+                &.completed {
+                  color: #10b981;
+                }
+
+                &.active {
+                  color: #f59e0b;
+                }
+              }
+            }
+
+            .group-stats {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 12px;
+
+              .stat {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+
+                .stat-label {
+                  font-size: 12px;
+                  color: #6b7280;
+                  font-weight: 500;
+                }
+
+                .stat-value {
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: #374151;
+                }
+              }
+            }
+
+            .qualified-preview {
+              border-top: 1px solid #e5e7eb;
+              padding-top: 8px;
+
+              .qualified-label {
+                display: block;
+                font-size: 12px;
+                color: #6b7280;
+                font-weight: 500;
+                margin-bottom: 4px;
+              }
+
+              .qualified-teams {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+
+                .qualified-team {
+                  background: #dcfce7;
+                  color: #065f46;
+                  font-size: 11px;
+                  font-weight: 500;
+                  padding: 2px 6px;
+                  border-radius: 4px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .knockout-phase {
+      .knockout-header {
+        text-align: center;
+        margin-bottom: 32px;
+
+        h3 {
+          margin: 0 0 8px;
+          font-size: 24px;
+          font-weight: 600;
+          color: #1f2937;
+        }
+
+        p {
+          margin: 0;
+          font-size: 16px;
+          color: #6b7280;
+        }
+      }
+
+      .qualified-teams-section {
+        margin-bottom: 32px;
+
+        h4 {
+          margin: 0 0 16px;
+          font-size: 18px;
+          font-weight: 600;
+          color: #1f2937;
+        }
+
+        .qualified-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 12px;
+
+          .qualified-item {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            .team-position {
+              background: #8b5cf6;
+              color: white;
+              font-size: 12px;
+              font-weight: 600;
+              width: 24px;
+              height: 24px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+
+            .team-name {
+              flex: 1;
+              font-weight: 600;
+              color: #1f2937;
+            }
+
+            .team-group {
+              font-size: 12px;
+              color: #6b7280;
+              background: #f3f4f6;
+              padding: 2px 6px;
+              border-radius: 4px;
+            }
+
+            .team-points {
+              font-size: 12px;
+              font-weight: 600;
+              color: #8b5cf6;
+            }
+          }
+        }
+      }
+
+      .knockout-waiting {
+        text-align: center;
+        padding: 60px 20px;
+
+        .waiting-content {
+          max-width: 400px;
+          margin: 0 auto;
+
+          .waiting-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.6;
+          }
+
+          h3 {
+            margin: 0 0 8px;
+            font-size: 20px;
+            color: #374151;
+          }
+
+          p {
+            margin: 0 0 24px;
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.5;
+          }
+
+          .groups-progress {
+            span {
+              display: block;
+              font-size: 13px;
+              color: #6b7280;
+              margin-bottom: 8px;
+            }
+
+            .progress-bar {
+              height: 8px;
+              background: #e5e7eb;
+              border-radius: 4px;
+              overflow: hidden;
+
+              .progress-fill {
+                height: 100%;
+                background: #8b5cf6;
+                border-radius: 4px;
+                transition: width 0.3s ease;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Animaciones
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .group-tournament {
+    .tournament-header {
+      padding: 24px 20px;
+
+      .tournament-title {
+        font-size: 22px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .tournament-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .phase-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+    }
+
+    .phase-navigation {
+      padding: 16px 20px;
+      flex-direction: column;
+      gap: 12px;
+
+      .phase-btn {
+        flex: none;
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 12px 16px;
+
+        .phase-icon {
+          font-size: 20px;
+        }
+
+        .phase-text {
+          flex: 1;
+          text-align: left;
+          margin-left: 8px;
+        }
+      }
+
+      .phase-separator {
+        margin: 0;
+        transform: rotate(90deg);
+
+        .arrow {
+          font-size: 16px;
+        }
+      }
+    }
+
+    .tournament-content {
+      padding: 20px 16px;
+
+      .groups-phase .groups-overview .groups-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .knockout-phase .qualified-teams-section .qualified-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .group-tournament {
+    border-radius: 12px;
+
+    .tournament-header {
+      padding: 20px 16px;
+
+      .tournament-title {
+        font-size: 20px;
+      }
+
+      .tournament-stats {
+        grid-template-columns: 1fr;
+        gap: 12px;
+
+        .stat-card {
+          padding: 12px;
+        }
+      }
+    }
+
+    .phase-navigation {
+      padding: 12px 16px;
+
+      .phase-btn {
+        padding: 10px 12px;
+
+        .phase-text {
+          font-size: 13px;
+        }
+
+        .phase-progress {
+          font-size: 11px;
+        }
+      }
+    }
+
+    .tournament-content {
+      padding: 16px 12px;
+
+      .knockout-phase {
+        .knockout-header {
+          margin-bottom: 24px;
+
+          h3 {
+            font-size: 20px;
+          }
+
+          p {
+            font-size: 14px;
+          }
+        }
+
+        .qualified-teams-section {
+          margin-bottom: 24px;
+
+          h4 {
+            font-size: 16px;
+          }
+
+          .qualified-item {
+            padding: 10px 12px;
+            gap: 8px;
+
+            .team-position {
+              width: 20px;
+              height: 20px;
+              font-size: 11px;
+            }
+
+            .team-name {
+              font-size: 14px;
+            }
+          }
+        }
+      }
+
+      .knockout-waiting .waiting-content {
+        padding: 40px 16px;
+
+        .waiting-icon {
+          font-size: 48px;
+        }
+
+        h3 {
+          font-size: 18px;
+        }
+      }
+    }
+  }
+}
