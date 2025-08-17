@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFeatureFlags } from '../../hooks/useFeatureFlags';
-import { useNotificationBadges } from '../../hooks/useNotificationBadges';
-import Card from '../../components/UI/Card';
-import Toggle from '../../components/UI/Toggle';
-import Modal from '../../components/UI/Modal';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import Icon from '../../components/UI/Icon';
 import './ConfiguracionModular.scss';
@@ -21,7 +17,7 @@ const ConfiguracionModular = () => {
     getFeatureStats, 
     lastUpdate 
   } = useFeatureFlags();
-  const { addLocalNotification } = useNotificationBadges();
+  // Removed useNotificationBadges dependency - will implement simple notifications
   
   const [localFeatures, setLocalFeatures] = useState({});
   const [pendingChanges, setPendingChanges] = useState({});
@@ -223,20 +219,10 @@ const ConfiguracionModular = () => {
       
       if (success) {
         setPendingChanges({});
-        addLocalNotification('admin-principal', {
-          type: 'success',
-          title: 'Features actualizadas',
-          message: `${Object.keys(pendingChanges).length} features modificadas`,
-          priority: 'info'
-        });
+        console.log('Features actualizadas:', Object.keys(pendingChanges).length, 'modificadas');
         loadStats();
       } else {
-        addLocalNotification('admin-principal', {
-          type: 'error',
-          title: 'Error al actualizar',
-          message: 'No se pudieron aplicar los cambios',
-          priority: 'important'
-        });
+        console.error('Error al actualizar: No se pudieron aplicar los cambios');
       }
     } catch (error) {
       console.error('Error aplicando cambios:', error);
@@ -315,7 +301,7 @@ const ConfiguracionModular = () => {
 
       {/* Estadísticas globales */}
       {stats && (
-        <Card className="stats-overview">
+        <div className="stats-overview">
           <div className="stats-grid">
             <div className="stat-item">
               <Icon name="toggle-left" size="24" />
@@ -346,7 +332,7 @@ const ConfiguracionModular = () => {
               </div>
             </div>
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Grupos de features */}
@@ -363,7 +349,7 @@ const ConfiguracionModular = () => {
               className={`feature-group ${!dependencyCheck.valid ? 'has-dependencies' : ''}`}
               layout
             >
-              <Card>
+              <div className="feature-group-card">
                 <div className="group-header">
                   <div className="group-info">
                     <div 
@@ -390,12 +376,14 @@ const ConfiguracionModular = () => {
                   </div>
                   
                   <div className="group-controls">
-                    <Toggle
-                      checked={isGroupEnabled(groupKey)}
-                      onChange={(enabled) => toggleGroup(groupKey, enabled)}
-                      size="large"
-                      color={group.color}
-                    />
+                    <label className="toggle-switch">
+                      <input 
+                        type="checkbox"
+                        checked={isGroupEnabled(groupKey)}
+                        onChange={(e) => toggleGroup(groupKey, e.target.checked)}
+                      />
+                      <span className="slider" style={{ backgroundColor: isGroupEnabled(groupKey) ? group.color : '#ccc' }}></span>
+                    </label>
                     <button
                       className="expand-btn"
                       onClick={() => setExpandedGroups(prev => ({
@@ -449,63 +437,75 @@ const ConfiguracionModular = () => {
                               <h5>{feature.name}</h5>
                               <p>{feature.description}</p>
                             </div>
-                            <Toggle
-                              checked={localFeatures[feature.key] || false}
-                              onChange={(enabled) => handleFeatureChange(
-                                feature.key, 
-                                enabled,
-                                feature.requiresConfirmation
-                              )}
-                              disabled={!dependencyCheck.valid && !localFeatures[feature.key]}
-                            />
+                            <label className="toggle-switch small">
+                              <input 
+                                type="checkbox"
+                                checked={localFeatures[feature.key] || false}
+                                onChange={(e) => handleFeatureChange(
+                                  feature.key, 
+                                  e.target.checked,
+                                  feature.requiresConfirmation
+                                )}
+                                disabled={!dependencyCheck.valid && !localFeatures[feature.key]}
+                              />
+                              <span className="slider"></span>
+                            </label>
                           </div>
                         ))}
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </Card>
+              </div>
             </motion.div>
           );
         })}
       </div>
 
       {/* Modal de confirmación */}
-      <Modal
-        isOpen={showConfirmModal}
-        onClose={() => setShowConfirmModal(false)}
-        title="Confirmar Cambio"
-        size="medium"
-      >
-        <div className="confirmation-content">
-          <Icon name="alert-triangle" size="48" color="#f39c12" />
-          <h3>¿Estás seguro?</h3>
-          <p>
-            Esta acción deshabilitará una funcionalidad crítica del sistema.
-            Los usuarios podrían perder acceso a características importantes.
-          </p>
-          <div className="confirmation-actions">
-            <button
-              className="btn btn-secondary"
-              onClick={() => setShowConfirmModal(false)}
-            >
-              Cancelar
-            </button>
-            <button
-              className="btn btn-danger"
-              onClick={() => {
-                if (changeToConfirm) {
-                  applyFeatureChange(changeToConfirm.featureKey, changeToConfirm.enabled);
-                  setChangeToConfirm(null);
-                }
-                setShowConfirmModal(false);
-              }}
-            >
-              Confirmar Cambio
-            </button>
+      {showConfirmModal && (
+        <div className="modal-overlay" onClick={() => setShowConfirmModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Confirmar Cambio</h3>
+              <button 
+                className="modal-close"
+                onClick={() => setShowConfirmModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="confirmation-content">
+              <Icon name="alert-triangle" size="48" color="#f39c12" />
+              <h4>¿Estás seguro?</h4>
+              <p>
+                Esta acción deshabilitará una funcionalidad crítica del sistema.
+                Los usuarios podrían perder acceso a características importantes.
+              </p>
+              <div className="confirmation-actions">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowConfirmModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="btn btn-danger"
+                  onClick={() => {
+                    if (changeToConfirm) {
+                      applyFeatureChange(changeToConfirm.featureKey, changeToConfirm.enabled);
+                      setChangeToConfirm(null);
+                    }
+                    setShowConfirmModal(false);
+                  }}
+                >
+                  Confirmar Cambio
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </Modal>
+      )}
     </div>
   );
 };

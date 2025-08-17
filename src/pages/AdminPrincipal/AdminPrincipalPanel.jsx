@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigationState } from '../../hooks/useNavigationState';
-import { useAutoMarkAsRead } from '../../hooks/useNotificationBadges';
 import ExpandableSection from '../../components/UI/ExpandableSection';
 import AdministradoresSecundarios from './AdministradoresSecundarios';
 import ProfesoresCreadores from './ProfesoresCreadores';
@@ -14,10 +13,7 @@ import './AdminPrincipalPanel.scss';
  * 4 secciones expandibles con navegación jerárquica
  */
 const AdminPrincipalPanel = () => {
-  const { expandedPanels, togglePanel, addRecentSection } = useNavigationState();
-  
-  // Auto-marcar notificaciones como leídas
-  useAutoMarkAsRead('admin-principal');
+  const { expandedPanels, togglePanel } = useNavigationState();
 
   // Configuración de secciones
   const sections = [
@@ -57,17 +53,6 @@ const AdminPrincipalPanel = () => {
 
   const handleSectionToggle = (sectionId) => {
     togglePanel('admin-principal', sectionId);
-    
-    // Agregar a secciones recientes
-    const section = sections.find(s => s.id === sectionId);
-    if (section) {
-      addRecentSection({
-        id: `admin-principal.${sectionId}`,
-        label: section.title,
-        route: `/admin-principal#${sectionId}`,
-        context: 'admin-principal'
-      });
-    }
   };
 
   const isSectionExpanded = (sectionId) => {
