@@ -371,7 +371,8 @@
         <div class="header">
             <h1>Panel del Administrador Principal</h1>
             <p>Gestión completa del sistema de roles y usuarios de PlayTest</p>
-            <button onclick="debugUserInfo()" style="margin-top: 10px; padding: 5px 10px; background: #F59E0B; color: white; border: none; border-radius: 3px; cursor: pointer;">🔍 Debug Info</button>
+            <button onclick="debugBasic()" style="margin-top: 10px; padding: 5px 10px; background: #10B981; color: white; border: none; border-radius: 3px; cursor: pointer;">🔧 Test Backend</button>
+            <button onclick="debugUserInfo()" style="margin-top: 10px; margin-left: 10px; padding: 5px 10px; background: #F59E0B; color: white; border: none; border-radius: 3px; cursor: pointer;">🔍 Debug Usuario</button>
         </div>
 
         <!-- Sección 1: Administradores Secundarios -->
@@ -1121,12 +1122,52 @@
             alert(`Ver detalles completos del bloque ID: ${blockId}`);
         }
 
+        async function debugBasic() {
+            try {
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/debug-basic`);
+                const data = await response.json();
+                
+                console.log('Basic Debug:', data);
+                
+                if (response.ok && data.database_connected) {
+                    alert(`✅ BACKEND FUNCIONANDO CORRECTAMENTE
+                    
+🗄️ Base de datos: Conectada
+⏰ Hora servidor: ${new Date(data.server_time).toLocaleString()}
+💾 PostgreSQL: ${data.postgres_version.split(' ')[0]} ${data.postgres_version.split(' ')[1]}
+
+El backend está operativo. El problema está en autenticación o permisos.`);
+                } else {
+                    alert(`❌ PROBLEMA EN BACKEND
+                    
+Error: ${data.error}
+Estado: ${data.status}
+DB Conectada: ${data.database_connected}
+
+El backend tiene problemas fundamentales.`);
+                }
+                
+            } catch (error) {
+                console.error('Error en test básico:', error);
+                alert('❌ BACKEND NO RESPONDE\n\nError: ' + error.message + '\n\nEl backend no está funcionando o no es accesible.');
+            }
+        }
+
         async function debugUserInfo() {
             try {
                 const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
                 const API_BASE_URL = window.location.hostname.includes('onrender.com') 
                     ? 'https://playtest-backend.onrender.com' 
                     : '';
+                
+                if (!token) {
+                    alert('❌ NO HAY TOKEN DE AUTENTICACIÓN\n\nNo se encontró token en localStorage. El usuario no está autenticado correctamente.');
+                    return;
+                }
                 
                 const response = await fetch(`${API_BASE_URL}/api/roles-updated/debug-user-info`, {
                     headers: {
@@ -1135,47 +1176,38 @@
                     }
                 });
 
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Debug Info:', data);
-                    
-                    let debugInfo = `
-🔍 INFORMACIÓN DE DEBUG
+                const data = await response.json();
+                console.log('User Debug Info:', data);
+                
+                if (response.ok && data.status === 'OK') {
+                    alert(`✅ INFORMACIÓN DE USUARIO
 
-👤 Usuario Actual:
+👤 Usuario:
 - ID: ${data.user?.id}
 - Nickname: ${data.user?.nickname}
 - Email: ${data.user?.email}
-- Creado: ${data.user?.created_at}
 
-🎭 Roles del Usuario:
-${data.user_roles.length > 0 ? 
-    data.user_roles.map(r => `- ${r.name}: ${r.description}`).join('\n') : 
-    '- Sin roles asignados'}
+🎭 Roles en DB: ${data.roles_count} roles disponibles
 
-🔧 Todos los Roles Disponibles:
-${data.all_roles.map(r => `- ${r.name}: ${r.description}`).join('\n')}
+🔑 Token decodificado:
+- User ID: ${data.auth_user?.id}
+- Nickname: ${data.auth_user?.nickname}
 
-📊 Tablas Existentes:
-${data.tables_exist.join(', ')}
-
-⏰ Timestamp: ${data.timestamp}
-                    `;
-                    
-                    alert(debugInfo);
-                    
-                    // También mostrar en consola para análisis
-                    console.table(data.user_roles);
-                    console.table(data.all_roles);
-                    
+⏰ Timestamp: ${new Date(data.timestamp).toLocaleString()}`);
                 } else {
-                    const error = await response.json();
-                    alert(`Error ${response.status}: ${error.details || error.error}`);
+                    alert(`❌ ERROR EN AUTENTICACIÓN
+
+Error: ${data.error || 'Desconocido'}
+Detalles: ${data.details || 'No disponible'}
+Paso: ${data.step || 'General'}
+User ID: ${data.user_id || 'No disponible'}
+
+Problema: ${data.error?.includes('roles') ? 'Tabla de roles faltante' : 'Autenticación o permisos'}`);
                 }
                 
             } catch (error) {
-                console.error('Error en debug:', error);
-                alert('Error obteniendo información de debug: ' + error.message);
+                console.error('Error en debug usuario:', error);
+                alert('❌ ERROR EN DEBUG USUARIO\n\nError: ' + error.message);
             }
         }
     </script>
