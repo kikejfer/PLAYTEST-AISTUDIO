@@ -178,6 +178,30 @@
       
       console.log("🎮 PLAYTEST JavaScript loaded successfully!");
 
+      // Global error handling for Chrome extensions and other issues
+      window.addEventListener('error', (event) => {
+        // Suppress Chrome extension errors that don't affect our app
+        if (event.filename && event.filename.includes('chrome-extension://')) {
+          console.warn('🔌 Chrome extension error suppressed:', event.message);
+          event.preventDefault();
+          return false;
+        }
+        // Log other errors for debugging
+        console.error('🚨 Application error:', event.error);
+      });
+
+      window.addEventListener('unhandledrejection', (event) => {
+        // Suppress Chrome extension promise rejections
+        if (event.reason && event.reason.message && 
+            (event.reason.message.includes('chrome-extension://') || 
+             event.reason.message.includes('Failed to fetch dynamically imported module'))) {
+          console.warn('🔌 Chrome extension promise rejection suppressed:', event.reason.message);
+          event.preventDefault();
+          return false;
+        }
+        console.error('🚨 Unhandled promise rejection:', event.reason);
+      });
+
       import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } from 'react';
       import ReactDOM from 'react-dom/client';
       import { GoogleGenAI, Type } from "@google/genai";
@@ -2770,9 +2794,29 @@
         // Check if user is AdminPrincipal and redirect to admin panel
         useEffect(() => {
           if (currentUser && currentUser.nickname === 'AdminPrincipal') {
-            console.log('🔀 AdminPrincipal detected, redirecting to admin panel...');
-            window.location.href = 'admin-principal-panel.html';
-            return;
+            // Check if we're not already in an admin panel to avoid redirect loops
+            const currentPath = window.location.pathname;
+            const currentFile = window.location.href;
+            const isInAdminPanel = currentPath.includes('admin-principal-panel.html') || 
+                                 currentPath.includes('admin-secundario-panel.html') ||
+                                 currentPath.includes('support-') ||
+                                 currentFile.includes('admin-principal-panel.html');
+            
+            // Also check if we've recently attempted a redirect to prevent loops
+            const lastRedirect = sessionStorage.getItem('lastAdminRedirect');
+            const now = Date.now();
+            const recentRedirect = lastRedirect && (now - parseInt(lastRedirect)) < 5000; // 5 seconds
+            
+            if (!isInAdminPanel && !recentRedirect) {
+              console.log('🔀 AdminPrincipal detected, redirecting to admin panel...');
+              sessionStorage.setItem('lastAdminRedirect', now.toString());
+              // Add a small delay to ensure the component is fully mounted
+              setTimeout(() => {
+                window.location.href = 'admin-principal-panel.html';
+              }, 500);
+            } else if (recentRedirect) {
+              console.log('🚫 Recent redirect detected, skipping to prevent loop');
+            }
           }
         }, [currentUser]);
         
