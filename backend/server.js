@@ -65,9 +65,9 @@ if (process.env.NODE_ENV !== 'test') {
 // ============ IMPORTAR RUTAS ============
 
 const adminPrincipalRoutes = require('./routes/adminPrincipal');
-const servicioTecnicoRoutes = require('./routes/servicio-tecnico');
-const financieroRoutes = require('./routes/financiero');
-const searchRoutes = require('./routes/search');
+// const servicioTecnicoRoutes = require('./routes/servicio-tecnico');
+// const financieroRoutes = require('./routes/financiero');
+// const searchRoutes = require('./routes/search');
 
 // Importar rutas adicionales (crear estos archivos según necesidades)
 // const adminSecundarioRoutes = require('./routes/adminSecundario');
@@ -79,9 +79,9 @@ const searchRoutes = require('./routes/search');
 
 // Rutas principales del sistema
 app.use('/api/admin', adminPrincipalRoutes);
-app.use('/api/servicio-tecnico', servicioTecnicoRoutes);
-app.use('/api/financiero', financieroRoutes);
-app.use('/api/search', searchRoutes);
+// app.use('/api/servicio-tecnico', servicioTecnicoRoutes);
+// app.use('/api/financiero', financieroRoutes);
+// app.use('/api/search', searchRoutes);
 
 // Rutas adicionales (descomentar cuando se implementen)
 // app.use('/api/admin-secundario', adminSecundarioRoutes);

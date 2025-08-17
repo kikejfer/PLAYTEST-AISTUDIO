@@ -4,7 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Administrador Principal - PlayTest</title>
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" href="Imagenes/Playtest.png">
+    
+    <!-- Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Suppress development warnings
+      if (typeof console !== 'undefined' && console.warn) {
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+          if (args[0] && typeof args[0] === 'string') {
+            if (args[0].includes('cdn.tailwindcss.com should not be used in production')) {
+              return;
+            }
+            if (args[0].includes('You are using the in-browser Babel transformer')) {
+              return;
+            }
+          }
+          originalWarn.apply(console, args);
+        };
+      }
+      
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-primary': '#0D1B2A',
+              'brand-secondary': '#1B263B',
+              'brand-tertiary': '#415A77',
+              'brand-accent': '#778DA9',
+              'brand-light': '#E0E1DD',
+              'brand-cta': '#3B82F6',
+              'brand-cta-hover': '#2563EB',
+              'brand-success': '#10B981',
+              'brand-warning': '#F59E0B',
+              'brand-error': '#EF4444',
+            }
+          }
+        }
+      }
+    </script>
+    
     <style>
         * {
             margin: 0;
@@ -13,10 +53,10 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background: #0D1B2A;
             min-height: 100vh;
-            color: #333;
+            color: #E0E1DD;
         }
 
         .container {
@@ -26,29 +66,35 @@
         }
 
         .header {
-            background: white;
+            background: #1B263B;
+            border: 1px solid #415A77;
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
 
         .header h1 {
-            color: #667eea;
+            color: #3B82F6;
             margin-bottom: 10px;
         }
 
+        .header p {
+            color: #778DA9;
+        }
+
         .section {
-            background: white;
+            background: #1B263B;
+            border: 1px solid #415A77;
             border-radius: 10px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
             overflow: hidden;
         }
 
         .section-header {
-            background: #667eea;
-            color: white;
+            background: #415A77;
+            color: #E0E1DD;
             padding: 15px 20px;
             font-size: 18px;
             font-weight: bold;
@@ -74,19 +120,21 @@
         th, td {
             text-align: left;
             padding: 12px;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #415A77;
+            color: #E0E1DD;
         }
 
         th {
-            background: #f8f9fa;
+            background: #415A77;
             font-weight: 600;
             position: sticky;
             top: 0;
             z-index: 10;
+            color: #E0E1DD;
         }
 
         tr:hover {
-            background: #f8f9fa;
+            background: #415A77;
         }
 
         .btn {
@@ -99,29 +147,37 @@
         }
 
         .btn-primary {
-            background: #667eea;
+            background: #3B82F6;
             color: white;
         }
 
         .btn-primary:hover {
-            background: #5a6fd8;
+            background: #2563EB;
         }
 
         .btn-secondary {
-            background: #6c757d;
+            background: #778DA9;
             color: white;
         }
 
+        .btn-secondary:hover {
+            background: #415A77;
+        }
+
         .btn-expand {
-            background: #28a745;
+            background: #10B981;
             color: white;
             padding: 5px 10px;
             font-size: 12px;
         }
 
+        .btn-expand:hover {
+            background: #059669;
+        }
+
         .expandable-row {
             display: none;
-            background: #f8f9fa;
+            background: #415A77;
         }
 
         .expandable-row.show {
@@ -130,29 +186,35 @@
 
         .nested-table {
             margin: 10px 0;
-            border: 1px solid #ddd;
+            border: 1px solid #415A77;
             border-radius: 5px;
+            background: #1B263B;
         }
 
         .nested-table th {
-            background: #e9ecef;
+            background: #415A77;
             font-size: 14px;
+            color: #E0E1DD;
         }
 
         .nested-table td {
             font-size: 14px;
             padding: 8px;
+            color: #E0E1DD;
+            border-bottom: 1px solid #415A77;
         }
 
         select {
             padding: 5px 10px;
-            border: 1px solid #ddd;
+            border: 1px solid #415A77;
             border-radius: 3px;
             font-size: 14px;
+            background: #1B263B;
+            color: #E0E1DD;
         }
 
         .luminarias {
-            color: #ffc107;
+            color: #F59E0B;
             font-weight: bold;
         }
 
@@ -165,33 +227,59 @@
 
         .form-inline input {
             padding: 8px;
-            border: 1px solid #ddd;
+            border: 1px solid #415A77;
             border-radius: 3px;
             font-size: 14px;
+            background: #1B263B;
+            color: #E0E1DD;
         }
 
         .loading {
             text-align: center;
             padding: 20px;
-            color: #666;
+            color: #778DA9;
         }
 
         .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: #7F1D1D;
+            color: #FECACA;
+            border: 1px solid #EF4444;
             border-radius: 5px;
             padding: 10px;
             margin: 10px 0;
         }
 
         .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: #064E3B;
+            color: #A7F3D0;
+            border: 1px solid #10B981;
             border-radius: 5px;
             padding: 10px;
             margin: 10px 0;
+        }
+
+        /* Modal styling updates */
+        .modal-content {
+            background: #1B263B;
+            border: 1px solid #415A77;
+            color: #E0E1DD;
+        }
+
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1B263B;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #415A77;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #778DA9;
         }
 
         @media (max-width: 768px) {
@@ -301,9 +389,9 @@
     </div>
 
     <!-- Modal para añadir administrador secundario -->
-    <div id="add-admin-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; min-width: 400px;">
-            <h3>Añadir Administrador Secundario</h3>
+    <div id="add-admin-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000;">
+        <div class="modal-content" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; border-radius: 10px; min-width: 400px;">
+            <h3 style="color: #3B82F6; margin-bottom: 15px;">Añadir Administrador Secundario</h3>
             <div class="form-inline" style="margin: 20px 0;">
                 <input type="text" id="new-admin-nickname" placeholder="Nickname del usuario" style="flex: 1;">
                 <button class="btn btn-primary" onclick="assignAdminSecundario()">Asignar</button>
@@ -335,15 +423,31 @@
                 
                 console.log('✅ Token found, loading admin panel data');
 
-                const response = await fetch('/api/roles/admin-principal-panel', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
+                // Load data from multiple admin endpoints
+                const [adminsResponse, profesoresResponse, usuariosResponse] = await Promise.all([
+                    fetch('/api/admin/administradores-secundarios', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }),
+                    fetch('/api/admin/profesores-creadores', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }),
+                    fetch('/api/admin/usuarios-jugadores', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                ]);
 
-                if (!response.ok) {
-                    if (response.status === 403) {
+                // Check if any request failed
+                if (!adminsResponse.ok || !profesoresResponse.ok || !usuariosResponse.ok) {
+                    if (adminsResponse.status === 403 || profesoresResponse.status === 403 || usuariosResponse.status === 403) {
                         showError('No tienes permisos para acceder a este panel');
                         setTimeout(() => window.location.href = 'index.html', 2000);
                         return;
@@ -351,7 +455,18 @@
                     throw new Error('Error al cargar datos del panel');
                 }
 
-                panelData = await response.json();
+                const [adminsData, profesoresData, usuariosData] = await Promise.all([
+                    adminsResponse.json(),
+                    profesoresResponse.json(),
+                    usuariosResponse.json()
+                ]);
+
+                panelData = {
+                    administradoresSecundarios: adminsData.administradores || [],
+                    profesoresCreadores: profesoresData.profesores || [],
+                    usuarios: usuariosData.usuarios || []
+                };
+                
                 renderTables();
 
             } catch (error) {
@@ -481,8 +596,8 @@
 
         async function loadProfesorBlocks(profesorId) {
             try {
-                const token = localStorage.getItem('authToken');
-                const response = await fetch(`/api/roles/profesor-blocks/${profesorId}`, {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const response = await fetch(`/api/admin/profesores/${profesorId}/bloques`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -491,7 +606,8 @@
 
                 if (!response.ok) throw new Error('Error al cargar bloques');
 
-                const blocks = await response.json();
+                const result = await response.json();
+                const blocks = result.bloques || [];
                 const container = document.getElementById(`profesor-blocks-${profesorId}`);
                 
                 if (blocks.length === 0) {
@@ -544,8 +660,8 @@
 
         async function loadBlockTopics(blockId) {
             try {
-                const token = localStorage.getItem('authToken');
-                const response = await fetch(`/api/roles/block-topics/${blockId}`, {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const response = await fetch(`/api/admin/bloques/${blockId}/temas`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -554,7 +670,8 @@
 
                 if (!response.ok) throw new Error('Error al cargar temas');
 
-                const topics = await response.json();
+                const result = await response.json();
+                const topics = result.temas || [];
                 const container = document.getElementById(`block-topics-${blockId}`);
                 
                 let html = '<h5>Temas del bloque:</h5><table class="nested-table"><thead><tr><th>Tema</th><th>Núm. Preguntas</th><th>Acciones</th></tr></thead><tbody>';
@@ -600,8 +717,10 @@
 
         async function loadTopicQuestions(blockId, topicName) {
             try {
-                const token = localStorage.getItem('authToken');
-                const response = await fetch(`/api/roles/topic-questions/${blockId}/${encodeURIComponent(topicName)}`, {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                // Note: This will need proper tema ID from the topics response
+                // For now, using topic name as temporary solution
+                const response = await fetch(`/api/admin/temas/${encodeURIComponent(topicName)}/preguntas`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -610,7 +729,8 @@
 
                 if (!response.ok) throw new Error('Error al cargar preguntas');
 
-                const questions = await response.json();
+                const result = await response.json();
+                const questions = result.preguntas || [];
                 const topicKey = topicName.replace(/\s+/g, '_');
                 const container = document.getElementById(`questions-${blockId}-${topicKey}`);
                 
@@ -650,16 +770,15 @@
             if (!newAdminId) return;
 
             try {
-                const token = localStorage.getItem('authToken');
-                const response = await fetch('/api/roles/reassign-user', {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const response = await fetch(`/api/admin/usuarios/${userId}/assign-admin`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        userId: userId,
-                        newAdminId: parseInt(newAdminId)
+                        admin_id: parseInt(newAdminId)
                     })
                 });
 
@@ -695,14 +814,41 @@
             }
 
             try {
-                const token = localStorage.getItem('authToken');
-                const response = await fetch('/api/roles/assign-admin-secundario', {
+                // First search for the user
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const searchResponse = await fetch(`/api/admin/search-users?q=${encodeURIComponent(nickname)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!searchResponse.ok) {
+                    throw new Error('Error buscando usuario');
+                }
+
+                const searchResult = await searchResponse.json();
+                if (!searchResult.users || searchResult.users.length === 0) {
+                    throw new Error('Usuario no encontrado');
+                }
+
+                const user = searchResult.users.find(u => u.nickname === nickname);
+                if (!user) {
+                    throw new Error('Usuario no encontrado');
+                }
+
+                // Create admin secundario
+                const response = await fetch('/api/admin/administradores-secundarios', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ nickname })
+                    body: JSON.stringify({
+                        user_id: user.id,
+                        nickname: user.nickname,
+                        email: user.email
+                    })
                 });
 
                 const result = await response.json();
