@@ -371,6 +371,7 @@
         <div class="header">
             <h1>Panel del Administrador Principal</h1>
             <p>Gestión completa del sistema de roles y usuarios de PlayTest</p>
+            <button onclick="debugUserInfo()" style="margin-top: 10px; padding: 5px 10px; background: #F59E0B; color: white; border: none; border-radius: 3px; cursor: pointer;">🔍 Debug Info</button>
         </div>
 
         <!-- Sección 1: Administradores Secundarios -->
@@ -1118,6 +1119,64 @@
         function showBlockDetails(blockId) {
             // Implementar modal o ventana con detalles completos del bloque
             alert(`Ver detalles completos del bloque ID: ${blockId}`);
+        }
+
+        async function debugUserInfo() {
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/debug-user-info`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Debug Info:', data);
+                    
+                    let debugInfo = `
+🔍 INFORMACIÓN DE DEBUG
+
+👤 Usuario Actual:
+- ID: ${data.user?.id}
+- Nickname: ${data.user?.nickname}
+- Email: ${data.user?.email}
+- Creado: ${data.user?.created_at}
+
+🎭 Roles del Usuario:
+${data.user_roles.length > 0 ? 
+    data.user_roles.map(r => `- ${r.name}: ${r.description}`).join('\n') : 
+    '- Sin roles asignados'}
+
+🔧 Todos los Roles Disponibles:
+${data.all_roles.map(r => `- ${r.name}: ${r.description}`).join('\n')}
+
+📊 Tablas Existentes:
+${data.tables_exist.join(', ')}
+
+⏰ Timestamp: ${data.timestamp}
+                    `;
+                    
+                    alert(debugInfo);
+                    
+                    // También mostrar en consola para análisis
+                    console.table(data.user_roles);
+                    console.table(data.all_roles);
+                    
+                } else {
+                    const error = await response.json();
+                    alert(`Error ${response.status}: ${error.details || error.error}`);
+                }
+                
+            } catch (error) {
+                console.error('Error en debug:', error);
+                alert('Error obteniendo información de debug: ' + error.message);
+            }
         }
     </script>
 </body>
