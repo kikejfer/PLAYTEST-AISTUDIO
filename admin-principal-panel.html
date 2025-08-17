@@ -549,31 +549,21 @@
                 
                 console.log('✅ Token found, loading admin panel data');
 
-                // Load data from multiple admin endpoints
-                const [adminsResponse, profesoresResponse, usuariosResponse] = await Promise.all([
-                    fetch('/api/admin/administradores-secundarios', {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }),
-                    fetch('/api/admin/profesores-creadores', {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }),
-                    fetch('/api/admin/usuarios-jugadores', {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                ]);
+                // Load data from unified admin endpoint
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/admin-principal-panel`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-                // Check if any request failed
-                if (!adminsResponse.ok || !profesoresResponse.ok || !usuariosResponse.ok) {
-                    if (adminsResponse.status === 403 || profesoresResponse.status === 403 || usuariosResponse.status === 403) {
+                // Check if request failed
+                if (!response.ok) {
+                    if (response.status === 403) {
                         showError('No tienes permisos para acceder a este panel');
                         setTimeout(() => window.location.href = 'index.html', 2000);
                         return;
@@ -581,16 +571,12 @@
                     throw new Error('Error al cargar datos del panel');
                 }
 
-                const [adminsData, profesoresData, usuariosData] = await Promise.all([
-                    adminsResponse.json(),
-                    profesoresResponse.json(),
-                    usuariosResponse.json()
-                ]);
+                const data = await response.json();
 
                 panelData = {
-                    administradoresSecundarios: adminsData.administradores || [],
-                    profesoresCreadores: profesoresData.profesores || [],
-                    usuarios: usuariosData.usuarios || []
+                    administradoresSecundarios: data.adminSecundarios || [],
+                    profesoresCreadores: data.profesoresCreadores || [],
+                    usuarios: data.usuarios || []
                 };
                 
                 renderTables();
@@ -612,15 +598,16 @@
             tbody.innerHTML = '';
 
             panelData.administradoresSecundarios.forEach(admin => {
+                const fullName = [admin.first_name, admin.last_name].filter(Boolean).join(' ') || 'N/A';
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${admin.nickname}</td>
+                    <td>${fullName}</td>
                     <td>${admin.email || 'N/A'}</td>
-                    <td>${admin.email || 'N/A'}</td>
-                    <td>${admin.profesores_asignados}</td>
-                    <td>${admin.bloques_totales}</td>
-                    <td>${admin.preguntas_totales}</td>
-                    <td class="luminarias">${admin.luminarias}</td>
+                    <td>${admin.assigned_creators_count || 0}</td>
+                    <td>${admin.total_blocks_assigned || 0}</td>
+                    <td>${admin.total_questions_assigned || 0}</td>
+                    <td class="luminarias">${admin.luminarias || 0}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -633,6 +620,7 @@
             panelData.profesoresCreadores.forEach((profesor, index) => {
                 const row = document.createElement('tr');
                 const isExpanded = expandedRows.has(`profesor-${profesor.id}`);
+                const fullName = [profesor.first_name, profesor.last_name].filter(Boolean).join(' ') || 'N/A';
                 
                 row.innerHTML = `
                     <td>
@@ -641,20 +629,20 @@
                         </button>
                     </td>
                     <td>${profesor.nickname}</td>
-                    <td>${profesor.email || 'N/A'}</td>
+                    <td>${fullName}</td>
                     <td>${profesor.email || 'N/A'}</td>
                     <td>
                         <select onchange="reassignUser(${profesor.id}, this.value)">
-                            <option value="">${profesor.admin_asignado}</option>
-                            ${getAdminOptions(profesor.admin_id)}
+                            <option value="">${profesor.assigned_admin_nickname || 'Sin asignar'}</option>
+                            ${getAdminOptions(profesor.assigned_admin_id)}
                         </select>
                     </td>
-                    <td>${profesor.bloques_creados}</td>
-                    <td>${profesor.preguntas_totales}</td>
-                    <td>${profesor.usuarios_bloques_publicos}</td>
+                    <td>${profesor.blocks_created || 0}</td>
+                    <td>${profesor.total_questions || 0}</td>
+                    <td>${profesor.total_users_blocks || 0}</td>
                     <td class="luminarias">
-                        ${profesor.luminarias_actuales}
-                        <small>(G:${profesor.luminarias_ganadas}/Gas:${profesor.luminarias_gastadas}/A:${profesor.luminarias_abonadas}/C:${profesor.luminarias_compradas})</small>
+                        ${profesor.luminarias_actuales || 0}
+                        <small>(G:${profesor.luminarias_ganadas || 0}/Gas:${profesor.luminarias_gastadas || 0}/A:${profesor.luminarias_abonadas || 0}/C:${profesor.luminarias_compradas || 0})</small>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -681,21 +669,22 @@
             tbody.innerHTML = '';
 
             panelData.usuarios.forEach(usuario => {
+                const fullName = [usuario.first_name, usuario.last_name].filter(Boolean).join(' ') || 'N/A';
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${usuario.nickname}</td>
+                    <td>${fullName}</td>
                     <td>${usuario.email || 'N/A'}</td>
-                    <td>${usuario.email || 'N/A'}</td>
-                    <td>${usuario.bloques_cargados}</td>
+                    <td>${usuario.blocks_loaded || 0}</td>
                     <td>
                         <select onchange="reassignUser(${usuario.id}, this.value)">
-                            <option value="">${usuario.admin_asignado}</option>
-                            ${getAdminOptions(usuario.admin_id)}
+                            <option value="">${usuario.assigned_admin_nickname || 'Sin asignar'}</option>
+                            ${getAdminOptions(usuario.assigned_admin_id)}
                         </select>
                     </td>
                     <td class="luminarias">
-                        ${usuario.luminarias_actuales}
-                        <small>(G:${usuario.luminarias_ganadas}/Gas:${usuario.luminarias_gastadas}/A:${usuario.luminarias_abonadas}/C:${usuario.luminarias_compradas})</small>
+                        ${usuario.luminarias_actuales || 0}
+                        <small>(G:${usuario.luminarias_ganadas || 0}/Gas:${usuario.luminarias_gastadas || 0}/A:${usuario.luminarias_abonadas || 0}/C:${usuario.luminarias_compradas || 0})</small>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -723,7 +712,10 @@
         async function loadProfesorBlocks(profesorId) {
             try {
                 const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-                const response = await fetch(`/api/admin/profesores/${profesorId}/bloques`, {
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                const response = await fetch(`${API_BASE_URL}/api/admin/profesores/${profesorId}/bloques`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -787,7 +779,10 @@
         async function loadBlockTopics(blockId) {
             try {
                 const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-                const response = await fetch(`/api/admin/bloques/${blockId}/temas`, {
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                const response = await fetch(`${API_BASE_URL}/api/admin/bloques/${blockId}/temas`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -846,7 +841,10 @@
                 const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
                 // Note: This will need proper tema ID from the topics response
                 // For now, using topic name as temporary solution
-                const response = await fetch(`/api/admin/temas/${encodeURIComponent(topicName)}/preguntas`, {
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                const response = await fetch(`${API_BASE_URL}/api/admin/temas/${encodeURIComponent(topicName)}/preguntas`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -897,7 +895,10 @@
 
             try {
                 const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-                const response = await fetch(`/api/admin/usuarios/${userId}/assign-admin`, {
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                const response = await fetch(`${API_BASE_URL}/api/admin/usuarios/${userId}/assign-admin`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -942,7 +943,10 @@
             try {
                 // First search for the user
                 const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-                const searchResponse = await fetch(`/api/admin/search-users?q=${encodeURIComponent(nickname)}`, {
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                const searchResponse = await fetch(`${API_BASE_URL}/api/admin/search-users?q=${encodeURIComponent(nickname)}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -964,7 +968,7 @@
                 }
 
                 // Create admin secundario
-                const response = await fetch('/api/admin/administradores-secundarios', {
+                const response = await fetch(`${API_BASE_URL}/api/admin/administradores-secundarios`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
