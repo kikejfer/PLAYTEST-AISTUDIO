@@ -385,7 +385,7 @@
                         <thead>
                             <tr>
                                 <th>Nickname</th>
-                                <th>Nombre/Apellidos</th>
+                                <th>Rol</th>
                                 <th>Email</th>
                                 <th>Núm. Profesores/Creadores</th>
                                 <th>Núm. Bloques Totales</th>
@@ -413,12 +413,11 @@
                             <tr>
                                 <th></th>
                                 <th>Nickname</th>
-                                <th>Nombre/Apellidos</th>
                                 <th>Email</th>
-                                <th>Admin. Secundario Asignado</th>
-                                <th>Núm. Bloques</th>
+                                <th>Rol</th>
+                                <th>Núm. Bloques Creados</th>
                                 <th>Núm. Preguntas</th>
-                                <th>Núm. Usuarios</th>
+                                <th>Admin. Secundario Asignado</th>
                                 <th class="luminarias">Luminarias</th>
                             </tr>
                         </thead>
@@ -685,12 +684,12 @@
             tbody.innerHTML = '';
 
             panelData.administradoresSecundarios.forEach(admin => {
-                const fullName = [admin.first_name, admin.last_name].filter(Boolean).join(' ') || 'N/A';
+                const roleDisplay = admin.role_name === 'administrador_principal' ? 'Administrador Principal' : 'Administrador Secundario';
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${admin.nickname}</td>
-                    <td>${fullName}</td>
-                    <td>${admin.email || 'N/A'}</td>
+                    <td><strong>${admin.nickname}</strong></td>
+                    <td><span style="color: ${admin.role_name === 'administrador_principal' ? '#3B82F6' : '#10B981'};">${roleDisplay}</span></td>
+                    <td>${admin.email || 'Sin email'}</td>
                     <td>${admin.assigned_creators_count || 0}</td>
                     <td>${admin.total_blocks_assigned || 0}</td>
                     <td>${admin.total_questions_assigned || 0}</td>
@@ -707,7 +706,7 @@
             panelData.profesoresCreadores.forEach((profesor, index) => {
                 const row = document.createElement('tr');
                 const isExpanded = expandedRows.has(`profesor-${profesor.id}`);
-                const fullName = [profesor.first_name, profesor.last_name].filter(Boolean).join(' ') || 'N/A';
+                const roleDisplay = profesor.role_name === 'profesor' ? 'Profesor' : 'Creador de Contenido';
                 
                 row.innerHTML = `
                     <td>
@@ -715,21 +714,19 @@
                             ${isExpanded ? '−' : '+'}
                         </button>
                     </td>
-                    <td>${profesor.nickname}</td>
-                    <td>${fullName}</td>
-                    <td>${profesor.email || 'N/A'}</td>
+                    <td><strong>${profesor.nickname}</strong></td>
+                    <td>${profesor.email || 'Sin email'}</td>
+                    <td><span style="color: #F59E0B;">${roleDisplay}</span></td>
+                    <td><strong style="color: #10B981;">${profesor.blocks_created || 0}</strong></td>
+                    <td><strong style="color: #3B82F6;">${profesor.total_questions || 0}</strong></td>
                     <td>
                         <select onchange="reassignUser(${profesor.id}, this.value)">
                             <option value="">${profesor.assigned_admin_nickname || 'Sin asignar'}</option>
                             ${getAdminOptions(profesor.assigned_admin_id)}
                         </select>
                     </td>
-                    <td>${profesor.blocks_created || 0}</td>
-                    <td>${profesor.total_questions || 0}</td>
-                    <td>${profesor.total_users_blocks || 0}</td>
                     <td class="luminarias">
                         ${profesor.luminarias_actuales || 0}
-                        <small>(G:${profesor.luminarias_ganadas || 0}/Gas:${profesor.luminarias_gastadas || 0}/A:${profesor.luminarias_abonadas || 0}/C:${profesor.luminarias_compradas || 0})</small>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -739,7 +736,7 @@
                     const expandRow = document.createElement('tr');
                     expandRow.className = 'expandable-row show';
                     expandRow.innerHTML = `
-                        <td colspan="9">
+                        <td colspan="8">
                             <div id="profesor-blocks-${profesor.id}">
                                 <div class="loading">Cargando bloques...</div>
                             </div>
