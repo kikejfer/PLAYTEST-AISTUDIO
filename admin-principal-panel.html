@@ -384,7 +384,7 @@
                     <table id="admins-table">
                         <thead>
                             <tr>
-                                <th>Nickname</th>
+                                <th>Nickname / Nombre</th>
                                 <th>Rol</th>
                                 <th>Email</th>
                                 <th>Núm. Profesores/Creadores</th>
@@ -412,7 +412,7 @@
                         <thead>
                             <tr>
                                 <th></th>
-                                <th>Nickname</th>
+                                <th>Nickname / Nombre</th>
                                 <th>Email</th>
                                 <th>Rol</th>
                                 <th>Núm. Bloques Creados</th>
@@ -439,8 +439,7 @@
                     <table id="usuarios-table">
                         <thead>
                             <tr>
-                                <th>Nickname</th>
-                                <th>Nombre/Apellidos</th>
+                                <th>Nickname / Nombre</th>
                                 <th>Email</th>
                                 <th>Núm. Bloques Cargados</th>
                                 <th>Admin. Secundario Asignado</th>
@@ -685,9 +684,10 @@
 
             panelData.administradoresSecundarios.forEach(admin => {
                 const roleDisplay = admin.role_name === 'administrador_principal' ? 'Administrador Principal' : 'Administrador Secundario';
+                const fullName = [admin.first_name, admin.last_name].filter(Boolean).join(' ') || 'No especificado';
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><strong>${admin.nickname}</strong></td>
+                    <td><strong>${admin.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
                     <td><span style="color: ${admin.role_name === 'administrador_principal' ? '#3B82F6' : '#10B981'};">${roleDisplay}</span></td>
                     <td>${admin.email || 'Sin email'}</td>
                     <td>${admin.assigned_creators_count || 0}</td>
@@ -707,6 +707,7 @@
                 const row = document.createElement('tr');
                 const isExpanded = expandedRows.has(`profesor-${profesor.id}`);
                 const roleDisplay = profesor.role_name === 'profesor' ? 'Profesor' : 'Creador de Contenido';
+                const fullName = [profesor.first_name, profesor.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
                 row.innerHTML = `
                     <td>
@@ -714,7 +715,7 @@
                             ${isExpanded ? '−' : '+'}
                         </button>
                     </td>
-                    <td><strong>${profesor.nickname}</strong></td>
+                    <td><strong>${profesor.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
                     <td>${profesor.email || 'Sin email'}</td>
                     <td><span style="color: #F59E0B;">${roleDisplay}</span></td>
                     <td><strong style="color: #10B981;">${profesor.blocks_created || 0}</strong></td>
@@ -753,13 +754,12 @@
             tbody.innerHTML = '';
 
             panelData.usuarios.forEach(usuario => {
-                const fullName = [usuario.first_name, usuario.last_name].filter(Boolean).join(' ') || 'N/A';
+                const fullName = [usuario.first_name, usuario.last_name].filter(Boolean).join(' ') || 'No especificado';
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${usuario.nickname}</td>
-                    <td>${fullName}</td>
-                    <td>${usuario.email || 'N/A'}</td>
-                    <td>${usuario.blocks_loaded || 0}</td>
+                    <td><strong>${usuario.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
+                    <td>${usuario.email || 'Sin email'}</td>
+                    <td><strong style="color: #8B5CF6;">${usuario.blocks_loaded || 0}</strong></td>
                     <td>
                         <select onchange="reassignUser(${usuario.id}, this.value)">
                             <option value="">${usuario.assigned_admin_nickname || 'Sin asignar'}</option>
@@ -768,7 +768,6 @@
                     </td>
                     <td class="luminarias">
                         ${usuario.luminarias_actuales || 0}
-                        <small>(G:${usuario.luminarias_ganadas || 0}/Gas:${usuario.luminarias_gastadas || 0}/A:${usuario.luminarias_abonadas || 0}/C:${usuario.luminarias_compradas || 0})</small>
                     </td>
                 `;
                 tbody.appendChild(row);
