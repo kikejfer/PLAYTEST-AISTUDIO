@@ -15,7 +15,18 @@
       "Bash(npm start)",
       "Bash(\"taskkill\" \"/PID\" \"24024\")",
       "Bash(psql:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "WebFetch(domain:playtest-frontend.onrender.com)",
+      "Bash(npm install:*)",
+      "Bash(for file in creators-panel-analytics.html creators-panel-marketing.html creators-panel-tournaments.html creators-panel-monetization.html)",
+      "Bash(do if [ -f \"$file\" ])",
+      "Bash(then echo \"Found: $file\")",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(for file in creators-panel-marketing.html creators-panel-tournaments.html creators-panel-monetization.html)",
+      "Bash(do echo \"Processing $file...\")",
+      "Bash(echo \"Processed $file\")",
+      "Bash(do sed -i 's/        body {/        body {\\n            font-family: ''''Segoe UI'''', Tahoma, Geneva, Verdana, sans-serif;\\n            background: #0D1B2A;\\n            min-height: 100vh;\\n            color: #E0E1DD;\\n        }\\n\\n        \\/\\* User header styles - fixed position \\*\\//g' \"$file\")"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

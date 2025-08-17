@@ -265,6 +265,63 @@
             color: #E0E1DD;
         }
 
+        /* User header styles */
+        .user-header {
+            background: #415A77;
+            color: #E0E1DD;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #3B82F6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .user-details h4 {
+            margin: 0;
+            font-size: 14px;
+            color: #E0E1DD;
+        }
+
+        .user-details p {
+            margin: 0;
+            font-size: 12px;
+            color: #778DA9;
+        }
+
+        .logout-btn {
+            background: #EF4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #DC2626;
+        }
+
         /* Custom scrollbar for dark theme */
         ::-webkit-scrollbar {
             width: 8px;
@@ -298,6 +355,18 @@
     </style>
 </head>
 <body>
+    <!-- User Header -->
+    <div class="user-header">
+        <div class="user-info">
+            <div class="user-avatar" id="user-avatar">A</div>
+            <div class="user-details">
+                <h4 id="user-name">Cargando...</h4>
+                <p id="user-role">Administrador Principal</p>
+            </div>
+        </div>
+        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+    </div>
+
     <div class="container">
         <div class="header">
             <h1>Panel del Administrador Principal</h1>
@@ -405,11 +474,68 @@
     <script>
         let panelData = {};
         let expandedRows = new Set();
+        let currentUser = null;
 
         // Cargar datos del panel al inicializar
         document.addEventListener('DOMContentLoaded', async function() {
+            await loadUserData();
             await loadPanelData();
         });
+
+        async function loadUserData() {
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                if (!token) {
+                    logout();
+                    return;
+                }
+
+                // Try to get user info from token or API
+                try {
+                    // Decode JWT token to get user info (basic decode, no verification)
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                    
+                    const userData = JSON.parse(jsonPayload);
+                    currentUser = userData;
+                    
+                    // Update UI
+                    document.getElementById('user-name').textContent = userData.email || userData.username || 'Administrador';
+                    document.getElementById('user-avatar').textContent = (userData.email || userData.username || 'A')[0].toUpperCase();
+                    
+                } catch (tokenError) {
+                    // If token decode fails, use fallback
+                    document.getElementById('user-name').textContent = 'Administrador Principal';
+                    document.getElementById('user-avatar').textContent = 'A';
+                }
+                
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                document.getElementById('user-name').textContent = 'Administrador Principal';
+                document.getElementById('user-avatar').textContent = 'A';
+            }
+        }
+
+        function logout() {
+            // Clear all stored tokens
+            localStorage.removeItem('playtest_auth_token');
+            localStorage.removeItem('authToken');
+            
+            // Clear any other auth-related data
+            localStorage.removeItem('user_data');
+            localStorage.removeItem('user_role');
+            
+            // Show logout message
+            showSuccess('Sesión cerrada correctamente');
+            
+            // Redirect to login page after a short delay
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
+        }
 
         async function loadPanelData() {
             try {
