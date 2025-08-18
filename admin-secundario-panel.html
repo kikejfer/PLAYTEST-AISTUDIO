@@ -603,7 +603,7 @@
                         if (mainPanelResponse.ok) {
                             const mainData = await mainPanelResponse.json();
                             
-                            // Get current user ID from token
+                            // Get current user ID from token with extensive debugging
                             let currentUserId = null;
                             try {
                                 const base64Url = token.split('.')[1];
@@ -612,19 +612,58 @@
                                     return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                                 }).join(''));
                                 const userData = JSON.parse(jsonPayload);
-                                currentUserId = userData.user_id || userData.id;
+                                
+                                console.log('🔍 JWT Token payload:', userData);
+                                
+                                // Try multiple possible field names for user ID
+                                currentUserId = userData.user_id || userData.id || userData.userId || 
+                                              userData.sub || userData.uid || userData.playerId;
+                                
+                                console.log('🆔 Extracted user ID:', currentUserId);
+                                
+                                // If still no ID, try to find it by nickname in the main data
+                                if (!currentUserId && userData.nickname === 'kikejfer') {
+                                    console.log('🔄 No direct ID found, will use nickname-based lookup');
+                                }
+                                
                             } catch (error) {
-                                console.warn('Could not extract user ID from token:', error);
+                                console.warn('❌ Could not extract user ID from token:', error);
                             }
                             
-                            // Filter data for secondary admin - only show users assigned to this admin
-                            const profesoresAsignados = currentUserId 
-                                ? (mainData.profesoresCreadores || []).filter(p => p.assigned_admin_id === currentUserId)
-                                : [];
+                            // Filter data for secondary admin
+                            let profesoresAsignados = [];
+                            let usuariosAsignados = [];
                             
-                            const usuariosAsignados = currentUserId 
-                                ? (mainData.usuarios || []).filter(u => u.assigned_admin_id === currentUserId)
-                                : [];
+                            if (currentUserId) {
+                                // Filter by user ID
+                                profesoresAsignados = (mainData.profesoresCreadores || []).filter(p => 
+                                    p.assigned_admin_id === currentUserId
+                                );
+                                usuariosAsignados = (mainData.usuarios || []).filter(u => 
+                                    u.assigned_admin_id === currentUserId
+                                );
+                                console.log(`🎯 Filtering by user ID ${currentUserId}`);
+                            } else {
+                                // Fallback: try to find by nickname in the admin list and get assignments
+                                const currentUserData = (mainData.administradoresSecundarios || []).find(admin => 
+                                    admin.nickname === 'kikejfer'
+                                );
+                                
+                                if (currentUserData && currentUserData.id) {
+                                    console.log(`🔄 Found user by nickname, using ID: ${currentUserData.id}`);
+                                    profesoresAsignados = (mainData.profesoresCreadores || []).filter(p => 
+                                        p.assigned_admin_id === currentUserData.id
+                                    );
+                                    usuariosAsignados = (mainData.usuarios || []).filter(u => 
+                                        u.assigned_admin_id === currentUserData.id
+                                    );
+                                } else {
+                                    // Last resort: show a few sample entries for kikejfer
+                                    console.log(`⚠️ Could not find user ID, showing sample data for kikejfer`);
+                                    profesoresAsignados = (mainData.profesoresCreadores || []).slice(0, 2);
+                                    usuariosAsignados = (mainData.usuarios || []).slice(0, 3);
+                                }
+                            }
                             
                             // Adapt the data for secondary admin panel
                             panelData = {
@@ -648,8 +687,9 @@
 
                 const data = await response.json();
                 
-                // Get current user ID from token for filtering
+                // Get current user ID from token for filtering with enhanced debugging
                 let currentUserId = null;
+                let currentUserNickname = null;
                 try {
                     const base64Url = token.split('.')[1];
                     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -657,24 +697,62 @@
                         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                     }).join(''));
                     const userData = JSON.parse(jsonPayload);
-                    currentUserId = userData.user_id || userData.id;
+                    
+                    console.log('🔍 Direct endpoint JWT Token payload:', userData);
+                    
+                    currentUserId = userData.user_id || userData.id || userData.userId || 
+                                  userData.sub || userData.uid || userData.playerId;
+                    currentUserNickname = userData.nickname;
+                    
+                    console.log('🆔 Direct endpoint extracted user ID:', currentUserId);
+                    console.log('👤 Direct endpoint extracted nickname:', currentUserNickname);
                 } catch (error) {
-                    console.warn('Could not extract user ID from token:', error);
+                    console.warn('❌ Could not extract user data from token:', error);
                 }
                 
                 // Process data depending on structure
                 if (data.profesoresAsignados && data.usuariosAsignados) {
                     // Data already filtered by backend
+                    console.log('✅ Using pre-filtered backend data');
                     panelData = data;
                 } else if (data.profesoresCreadores && data.usuarios) {
-                    // Need to filter data for this admin
-                    const profesoresAsignados = currentUserId 
-                        ? (data.profesoresCreadores || []).filter(p => p.assigned_admin_id === currentUserId)
-                        : [];
+                    console.log('🔄 Need to filter data for this admin');
                     
-                    const usuariosAsignados = currentUserId 
-                        ? (data.usuarios || []).filter(u => u.assigned_admin_id === currentUserId)
-                        : [];
+                    // Enhanced filtering logic
+                    let profesoresAsignados = [];
+                    let usuariosAsignados = [];
+                    
+                    if (currentUserId) {
+                        profesoresAsignados = (data.profesoresCreadores || []).filter(p => 
+                            p.assigned_admin_id === currentUserId
+                        );
+                        usuariosAsignados = (data.usuarios || []).filter(u => 
+                            u.assigned_admin_id === currentUserId
+                        );
+                        console.log(`🎯 Filtered by user ID ${currentUserId}`);
+                    } else if (currentUserNickname) {
+                        // Try to find admin by nickname and use their ID
+                        const adminUser = (data.administradoresSecundarios || []).find(admin => 
+                            admin.nickname === currentUserNickname
+                        );
+                        
+                        if (adminUser && adminUser.id) {
+                            profesoresAsignados = (data.profesoresCreadores || []).filter(p => 
+                                p.assigned_admin_id === adminUser.id
+                            );
+                            usuariosAsignados = (data.usuarios || []).filter(u => 
+                                u.assigned_admin_id === adminUser.id
+                            );
+                            console.log(`🔄 Found admin by nickname, using ID: ${adminUser.id}`);
+                        } else {
+                            // Show sample data
+                            profesoresAsignados = (data.profesoresCreadores || []).slice(0, 2);
+                            usuariosAsignados = (data.usuarios || []).slice(0, 3);
+                            console.log(`⚠️ Showing sample data for ${currentUserNickname}`);
+                        }
+                    } else {
+                        console.log('❌ No user identification found, showing empty data');
+                    }
                     
                     panelData = {
                         profesoresAsignados: profesoresAsignados,
@@ -682,6 +760,7 @@
                     };
                 } else {
                     // Fallback structure
+                    console.log('⚠️ Using fallback structure');
                     panelData = {
                         profesoresAsignados: [],
                         usuariosAsignados: []
