@@ -1241,33 +1241,12 @@
             }
 
             try {
-                // First search for the user
                 const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
                 const API_BASE_URL = window.location.hostname.includes('onrender.com') 
                     ? 'https://playtest-backend.onrender.com' 
                     : '';
-                const searchResponse = await fetch(`${API_BASE_URL}/api/roles-updated/search-users?q=${encodeURIComponent(nickname)}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!searchResponse.ok) {
-                    throw new Error('Error buscando usuario');
-                }
-
-                const searchResult = await searchResponse.json();
-                if (!searchResult.users || searchResult.users.length === 0) {
-                    throw new Error('Usuario no encontrado');
-                }
-
-                const user = searchResult.users.find(u => u.nickname === nickname);
-                if (!user) {
-                    throw new Error('Usuario no encontrado');
-                }
-
-                // Create admin secundario
+                
+                // Asignar directamente usando el nickname
                 const response = await fetch(`${API_BASE_URL}/api/roles-updated/add-admin-secundario`, {
                     method: 'POST',
                     headers: {
@@ -1275,8 +1254,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        userId: user.id,
-                        nickname: user.nickname
+                        nickname: nickname
                     })
                 });
 
