@@ -60,6 +60,7 @@
             background: #0D1B2A;
             min-height: 100vh;
             color: #E0E1DD;
+            padding-top: 80px;
         }
 
         .container {
@@ -112,6 +113,8 @@
 
         .table-container {
             overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid #415A77;
         }
 
         table {
@@ -266,6 +269,8 @@
             background: #1B263B;
             border: 1px solid #415A77;
             color: #E0E1DD;
+            max-width: 90vw;
+            width: 500px;
         }
 
         /* User header styles */
@@ -342,17 +347,90 @@
             background: #778DA9;
         }
 
+        @media (max-width: 1024px) {
+            .user-info-desktop {
+                display: none !important;
+            }
+        }
+
+        @media (min-width: 1025px) {
+            .user-info-desktop {
+                display: block !important;
+            }
+        }
+
         @media (max-width: 768px) {
+            body {
+                padding-top: 70px;
+            }
+            
             .container {
                 padding: 10px;
             }
             
             table {
-                font-size: 12px;
+                font-size: 11px;
             }
             
             th, td {
-                padding: 8px;
+                padding: 6px 4px;
+                min-width: 80px;
+            }
+            
+            .btn {
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+            
+            .section-header {
+                padding: 10px 15px;
+                font-size: 16px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .modal-content {
+                margin: 10px;
+                width: calc(100vw - 20px);
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding-top: 60px;
+            }
+            
+            .container {
+                padding: 5px;
+            }
+            
+            .section-content {
+                padding: 10px;
+            }
+            
+            table {
+                font-size: 10px;
+            }
+            
+            th, td {
+                padding: 4px 2px;
+                min-width: 60px;
+            }
+            
+            .btn {
+                padding: 2px 6px;
+                font-size: 10px;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.25rem;
             }
         }
     </style>
@@ -361,33 +439,37 @@
 
 </head>
 <body>
-    <!-- Header Principal PLAYTEST -->
-    <header style="background: #1B263B; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+    <!-- Header Principal PLAYTEST - Fixed position -->
+    <header style="background: #1B263B; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: fixed; top: 0; left: 0; right: 0; z-index: 1000;">
         <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
             <div style="display: flex; align-items: center; justify-content: space-between; height: 4rem;">
                 <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <img src="./Imagenes/Playtest.png" alt="Playtest Logo" style="height: 4rem; width: 4rem;" />
-                    <h1 style="font-size: 1.5rem; font-weight: bold; color: #E0E1DD; margin: 0;">
-                        Aplicación PLAYTEST 
-                        <span style="font-weight: 300; color: #778DA9; font-size: 1.1rem;">Panel Administrador Principal</span>
-                    </h1>
+                    <img src="./Imagenes/Playtest.png" alt="Playtest Logo" style="height: 3rem; width: 3rem;" />
+                    <div>
+                        <h1 style="font-size: 1.25rem; font-weight: bold; color: #E0E1DD; margin: 0; line-height: 1.2;">
+                            PLAYTEST
+                        </h1>
+                        <span style="font-weight: 300; color: #778DA9; font-size: 0.875rem;">Panel Administrador Principal</span>
+                    </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <!-- User Info -->
                     <div style="display: flex; align-items: center; gap: 0.5rem; color: #E0E1DD;">
-                        <div id="user-avatar" style="width: 2.5rem; height: 2.5rem; background: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">A</div>
-                        <div>
-                            <div id="user-name" style="font-weight: 600; font-size: 0.9rem;">Cargando...</div>
-                            <div style="font-size: 0.75rem; color: #778DA9;">Administrador Principal</div>
+                        <div id="user-avatar" style="width: 2rem; height: 2rem; background: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 0.875rem;">A</div>
+                        <div style="display: none;" class="user-info-desktop">
+                            <div id="user-name" style="font-weight: 600; font-size: 0.875rem;">Cargando...</div>
+                            <div style="font-size: 0.75rem; color: #778DA9;">Admin Principal</div>
                         </div>
                     </div>
                     <!-- Actions -->
-                    <button onclick="logout()" style="background: #EF4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: background 0.2s; margin-right: 0.5rem;">
-                        Cerrar Sesión
-                    </button>
-                    <button onclick="window.location.href='index.html'" style="background: #3B82F6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: background 0.2s;">
-                        Volver al Dashboard
-                    </button>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button onclick="logout()" style="background: #EF4444; color: white; border: none; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: background 0.2s; font-size: 0.875rem;">
+                            Salir
+                        </button>
+                        <button onclick="window.location.href='index.html'" style="background: #3B82F6; color: white; border: none; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: background 0.2s; font-size: 0.875rem;">
+                            Dashboard
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -413,10 +495,9 @@
                                 <th>Nickname / Nombre</th>
                                 <th>Rol</th>
                                 <th>Email</th>
-                                <th>Núm. Profesores/Creadores</th>
-                                <th>Núm. Bloques Totales</th>
-                                <th>Núm. Preguntas Totales</th>
-                                <th class="luminarias">Luminarias</th>
+                                <th>Núm. Profesores</th>
+                                <th>Núm. Creadores</th>
+                                <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                                 <th>🗑️</th>
                             </tr>
                         </thead>
@@ -446,7 +527,7 @@
                                 <th>Núm. Preguntas</th>
                                 <th>Núm. Usuarios</th>
                                 <th>Admin. Secundario Asignado</th>
-                                <th class="luminarias">Luminarias</th>
+                                <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                                 <th>🗑️</th>
                             </tr>
                         </thead>
@@ -472,7 +553,7 @@
                                 <th>Email</th>
                                 <th>Núm. Bloques Cargados</th>
                                 <th>Admin. Secundario Asignado</th>
-                                <th class="luminarias">Luminarias</th>
+                                <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                                 <th>🗑️</th>
                             </tr>
                         </thead>
@@ -486,13 +567,15 @@
     </div>
 
     <!-- Modal para añadir administrador secundario -->
-    <div id="add-admin-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000;">
-        <div class="modal-content" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; border-radius: 10px; min-width: 400px;">
+    <div id="add-admin-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1001; padding: 20px; box-sizing: border-box;">
+        <div class="modal-content" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; border-radius: 10px;">
             <h3 style="color: #3B82F6; margin-bottom: 15px;">Añadir Administrador Secundario</h3>
-            <div class="form-inline" style="margin: 20px 0;">
-                <input type="text" id="new-admin-nickname" placeholder="Nickname del usuario" style="flex: 1;">
-                <button class="btn btn-primary" onclick="assignAdminSecundario()">Asignar</button>
-                <button class="btn btn-secondary" onclick="hideAddAdminModal()">Cancelar</button>
+            <div style="margin: 20px 0; display: flex; flex-direction: column; gap: 10px;">
+                <input type="text" id="new-admin-nickname" placeholder="Nickname del usuario" style="width: 100%; padding: 8px; border: 1px solid #415A77; border-radius: 3px; font-size: 14px; background: #1B263B; color: #E0E1DD;">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="assignAdminSecundario()" style="flex: 1; min-width: 120px;">Asignar</button>
+                    <button class="btn btn-secondary" onclick="hideAddAdminModal()" style="flex: 1; min-width: 120px;">Cancelar</button>
+                </div>
             </div>
             <div id="modal-message"></div>
         </div>
@@ -741,7 +824,7 @@
                             usuarios: panelData.usuarios.length
                         });
                         
-                        renderTables();
+                        await renderTables();
                         return; // Salir aquí para evitar el procesamiento normal
                     } else {
                         console.warn('❌ Debug endpoint también falló');
@@ -770,7 +853,7 @@
                         usuarios: panelData.usuarios.length
                     });
                     
-                    renderTables();
+                    await renderTables();
                 } else {
                     // Si llegamos aquí, ningún endpoint funcionó
                     throw new Error('No se pudo conectar con el backend');
@@ -865,14 +948,14 @@
                     ]
                 };
                 
-                renderTables();
+                await renderTables();
             }
         }
 
-        function renderTables() {
+        async function renderTables() {
             renderAdminsTable();
-            renderProfesoresTable();
-            renderUsuariosTable();
+            await renderProfesoresTable();
+            await renderUsuariosTable();
         }
 
         function renderAdminsTable() {
@@ -882,6 +965,16 @@
             panelData.administradoresSecundarios.forEach(admin => {
                 const roleDisplay = admin.role_name === 'administrador_principal' ? 'Administrador Principal' : 'Administrador Secundario';
                 const fullName = [admin.first_name, admin.last_name].filter(Boolean).join(' ') || 'No especificado';
+                
+                // Calcular profesores y creadores asignados
+                const profesoresAsignados = panelData.profesoresCreadores.filter(p => 
+                    p.assigned_admin_id === admin.id && p.role_name === 'profesor'
+                ).length;
+                
+                const creadoresAsignados = panelData.profesoresCreadores.filter(c => 
+                    c.assigned_admin_id === admin.id && c.role_name === 'creador_contenido'
+                ).length;
+                
                 const row = document.createElement('tr');
                 const deleteButton = admin.role_name === 'administrador_principal' 
                     ? '<span style="color: #9CA3AF;">Protegido</span>' 
@@ -891,9 +984,8 @@
                     <td><strong>${admin.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
                     <td><span style="color: ${admin.role_name === 'administrador_principal' ? '#3B82F6' : '#10B981'};">${roleDisplay}</span></td>
                     <td>${admin.email || 'Sin email'}</td>
-                    <td>${admin.assigned_creators_count || 0}</td>
-                    <td>${admin.total_blocks_assigned || 0}</td>
-                    <td>${admin.total_questions_assigned || 0}</td>
+                    <td><strong style="color: #F59E0B;">${profesoresAsignados}</strong></td>
+                    <td><strong style="color: #10B981;">${creadoresAsignados}</strong></td>
                     <td class="luminarias">${admin.luminarias || 0}</td>
                     <td>${deleteButton}</td>
                 `;
@@ -901,15 +993,43 @@
             });
         }
 
-        function renderProfesoresTable() {
+        async function renderProfesoresTable() {
             const tbody = document.getElementById('profesores-tbody');
             tbody.innerHTML = '';
 
-            panelData.profesoresCreadores.forEach((profesor, index) => {
+            for (const profesor of panelData.profesoresCreadores) {
                 const row = document.createElement('tr');
                 const isExpanded = expandedRows.has(`profesor-${profesor.id}`);
                 const roleDisplay = profesor.role_name === 'profesor' ? 'Profesor' : 'Creador de Contenido';
                 const fullName = [profesor.first_name, profesor.last_name].filter(Boolean).join(' ') || 'No especificado';
+                
+                // Calcular usuarios que usan los bloques de este profesor/creador
+                let totalUsuarios = 0;
+                try {
+                    const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                    const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                        ? 'https://playtest-backend.onrender.com' 
+                        : '';
+                    
+                    // Obtener bloques del profesor
+                    const blocksResponse = await fetch(`${API_BASE_URL}/api/roles-updated/profesores/${profesor.id}/bloques`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (blocksResponse.ok) {
+                        const blocksData = await blocksResponse.json();
+                        const blocks = blocksData.bloques || [];
+                        
+                        // Sumar usuarios de todos los bloques
+                        totalUsuarios = blocks.reduce((sum, block) => sum + (block.usuarios_bloque || 0), 0);
+                    }
+                } catch (error) {
+                    console.warn('Error calculando usuarios del profesor:', error);
+                    totalUsuarios = profesor.total_users_blocks || 0; // Fallback
+                }
                 
                 row.innerHTML = `
                     <td>
@@ -922,7 +1042,7 @@
                     <td><span style="color: #F59E0B;">${roleDisplay}</span></td>
                     <td><strong style="color: #10B981;">${profesor.blocks_created || 0}</strong></td>
                     <td><strong style="color: #3B82F6;">${profesor.total_questions || 0}</strong></td>
-                    <td><strong style="color: #8B5CF6;">${profesor.total_users_blocks || 0}</strong></td>
+                    <td><strong style="color: #8B5CF6;">${totalUsuarios}</strong></td>
                     <td>
                         <select onchange="reassignUser(${profesor.id}, this.value)">
                             <option value="">${profesor.assigned_admin_nickname || 'Sin asignar'}</option>
@@ -952,20 +1072,59 @@
                     tbody.appendChild(expandRow);
                     loadProfesorBlocks(profesor.id);
                 }
-            });
+            }
         }
 
-        function renderUsuariosTable() {
+        async function renderUsuariosTable() {
             const tbody = document.getElementById('usuarios-tbody');
             tbody.innerHTML = '';
 
-            panelData.usuarios.forEach(usuario => {
+            for (const usuario of panelData.usuarios) {
                 const fullName = [usuario.first_name, usuario.last_name].filter(Boolean).join(' ') || 'No especificado';
+                
+                // Calcular bloques cargados por el usuario
+                let bloquesReales = 0;
+                try {
+                    const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                    const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                        ? 'https://playtest-backend.onrender.com' 
+                        : '';
+                    
+                    // Obtener bloques cargados por el usuario
+                    const userBlocksResponse = await fetch(`${API_BASE_URL}/api/roles-updated/usuarios/${usuario.id}/bloques-cargados`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (userBlocksResponse.ok) {
+                        const userBlocksData = await userBlocksResponse.json();
+                        bloquesReales = userBlocksData.bloques_cargados || userBlocksData.total_bloques || 0;
+                    } else {
+                        // Fallback: intentar calcular desde relaciones usuario-bloque
+                        const relationResponse = await fetch(`${API_BASE_URL}/api/roles-updated/usuarios/${usuario.id}/relaciones-bloques`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (relationResponse.ok) {
+                            const relationData = await relationResponse.json();
+                            bloquesReales = relationData.bloques_relacionados?.length || 0;
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Error calculando bloques del usuario:', error);
+                    bloquesReales = usuario.blocks_loaded || 0; // Fallback
+                }
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><strong>${usuario.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
                     <td>${usuario.email || 'Sin email'}</td>
-                    <td><strong style="color: #8B5CF6;">${usuario.blocks_loaded || 0}</strong></td>
+                    <td><strong style="color: #8B5CF6;">${bloquesReales}</strong></td>
                     <td>
                         <select onchange="reassignUser(${usuario.id}, this.value)">
                             <option value="">${usuario.assigned_admin_nickname || 'Sin asignar'}</option>
@@ -980,7 +1139,7 @@
                     </td>
                 `;
                 tbody.appendChild(row);
-            });
+            }
         }
 
         function getAdminOptions(currentAdminId) {
@@ -998,7 +1157,7 @@
             } else {
                 expandedRows.add(key);
             }
-            renderProfesoresTable();
+            await renderProfesoresTable();
         }
 
         async function loadProfesorBlocks(profesorId) {
@@ -1222,7 +1381,7 @@
                 console.log(`✅ REASSIGN: Success response =`, result);
                 
                 showSuccess('Usuario reasignado exitosamente');
-                setTimeout(() => loadPanelData(), 1000);
+                setTimeout(async () => await loadPanelData(), 1000);
 
             } catch (error) {
                 console.error('Error reasignando usuario:', error);
@@ -1291,9 +1450,9 @@
                 }
 
                 showModalSuccess(`Usuario "${nickname}" asignado como Administrador Secundario exitosamente`);
-                setTimeout(() => {
+                setTimeout(async () => {
                     hideAddAdminModal();
-                    loadPanelData();
+                    await loadPanelData();
                 }, 2000);
 
             } catch (error) {
