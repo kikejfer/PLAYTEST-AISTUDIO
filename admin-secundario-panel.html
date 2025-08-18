@@ -52,12 +52,6 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            background: #0D1B2A;
-            min-height: 100vh;
-            color: #E0E1DD;
-        }
 
         .container {
             max-width: 1200px;
@@ -65,61 +59,139 @@
             padding: 20px;
         }
 
-        /* User header styles */
+        /* User header styles - fixed position */
         .user-header {
-            background: #415A77;
-            color: #E0E1DD;
-            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #0D1B2A 0%, #1B263B 100%);
+            border-bottom: 2px solid #415A77;
+            padding: 8px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            height: 60px;
         }
 
-        .user-info {
+        /* Add padding to body to account for fixed header */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0D1B2A;
+            min-height: 100vh;
+            color: #E0E1DD;
+            padding-top: 60px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .playtest-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .playtest-logo img {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+        }
+
+        .playtest-logo span {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #3B82F6, #60A5FA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
+        .dashboard-btn {
+            background: #415A77;
+            color: #E0E1DD;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .dashboard-btn:hover {
+            background: #4F6B8A;
+            transform: translateY(-1px);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(65, 90, 119, 0.3);
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(65, 90, 119, 0.5);
+        }
+
         .user-avatar {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
-            background: #3B82F6;
+            background: linear-gradient(45deg, #3B82F6, #60A5FA);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            font-weight: 600;
             color: white;
+            font-size: 12px;
         }
 
         .user-details h4 {
             margin: 0;
-            font-size: 14px;
+            font-size: 13px;
             color: #E0E1DD;
+            font-weight: 500;
         }
 
         .user-details p {
             margin: 0;
-            font-size: 12px;
+            font-size: 11px;
             color: #778DA9;
         }
 
         .logout-btn {
-            background: #EF4444;
+            background: linear-gradient(45deg, #EF4444, #F87171);
             color: white;
             border: none;
             padding: 6px 12px;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 12px;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
 
         .logout-btn:hover {
-            background: #DC2626;
+            background: linear-gradient(45deg, #DC2626, #EF4444);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
         }
 
         .header {
@@ -310,14 +382,25 @@
 <body>
     <!-- User Header -->
     <div class="user-header">
-        <div class="user-info">
-            <div class="user-avatar" id="user-avatar">A</div>
-            <div class="user-details">
-                <h4 id="user-name">Cargando...</h4>
-                <p id="user-role">Administrador Secundario</p>
-            </div>
+        <div class="header-left">
+            <a href="index.html" class="playtest-logo">
+                <img src="Imagenes/Playtest.png" alt="PlayTest Logo">
+                <span>PLAYTEST</span>
+            </a>
         </div>
-        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        <div class="header-actions">
+            <a href="all-blocks.html" class="dashboard-btn">
+                🏠 Dashboard
+            </a>
+            <div class="user-info">
+                <div class="user-avatar" id="user-avatar">A</div>
+                <div class="user-details">
+                    <h4 id="user-name">Cargando...</h4>
+                    <p id="user-role">Admin Secundario</p>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        </div>
     </div>
 
     <div class="container">

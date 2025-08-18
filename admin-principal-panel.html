@@ -358,22 +358,42 @@
 
 </head>
 <body>
-    <!-- User Header -->
-    <div class="user-header">
-        <div class="user-info">
-            <div class="user-avatar" id="user-avatar">A</div>
-            <div class="user-details">
-                <h4 id="user-name">Cargando...</h4>
-                <p id="user-role">Administrador Principal</p>
+    <!-- Header Principal PLAYTEST -->
+    <header style="background: #1B263B; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; height: 4rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <img src="./Imagenes/Playtest.png" alt="Playtest Logo" style="height: 4rem; width: 4rem;" />
+                    <h1 style="font-size: 1.5rem; font-weight: bold; color: #E0E1DD; margin: 0;">
+                        Aplicación PLAYTEST 
+                        <span style="font-weight: 300; color: #778DA9; font-size: 1.1rem;">Panel Administrador Principal</span>
+                    </h1>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <!-- User Info -->
+                    <div style="display: flex; align-items: center; gap: 0.5rem; color: #E0E1DD;">
+                        <div id="user-avatar" style="width: 2.5rem; height: 2.5rem; background: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">A</div>
+                        <div>
+                            <div id="user-name" style="font-weight: 600; font-size: 0.9rem;">Cargando...</div>
+                            <div style="font-size: 0.75rem; color: #778DA9;">Administrador Principal</div>
+                        </div>
+                    </div>
+                    <!-- Actions -->
+                    <button onclick="logout()" style="background: #EF4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: background 0.2s; margin-right: 0.5rem;">
+                        Cerrar Sesión
+                    </button>
+                    <button onclick="window.location.href='index.html'" style="background: #3B82F6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: background 0.2s;">
+                        Volver al Dashboard
+                    </button>
+                </div>
             </div>
         </div>
-        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
-    </div>
+    </header>
 
     <div class="container">
         <div class="header">
-            <h1>Panel del Administrador Principal</h1>
-            <p>Gestión completa del sistema de roles y usuarios de PlayTest</p>
+            <h1>Gestión completa del sistema de roles y usuarios</h1>
+            <p>Panel del Administrador Principal - PLAYTEST</p>
         </div>
 
         <!-- Sección 1: Administradores Secundarios -->
@@ -1114,7 +1134,14 @@
         }
 
         function showAddAdminModal() {
-            document.getElementById('add-admin-modal').style.display = 'block';
+            console.log('🔧 Abriendo modal de administrador...');
+            const modal = document.getElementById('add-admin-modal');
+            if (modal) {
+                modal.style.display = 'block';
+                console.log('✅ Modal mostrado');
+            } else {
+                console.error('❌ Modal no encontrado');
+            }
             document.getElementById('new-admin-nickname').value = '';
             document.getElementById('modal-message').innerHTML = '';
         }
