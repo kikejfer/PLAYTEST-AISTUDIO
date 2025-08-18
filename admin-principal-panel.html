@@ -1182,13 +1182,22 @@
         }
 
         async function reassignUser(userId, newAdminId) {
-            if (!newAdminId) return;
+            console.log(`🔧 REASSIGN: userId=${userId}, newAdminId=${newAdminId}`);
+            
+            if (!newAdminId) {
+                console.log(`❌ REASSIGN: newAdminId is empty, aborting`);
+                return;
+            }
 
             try {
                 const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
                 const API_BASE_URL = window.location.hostname.includes('onrender.com') 
                     ? 'https://playtest-backend.onrender.com' 
                     : '';
+                
+                console.log(`🔧 REASSIGN: API URL = ${API_BASE_URL}/api/roles-updated/reassign-user`);
+                console.log(`🔧 REASSIGN: Request body =`, {userId: parseInt(userId), newAdminId: parseInt(newAdminId)});
+                    
                 const response = await fetch(`${API_BASE_URL}/api/roles-updated/reassign-user`, {
                     method: 'POST',
                     headers: {
@@ -1201,11 +1210,17 @@
                     })
                 });
 
+                console.log(`🔧 REASSIGN: Response status = ${response.status}`);
+                
                 if (!response.ok) {
                     const error = await response.json();
+                    console.log(`❌ REASSIGN: Error response =`, error);
                     throw new Error(error.error || 'Error en la reasignación');
                 }
 
+                const result = await response.json();
+                console.log(`✅ REASSIGN: Success response =`, result);
+                
                 showSuccess('Usuario reasignado exitosamente');
                 setTimeout(() => loadPanelData(), 1000);
 
