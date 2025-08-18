@@ -444,6 +444,7 @@
                                 <th>Rol</th>
                                 <th>Núm. Bloques Creados</th>
                                 <th>Núm. Preguntas</th>
+                                <th>Núm. Usuarios</th>
                                 <th>Admin. Secundario Asignado</th>
                                 <th class="luminarias">Luminarias</th>
                                 <th>Acciones</th>
@@ -921,6 +922,7 @@
                     <td><span style="color: #F59E0B;">${roleDisplay}</span></td>
                     <td><strong style="color: #10B981;">${profesor.blocks_created || 0}</strong></td>
                     <td><strong style="color: #3B82F6;">${profesor.total_questions || 0}</strong></td>
+                    <td><strong style="color: #8B5CF6;">${profesor.total_users_blocks || 0}</strong></td>
                     <td>
                         <select onchange="reassignUser(${profesor.id}, this.value)">
                             <option value="">${profesor.assigned_admin_nickname || 'Sin asignar'}</option>
@@ -941,7 +943,7 @@
                     const expandRow = document.createElement('tr');
                     expandRow.className = 'expandable-row show';
                     expandRow.innerHTML = `
-                        <td colspan="9">
+                        <td colspan="10">
                             <div id="profesor-blocks-${profesor.id}">
                                 <div class="loading">Cargando bloques...</div>
                             </div>
@@ -1188,14 +1190,15 @@
                 const API_BASE_URL = window.location.hostname.includes('onrender.com') 
                     ? 'https://playtest-backend.onrender.com' 
                     : '';
-                const response = await fetch(`${API_BASE_URL}/api/admin/usuarios/${userId}/assign-admin`, {
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/reassign-user`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        admin_id: parseInt(newAdminId)
+                        userId: parseInt(userId),
+                        newAdminId: parseInt(newAdminId)
                     })
                 });
 
@@ -1272,7 +1275,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        user_id: user.id,
+                        userId: user.id,
                         nickname: user.nickname
                     })
                 });
