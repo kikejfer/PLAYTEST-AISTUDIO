@@ -1007,7 +1007,7 @@
                 const API_BASE_URL = window.location.hostname.includes('onrender.com') 
                     ? 'https://playtest-backend.onrender.com' 
                     : '';
-                const response = await fetch(`${API_BASE_URL}/api/admin/profesores/${profesorId}/bloques`, {
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/profesores/${profesorId}/bloques`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
