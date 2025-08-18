@@ -1025,19 +1025,19 @@
                     return;
                 }
 
-                let html = '<table class="nested-table"><thead><tr><th>Bloque</th><th>Núm. Temas</th><th>Total Preguntas</th><th>Usuarios</th><th>Fecha Creación</th><th>Acciones</th></tr></thead><tbody>';
+                let html = '<table class="nested-table"><thead><tr><th></th><th>Bloque</th><th>Núm. Temas</th><th>Total Preguntas</th><th>Usuarios</th><th>Fecha Creación</th></tr></thead><tbody>';
                 
                 blocks.forEach(block => {
                     html += `
                         <tr>
+                            <td>
+                                <button class="btn btn-expand" onclick="toggleBlockExpansion(${block.id})" style="font-size: 18px; padding: 4px 8px;">+</button>
+                            </td>
                             <td><strong>${block.name}</strong></td>
                             <td>${block.num_temas}</td>
                             <td>${block.total_preguntas}</td>
                             <td>${block.usuarios_bloque}</td>
                             <td>${new Date(block.created_at).toLocaleDateString()}</td>
-                            <td>
-                                <button class="btn btn-expand" onclick="toggleBlockExpansion(${block.id})" style="font-size: 18px; padding: 4px 8px;">+</button>
-                            </td>
                         </tr>
                         <tr id="block-expansion-${block.id}" style="display: none;">
                             <td colspan="6">
@@ -1234,6 +1234,8 @@
 
         async function assignAdminSecundario() {
             const nickname = document.getElementById('new-admin-nickname').value.trim();
+            console.log(`🔧 FRONTEND: Attempting to assign admin secundario to: ${nickname}`);
+            
             if (!nickname) {
                 showModalError('Por favor, ingresa un nickname');
                 return;
@@ -1245,6 +1247,12 @@
                     ? 'https://playtest-backend.onrender.com' 
                     : '';
                 
+                console.log(`🔧 FRONTEND: API URL = ${API_BASE_URL}/api/roles-updated/add-admin-secundario`);
+                console.log(`🔧 FRONTEND: Token present = ${token ? 'YES' : 'NO'}`);
+                
+                const requestBody = { nickname: nickname };
+                console.log(`🔧 FRONTEND: Request body =`, requestBody);
+                
                 // Asignar directamente usando el nickname
                 const response = await fetch(`${API_BASE_URL}/api/roles-updated/add-admin-secundario`, {
                     method: 'POST',
@@ -1252,10 +1260,10 @@
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        nickname: nickname
-                    })
+                    body: JSON.stringify(requestBody)
                 });
+                
+                console.log(`🔧 FRONTEND: Response status = ${response.status}`);
 
                 const result = await response.json();
 
