@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin Secundario - Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0D1B2A;
+            color: #E0E1DD;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background: #1B263B;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #415A77;
+        }
+        .error {
+            background: #7F1D1D;
+            color: #FECACA;
+            border: 1px solid #EF4444;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Panel Administrador Secundario - Versión Test</h1>
+            <p>Esta es una versión de prueba para verificar que el panel se carga correctamente.</p>
+        </div>
+        
+        <div id="status">Cargando...</div>
+        
+        <script>
+            console.log('🟢 Panel test iniciado correctamente');
+            
+            // Test básico de funcionalidad
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('🟢 DOM loaded');
+                document.getElementById('status').innerHTML = '<div style="color: #10B981;">✅ Panel de prueba cargado correctamente</div>';
+                
+                // Test de token
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                if (token) {
+                    console.log('🟢 Token encontrado:', token.substring(0, 20) + '...');
+                } else {
+                    console.log('❌ No se encontró token');
+                    document.getElementById('status').innerHTML += '<div class="error">⚠️ No se encontró token de autenticación</div>';
+                }
+                
+                // Test de conectividad
+                setTimeout(async () => {
+                    try {
+                        const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                            ? 'https://playtest-backend.onrender.com' 
+                            : '';
+                        
+                        console.log('🔗 Probando conectividad con:', API_BASE_URL);
+                        
+                        const response = await fetch(`${API_BASE_URL}/api/roles-updated/admin-principal-panel`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        console.log('📡 Response status:', response.status);
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log('📦 Data received:', data);
+                            document.getElementById('status').innerHTML += '<div style="color: #10B981;">✅ Conectividad con backend: OK</div>';
+                        } else {
+                            document.getElementById('status').innerHTML += `<div class="error">❌ Error HTTP: ${response.status}</div>`;
+                        }
+                        
+                    } catch (error) {
+                        console.error('❌ Error de conectividad:', error);
+                        document.getElementById('status').innerHTML += `<div class="error">❌ Error de conexión: ${error.message}</div>`;
+                    }
+                }, 1000);
+            });
+        </script>
+    </div>
+</body>
+</html>
