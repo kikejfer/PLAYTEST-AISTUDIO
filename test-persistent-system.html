@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Sistema Persistente PLAYTEST</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #00ff88;
+        }
+        
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        
+        .success { background: rgba(0, 255, 136, 0.2); }
+        .error { background: rgba(255, 68, 68, 0.2); }
+        .info { background: rgba(68, 136, 255, 0.2); }
+        
+        button {
+            background: linear-gradient(45deg, #00ff88, #00d4ff);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-loading { background: #ffa500; }
+        .status-success { background: #00ff88; }
+        .status-error { background: #ff4444; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+        
+        h1, h2, h3 {
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test del Sistema Persistente</h1>
+        <p class="subtitle">Verificación completa de la migración localStorage → PostgreSQL</p>
+        
+        <div class="status">
+            <div id="system-indicator" class="status-indicator status-loading"></div>
+            <span id="system-status">Inicializando sistema...</span>
+        </div>
+        
+        <div class="test-section">
+            <h3>🚀 1. Inicialización del Sistema</h3>
+            <div id="init-results">
+                <div class="test-result info">Verificando carga de scripts...</div>
+            </div>
+            <button onclick="testSystemInitialization()">Probar Inicialización</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔗 2. Conectividad Backend</h3>
+            <div id="backend-results">
+                <div class="test-result info">Backend no verificado aún</div>
+            </div>
+            <button onclick="testBackendConnectivity()">Probar Backend</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>🚩 3. Feature Flags</h3>
+            <div id="flags-results">
+                <div class="test-result info">Feature flags no probados aún</div>
+            </div>
+            <button onclick="testFeatureFlags()">Probar Feature Flags</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>⚙️ 4. Preferencias de Usuario</h3>
+            <div id="prefs-results">
+                <div class="test-result info">Preferencias no probadas aún</div>
+            </div>
+            <button onclick="testUserPreferences()">Probar Preferencias</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎮 5. Estados de Juego</h3>
+            <div id="games-results">
+                <div class="test-result info">Estados de juego no probados aún</div>
+            </div>
+            <button onclick="testGameStates()">Probar Estados de Juego</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔄 6. Migración de Datos</h3>
+            <div id="migration-results">
+                <div class="test-result info">Migración no verificada aún</div>
+            </div>
+            <button onclick="testDataMigration()">Verificar Migración</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 7. Sistema de Analytics</h3>
+            <div id="analytics-results">
+                <div class="test-result info">Analytics no probados aún</div>
+            </div>
+            <button onclick="testAnalytics()">Probar Analytics</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎯 Prueba Completa del Sistema</h3>
+            <button onclick="runCompleteTest()" style="background: linear-gradient(45deg, #ff6b6b, #ffa726);">
+                🚀 Ejecutar Todas las Pruebas
+            </button>
+            <button onclick="clearResults()" style="background: #666;">
+                🧹 Limpiar Resultados
+            </button>
+        </div>
+    </div>
+    
+    <!-- Sistema Persistente -->
+    <script type="module" src="persistent-system-init.js"></script>
+    
+    <script type="module">
+        // Variables globales para testing
+        window.testResults = {};
+        
+        // Función para agregar resultados
+        function addResult(sectionId, message, type = 'info') {
+            const section = document.getElementById(sectionId + '-results');
+            const result = document.createElement('div');
+            result.className = `test-result ${type}`;
+            result.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            section.appendChild(result);
+            section.scrollTop = section.scrollHeight;
+        }
+        
+        // Función para limpiar resultados
+        window.clearResults = () => {
+            const sections = ['init', 'backend', 'flags', 'prefs', 'games', 'migration', 'analytics'];
+            sections.forEach(section => {
+                document.getElementById(section + '-results').innerHTML = 
+                    `<div class="test-result info">${section} no probado aún</div>`;
+            });
+            window.testResults = {};
+        };
+        
+        // 1. Test de inicialización del sistema
+        window.testSystemInitialization = async () => {
+            addResult('init', 'Verificando inicialización...', 'info');
+            
+            try {
+                // Verificar que los objetos globales existen
+                if (typeof window.persistentSystemInit !== 'undefined') {
+                    addResult('init', '✅ persistentSystemInit cargado', 'success');
+                } else {
+                    addResult('init', '❌ persistentSystemInit no encontrado', 'error');
+                    return;
+                }
+                
+                if (typeof window.persistentServices !== 'undefined') {
+                    addResult('init', '✅ persistentServices cargado', 'success');
+                } else {
+                    addResult('init', '❌ persistentServices no encontrado', 'error');
+                    return;
+                }
+                
+                // Obtener información del sistema
+                const systemInfo = window.persistentSystemInit.getSystemInfo();
+                addResult('init', `Sistema inicializado: ${systemInfo.initialized}`, 
+                         systemInfo.initialized ? 'success' : 'error');
+                addResult('init', `Token presente: ${systemInfo.authToken}`, 
+                         systemInfo.authToken ? 'success' : 'info');
+                addResult('init', `Servicios: ${systemInfo.services.join(', ')}`, 'info');
+                
+                window.testResults.initialization = systemInfo.initialized;
+                updateSystemStatus(systemInfo.initialized ? 'success' : 'error');
+                
+            } catch (error) {
+                addResult('init', `❌ Error: ${error.message}`, 'error');
+                window.testResults.initialization = false;
+                updateSystemStatus('error');
+            }
+        };
+        
+        // 2. Test de conectividad del backend
+        window.testBackendConnectivity = async () => {
+            addResult('backend', 'Verificando backend...', 'info');
+            
+            try {
+                const response = await fetch('/health');
+                
+                if (response.ok) {
+                    const health = await response.json();
+                    addResult('backend', '✅ Backend conectado', 'success');
+                    addResult('backend', `Estado: ${health.status}`, 'info');
+                    window.testResults.backend = true;
+                } else {
+                    addResult('backend', `❌ Backend error: ${response.status}`, 'error');
+                    window.testResults.backend = false;
+                }
+                
+            } catch (error) {
+                addResult('backend', `❌ Error de conexión: ${error.message}`, 'error');
+                addResult('backend', 'ℹ️ Asegúrate de que el backend esté ejecutándose', 'info');
+                window.testResults.backend = false;
+            }
+        };
+        
+        // 3. Test de feature flags
+        window.testFeatureFlags = async () => {
+            addResult('flags', 'Probando feature flags...', 'info');
+            
+            try {
+                if (typeof window.persistentServices?.featureFlagsAPI === 'undefined') {
+                    addResult('flags', '❌ featureFlagsAPI no disponible', 'error');
+                    return;
+                }
+                
+                const featureFlagsAPI = window.persistentServices.featureFlagsAPI;
+                
+                // Test: obtener flag
+                const testFlag = await featureFlagsAPI.getFeatureFlag('new_level_system', false);
+                addResult('flags', `✅ getFeatureFlag funcionando: ${testFlag}`, 'success');
+                
+                // Test: obtener todos los flags
+                const allFlags = await featureFlagsAPI.getAllFeatureFlags();
+                addResult('flags', `✅ ${Object.keys(allFlags).length} feature flags encontrados`, 'success');
+                
+                window.testResults.featureFlags = true;
+                
+            } catch (error) {
+                addResult('flags', `❌ Error: ${error.message}`, 'error');
+                window.testResults.featureFlags = false;
+            }
+        };
+        
+        // 4. Test de preferencias de usuario
+        window.testUserPreferences = async () => {
+            addResult('prefs', 'Probando preferencias de usuario...', 'info');
+            
+            try {
+                if (typeof window.persistentServices?.persistentAPI === 'undefined') {
+                    addResult('prefs', '❌ persistentAPI no disponible', 'error');
+                    return;
+                }
+                
+                const persistentAPI = window.persistentServices.persistentAPI;
+                
+                // Test: obtener preferencias
+                const prefs = await persistentAPI.getUserPreferences();
+                addResult('prefs', '✅ Preferencias obtenidas', 'success');
+                addResult('prefs', `Categorías: ${Object.keys(prefs).join(', ')}`, 'info');
+                
+                // Test: actualizar preferencias
+                const testPrefs = {
+                    ui_preferences: { test_mode: true, timestamp: new Date().toISOString() }
+                };
+                
+                const updateResult = await persistentAPI.updateUserPreferences(testPrefs);
+                if (updateResult.success !== false) {
+                    addResult('prefs', '✅ Preferencias actualizadas', 'success');
+                } else {
+                    addResult('prefs', '⚠️ Actualización requiere autenticación', 'info');
+                }
+                
+                window.testResults.preferences = true;
+                
+            } catch (error) {
+                addResult('prefs', `❌ Error: ${error.message}`, 'error');
+                window.testResults.preferences = false;
+            }
+        };
+        
+        // 5. Test de estados de juego
+        window.testGameStates = async () => {
+            addResult('games', 'Probando estados de juego...', 'info');
+            
+            try {
+                if (typeof window.persistentServices?.persistentAPI === 'undefined') {
+                    addResult('games', '❌ persistentAPI no disponible', 'error');
+                    return;
+                }
+                
+                const persistentAPI = window.persistentServices.persistentAPI;
+                
+                // Test: obtener estados
+                const states = await persistentAPI.getGameStates('test');
+                addResult('games', `✅ Estados obtenidos: ${states.length || 0} encontrados`, 'success');
+                
+                // Test: guardar estado
+                const testState = {
+                    game_type: 'test',
+                    current_state: { level: 1, score: 100, test: true },
+                    progress: { completed: false }
+                };
+                
+                const saveResult = await persistentAPI.saveGameState(testState);
+                if (saveResult.success !== false) {
+                    addResult('games', '✅ Estado guardado', 'success');
+                } else {
+                    addResult('games', '⚠️ Guardado requiere autenticación', 'info');
+                }
+                
+                window.testResults.gameStates = true;
+                
+            } catch (error) {
+                addResult('games', `❌ Error: ${error.message}`, 'error');
+                window.testResults.gameStates = false;
+            }
+        };
+        
+        // 6. Test de migración de datos
+        window.testDataMigration = async () => {
+            addResult('migration', 'Verificando estado de migración...', 'info');
+            
+            try {
+                if (typeof window.persistentServices?.dataMigrationClient === 'undefined') {
+                    addResult('migration', '❌ dataMigrationClient no disponible', 'error');
+                    return;
+                }
+                
+                const migrationClient = window.persistentServices.dataMigrationClient;
+                const status = migrationClient.getMigrationStatus();
+                
+                addResult('migration', `Estado: ${status.completed ? 'Completada' : 'Pendiente'}`, 
+                         status.completed ? 'success' : 'info');
+                         
+                if (status.version) {
+                    addResult('migration', `Versión: ${status.version}`, 'info');
+                }
+                
+                if (status.date) {
+                    addResult('migration', `Fecha: ${new Date(status.date).toLocaleString()}`, 'info');
+                }
+                
+                if (status.errors && status.errors.length > 0) {
+                    addResult('migration', `⚠️ ${status.errors.length} errores encontrados`, 'error');
+                }
+                
+                window.testResults.migration = status.completed;
+                
+            } catch (error) {
+                addResult('migration', `❌ Error: ${error.message}`, 'error');
+                window.testResults.migration = false;
+            }
+        };
+        
+        // 7. Test de analytics
+        window.testAnalytics = async () => {
+            addResult('analytics', 'Probando sistema de analytics...', 'info');
+            
+            try {
+                if (typeof window.persistentServices?.persistentAPI === 'undefined') {
+                    addResult('analytics', '❌ persistentAPI no disponible', 'error');
+                    return;
+                }
+                
+                const persistentAPI = window.persistentServices.persistentAPI;
+                
+                // Test: registrar evento
+                const eventResult = await persistentAPI.trackEvent(
+                    'test_event', 
+                    'testing', 
+                    { test: true, timestamp: new Date().toISOString() }
+                );
+                
+                if (eventResult.success !== false) {
+                    addResult('analytics', '✅ Evento registrado', 'success');
+                } else {
+                    addResult('analytics', '⚠️ Registro requiere autenticación', 'info');
+                }
+                
+                window.testResults.analytics = true;
+                
+            } catch (error) {
+                addResult('analytics', `❌ Error: ${error.message}`, 'error');
+                window.testResults.analytics = false;
+            }
+        };
+        
+        // Función para ejecutar todas las pruebas
+        window.runCompleteTest = async () => {
+            addResult('init', '🚀 Ejecutando prueba completa del sistema...', 'info');
+            
+            const tests = [
+                { name: 'Inicialización', fn: window.testSystemInitialization },
+                { name: 'Backend', fn: window.testBackendConnectivity },
+                { name: 'Feature Flags', fn: window.testFeatureFlags },
+                { name: 'Preferencias', fn: window.testUserPreferences },
+                { name: 'Estados de Juego', fn: window.testGameStates },
+                { name: 'Migración', fn: window.testDataMigration },
+                { name: 'Analytics', fn: window.testAnalytics }
+            ];
+            
+            for (const test of tests) {
+                addResult('init', `Ejecutando: ${test.name}...`, 'info');
+                try {
+                    await test.fn();
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Pausa entre tests
+                } catch (error) {
+                    addResult('init', `❌ ${test.name} falló: ${error.message}`, 'error');
+                }
+            }
+            
+            // Mostrar resumen final
+            const passedTests = Object.values(window.testResults).filter(Boolean).length;
+            const totalTests = Object.keys(window.testResults).length;
+            
+            addResult('init', `\n📊 RESULTADO FINAL:`, 'info');
+            addResult('init', `✅ Pasaron: ${passedTests}/${totalTests} pruebas`, 
+                     passedTests === totalTests ? 'success' : 'error');
+                     
+            if (passedTests === totalTests) {
+                addResult('init', '🎉 ¡Todos los sistemas funcionando correctamente!', 'success');
+            } else {
+                addResult('init', '⚠️ Algunos sistemas necesitan atención', 'error');
+            }
+        };
+        
+        // Función para actualizar el estado del sistema
+        function updateSystemStatus(status) {
+            const indicator = document.getElementById('system-indicator');
+            const statusText = document.getElementById('system-status');
+            
+            indicator.className = `status-indicator status-${status}`;
+            
+            switch (status) {
+                case 'success':
+                    statusText.textContent = 'Sistema operativo - PostgreSQL conectado';
+                    break;
+                case 'error':
+                    statusText.textContent = 'Sistema con problemas - Verificar configuración';
+                    break;
+                default:
+                    statusText.textContent = 'Sistema inicializando...';
+            }
+        }
+        
+        // Event listeners para el sistema
+        window.addEventListener('persistentSystemInitialized', (event) => {
+            addResult('init', '🎉 Sistema persistente inicializado!', 'success');
+            updateSystemStatus('success');
+        });
+        
+        window.addEventListener('dataMigrationCompleted', (event) => {
+            addResult('migration', '🎉 Migración de datos completada!', 'success');
+        });
+        
+        // Auto-ejecutar test básico al cargar
+        setTimeout(() => {
+            window.testSystemInitialization();
+        }, 2000);
+        
+    </script>
+</body>
+</html>

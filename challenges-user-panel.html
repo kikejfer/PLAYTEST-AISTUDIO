@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retos PLAYTEST - Mi Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0D1B2A 0%, #1E3A8A 100%);
+            min-height: 100vh;
+            color: #E0E1DD;
+        }
+
+        .header {
+            background: rgba(30, 58, 138, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #3B82F6;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #60A5FA;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .user-stats {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #10B981;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #9CA3AF;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(30, 58, 138, 0.3);
+            border-radius: 12px;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #3B82F6;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            background: transparent;
+            border: none;
+            color: #E0E1DD;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #3B82F6, #1E40AF);
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .challenges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .challenge-card {
+            background: rgba(30, 58, 138, 0.3);
+            border: 1px solid #3B82F6;
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .challenge-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+            border-color: #60A5FA;
+        }
+
+        .challenge-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10B981, #059669);
+        }
+
+        .challenge-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .challenge-type {
+            background: rgba(59, 130, 246, 0.3);
+            color: #60A5FA;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .challenge-title {
+            color: #60A5FA;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .challenge-description {
+            color: #9CA3AF;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .challenge-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 0.5rem;
+            background: rgba(13, 27, 42, 0.5);
+            border-radius: 8px;
+        }
+
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #10B981;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: #9CA3AF;
+            margin-top: 0.2rem;
+        }
+
+        .progress-section {
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10B981, #059669);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #9CA3AF;
+        }
+
+        .challenge-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3B82F6, #1E40AF);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10B981, #059669);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6B7280, #4B5563);
+        }
+
+        .prize-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10B981;
+            border-radius: 8px;
+        }
+
+        .prize-amount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #10B981;
+        }
+
+        .time-remaining {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #EF4444;
+            color: #FCA5A5;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .time-remaining.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: #F59E0B;
+            color: #FCD34D;
+        }
+
+        .time-remaining.safe {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: #10B981;
+            color: #6EE7B7;
+        }
+
+        .achievement-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .achievement-badge.completed {
+            background: linear-gradient(135deg, #10B981, #059669);
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.9rem;
+            color: #9CA3AF;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.5rem;
+            border: 1px solid #3B82F6;
+            border-radius: 6px;
+            background: rgba(13, 27, 42, 0.7);
+            color: #E0E1DD;
+        }
+
+        .notification-banner {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: slideIn 0.5s ease;
+        }
+
+        .notification-banner.warning {
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+        }
+
+        .notification-banner .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #9CA3AF;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .challenge-detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: #1E3A8A;
+            border: 2px solid #3B82F6;
+            border-radius: 12px;
+            max-width: 800px;
+            margin: 0 auto;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            background: #3B82F6;
+            padding: 1.5rem;
+            border-bottom: 1px solid #60A5FA;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .requirements-list {
+            background: rgba(13, 27, 42, 0.5);
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .requirements-list h4 {
+            color: #60A5FA;
+            margin-bottom: 1rem;
+        }
+
+        .requirement-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .requirement-item:last-child {
+            border-bottom: none;
+        }
+
+        .requirement-status {
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .requirement-status.completed {
+            background: #10B981;
+            color: white;
+        }
+
+        .requirement-status.pending {
+            background: #6B7280;
+            color: white;
+        }
+
+        .leaderboard {
+            background: rgba(13, 27, 42, 0.3);
+            border: 1px solid #3B82F6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 6px;
+            transition: background 0.2s ease;
+        }
+
+        .leaderboard-item:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .leaderboard-rank {
+            font-weight: bold;
+            color: #F59E0B;
+            min-width: 2rem;
+        }
+
+        .leaderboard-user {
+            flex: 1;
+            margin-left: 1rem;
+        }
+
+        .leaderboard-progress {
+            color: #10B981;
+            font-weight: 600;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @media (max-width: 768px) {
+            .challenges-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .user-stats {
+                gap: 1rem;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            .modal-content {
+                margin: 1rem;
+                max-width: calc(100% - 2rem);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 Mis Retos PLAYTEST</h1>
+        <div class="user-stats">
+            <div class="stat-item">
+                <div class="stat-value" id="userLuminarias">0</div>
+                <div class="stat-label">💎 Luminarias</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="completedChallenges">0</div>
+                <div class="stat-label">✅ Completados</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="activeChallenges">0</div>
+                <div class="stat-label">🏃 Activos</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Notificaciones -->
+        <div id="notificationBanner" class="notification-banner" style="display: none;">
+            <span id="notificationText"></span>
+            <button class="close-btn" onclick="closeNotification()">✕</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('available')">🔍 Retos Disponibles</button>
+            <button class="tab" onclick="switchTab('active')">🏃 Mis Retos Activos</button>
+            <button class="tab" onclick="switchTab('completed')">✅ Completados</button>
+            <button class="tab" onclick="switchTab('history')">📈 Historial</button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters">
+            <div class="filter-group">
+                <label>Tipo de Reto</label>
+                <select id="typeFilter" onchange="applyFilters()">
+                    <option value="">Todos los tipos</option>
+                    <option value="marathon">🏃‍♂️ Maratón</option>
+                    <option value="level">📈 Nivel</option>
+                    <option value="streak">🔥 Racha</option>
+                    <option value="competition">⚔️ Competición</option>
+                    <option value="consolidation">🎯 Consolidación</option>
+                    <option value="temporal">⏰ Temporal</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Premio Mínimo</label>
+                <select id="prizeFilter" onchange="applyFilters()">
+                    <option value="0">Cualquier premio</option>
+                    <option value="50">50+ Luminarias</option>
+                    <option value="100">100+ Luminarias</option>
+                    <option value="200">200+ Luminarias</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Dificultad</label>
+                <select id="difficultyFilter" onchange="applyFilters()">
+                    <option value="">Cualquier dificultad</option>
+                    <option value="easy">Fácil</option>
+                    <option value="medium">Medio</option>
+                    <option value="hard">Difícil</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Contenido de tabs -->
+        
+        <!-- Retos Disponibles -->
+        <div id="availableTab" class="tab-content active">
+            <div class="challenges-grid" id="availableChallenges">
+                <!-- Se cargan dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Mis Retos Activos -->
+        <div id="activeTab" class="tab-content">
+            <div class="challenges-grid" id="activeChallenges">
+                <!-- Se cargan dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Retos Completados -->
+        <div id="completedTab" class="tab-content">
+            <div class="challenges-grid" id="completedChallenges">
+                <!-- Se cargan dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Historial -->
+        <div id="historyTab" class="tab-content">
+            <div class="challenges-grid" id="historyChallenges">
+                <!-- Se cargan dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalles del Reto -->
+    <div class="challenge-detail-modal" id="challengeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Detalles del Reto</h3>
+                <button class="close-btn" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Se carga dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentTab = 'available';
+        let allChallenges = {
+            available: [],
+            active: [],
+            completed: [],
+            history: []
+        };
+        let userStats = {};
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserStats();
+            loadAllChallenges();
+            checkNotifications();
+        });
+
+        // ==================== CARGA DE DATOS ====================
+
+        async function loadUserStats() {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('playtest_auth_token');
+                if (!token) {
+                    showNotification('No hay token de autenticación', 'warning');
+                    return;
+                }
+
+                // Cargar estadísticas del usuario
+                const progressResponse = await fetch('/api/challenges/my-progress', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (progressResponse.ok) {
+                    const progressData = await progressResponse.json();
+                    updateUserStats(progressData.participations);
+                }
+
+                // Cargar Luminarias del usuario
+                const userResponse = await fetch('/api/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (userResponse.ok) {
+                    const userData = await userResponse.json();
+                    document.getElementById('userLuminarias').textContent = userData.luminarias_actuales || 0;
+                }
+
+            } catch (error) {
+                console.error('Error loading user stats:', error);
+                showNotification('Error cargando estadísticas de usuario', 'warning');
+            }
+        }
+
+        function updateUserStats(participations) {
+            const completed = participations.filter(p => p.status === 'completed').length;
+            const active = participations.filter(p => p.status === 'active').length;
+
+            document.getElementById('completedChallenges').textContent = completed;
+            document.getElementById('activeChallenges').textContent = active;
+
+            userStats = { completed, active, total: participations.length };
+        }
+
+        async function loadAllChallenges() {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('playtest_auth_token');
+            
+            try {
+                // Cargar retos disponibles
+                const availableResponse = await fetch('/api/challenges/available', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (availableResponse.ok) {
+                    const availableData = await availableResponse.json();
+                    allChallenges.available = availableData.challenges;
+                }
+
+                // Cargar progreso del usuario
+                const progressResponse = await fetch('/api/challenges/my-progress', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (progressResponse.ok) {
+                    const progressData = await progressResponse.json();
+                    
+                    allChallenges.active = progressData.participations.filter(p => p.status === 'active');
+                    allChallenges.completed = progressData.participations.filter(p => p.status === 'completed');
+                    allChallenges.history = progressData.participations;
+                }
+
+                // Mostrar retos según el tab actual
+                displayChallenges(currentTab);
+
+            } catch (error) {
+                console.error('Error loading challenges:', error);
+                showNotification('Error cargando retos', 'warning');
+            }
+        }
+
+        // ==================== INTERFAZ ====================
+
+        function switchTab(tab) {
+            // Actualizar botones
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+
+            // Actualizar contenido
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tab}Tab`).classList.add('active');
+
+            currentTab = tab;
+            displayChallenges(tab);
+        }
+
+        function displayChallenges(tab) {
+            const container = document.getElementById(`${tab}Challenges`);
+            const challenges = allChallenges[tab] || [];
+
+            if (challenges.length === 0) {
+                container.innerHTML = getEmptyState(tab);
+                return;
+            }
+
+            container.innerHTML = challenges.map(challenge => createChallengeCard(challenge, tab)).join('');
+        }
+
+        function createChallengeCard(challenge, type) {
+            const timeRemaining = getTimeRemaining(challenge.end_date);
+            const progress = getProgressPercentage(challenge);
+            const typeDisplay = getTypeDisplayName(challenge.challenge_type);
+            
+            let statusBadge = '';
+            let actions = '';
+
+            switch (type) {
+                case 'available':
+                    actions = `
+                        <button class="btn btn-success" onclick="joinChallenge(${challenge.id})">
+                            🚀 Unirse al Reto
+                        </button>
+                        <button class="btn btn-secondary" onclick="viewChallengeDetails(${challenge.id})">
+                            👁️ Ver Detalles
+                        </button>
+                    `;
+                    break;
+
+                case 'active':
+                    statusBadge = `<div class="achievement-badge">🏃 En Progreso</div>`;
+                    actions = `
+                        <button class="btn" onclick="viewProgress(${challenge.id})">
+                            📊 Ver Progreso
+                        </button>
+                        <button class="btn btn-secondary" onclick="viewChallengeDetails(${challenge.id})">
+                            👁️ Detalles
+                        </button>
+                    `;
+                    break;
+
+                case 'completed':
+                    statusBadge = `<div class="achievement-badge completed">✅ Completado</div>`;
+                    actions = `
+                        <button class="btn btn-secondary" onclick="viewChallengeDetails(${challenge.id})">
+                            🏆 Ver Resultados
+                        </button>
+                    `;
+                    break;
+
+                case 'history':
+                    const statusIcon = challenge.status === 'completed' ? '✅' : 
+                                     challenge.status === 'failed' ? '❌' : '⏸️';
+                    statusBadge = `<div class="achievement-badge">${statusIcon} ${challenge.status}</div>`;
+                    actions = `
+                        <button class="btn btn-secondary" onclick="viewChallengeDetails(${challenge.id})">
+                            📋 Ver Detalles
+                        </button>
+                    `;
+                    break;
+            }
+
+            return `
+                <div class="challenge-card">
+                    ${statusBadge}
+                    <div class="challenge-header">
+                        <div class="challenge-type">${typeDisplay}</div>
+                    </div>
+                    
+                    <div class="challenge-title">${challenge.title}</div>
+                    <div class="challenge-description">${challenge.description || 'Sin descripción'}</div>
+                    
+                    <div class="prize-display">
+                        <span class="prize-amount">${challenge.prize_luminarias}</span>
+                        <span>💎 Luminarias</span>
+                        ${challenge.bonus_luminarias ? `<span style="color: #F59E0B;">+${challenge.bonus_luminarias} bonus</span>` : ''}
+                    </div>
+
+                    ${progress !== null ? `
+                        <div class="progress-section">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span>Progreso</span>
+                                <span>${Math.round(progress)}%</span>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${timeRemaining ? `
+                        <div class="time-remaining ${getTimeRemainingClass(challenge.end_date)}">
+                            ⏰ ${timeRemaining}
+                        </div>
+                    ` : ''}
+
+                    <div class="challenge-metrics">
+                        <div class="metric">
+                            <div class="metric-value">${challenge.current_participants || challenge.participant_count || 0}</div>
+                            <div class="metric-label">Participantes</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${challenge.creator_name || 'Desconocido'}</div>
+                            <div class="metric-label">Creador</div>
+                        </div>
+                    </div>
+
+                    <div class="challenge-actions">
+                        ${actions}
+                    </div>
+                </div>
+            `;
+        }
+
+        function getEmptyState(tab) {
+            const states = {
+                available: {
+                    icon: '🔍',
+                    title: 'No hay retos disponibles',
+                    message: 'No hay retos disponibles en este momento. ¡Vuelve pronto para nuevos desafíos!'
+                },
+                active: {
+                    icon: '🎯',
+                    title: 'No tienes retos activos',
+                    message: 'Únete a un reto disponible para comenzar tu aventura de aprendizaje.'
+                },
+                completed: {
+                    icon: '🏆',
+                    title: 'Aún no has completado retos',
+                    message: 'Una vez que completes retos, aparecerán aquí con tus logros.'
+                },
+                history: {
+                    icon: '📚',
+                    title: 'Sin historial de retos',
+                    message: 'Tu historial de participación en retos aparecerá aquí.'
+                }
+            };
+
+            const state = states[tab];
+            return `
+                <div class="empty-state">
+                    <div class="empty-state-icon">${state.icon}</div>
+                    <h3>${state.title}</h3>
+                    <p>${state.message}</p>
+                </div>
+            `;
+        }
+
+        // ==================== ACCIONES ====================
+
+        async function joinChallenge(challengeId) {
+            if (!confirm('¿Estás seguro de que quieres unirte a este reto?')) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('playtest_auth_token');
+                const response = await fetch(`/api/challenges/${challengeId}/join`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    showNotification('¡Te has unido al reto exitosamente! 🎉', 'success');
+                    loadAllChallenges();
+                    loadUserStats();
+                } else {
+                    const error = await response.json();
+                    showNotification(`Error uniéndose al reto: ${error.error}`, 'warning');
+                }
+            } catch (error) {
+                console.error('Error joining challenge:', error);
+                showNotification('Error uniéndose al reto', 'warning');
+            }
+        }
+
+        async function viewChallengeDetails(challengeId) {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('playtest_auth_token');
+                const response = await fetch(`/api/challenges/${challengeId}/details`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showChallengeModal(data.challenge);
+                } else {
+                    showNotification('Error cargando detalles del reto', 'warning');
+                }
+            } catch (error) {
+                console.error('Error loading challenge details:', error);
+                showNotification('Error cargando detalles del reto', 'warning');
+            }
+        }
+
+        function viewProgress(challengeId) {
+            // Buscar el reto en los activos
+            const challenge = allChallenges.active.find(c => c.id === challengeId);
+            if (challenge) {
+                showProgressModal(challenge);
+            }
+        }
+
+        // ==================== MODALES ====================
+
+        function showChallengeModal(challenge) {
+            document.getElementById('modalTitle').textContent = challenge.title;
+            
+            const requirements = generateRequirementsList(challenge);
+            const leaderboard = generateLeaderboard(challenge);
+            
+            document.getElementById('modalBody').innerHTML = `
+                <div class="challenge-description">
+                    <h4>📝 Descripción</h4>
+                    <p>${challenge.description}</p>
+                </div>
+
+                <div class="challenge-metrics">
+                    <div class="metric">
+                        <div class="metric-value">${challenge.prize_luminarias} 💎</div>
+                        <div class="metric-label">Premio Principal</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${challenge.total_participants}</div>
+                        <div class="metric-label">Participantes</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${Math.round(challenge.avg_progress || 0)}%</div>
+                        <div class="metric-label">Progreso Promedio</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${challenge.completed_participants}</div>
+                        <div class="metric-label">Completados</div>
+                    </div>
+                </div>
+
+                ${requirements}
+
+                ${challenge.total_participants > 1 ? leaderboard : ''}
+
+                <div style="margin-top: 2rem;">
+                    <strong>⏰ Fecha Límite:</strong> ${challenge.end_date ? new Date(challenge.end_date).toLocaleString() : 'Sin límite'}
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <strong>👤 Creado por:</strong> ${challenge.creator_name}
+                </div>
+            `;
+
+            document.getElementById('challengeModal').style.display = 'block';
+        }
+
+        function showProgressModal(challenge) {
+            document.getElementById('modalTitle').textContent = `Mi Progreso: ${challenge.title}`;
+            
+            const progress = challenge.progress || {};
+            const currentMetrics = challenge.current_metrics || {};
+            
+            document.getElementById('modalBody').innerHTML = `
+                <div class="progress-section">
+                    <h4>📊 Progreso General</h4>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${currentMetrics.progress_percentage || 0}%"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span>Completado</span>
+                        <span>${Math.round(currentMetrics.progress_percentage || 0)}%</span>
+                    </div>
+                </div>
+
+                <div class="requirements-list">
+                    <h4>📋 Detalles del Progreso</h4>
+                    <pre style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 4px; white-space: pre-wrap; overflow-x: auto;">
+${JSON.stringify(progress, null, 2)}
+                    </pre>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <strong>⏰ Iniciado:</strong> ${new Date(challenge.started_at).toLocaleString()}
+                </div>
+
+                ${challenge.completed_at ? `
+                    <div style="margin-top: 1rem;">
+                        <strong>✅ Completado:</strong> ${new Date(challenge.completed_at).toLocaleString()}
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <strong>🏆 Premio Ganado:</strong> ${challenge.prize_awarded} 💎 Luminarias
+                    </div>
+                ` : ''}
+            `;
+
+            document.getElementById('challengeModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('challengeModal').style.display = 'none';
+        }
+
+        // ==================== FUNCIONES AUXILIARES ====================
+
+        function getTimeRemaining(endDate) {
+            if (!endDate) return null;
+            
+            const now = new Date();
+            const end = new Date(endDate);
+            const diff = end - now;
+            
+            if (diff <= 0) return 'Expirado';
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            
+            if (days > 0) {
+                return `${days} día${days > 1 ? 's' : ''} restante${days > 1 ? 's' : ''}`;
+            } else if (hours > 0) {
+                return `${hours} hora${hours > 1 ? 's' : ''} restante${hours > 1 ? 's' : ''}`;
+            } else {
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                return `${minutes} minuto${minutes > 1 ? 's' : ''} restante${minutes > 1 ? 's' : ''}`;
+            }
+        }
+
+        function getTimeRemainingClass(endDate) {
+            if (!endDate) return 'safe';
+            
+            const now = new Date();
+            const end = new Date(endDate);
+            const diff = end - now;
+            const hours = diff / (1000 * 60 * 60);
+            
+            if (hours <= 24) return 'warning';
+            if (hours <= 6) return '';
+            return 'safe';
+        }
+
+        function getProgressPercentage(challenge) {
+            if (challenge.current_metrics && challenge.current_metrics.progress_percentage) {
+                return challenge.current_metrics.progress_percentage;
+            }
+            if (challenge.avg_progress) {
+                return challenge.avg_progress;
+            }
+            return null;
+        }
+
+        function getTypeDisplayName(type) {
+            const names = {
+                marathon: '🏃‍♂️ Maratón',
+                level: '📈 Nivel',
+                streak: '🔥 Racha',
+                competition: '⚔️ Competición',
+                consolidation: '🎯 Consolidación',
+                temporal: '⏰ Temporal'
+            };
+            return names[type] || type;
+        }
+
+        function generateRequirementsList(challenge) {
+            if (!challenge.config) return '';
+            
+            let requirements = '<div class="requirements-list"><h4>📋 Requisitos</h4>';
+            
+            switch (challenge.challenge_type) {
+                case 'marathon':
+                    requirements += `
+                        <div class="requirement-item">
+                            <span>Bloques a completar: ${challenge.config.required_blocks?.length || 0}</span>
+                            <span class="requirement-status pending">Pendiente</span>
+                        </div>
+                        <div class="requirement-item">
+                            <span>Nota mínima promedio: ${challenge.config.min_average_score || 70}%</span>
+                            <span class="requirement-status pending">Pendiente</span>
+                        </div>
+                        <div class="requirement-item">
+                            <span>Máximo intentos por bloque: ${challenge.config.max_attempts_per_block || 3}</span>
+                            <span class="requirement-status pending">Pendiente</span>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'streak':
+                    requirements += `
+                        <div class="requirement-item">
+                            <span>Días consecutivos: ${challenge.config.required_days || 7}</span>
+                            <span class="requirement-status pending">Pendiente</span>
+                        </div>
+                        <div class="requirement-item">
+                            <span>Sesiones diarias mínimas: ${challenge.config.min_daily_sessions || 1}</span>
+                            <span class="requirement-status pending">Pendiente</span>
+                        </div>
+                        <div class="requirement-item">
+                            <span>Tiempo diario mínimo: ${challenge.config.min_daily_time_minutes || 15} min</span>
+                            <span class="requirement-status pending">Pendiente</span>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'competition':
+                    requirements += `
+                        <div class="requirement-item">
+                            <span>Victorias requeridas: ${challenge.config.required_wins || 5}</span>
+                            <span class="requirement-status pending">Pendiente</span>
+                        </div>
+                        <div class="requirement-item">
+                            <span>Ratio de victoria mínimo: ${(challenge.config.min_win_rate || 0.6) * 100}%</span>
+                            <span class="requirement-status pending">Pendiente</span>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'consolidation':
+                    requirements += `
+                        <div class="requirement-item">
+                            <span>Consolidación objetivo: ${challenge.config.target_percentage || 85}%</span>
+                            <span class="requirement-status pending">Pendiente</span>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            requirements += '</div>';
+            return requirements;
+        }
+
+        function generateLeaderboard(challenge) {
+            if (!challenge.leaderboard || challenge.leaderboard.length === 0) {
+                return '';
+            }
+            
+            let leaderboard = '<div class="leaderboard"><h4>🏆 Clasificación</h4>';
+            
+            challenge.leaderboard.slice(0, 10).forEach((participant, index) => {
+                leaderboard += `
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">#${index + 1}</div>
+                        <div class="leaderboard-user">${participant.nickname}</div>
+                        <div class="leaderboard-progress">${Math.round(participant.progress || 0)}%</div>
+                    </div>
+                `;
+            });
+            
+            leaderboard += '</div>';
+            return leaderboard;
+        }
+
+        function showNotification(message, type = 'success') {
+            const banner = document.getElementById('notificationBanner');
+            const text = document.getElementById('notificationText');
+            
+            text.textContent = message;
+            banner.className = `notification-banner ${type}`;
+            banner.style.display = 'flex';
+            
+            setTimeout(() => {
+                banner.style.display = 'none';
+            }, 5000);
+        }
+
+        function closeNotification() {
+            document.getElementById('notificationBanner').style.display = 'none';
+        }
+
+        async function checkNotifications() {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('playtest_auth_token');
+                const response = await fetch('/api/challenges/notifications', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.notifications && data.notifications.length > 0) {
+                        const unread = data.notifications.filter(n => !n.read_at);
+                        if (unread.length > 0) {
+                            showNotification(`Tienes ${unread.length} notificación${unread.length > 1 ? 'es' : ''} nueva${unread.length > 1 ? 's' : ''}`, 'success');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking notifications:', error);
+            }
+        }
+
+        function applyFilters() {
+            // Implementar filtros
+            const typeFilter = document.getElementById('typeFilter').value;
+            const prizeFilter = parseInt(document.getElementById('prizeFilter').value);
+            const difficultyFilter = document.getElementById('difficultyFilter').value;
+            
+            // Aplicar filtros a los retos mostrados
+            displayChallenges(currentTab);
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('challengeModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Actualizar datos cada 30 segundos
+        setInterval(() => {
+            loadAllChallenges();
+            checkNotifications();
+        }, 30000);
+    </script>
+</body>
+</html>

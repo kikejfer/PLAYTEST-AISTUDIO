@@ -353,9 +353,6 @@
             }
         }
     </style>
-    <!-- Sistema Persistente PLAYTEST -->
-    <script type="module" src="persistent-system-init.js"></script>
-
 </head>
 <body>
     <!-- User Header -->

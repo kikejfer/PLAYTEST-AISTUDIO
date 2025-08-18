@@ -61,10 +61,7 @@
   }
 }
 </script>
-      <!-- Sistema Persistente PLAYTEST -->
-    <script type="module" src="persistent-system-init.js"></script>
-
-</head>
+  </head>
   <body class="bg-brand-primary text-brand-light">
     <div id="root"></div>
 
