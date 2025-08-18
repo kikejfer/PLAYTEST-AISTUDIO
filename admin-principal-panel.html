@@ -417,7 +417,7 @@
                                 <th>Núm. Bloques Totales</th>
                                 <th>Núm. Preguntas Totales</th>
                                 <th class="luminarias">Luminarias</th>
-                                <th>Acciones</th>
+                                <th>🗑️</th>
                             </tr>
                         </thead>
                         <tbody id="admins-tbody">
@@ -447,7 +447,7 @@
                                 <th>Núm. Usuarios</th>
                                 <th>Admin. Secundario Asignado</th>
                                 <th class="luminarias">Luminarias</th>
-                                <th>Acciones</th>
+                                <th>🗑️</th>
                             </tr>
                         </thead>
                         <tbody id="profesores-tbody">
@@ -473,7 +473,7 @@
                                 <th>Núm. Bloques Cargados</th>
                                 <th>Admin. Secundario Asignado</th>
                                 <th class="luminarias">Luminarias</th>
-                                <th>Acciones</th>
+                                <th>🗑️</th>
                             </tr>
                         </thead>
                         <tbody id="usuarios-tbody">
@@ -885,7 +885,7 @@
                 const row = document.createElement('tr');
                 const deleteButton = admin.role_name === 'administrador_principal' 
                     ? '<span style="color: #9CA3AF;">Protegido</span>' 
-                    : `<button onclick="deleteUser(${admin.id}, '${admin.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️ Borrar</button>`;
+                    : `<button onclick="deleteUser(${admin.id}, '${admin.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️</button>`;
                 
                 row.innerHTML = `
                     <td><strong>${admin.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
@@ -933,7 +933,7 @@
                         ${profesor.luminarias_actuales || 0}
                     </td>
                     <td>
-                        <button onclick="deleteUser(${profesor.id}, '${profesor.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️ Borrar</button>
+                        <button onclick="deleteUser(${profesor.id}, '${profesor.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -976,7 +976,7 @@
                         ${usuario.luminarias_actuales || 0}
                     </td>
                     <td>
-                        <button onclick="deleteUser(${usuario.id}, '${usuario.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️ Borrar</button>
+                        <button onclick="deleteUser(${usuario.id}, '${usuario.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -1036,8 +1036,7 @@
                             <td>${block.usuarios_bloque}</td>
                             <td>${new Date(block.created_at).toLocaleDateString()}</td>
                             <td>
-                                <button class="btn btn-expand" onclick="showBlockDetails(${block.id})">Ver</button>
-                                <button class="btn btn-expand" onclick="toggleBlockExpansion(${block.id})">Temas</button>
+                                <button class="btn btn-expand" onclick="toggleBlockExpansion(${block.id})" style="font-size: 18px; padding: 4px 8px;">+</button>
                             </td>
                         </tr>
                         <tr id="block-expansion-${block.id}" style="display: none;">
@@ -1261,10 +1260,14 @@
                 const result = await response.json();
 
                 if (!response.ok) {
+                    if (response.status === 409) {
+                        showModalError(`El usuario "${nickname}" ya es administrador secundario. Revisa la tabla de administradores.`);
+                        return;
+                    }
                     throw new Error(result.error || 'Error asignando administrador');
                 }
 
-                showModalSuccess('Administrador Secundario asignado exitosamente');
+                showModalSuccess(`Usuario "${nickname}" asignado como Administrador Secundario exitosamente`);
                 setTimeout(() => {
                     hideAddAdminModal();
                     loadPanelData();
