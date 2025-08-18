@@ -824,7 +824,7 @@
                             usuarios: panelData.usuarios.length
                         });
                         
-                        await renderTables();
+                        renderTables();
                         return; // Salir aquí para evitar el procesamiento normal
                     } else {
                         console.warn('❌ Debug endpoint también falló');
@@ -853,7 +853,7 @@
                         usuarios: panelData.usuarios.length
                     });
                     
-                    await renderTables();
+                    renderTables();
                 } else {
                     // Si llegamos aquí, ningún endpoint funcionó
                     throw new Error('No se pudo conectar con el backend');
@@ -948,14 +948,14 @@
                     ]
                 };
                 
-                await renderTables();
+                renderTables();
             }
         }
 
-        async function renderTables() {
+        function renderTables() {
             renderAdminsTable();
-            await renderProfesoresTable();
-            await renderUsuariosTable();
+            renderProfesoresTable();
+            renderUsuariosTable();
         }
 
         function renderAdminsTable() {
@@ -993,43 +993,18 @@
             });
         }
 
-        async function renderProfesoresTable() {
+        function renderProfesoresTable() {
             const tbody = document.getElementById('profesores-tbody');
             tbody.innerHTML = '';
 
-            for (const profesor of panelData.profesoresCreadores) {
+            panelData.profesoresCreadores.forEach((profesor, index) => {
                 const row = document.createElement('tr');
                 const isExpanded = expandedRows.has(`profesor-${profesor.id}`);
                 const roleDisplay = profesor.role_name === 'profesor' ? 'Profesor' : 'Creador de Contenido';
                 const fullName = [profesor.first_name, profesor.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
-                // Calcular usuarios que usan los bloques de este profesor/creador
-                let totalUsuarios = 0;
-                try {
-                    const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-                    const API_BASE_URL = window.location.hostname.includes('onrender.com') 
-                        ? 'https://playtest-backend.onrender.com' 
-                        : '';
-                    
-                    // Obtener bloques del profesor
-                    const blocksResponse = await fetch(`${API_BASE_URL}/api/roles-updated/profesores/${profesor.id}/bloques`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    if (blocksResponse.ok) {
-                        const blocksData = await blocksResponse.json();
-                        const blocks = blocksData.bloques || [];
-                        
-                        // Sumar usuarios de todos los bloques
-                        totalUsuarios = blocks.reduce((sum, block) => sum + (block.usuarios_bloque || 0), 0);
-                    }
-                } catch (error) {
-                    console.warn('Error calculando usuarios del profesor:', error);
-                    totalUsuarios = profesor.total_users_blocks || 0; // Fallback
-                }
+                // Usar los datos disponibles directamente - el backend debería proporcionar esta información
+                const totalUsuarios = profesor.total_users_blocks || 0;
                 
                 row.innerHTML = `
                     <td>
@@ -1072,53 +1047,18 @@
                     tbody.appendChild(expandRow);
                     loadProfesorBlocks(profesor.id);
                 }
-            }
+            });
         }
 
-        async function renderUsuariosTable() {
+        function renderUsuariosTable() {
             const tbody = document.getElementById('usuarios-tbody');
             tbody.innerHTML = '';
 
-            for (const usuario of panelData.usuarios) {
+            panelData.usuarios.forEach(usuario => {
                 const fullName = [usuario.first_name, usuario.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
-                // Calcular bloques cargados por el usuario
-                let bloquesReales = 0;
-                try {
-                    const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-                    const API_BASE_URL = window.location.hostname.includes('onrender.com') 
-                        ? 'https://playtest-backend.onrender.com' 
-                        : '';
-                    
-                    // Obtener bloques cargados por el usuario
-                    const userBlocksResponse = await fetch(`${API_BASE_URL}/api/roles-updated/usuarios/${usuario.id}/bloques-cargados`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    if (userBlocksResponse.ok) {
-                        const userBlocksData = await userBlocksResponse.json();
-                        bloquesReales = userBlocksData.bloques_cargados || userBlocksData.total_bloques || 0;
-                    } else {
-                        // Fallback: intentar calcular desde relaciones usuario-bloque
-                        const relationResponse = await fetch(`${API_BASE_URL}/api/roles-updated/usuarios/${usuario.id}/relaciones-bloques`, {
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                        
-                        if (relationResponse.ok) {
-                            const relationData = await relationResponse.json();
-                            bloquesReales = relationData.bloques_relacionados?.length || 0;
-                        }
-                    }
-                } catch (error) {
-                    console.warn('Error calculando bloques del usuario:', error);
-                    bloquesReales = usuario.blocks_loaded || 0; // Fallback
-                }
+                // Usar los datos disponibles directamente - el backend debería proporcionar esta información
+                const bloquesReales = usuario.blocks_loaded || 0;
                 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -1139,7 +1079,7 @@
                     </td>
                 `;
                 tbody.appendChild(row);
-            }
+            });
         }
 
         function getAdminOptions(currentAdminId) {
@@ -1150,14 +1090,14 @@
             ).join('');
         }
 
-        async function toggleProfesorExpansion(profesorId) {
+        function toggleProfesorExpansion(profesorId) {
             const key = `profesor-${profesorId}`;
             if (expandedRows.has(key)) {
                 expandedRows.delete(key);
             } else {
                 expandedRows.add(key);
             }
-            await renderProfesoresTable();
+            renderProfesoresTable();
         }
 
         async function loadProfesorBlocks(profesorId) {
@@ -1381,7 +1321,7 @@
                 console.log(`✅ REASSIGN: Success response =`, result);
                 
                 showSuccess('Usuario reasignado exitosamente');
-                setTimeout(async () => await loadPanelData(), 1000);
+                setTimeout(() => loadPanelData(), 1000);
 
             } catch (error) {
                 console.error('Error reasignando usuario:', error);
@@ -1450,9 +1390,9 @@
                 }
 
                 showModalSuccess(`Usuario "${nickname}" asignado como Administrador Secundario exitosamente`);
-                setTimeout(async () => {
+                setTimeout(() => {
                     hideAddAdminModal();
-                    await loadPanelData();
+                    loadPanelData();
                 }, 2000);
 
             } catch (error) {
