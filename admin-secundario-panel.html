@@ -246,19 +246,21 @@
         th, td {
             text-align: left;
             padding: 12px;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #415A77;
+            color: #E0E1DD;
         }
 
         th {
-            background: #f8f9fa;
+            background: #415A77;
             font-weight: 600;
             position: sticky;
             top: 0;
             z-index: 10;
+            color: #E0E1DD;
         }
 
         tr:hover {
-            background: #f8f9fa;
+            background: #415A77;
         }
 
         .btn {
@@ -309,22 +311,22 @@
         .loading {
             text-align: center;
             padding: 20px;
-            color: #666;
+            color: #778DA9;
         }
 
         .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: #7F1D1D;
+            color: #FECACA;
+            border: 1px solid #EF4444;
             border-radius: 5px;
             padding: 10px;
             margin: 10px 0;
         }
 
         .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: #064E3B;
+            color: #A7F3D0;
+            border: 1px solid #10B981;
             border-radius: 5px;
             padding: 10px;
             margin: 10px 0;
@@ -338,22 +340,24 @@
         }
 
         .stat-card {
-            background: #f8f9fa;
+            background: #1B263B;
+            border: 1px solid #415A77;
             padding: 15px;
             border-radius: 8px;
             text-align: center;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #3B82F6;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
 
         .stat-number {
             font-size: 24px;
             font-weight: bold;
-            color: #667eea;
+            color: #3B82F6;
         }
 
         .stat-label {
             font-size: 14px;
-            color: #666;
+            color: #778DA9;
             margin-top: 5px;
         }
 
@@ -513,19 +517,26 @@
                     const userData = JSON.parse(jsonPayload);
                     currentUser = userData;
                     
-                    // Update UI
-                    document.getElementById('user-name').textContent = userData.email || userData.username || 'Admin Secundario';
-                    document.getElementById('user-avatar').textContent = (userData.email || userData.username || 'A')[0].toUpperCase();
+                    // Update UI - show nickname or email
+                    const displayName = userData.nickname || userData.username || userData.email || 'Administrador Secundario';
+                    document.getElementById('user-name').textContent = displayName;
+                    document.getElementById('user-avatar').textContent = displayName[0].toUpperCase();
+                    
+                    // Update role display
+                    const roleElement = document.getElementById('user-role');
+                    if (roleElement) {
+                        roleElement.textContent = 'Admin Secundario';
+                    }
                     
                 } catch (tokenError) {
                     // If token decode fails, use fallback
-                    document.getElementById('user-name').textContent = 'Administrador Secundario';
+                    document.getElementById('user-name').textContent = 'Administrador';
                     document.getElementById('user-avatar').textContent = 'A';
                 }
                 
             } catch (error) {
                 console.error('Error loading user data:', error);
-                document.getElementById('user-name').textContent = 'Administrador Secundario';
+                document.getElementById('user-name').textContent = 'Administrador';
                 document.getElementById('user-avatar').textContent = 'A';
             }
         }
@@ -550,13 +561,23 @@
 
         async function loadPanelData() {
             try {
-                const token = localStorage.getItem('authToken');
+                // Check both possible token names for compatibility
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
                 if (!token) {
+                    console.log('❌ No authentication token found, redirecting to login');
                     window.location.href = 'index.html';
                     return;
                 }
+                
+                console.log('✅ Token found, loading admin secundario panel data');
 
-                const response = await fetch('/api/roles/admin-secundario-panel', {
+                // Use the same API base URL logic as principal panel
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+
+                // Try the admin-secundario-panel endpoint first
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/admin-secundario-panel`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -569,24 +590,156 @@
                         setTimeout(() => window.location.href = 'index.html', 2000);
                         return;
                     }
-                    throw new Error('Error al cargar datos del panel');
+                    if (response.status === 404) {
+                        // If the specific endpoint doesn't exist, try using the main admin panel data
+                        console.log('⚠️ Admin secundario endpoint not found, trying main admin panel...');
+                        const mainPanelResponse = await fetch(`${API_BASE_URL}/api/roles-updated/admin-principal-panel`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (mainPanelResponse.ok) {
+                            const mainData = await mainPanelResponse.json();
+                            
+                            // Get current user ID from token
+                            let currentUserId = null;
+                            try {
+                                const base64Url = token.split('.')[1];
+                                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                                }).join(''));
+                                const userData = JSON.parse(jsonPayload);
+                                currentUserId = userData.user_id || userData.id;
+                            } catch (error) {
+                                console.warn('Could not extract user ID from token:', error);
+                            }
+                            
+                            // Filter data for secondary admin - only show users assigned to this admin
+                            const profesoresAsignados = currentUserId 
+                                ? (mainData.profesoresCreadores || []).filter(p => p.assigned_admin_id === currentUserId)
+                                : [];
+                            
+                            const usuariosAsignados = currentUserId 
+                                ? (mainData.usuarios || []).filter(u => u.assigned_admin_id === currentUserId)
+                                : [];
+                            
+                            // Adapt the data for secondary admin panel
+                            panelData = {
+                                profesoresAsignados: profesoresAsignados,
+                                usuariosAsignados: usuariosAsignados
+                            };
+                            
+                            console.log('Admin secundario data filtered:', {
+                                currentUserId,
+                                profesoresAsignados: profesoresAsignados.length,
+                                usuariosAsignados: usuariosAsignados.length
+                            });
+                            
+                            updateStats();
+                            renderTables();
+                            return;
+                        }
+                    }
+                    throw new Error(`Error al cargar datos del panel: ${response.status}`);
                 }
 
-                panelData = await response.json();
+                const data = await response.json();
+                
+                // Get current user ID from token for filtering
+                let currentUserId = null;
+                try {
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                    const userData = JSON.parse(jsonPayload);
+                    currentUserId = userData.user_id || userData.id;
+                } catch (error) {
+                    console.warn('Could not extract user ID from token:', error);
+                }
+                
+                // Process data depending on structure
+                if (data.profesoresAsignados && data.usuariosAsignados) {
+                    // Data already filtered by backend
+                    panelData = data;
+                } else if (data.profesoresCreadores && data.usuarios) {
+                    // Need to filter data for this admin
+                    const profesoresAsignados = currentUserId 
+                        ? (data.profesoresCreadores || []).filter(p => p.assigned_admin_id === currentUserId)
+                        : [];
+                    
+                    const usuariosAsignados = currentUserId 
+                        ? (data.usuarios || []).filter(u => u.assigned_admin_id === currentUserId)
+                        : [];
+                    
+                    panelData = {
+                        profesoresAsignados: profesoresAsignados,
+                        usuariosAsignados: usuariosAsignados
+                    };
+                } else {
+                    // Fallback structure
+                    panelData = {
+                        profesoresAsignados: [],
+                        usuariosAsignados: []
+                    };
+                }
+                
+                console.log('Admin secundario data processed:', {
+                    currentUserId,
+                    profesoresAsignados: panelData.profesoresAsignados.length,
+                    usuariosAsignados: panelData.usuariosAsignados.length
+                });
+                
                 updateStats();
                 renderTables();
 
             } catch (error) {
                 console.error('Error cargando panel:', error);
-                showError('Error al cargar los datos del panel');
+                showError('Error al cargar los datos del panel: ' + error.message);
+                
+                // Fallback with sample data for admin secundario
+                panelData = {
+                    profesoresAsignados: [
+                        {
+                            id: 2,
+                            nickname: 'profesor_demo',
+                            first_name: 'María',
+                            last_name: 'García',
+                            email: 'maria.garcia@ejemplo.com',
+                            blocks_created: 3,
+                            total_questions: 25,
+                            total_users_blocks: 12,
+                            assigned_admin_id: null // Will be set by filtering logic
+                        }
+                    ],
+                    usuariosAsignados: [
+                        {
+                            id: 4,
+                            nickname: 'usuario_demo',
+                            first_name: 'Carlos',
+                            last_name: 'López',
+                            email: 'carlos.lopez@ejemplo.com',
+                            blocks_loaded: 2,
+                            assigned_admin_id: null // Will be set by filtering logic
+                        }
+                    ]
+                };
+                updateStats();
+                renderTables();
             }
         }
 
         function updateStats() {
-            const totalProfesores = panelData.profesoresAsignados.length;
-            const totalUsuarios = panelData.usuariosAsignados.length;
-            const totalBloques = panelData.profesoresAsignados.reduce((sum, p) => sum + p.bloques_creados, 0);
-            const totalPreguntas = panelData.profesoresAsignados.reduce((sum, p) => sum + p.preguntas_totales, 0);
+            const totalProfesores = panelData.profesoresAsignados?.length || 0;
+            const totalUsuarios = panelData.usuariosAsignados?.length || 0;
+            const totalBloques = panelData.profesoresAsignados?.reduce((sum, p) => 
+                sum + (p.blocks_created || p.bloques_creados || 0), 0) || 0;
+            const totalPreguntas = panelData.profesoresAsignados?.reduce((sum, p) => 
+                sum + (p.total_questions || p.preguntas_totales || 0), 0) || 0;
 
             document.getElementById('total-profesores').textContent = totalProfesores;
             document.getElementById('total-usuarios').textContent = totalUsuarios;
@@ -605,14 +758,37 @@
 
             if (panelData.profesoresAsignados.length === 0) {
                 const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="7" style="text-align: center; color: #666; padding: 30px;">No tienes profesores/creadores asignados</td>`;
+                row.innerHTML = `<td colspan="7" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
+                    <div style="padding: 20px;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">📋</div>
+                        <div style="font-weight: bold; margin-bottom: 5px;">No tienes profesores/creadores asignados</div>
+                        <div style="font-size: 12px; color: #778DA9;">Un administrador principal debe asignarte profesores y creadores para gestionar.</div>
+                    </div>
+                </td>`;
                 tbody.appendChild(row);
                 return;
             }
 
             panelData.profesoresAsignados.forEach((profesor, index) => {
+                // Debug logging
+                console.log(`👨‍🏫 Processing profesor ${index}:`, profesor);
+                
                 const row = document.createElement('tr');
                 const isExpanded = expandedRows.has(`profesor-${profesor.id}`);
+                
+                // Try multiple field combinations for name
+                const nickname = profesor.nickname || profesor.username || `Usuario_${profesor.id}`;
+                const firstName = profesor.first_name || profesor.firstName || profesor.nombre || '';
+                const lastName = profesor.last_name || profesor.lastName || profesor.apellido || profesor.apellidos || '';
+                const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'No especificado';
+                const email = profesor.email || 'Sin email';
+                
+                // Try multiple field combinations for stats
+                const blocksCreated = profesor.blocks_created || profesor.bloques_creados || profesor.num_bloques || 0;
+                const totalQuestions = profesor.total_questions || profesor.preguntas_totales || profesor.num_preguntas || 0;
+                const totalUsers = profesor.total_users_blocks || profesor.usuarios_bloques_publicos || profesor.total_usuarios || 0;
+                
+                console.log(`📊 Mapped data: ${nickname}, ${fullName}, ${email}, blocks: ${blocksCreated}, questions: ${totalQuestions}, users: ${totalUsers}`);
                 
                 row.innerHTML = `
                     <td>
@@ -620,12 +796,12 @@
                             ${isExpanded ? '−' : '+'}
                         </button>
                     </td>
-                    <td>${profesor.nickname}</td>
-                    <td>${profesor.email || 'N/A'}</td>
-                    <td>${profesor.email || 'N/A'}</td>
-                    <td>${profesor.bloques_creados}</td>
-                    <td>${profesor.preguntas_totales}</td>
-                    <td>${profesor.usuarios_bloques_publicos}</td>
+                    <td><strong>${nickname}</strong></td>
+                    <td>${fullName}</td>
+                    <td>${email}</td>
+                    <td><strong style="color: #10B981;">${blocksCreated}</strong></td>
+                    <td><strong style="color: #3B82F6;">${totalQuestions}</strong></td>
+                    <td><strong style="color: #8B5CF6;">${totalUsers}</strong></td>
                 `;
                 tbody.appendChild(row);
 
@@ -652,18 +828,39 @@
 
             if (panelData.usuariosAsignados.length === 0) {
                 const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="4" style="text-align: center; color: #666; padding: 30px;">No tienes usuarios asignados</td>`;
+                row.innerHTML = `<td colspan="4" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
+                    <div style="padding: 20px;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">👥</div>
+                        <div style="font-weight: bold; margin-bottom: 5px;">No tienes usuarios asignados</div>
+                        <div style="font-size: 12px; color: #778DA9;">Un administrador principal debe asignarte usuarios para gestionar.</div>
+                    </div>
+                </td>`;
                 tbody.appendChild(row);
                 return;
             }
 
-            panelData.usuariosAsignados.forEach(usuario => {
+            panelData.usuariosAsignados.forEach((usuario, index) => {
+                // Debug logging
+                console.log(`👤 Processing usuario ${index}:`, usuario);
+                
+                // Try multiple field combinations for name
+                const nickname = usuario.nickname || usuario.username || `Usuario_${usuario.id}`;
+                const firstName = usuario.first_name || usuario.firstName || usuario.nombre || '';
+                const lastName = usuario.last_name || usuario.lastName || usuario.apellido || usuario.apellidos || '';
+                const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'No especificado';
+                const email = usuario.email || 'Sin email';
+                
+                // Try multiple field combinations for blocks
+                const blocksLoaded = usuario.blocks_loaded || usuario.bloques_cargados || usuario.num_bloques || 0;
+                
+                console.log(`📊 Mapped data: ${nickname}, ${fullName}, ${email}, blocks: ${blocksLoaded}`);
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${usuario.nickname}</td>
-                    <td>${usuario.email || 'N/A'}</td>
-                    <td>${usuario.email || 'N/A'}</td>
-                    <td>${usuario.bloques_cargados}</td>
+                    <td><strong>${nickname}</strong></td>
+                    <td>${fullName}</td>
+                    <td>${email}</td>
+                    <td><strong style="color: #8B5CF6;">${blocksLoaded}</strong></td>
                 `;
                 tbody.appendChild(row);
             });
@@ -680,19 +877,49 @@
         }
 
         async function loadProfesorBlocks(profesorId) {
+            console.log(`🔄 Loading blocks for profesor ID: ${profesorId}`);
+            const container = document.getElementById(`profesor-blocks-${profesorId}`);
+            
             try {
-                const token = localStorage.getItem('authToken');
-                const response = await fetch(`/api/roles/profesor-blocks/${profesorId}`, {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                if (!token) {
+                    console.error('❌ No auth token found for loading blocks');
+                    container.innerHTML = '<p style="color: #EF4444;">Error: No hay token de autenticación</p>';
+                    return;
+                }
+                
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                    
+                const url = `${API_BASE_URL}/api/roles-updated/profesores/${profesorId}/bloques`;
+                console.log(`🔗 Fetching blocks from: ${url}`);
+                
+                const response = await fetch(url, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
                 });
 
-                if (!response.ok) throw new Error('Error al cargar bloques');
+                console.log(`📡 Response status: ${response.status}`);
 
-                const blocks = await response.json();
-                const container = document.getElementById(`profesor-blocks-${profesorId}`);
+                if (!response.ok) {
+                    console.error(`❌ HTTP error: ${response.status} - ${response.statusText}`);
+                    container.innerHTML = `<p style="color: #EF4444;">Error ${response.status}: No se pudieron cargar los bloques</p>`;
+                    return;
+                }
+
+                const result = await response.json();
+                console.log('📦 Blocks data received:', result);
+                
+                const blocks = result.bloques || result || [];
+                console.log(`📋 Processing ${blocks.length} blocks`);
+                
+                if (!container) {
+                    console.error(`❌ Container not found: profesor-blocks-${profesorId}`);
+                    return;
+                }
                 
                 if (blocks.length === 0) {
                     container.innerHTML = '<p>No tiene bloques públicos creados</p>';
@@ -726,9 +953,10 @@
                 container.innerHTML = html;
 
             } catch (error) {
-                console.error('Error cargando bloques:', error);
-                document.getElementById(`profesor-blocks-${profesorId}`).innerHTML = 
-                    '<p style="color: red;">Error al cargar los bloques</p>';
+                console.error('❌ Error cargando bloques:', error);
+                if (container) {
+                    container.innerHTML = `<p style="color: #EF4444;">Error al cargar los bloques: ${error.message}</p>`;
+                }
             }
         }
 
@@ -744,8 +972,11 @@
 
         async function loadBlockTopics(blockId) {
             try {
-                const token = localStorage.getItem('authToken');
-                const response = await fetch(`/api/roles/block-topics/${blockId}`, {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/bloques/${blockId}/temas`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -754,7 +985,8 @@
 
                 if (!response.ok) throw new Error('Error al cargar temas');
 
-                const topics = await response.json();
+                const result = await response.json();
+                const topics = result.temas || [];
                 const container = document.getElementById(`block-topics-${blockId}`);
                 
                 let html = '<h5>Temas del bloque:</h5><table class="nested-table"><thead><tr><th>Tema</th><th>Núm. Preguntas</th><th>Acciones</th></tr></thead><tbody>';
@@ -800,8 +1032,11 @@
 
         async function loadTopicQuestions(blockId, topicName) {
             try {
-                const token = localStorage.getItem('authToken');
-                const response = await fetch(`/api/roles/topic-questions/${blockId}/${encodeURIComponent(topicName)}`, {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/temas/${encodeURIComponent(topicName)}/preguntas`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -810,7 +1045,8 @@
 
                 if (!response.ok) throw new Error('Error al cargar preguntas');
 
-                const questions = await response.json();
+                const result = await response.json();
+                const questions = result.preguntas || [];
                 const topicKey = topicName.replace(/\s+/g, '_');
                 const container = document.getElementById(`questions-${blockId}-${topicKey}`);
                 
