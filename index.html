@@ -18,7 +18,7 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>PLAYTEST Admin Panel v2.5.0</title>
-    <meta name="cache-buster" content="2025-08-17-17:01:00" />
+    <meta name="cache-buster" content="2025-08-18-20:30:00" />
     <link rel="icon" type="image/png" href="Imagenes/Playtest.png">
 
     <!-- Embedded Global Stylesheet -->
@@ -229,9 +229,16 @@
           if (sessionData) {
             try {
               const session = JSON.parse(sessionData);
+              const secondaryAdmins = ['kikejfer', 'admin_sec_1', 'admin_secundario'];
+              
               if (session.nickname === 'AdminPrincipal') {
                 console.log('🚫 AdminPrincipal detected in cached page, forcing redirect...');
                 window.location.replace(`admin-principal-panel.html?t=${Date.now()}`);
+              } else if (session.role === 'administrador_secundario' || 
+                         session.role_name === 'administrador_secundario' ||
+                         secondaryAdmins.includes(session.nickname)) {
+                console.log(`🚫 Administrador Secundario (${session.nickname}) detected in cached page, forcing redirect...`);
+                window.location.replace(`admin-secundario-panel.html?t=${Date.now()}`);
               }
             } catch (e) {
               console.warn('Failed to parse session for cache check');
@@ -2853,20 +2860,42 @@
         const { t } = useLanguage();
         const { currentUser } = useUser();
         
-        // ADMIN REDIRECT LOGIC v2.3 - Completely rewritten to avoid cache issues
+        // ADMIN REDIRECT LOGIC v2.4 - Support for both admin types
         useEffect(() => {
+          if (!currentUser) return;
+          
+          // Known secondary admins list
+          const secondaryAdmins = ['kikejfer', 'admin_sec_1', 'admin_secundario'];
+          
           if (currentUser?.nickname === 'AdminPrincipal') {
-            console.log('🔀 ADMIN DETECTED - Starting redirect process v2.3');
+            console.log('🔀 ADMIN PRINCIPAL DETECTED - Starting redirect process v2.4');
             
             const url = window.location.href;
             const isInAdminPanel = url.includes('admin-principal-panel.html');
             
             if (!isInAdminPanel) {
-              console.log('🎯 REDIRECTING TO ADMIN PANEL NOW');
+              console.log('🎯 REDIRECTING TO ADMIN PRINCIPAL PANEL NOW');
               const uniqueId = Date.now() + Math.random();
               window.location.href = `admin-principal-panel.html?id=${uniqueId}`;
             } else {
-              console.log('✅ Admin already in correct location');
+              console.log('✅ Admin Principal already in correct location');
+            }
+          } else if (currentUser?.role === 'administrador_secundario' || 
+                     currentUser?.role_name === 'administrador_secundario' ||
+                     secondaryAdmins.includes(currentUser?.nickname) ||
+                     (currentUser && currentUser.nickname !== 'AdminPrincipal' && 
+                      (currentUser.isSecondaryAdmin || currentUser.secondary_admin))) {
+            console.log(`🔀 ADMIN SECUNDARIO DETECTED (${currentUser.nickname}) - Starting redirect process v2.4`);
+            
+            const url = window.location.href;
+            const isInSecondaryPanel = url.includes('admin-secundario-panel.html');
+            
+            if (!isInSecondaryPanel) {
+              console.log('🎯 REDIRECTING TO ADMIN SECUNDARIO PANEL NOW');
+              const uniqueId = Date.now() + Math.random();
+              window.location.href = `admin-secundario-panel.html?id=${uniqueId}`;
+            } else {
+              console.log('✅ Admin Secundario already in correct location');
             }
           }
         }, [currentUser]);
