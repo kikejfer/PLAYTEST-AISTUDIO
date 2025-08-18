@@ -578,30 +578,58 @@
                     ? 'https://playtest-backend.onrender.com' 
                     : '';
                 
-                // Intentar primero el endpoint de emergencia, si falla usar debug
+                // Intentar primero el endpoint de emergencia con mejor manejo de errores
                 let response;
+                let backendAvailable = false;
+                
                 try {
+                    console.log('🔄 Intentando conectar con backend:', `${API_BASE_URL}/api/roles-updated/admin-principal-panel-emergency`);
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
+                    
                     response = await fetch(`${API_BASE_URL}/api/roles-updated/admin-principal-panel-emergency`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
-                        }
+                        },
+                        signal: controller.signal
                     });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (response.ok) {
+                        backendAvailable = true;
+                        console.log('✅ Backend respondió correctamente');
+                    } else {
+                        console.warn(`⚠️ Backend respondió con error: ${response.status}`);
+                    }
+                    
                 } catch (error) {
-                    console.log('Emergency endpoint failed, using debug fallback');
+                    console.warn('⚠️ Error conectando con backend:', error.message);
+                    if (error.name === 'AbortError') {
+                        console.warn('⏱️ Timeout: El backend tardó más de 10 segundos en responder');
+                    }
                 }
 
-                // Si el endpoint de emergencia falla (404), usar debug como fallback
+                // Si el endpoint de emergencia falla, intentar debug como fallback
                 if (!response || !response.ok) {
-                    console.log('Using debug fallback for panel data');
-                    const debugResponse = await fetch(`${API_BASE_URL}/api/roles-updated/debug-users`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
+                    console.log('🔄 Intentando endpoint de debug como fallback...');
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 10000);
+                        
+                        const debugResponse = await fetch(`${API_BASE_URL}/api/roles-updated/debug-users`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            signal: controller.signal
+                        });
+                        
+                        clearTimeout(timeoutId);
 
-                    if (debugResponse.ok) {
+                    if (debugResponse && debugResponse.ok) {
                         const debugData = await debugResponse.json();
                         
                         // Crear datos del panel desde debug
@@ -657,29 +685,19 @@
                         renderTables();
                         return; // Salir aquí para evitar el procesamiento normal
                     } else {
+                        console.warn('❌ Debug endpoint también falló');
+                        throw new Error('Both emergency and debug endpoints failed');
+                    }
+                    } catch (debugError) {
+                        console.warn('❌ Error en debug fallback:', debugError.message);
                         throw new Error('Both emergency and debug endpoints failed');
                     }
                 }
 
                 // Procesamiento normal si el endpoint de emergencia funciona
-                response = await fetch(`${API_BASE_URL}/api/roles-updated/admin-principal-panel-emergency`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                // Check if request failed
-                if (!response.ok) {
-                    if (response.status === 403) {
-                        showError('No tienes permisos para acceder a este panel');
-                        setTimeout(() => window.location.href = 'index.html', 2000);
-                        return;
-                    }
-                    throw new Error('Error al cargar datos del panel');
-                }
-
-                const data = await response.json();
+                if (backendAvailable && response && response.ok) {
+                    console.log('✅ Procesando respuesta del backend principal');
+                    const data = await response.json();
 
                 panelData = {
                     administradoresSecundarios: data.adminSecundarios || [],
@@ -687,17 +705,21 @@
                     usuarios: data.usuarios || []
                 };
                 
-                console.log('Panel Data loaded:', {
-                    admins: panelData.administradoresSecundarios.length,
-                    creadores: panelData.profesoresCreadores.length,
-                    usuarios: panelData.usuarios.length
-                });
-                
-                renderTables();
+                    console.log('✅ Panel Data loaded from backend:', {
+                        admins: panelData.administradoresSecundarios.length,
+                        creadores: panelData.profesoresCreadores.length,
+                        usuarios: panelData.usuarios.length
+                    });
+                    
+                    renderTables();
+                } else {
+                    // Si llegamos aquí, ningún endpoint funcionó
+                    throw new Error('No se pudo conectar con el backend');
+                }
 
             } catch (error) {
                 console.error('Error cargando panel:', error);
-                showError('Error al cargar datos del backend. Mostrando datos de ejemplo.');
+                showError('🔌 Sistema funcionando en modo offline. Mostrando datos de ejemplo para demostración.');
                 
                 // Fallback con datos de ejemplo
                 panelData = {

@@ -39,8 +39,8 @@ class PersistentSystemInitializer {
         try {
             console.log('🚀 Inicializando sistema persistente PLAYTEST...');
             
-            // 1. Verificar conectividad con el backend
-            await this.checkBackendConnectivity();
+            // 1. Verificar conectividad con el backend (no crítico)
+            const backendAvailable = await this.checkBackendConnectivity();
             
             // 2. Configurar autenticación
             this.setupAuthentication();
@@ -81,7 +81,11 @@ class PersistentSystemInitializer {
         try {
             console.log('🔗 Verificando conectividad con backend...');
             
-            const response = await fetch('/health', {
+            // Usar el servicio persistente para obtener la URL correcta
+            const baseURL = this.services.persistentAPI.baseURL;
+            const healthURL = baseURL.replace('/api', '/health');
+            
+            const response = await fetch(healthURL, {
                 method: 'GET',
                 timeout: 5000
             });
@@ -94,8 +98,9 @@ class PersistentSystemInitializer {
             console.log('✅ Backend conectado:', health);
             
         } catch (error) {
-            console.warn('⚠️ Backend no disponible, usando modo de fallback');
-            throw new Error(`Backend connectivity failed: ${error.message}`);
+            console.warn('⚠️ Backend no disponible, usando modo de fallback local');
+            // No lanzar error, permitir que el sistema funcione en modo offline
+            return false;
         }
     }
     
