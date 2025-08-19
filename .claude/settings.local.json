@@ -32,7 +32,9 @@
       "Bash(for file in creators-panel-marketing.html creators-panel-tournaments.html creators-panel-monetization.html teachers-panel-schedules.html)",
       "Bash(do sed -i 's/        body {/        body {\\n            font-family: ''''Segoe UI'''', Tahoma, Geneva, Verdana, sans-serif;\\n            background: #0D1B2A;\\n            min-height: 100vh;\\n            color: #E0E1DD;\\n            padding-top: 60px;\\n        }\\n\\n        \\/\\* User header styles - fixed position \\*\\//g' \"$file\")",
       "Bash(start admin-principal-panel.html)",
-      "Bash(start admin-secundario-panel.html)"
+      "Bash(start admin-secundario-panel.html)",
+      "Bash(start admin-secundario-panel-test.html)",
+      "Bash(start index.html)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

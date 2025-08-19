@@ -2897,6 +2897,22 @@
             } else {
               console.log('✅ Admin Secundario already in correct location');
             }
+          } else if (currentUser?.role === 'creador' || 
+                     currentUser?.role_name === 'creador' ||
+                     currentUser?.role === 'creator' || 
+                     currentUser?.role_name === 'creator') {
+            console.log(`🎨 CONTENT CREATOR DETECTED (${currentUser.nickname}) - Starting redirect process`);
+            
+            const url = window.location.href;
+            const isInCreatorPanel = url.includes('creators-panel-content.html');
+            
+            if (!isInCreatorPanel) {
+              console.log('🎯 REDIRECTING TO CONTENT CREATOR PANEL NOW');
+              const uniqueId = Date.now() + Math.random();
+              window.location.href = `creators-panel-content.html?id=${uniqueId}`;
+            } else {
+              console.log('✅ Content Creator already in correct location');
+            }
           }
         }, [currentUser]);
         

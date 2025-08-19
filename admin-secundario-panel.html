@@ -985,51 +985,45 @@
 
                 if (!response.ok) {
                     console.error(`❌ HTTP error: ${response.status} - ${response.statusText}`);
-                    container.innerHTML = `<p style="color: #EF4444;">Error ${response.status}: No se pudieron cargar los bloques</p>`;
+                    
+                    // Try alternative endpoint
+                    console.log('🔄 Trying alternative blocks endpoint...');
+                    const altUrl = `${API_BASE_URL}/api/roles-updated/bloques?creador_id=${profesorId}`;
+                    console.log(`🔗 Alternative URL: ${altUrl}`);
+                    
+                    try {
+                        const altResponse = await fetch(altUrl, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (altResponse.ok) {
+                            const altResult = await altResponse.json();
+                            console.log('📦 Alternative blocks data received:', altResult);
+                            
+                            const altBlocks = altResult.bloques || altResult || [];
+                            if (altBlocks.length > 0) {
+                                displayBlocks(altBlocks, container);
+                                return;
+                            }
+                        }
+                    } catch (altError) {
+                        console.warn('⚠️ Alternative endpoint also failed:', altError);
+                    }
+                    
+                    container.innerHTML = `<p style="color: #EF4444;">Error ${response.status}: No se pudieron cargar los bloques. Endpoint no disponible.</p>`;
                     return;
                 }
 
                 const result = await response.json();
                 console.log('📦 Blocks data received:', result);
                 
-                const blocks = result.bloques || result || [];
+                const blocks = result.bloques || result.blocks || result || [];
                 console.log(`📋 Processing ${blocks.length} blocks`);
                 
-                if (!container) {
-                    console.error(`❌ Container not found: profesor-blocks-${profesorId}`);
-                    return;
-                }
-                
-                if (blocks.length === 0) {
-                    container.innerHTML = '<p>No tiene bloques públicos creados</p>';
-                    return;
-                }
-
-                let html = '<table class="nested-table"><thead><tr><th>Bloque</th><th>Núm. Temas</th><th>Total Preguntas</th><th>Usuarios</th><th>Fecha Creación</th><th>Acciones</th></tr></thead><tbody>';
-                
-                blocks.forEach(block => {
-                    html += `
-                        <tr>
-                            <td><strong>${block.name}</strong></td>
-                            <td>${block.num_temas}</td>
-                            <td>${block.total_preguntas}</td>
-                            <td>${block.usuarios_bloque}</td>
-                            <td>${new Date(block.created_at).toLocaleDateString()}</td>
-                            <td>
-                                <button class="btn btn-expand" onclick="showBlockDetails(${block.id})">Ver</button>
-                                <button class="btn btn-expand" onclick="toggleBlockExpansion(${block.id})">Temas</button>
-                            </td>
-                        </tr>
-                        <tr id="block-expansion-${block.id}" style="display: none;">
-                            <td colspan="6">
-                                <div id="block-topics-${block.id}"></div>
-                            </td>
-                        </tr>
-                    `;
-                });
-                
-                html += '</tbody></table>';
-                container.innerHTML = html;
+                displayBlocks(blocks, container);
 
             } catch (error) {
                 console.error('❌ Error cargando bloques:', error);
@@ -1037,6 +1031,85 @@
                     container.innerHTML = `<p style="color: #EF4444;">Error al cargar los bloques: ${error.message}</p>`;
                 }
             }
+        }
+
+        function displayBlocks(blocks, container) {
+            console.log('🎨 Displaying blocks:', blocks);
+            
+            if (!blocks || blocks.length === 0) {
+                container.innerHTML = `
+                    <div style="padding: 20px; background: #1B263B; border-radius: 8px; text-align: center; color: #778DA9;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">📝</div>
+                        <div style="font-weight: bold; margin-bottom: 5px;">No hay bloques creados</div>
+                        <div style="font-size: 12px;">Este profesor/creador aún no ha creado ningún bloque.</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div style="margin-top: 15px;">';
+            
+            blocks.forEach((block, index) => {
+                console.log(`📋 Processing block ${index}:`, block);
+                
+                // Enhanced field mapping for blocks
+                const id = block.id || block.block_id || block.bloque_id || index;
+                const titulo = block.titulo || block.title || block.name || block.bloque_titulo || 'Sin título';
+                const descripcion = block.descripcion || block.description || block.bloque_descripcion || 'Sin descripción';
+                const fechaCreacion = block.fecha_creacion || block.created_at || block.date_created || 'Fecha no disponible';
+                const totalPreguntas = block.total_preguntas || block.total_questions || block.preguntas || block.questions || 0;
+                const totalUsuarios = block.total_usuarios || block.total_users || block.usuarios || block.users || 0;
+                const estado = block.estado || block.status || (block.activo ? 'Activo' : 'Inactivo') || 'Desconocido';
+                
+                // Format fecha
+                let fechaFormateada = fechaCreacion;
+                try {
+                    if (fechaCreacion && fechaCreacion !== 'Fecha no disponible') {
+                        const date = new Date(fechaCreacion);
+                        if (!isNaN(date.getTime())) {
+                            fechaFormateada = date.toLocaleDateString('es-ES', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Error formatting date:', e);
+                }
+                
+                console.log(`📊 Mapped block data: ${titulo}, ${descripcion}, ${fechaFormateada}, preguntas: ${totalPreguntas}, usuarios: ${totalUsuarios}, estado: ${estado}`);
+                
+                html += `
+                    <div style="background: #1B263B; border: 1px solid #415A77; border-radius: 8px; margin-bottom: 10px; overflow: hidden;">
+                        <div style="padding: 15px; border-bottom: 1px solid #415A77;">
+                            <div style="display: flex; justify-content: between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                                <div style="flex: 1; min-width: 200px;">
+                                    <h4 style="margin: 0 0 5px 0; color: #E0E1DD; font-size: 16px; font-weight: bold;">${titulo}</h4>
+                                    <p style="margin: 0; color: #778DA9; font-size: 12px; line-height: 1.4;">${descripcion}</p>
+                                </div>
+                                <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                                    <div style="text-align: center; min-width: 60px;">
+                                        <div style="color: #3B82F6; font-weight: bold; font-size: 18px;">${totalPreguntas}</div>
+                                        <div style="color: #778DA9; font-size: 10px;">Preguntas</div>
+                                    </div>
+                                    <div style="text-align: center; min-width: 60px;">
+                                        <div style="color: #8B5CF6; font-weight: bold; font-size: 18px;">${totalUsuarios}</div>
+                                        <div style="color: #778DA9; font-size: 10px;">Usuarios</div>
+                                    </div>
+                                    <div style="text-align: center; min-width: 80px;">
+                                        <div style="color: ${estado === 'Activo' ? '#10B981' : '#EF4444'}; font-weight: bold; font-size: 12px;">${estado}</div>
+                                        <div style="color: #778DA9; font-size: 10px;">${fechaFormateada}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
         }
 
         async function toggleBlockExpansion(blockId) {
