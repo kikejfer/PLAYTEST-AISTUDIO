@@ -876,6 +876,51 @@
           );
       };
 
+      // --- HELPER FUNCTIONS FOR ROLE MANAGEMENT ---
+      
+      // Helper function to check if user has specific role
+      const hasRole = (user, role) => {
+        if (!user) return false;
+        
+        // Check in roles array (new system)
+        if (user.roles && Array.isArray(user.roles)) {
+          return user.roles.includes(role);
+        }
+        
+        // Check in legacy fields
+        return user.role === role || user.role_name === role;
+      };
+      
+      // Helper function to get user's primary role for routing
+      const getUserPrimaryRole = (user) => {
+        if (!user) return 'jugador';
+        
+        // Check admin roles first (highest priority)
+        if (user.nickname === 'AdminPrincipal' || hasRole(user, 'administrador_principal')) {
+          return 'administrador_principal';
+        }
+        
+        const secondaryAdmins = ['kikejfer', 'admin_sec_1', 'admin_secundario'];
+        if (hasRole(user, 'administrador_secundario') || secondaryAdmins.includes(user.nickname)) {
+          return 'administrador_secundario';
+        }
+        
+        // For users with multiple roles, choose based on priority
+        if (user.roles && Array.isArray(user.roles)) {
+          if (user.roles.includes('creador')) return 'creador';
+          if (user.roles.includes('profesor')) return 'profesor';
+          return 'jugador'; // Default to jugador if only has jugador role or unknown
+        }
+        
+        // Legacy single role system
+        if (user.role === 'creador' || user.role_name === 'creador' || 
+            user.role === 'creator' || user.role_name === 'creator') {
+          return 'creador';
+        }
+        
+        return 'jugador'; // Default
+      };
+
       const GameSetup = ({ blocks, onCreateGame, onSendChallenge }) => {
           const { t } = useLanguage();
           const { currentUser } = useUser();
@@ -1414,9 +1459,12 @@
                          <a href="available-blocks.html" className="text-xs font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-2 px-3 rounded-md transition-colors text-center flex-1">
                             {t('block_management_add_available')}
                          </a>
-                         <button onClick={() => window.location.href = './add-question.html'} className="text-xs font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-2 px-3 rounded-md transition-colors flex-1">
-                            {t('add_question_button')}
-                         </button>
+                         {/* Mostrar botón de crear solo si el usuario tiene rol de creador */}
+                         {hasRole(currentUser, 'creador') && (
+                           <button onClick={() => window.location.href = './add-question.html'} className="text-xs font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-2 px-3 rounded-md transition-colors flex-1">
+                              {t('add_question_button')}
+                           </button>
+                         )}
                        </div>
                   </div>
                   {blocks.length > 0 ? (
@@ -1436,15 +1484,18 @@
                                        <button onClick={() => setExpandedBlockId(prev => prev === block.id ? null : block.id)} className="text-xs font-semibold bg-brand-tertiary/80 hover:bg-brand-tertiary text-brand-light py-1 px-2 rounded-md transition-colors">
                                           {expandedBlockId === block.id ? t('available_blocks_hide_details') : t('available_blocks_view_details')}
                                        </button>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); window.location.href = `block-questions.html?blockId=${block.id}&returnUrl=index.html&viewMode=edit`; }}
-                                            className="p-2 rounded-full text-brand-cta/80 hover:bg-brand-cta/20 hover:text-brand-cta opacity-0 group-hover:opacity-100 transition-opacity"
-                                            aria-label={`Edit ${block.nombreCorto}`}
-                                        >
-                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
-                                        </button>
+                                        {/* Mostrar botón de editar solo si el usuario es creador del bloque o tiene rol de creador */}
+                                        {hasRole(currentUser, 'creador') && (
+                                          <button
+                                              onClick={(e) => { e.stopPropagation(); window.location.href = `block-questions.html?blockId=${block.id}&returnUrl=index.html&viewMode=edit`; }}
+                                              className="p-2 rounded-full text-brand-cta/80 hover:bg-brand-cta/20 hover:text-brand-cta opacity-0 group-hover:opacity-100 transition-opacity"
+                                              aria-label={`Edit ${block.nombreCorto}`}
+                                          >
+                                              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                              </svg>
+                                          </button>
+                                        )}
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleDeleteClick(block.id); }}
                                             className="p-2 rounded-full text-brand-danger/80 hover:bg-brand-danger/20 hover:text-brand-danger opacity-0 group-hover:opacity-100 transition-opacity"
@@ -1492,7 +1543,15 @@
                     </>
                   ) : (
                     <div className="text-center py-6 flex-grow flex items-center justify-center">
-                        <p className="text-brand-accent">No blocks loaded. <button onClick={() => window.location.href = './add-question.html'} className="text-brand-cta hover:underline">Click 'Add Questions'</button> to create a new block.</p>
+                        <div>
+                          <p className="text-brand-accent mb-3">No hay bloques cargados</p>
+                          <p className="text-brand-tertiary text-sm">
+                            {hasRole(currentUser, 'creador') ? (
+                              <>Puedes <button onClick={() => window.location.href = './add-question.html'} className="text-brand-cta hover:underline">crear un nuevo bloque</button> o </>
+                            ) : null}
+                            cargar bloques desde <a href="available-blocks.html" className="text-brand-cta hover:underline">Bloques Disponibles</a>
+                          </p>
+                        </div>
                     </div>
                   )}
               </div>
@@ -1501,6 +1560,7 @@
 
       const CreatedBlocksManagement = ({ blocks, setCurrentView, onDeleteBlock }) => {
           const { t } = useLanguage();
+          const { currentUser } = useUser();
           const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
 
           const handleDeleteClick = (blockId) => {
@@ -1513,6 +1573,11 @@
               setConfirmingDeleteId(null);
             }
           };
+
+          // Solo mostrar si el usuario es creador
+          if (!hasRole(currentUser, 'creador')) {
+            return null;
+          }
 
           return (
               <div className="bg-brand-secondary p-6 rounded-xl shadow-lg flex flex-col">
@@ -1646,6 +1711,159 @@
           );
       };
 
+      const RoleConfigurationPanel = () => {
+        const { currentUser } = useUser();
+        const { t } = useLanguage();
+        const [userRoles, setUserRoles] = useState([]);
+        const [saving, setSaving] = useState(false);
+        
+        useEffect(() => {
+          if (currentUser?.roles) {
+            setUserRoles(currentUser.roles);
+          } else if (currentUser?.role) {
+            setUserRoles([currentUser.role]);
+          } else {
+            setUserRoles(['jugador']);
+          }
+        }, [currentUser]);
+        
+        const roleOptions = [
+          {
+            id: 'jugador',
+            name: 'Jugador',
+            icon: '🎮',
+            description: 'Participar en juegos, duelos y trivias'
+          },
+          {
+            id: 'creador',
+            name: 'Creador de Contenido',
+            icon: '🎨',
+            description: 'Crear bloques, monetizar contenido, analytics'
+          },
+          {
+            id: 'profesor',
+            name: 'Profesor',
+            icon: '👨‍🏫',
+            description: 'Gestionar estudiantes y actividades educativas'
+          }
+        ];
+        
+        const toggleRole = (roleId) => {
+          setUserRoles(prev => {
+            if (prev.includes(roleId)) {
+              // No permitir desmarcar si es el único rol
+              if (prev.length === 1) return prev;
+              return prev.filter(r => r !== roleId);
+            } else {
+              return [...prev, roleId];
+            }
+          });
+        };
+        
+        const saveRoles = async () => {
+          setSaving(true);
+          try {
+            const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+              ? 'https://playtest-backend.onrender.com' 
+              : '';
+              
+            const token = localStorage.getItem('playtest_auth_token');
+            
+            if (token) {
+              const response = await fetch(`${API_BASE_URL}/api/users/me/roles`, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ roles: userRoles })
+              });
+              
+              if (response.ok) {
+                console.log('✅ Roles actualizados correctamente');
+                // Actualizar usuario actual (esto requeriría un refresh del estado global)
+                setTimeout(() => {
+                  window.location.reload();
+                }, 1000);
+              } else {
+                console.error('❌ Error actualizando roles');
+              }
+            }
+          } catch (error) {
+            console.error('❌ Error enviando roles:', error);
+          } finally {
+            setSaving(false);
+          }
+        };
+        
+        const hasChanges = JSON.stringify(userRoles.sort()) !== JSON.stringify((currentUser?.roles || [currentUser?.role] || ['jugador']).sort());
+        
+        return (
+          <div className="bg-brand-secondary p-6 rounded-xl shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <span className="text-2xl mr-3">👤</span>
+                <h3 className="text-xl font-bold text-brand-light">Mis Roles</h3>
+              </div>
+            </div>
+            
+            <p className="text-brand-accent text-sm mb-4">
+              Selecciona los roles que quieres activar en tu cuenta:
+            </p>
+            
+            <div className="space-y-3 mb-6">
+              {roleOptions.map(role => (
+                <label 
+                  key={role.id}
+                  className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${
+                    userRoles.includes(role.id)
+                      ? 'bg-brand-tertiary border-brand-cta'
+                      : 'bg-brand-primary border-brand-tertiary hover:border-brand-accent'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={userRoles.includes(role.id)}
+                    onChange={() => toggleRole(role.id)}
+                    className="sr-only"
+                  />
+                  <div className="flex items-center gap-3 flex-1">
+                    <span className="text-xl">{role.icon}</span>
+                    <div className="flex-1">
+                      <div className={`font-medium ${
+                        userRoles.includes(role.id) ? 'text-brand-light' : 'text-brand-accent'
+                      }`}>
+                        {role.name}
+                      </div>
+                      <div className="text-xs text-brand-tertiary">
+                        {role.description}
+                      </div>
+                    </div>
+                  </div>
+                  {userRoles.includes(role.id) && (
+                    <div className="text-brand-cta">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </label>
+              ))}
+            </div>
+            
+            {hasChanges && (
+              <button
+                onClick={saveRoles}
+                disabled={saving || userRoles.length === 0}
+                className="w-full bg-brand-cta hover:bg-brand-cta-hover disabled:bg-brand-tertiary text-white font-bold py-2 px-4 rounded-md transition-colors"
+              >
+                {saving ? '💾 Guardando...' : '💾 Guardar Cambios'}
+              </button>
+            )}
+          </div>
+        );
+      };
+
       const UserDashboard = ({ blocks, createdBlocks, availableBlocks, loadedBlockIds, games, gameConfigurations, challenges, gameHistory, onViewBlock, onCreateGame, onSendChallenge, onDeleteGame, onNavigateToGame, onDeleteBlock, onOpenAddBlockModal, onAcceptChallenge, onDeclineChallenge, onOpenStatsModal, onLoadBlock, onUnloadBlock, handleDeleteConfiguration, onRepeatConfiguration, setCurrentView }) => (
         <div className="space-y-8 animate-fade-in">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -1655,6 +1873,7 @@
               <GameHistory history={gameHistory} />
             </div>
             <div className="lg:col-span-1 space-y-8">
+              <RoleConfigurationPanel />
               <UserBlockManagement blocks={blocks} onViewBlock={onViewBlock} onDeleteBlock={onDeleteBlock} onOpenAddBlockModal={onOpenAddBlockModal} onOpenStatsModal={onOpenStatsModal} setCurrentView={setCurrentView} />
               <CreatedBlocksManagement blocks={createdBlocks} setCurrentView={setCurrentView} onDeleteBlock={onDeleteBlock} />
             </div>
@@ -1731,10 +1950,12 @@
             <div className="space-y-8">
                 <div className="flex justify-between items-center">
                   <h2 className="text-3xl font-bold text-brand-light">Admin Panel</h2>
-                  <button onClick={() => { console.log('🔧 Navigating to add-question.html'); window.location.href = './add-question.html'; }} className="flex items-center gap-2 text-sm font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-2 px-4 rounded-md transition-colors">
-                      <PlusCircleIcon className="h-5 w-5" />
-                      <span>{t('add_question_button')}</span>
-                  </button>
+                  {hasRole(currentUser, 'creador') && (
+                    <button onClick={() => { console.log('🔧 Navigating to add-question.html'); window.location.href = './add-question.html'; }} className="flex items-center gap-2 text-sm font-semibold bg-brand-cta hover:bg-brand-cta-hover text-white py-2 px-4 rounded-md transition-colors">
+                        <PlusCircleIcon className="h-5 w-5" />
+                        <span>{t('add_question_button')}</span>
+                    </button>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -2110,8 +2331,78 @@
         const [notifications, setNotifications] = useState([]);
         const [unreadCount, setUnreadCount] = useState(0);
         const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
+        const [currentPanel, setCurrentPanel] = useState('juego');
         const dropdownRef = useRef(null);
         const notificationDropdownRef = useRef(null);
+
+        // Obtener roles disponibles del usuario actual
+        const getUserAvailablePanels = () => {
+          if (!currentUser) return [];
+          
+          const panels = [];
+          
+          // Panel de juego - siempre disponible
+          panels.push({
+            id: 'juego',
+            name: '🎮 Panel de Juego',
+            description: 'Jugar partidas y duelos'
+          });
+          
+          // Panel de creador - solo si tiene rol de creador
+          if (hasRole(currentUser, 'creador')) {
+            panels.push({
+              id: 'creador',
+              name: '🎨 Creador de Contenido',
+              description: 'Crear bloques y monetizar'
+            });
+          }
+          
+          // Panel de profesor - solo si tiene rol de profesor
+          if (hasRole(currentUser, 'profesor')) {
+            panels.push({
+              id: 'profesor',
+              name: '👨‍🏫 Panel de Profesor',
+              description: 'Gestionar estudiantes y clases'
+            });
+          }
+          
+          return panels;
+        };
+
+        const availablePanels = getUserAvailablePanels();
+
+        const handlePanelChange = (panelId) => {
+          console.log('🔀 Cambio de panel solicitado:', panelId);
+          
+          const uniqueId = Date.now() + Math.random();
+          
+          switch (panelId) {
+            case 'creador':
+              window.location.href = `creators-panel-content.html?id=${uniqueId}`;
+              break;
+            case 'profesor':
+              // Crear el panel de profesor cuando esté listo
+              console.log('🚧 Panel de profesor en desarrollo');
+              break;
+            case 'juego':
+            default:
+              window.location.href = `index.html?id=${uniqueId}`;
+              break;
+          }
+        };
+
+        // Detectar panel actual basado en la URL
+        useEffect(() => {
+          const currentUrl = window.location.href;
+          
+          if (currentUrl.includes('creators-panel-content.html')) {
+            setCurrentPanel('creador');
+          } else if (currentUrl.includes('teacher-panel.html')) {
+            setCurrentPanel('profesor');
+          } else {
+            setCurrentPanel('juego');
+          }
+        }, []);
 
         // Load notifications
         const loadNotifications = useCallback(async () => {
@@ -2179,7 +2470,30 @@
               <div className="flex items-center justify-between h-16">
                 <div className="flex items-center space-x-3">
                   <img src="./Imagenes/Playtest.png" alt="Playtest Logo" className="h-16 w-16" />
-                  <h1 className="text-xl md:text-2xl font-bold tracking-wider text-brand-light">{t('header_title')} <span className="font-light text-brand-accent hidden sm:inline">{t('header_subtitle')}</span></h1>
+                  <div className="flex items-center gap-4">
+                    <h1 className="text-xl md:text-2xl font-bold tracking-wider text-brand-light">{t('header_title')} <span className="font-light text-brand-accent hidden sm:inline">{t('header_subtitle')}</span></h1>
+                    
+                    {/* Selector de panel para usuarios con múltiples roles */}
+                    {availablePanels.length > 1 && (
+                      <div className="hidden md:flex items-center gap-2 ml-6">
+                        <span className="text-brand-accent text-sm">Panel:</span>
+                        <select 
+                          value={currentPanel}
+                          onChange={(e) => {
+                            setCurrentPanel(e.target.value);
+                            handlePanelChange(e.target.value);
+                          }}
+                          className="bg-brand-primary border border-brand-tertiary text-brand-light text-sm rounded-md px-3 py-1 focus:ring-2 focus:ring-brand-cta focus:outline-none"
+                        >
+                          {availablePanels.map(panel => (
+                            <option key={panel.id} value={panel.id}>
+                              {panel.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-4">
                   {/* Support buttons */}
@@ -2278,12 +2592,59 @@
                       <UserCircleIcon className="h-6 w-6" />
                     </button>
                     {isDropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-56 bg-brand-primary rounded-md shadow-lg z-20 ring-1 ring-black ring-opacity-5">
+                      <div className="absolute right-0 mt-2 w-64 bg-brand-primary rounded-md shadow-lg z-20 ring-1 ring-black ring-opacity-5">
                         <div className="py-1">
-                          <a href="#" onClick={(e) => { e.preventDefault(); /* Open Profile Modal */ setIsDropdownOpen(false); }} className="flex items-center gap-3 px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">{t('user_menu_profile')}</a>
-                          <a href="#" onClick={(e) => { e.preventDefault(); /* Open Password Modal */ setIsDropdownOpen(false); }} className="flex items-center gap-3 px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">{t('user_menu_password')}</a>
+                          {/* Selector de panel en móvil - solo si tiene múltiples roles */}
+                          {availablePanels.length > 1 && (
+                            <>
+                              <div className="px-4 py-2 text-xs font-semibold text-brand-accent uppercase tracking-wider">
+                                Cambiar Panel
+                              </div>
+                              {availablePanels.map(panel => (
+                                <a 
+                                  key={panel.id}
+                                  href="#" 
+                                  onClick={(e) => { 
+                                    e.preventDefault(); 
+                                    handlePanelChange(panel.id); 
+                                    setIsDropdownOpen(false); 
+                                  }}
+                                  className={`flex items-center gap-3 px-4 py-2 text-sm hover:bg-brand-tertiary ${
+                                    currentPanel === panel.id 
+                                      ? 'bg-brand-tertiary text-brand-cta font-semibold' 
+                                      : 'text-brand-light'
+                                  }`}
+                                >
+                                  <span className="text-base">{panel.name.split(' ')[0]}</span>
+                                  <div>
+                                    <div>{panel.name.substring(2)}</div>
+                                    <div className="text-xs text-brand-accent">{panel.description}</div>
+                                  </div>
+                                </a>
+                              ))}
+                              <div className="border-t border-brand-tertiary my-1"></div>
+                            </>
+                          )}
+                          
+                          <a href="#" onClick={(e) => { e.preventDefault(); /* Open Profile Modal */ setIsDropdownOpen(false); }} className="flex items-center gap-3 px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            {t('user_menu_profile')}
+                          </a>
+                          <a href="#" onClick={(e) => { e.preventDefault(); /* Open Password Modal */ setIsDropdownOpen(false); }} className="flex items-center gap-3 px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                            </svg>
+                            {t('user_menu_password')}
+                          </a>
                           <div className="border-t border-brand-tertiary my-1"></div>
-                          <a href="#" onClick={(e) => { e.preventDefault(); logout(); setIsDropdownOpen(false); }} className="flex items-center gap-3 px-4 py-2 text-sm text-brand-danger hover:bg-brand-danger/20">{t('user_menu_logout')}</a>
+                          <a href="#" onClick={(e) => { e.preventDefault(); logout(); setIsDropdownOpen(false); }} className="flex items-center gap-3 px-4 py-2 text-sm text-brand-danger hover:bg-brand-danger/20">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            {t('user_menu_logout')}
+                          </a>
                         </div>
                       </div>
                     )}
@@ -2860,7 +3221,7 @@
         const { t } = useLanguage();
         const { currentUser } = useUser();
         
-        // ADMIN REDIRECT LOGIC v2.4 - Support for both admin types
+        // ROLE-BASED REDIRECT LOGIC - Updated for multiple roles system
         useEffect(() => {
           if (!currentUser) return;
           
@@ -2868,78 +3229,71 @@
           console.log('📊 User role details:', {
             role: currentUser?.role,
             role_name: currentUser?.role_name,
+            roles: currentUser?.roles,
             nickname: currentUser?.nickname,
             fullObject: currentUser
           });
           
-          // Known secondary admins list
+          const primaryRole = getUserPrimaryRole(currentUser);
+          console.log('🎯 Primary role determined:', primaryRole);
+          
+          // Known secondary admins list (legacy support)
           const secondaryAdmins = ['kikejfer', 'admin_sec_1', 'admin_secundario'];
           
-          if (currentUser?.nickname === 'AdminPrincipal') {
-            console.log('🔀 ADMIN PRINCIPAL DETECTED - Starting redirect process v2.4');
-            
-            const url = window.location.href;
-            const isInAdminPanel = url.includes('admin-principal-panel.html');
-            
-            if (!isInAdminPanel) {
-              console.log('🎯 REDIRECTING TO ADMIN PRINCIPAL PANEL NOW');
-              const uniqueId = Date.now() + Math.random();
-              window.location.href = `admin-principal-panel.html?id=${uniqueId}`;
-            } else {
-              console.log('✅ Admin Principal already in correct location');
-            }
-          } else if (currentUser?.role === 'administrador_secundario' || 
-                     currentUser?.role_name === 'administrador_secundario' ||
-                     secondaryAdmins.includes(currentUser?.nickname) ||
-                     (currentUser && currentUser.nickname !== 'AdminPrincipal' && 
-                      (currentUser.isSecondaryAdmin || currentUser.secondary_admin))) {
-            console.log(`🔀 ADMIN SECUNDARIO DETECTED (${currentUser.nickname}) - Starting redirect process v2.4`);
-            
-            const url = window.location.href;
-            const isInSecondaryPanel = url.includes('admin-secundario-panel.html');
-            
-            if (!isInSecondaryPanel) {
-              console.log('🎯 REDIRECTING TO ADMIN SECUNDARIO PANEL NOW');
-              const uniqueId = Date.now() + Math.random();
-              window.location.href = `admin-secundario-panel.html?id=${uniqueId}`;
-            } else {
-              console.log('✅ Admin Secundario already in correct location');
-            }
-          } else if (currentUser?.role === 'creador' || 
-                     currentUser?.role_name === 'creador' ||
-                     currentUser?.role === 'creator' || 
-                     currentUser?.role_name === 'creator' ||
-                     currentUser?.role === 'profesor_creador' ||
-                     currentUser?.role_name === 'profesor_creador' ||
-                     currentUser?.isCreator || 
-                     currentUser?.is_creator ||
-                     (currentUser?.roles && currentUser.roles.includes('creador')) ||
-                     (currentUser?.roles && currentUser.roles.includes('creator'))) {
-            console.log(`🎨 CONTENT CREATOR DETECTED (${currentUser.nickname}) - Starting redirect process`);
-            console.log('🔍 Creator detection details:', {
-              role: currentUser?.role,
-              role_name: currentUser?.role_name,
-              isCreator: currentUser?.isCreator,
-              is_creator: currentUser?.is_creator,
-              roles: currentUser?.roles
-            });
-            
-            const url = window.location.href;
-            const isInCreatorPanel = url.includes('creators-panel-content.html');
-            
-            if (!isInCreatorPanel) {
-              console.log('🎯 REDIRECTING TO CONTENT CREATOR PANEL NOW');
-              const uniqueId = Date.now() + Math.random();
-              window.location.href = `creators-panel-content.html?id=${uniqueId}`;
-            } else {
-              console.log('✅ Content Creator already in correct location');
-            }
-          } else {
-            console.log('❓ User role not matching any admin or creator pattern:', {
-              role: currentUser?.role,
-              role_name: currentUser?.role_name,
-              nickname: currentUser?.nickname
-            });
+          // Redirect based on primary role
+          switch (primaryRole) {
+            case 'administrador_principal':
+              console.log('🔀 ADMIN PRINCIPAL DETECTED - Starting redirect process');
+              const url = window.location.href;
+              const isInAdminPanel = url.includes('admin-principal-panel.html');
+              
+              if (!isInAdminPanel) {
+                console.log('🎯 REDIRECTING TO ADMIN PRINCIPAL PANEL NOW');
+                const uniqueId = Date.now() + Math.random();
+                window.location.href = `admin-principal-panel.html?id=${uniqueId}`;
+              } else {
+                console.log('✅ Admin Principal already in correct location');
+              }
+              break;
+              
+            case 'administrador_secundario':
+              console.log(`🔀 ADMIN SECUNDARIO DETECTED (${currentUser.nickname}) - Starting redirect process`);
+              const currentUrl = window.location.href;
+              const isInSecondaryPanel = currentUrl.includes('admin-secundario-panel.html');
+              
+              if (!isInSecondaryPanel) {
+                console.log('🎯 REDIRECTING TO ADMIN SECUNDARIO PANEL NOW');
+                const uniqueId = Date.now() + Math.random();
+                window.location.href = `admin-secundario-panel.html?id=${uniqueId}`;
+              } else {
+                console.log('✅ Admin Secundario already in correct location');
+              }
+              break;
+              
+            case 'creador':
+              // Solo redirigir si ÚNICAMENTE tiene rol de creador (no multiple roles)
+              if (currentUser.roles && currentUser.roles.length === 1 && currentUser.roles[0] === 'creador') {
+                console.log(`🎨 PURE CONTENT CREATOR DETECTED (${currentUser.nickname}) - Starting redirect process`);
+                const creatorUrl = window.location.href;
+                const isInCreatorPanel = creatorUrl.includes('creators-panel-content.html');
+                
+                if (!isInCreatorPanel) {
+                  console.log('🎯 REDIRECTING TO CONTENT CREATOR PANEL NOW');
+                  const uniqueId = Date.now() + Math.random();
+                  window.location.href = `creators-panel-content.html?id=${uniqueId}`;
+                } else {
+                  console.log('✅ Content Creator already in correct location');
+                }
+              } else {
+                console.log(`🎮 MULTI-ROLE USER (${currentUser.nickname}) - Staying in game panel with navigation options`);
+              }
+              break;
+              
+            case 'jugador':
+            default:
+              console.log(`🎮 JUGADOR DETECTED (${currentUser.nickname}) - Staying in game panel`);
+              // Los jugadores permanecen en el panel principal (sin redirección)
+              break;
           }
         }, [currentUser]);
         
@@ -3318,7 +3672,8 @@
             const { confirmPassword, ...newUserPayload } = registerData;
             const response = await apiDataService.register(newUserPayload.nickname, newUserPayload.password, newUserPayload.email);
             if (response && response.user && response.token) {
-              onLogin(response.user, response.token, registerData.remember);
+              // Marcar como usuario nuevo para mostrar modal de roles
+              onLogin(response.user, response.token, registerData.remember, true);
             } else {
               setError(t('auth_error_generic'));
             }
@@ -3364,6 +3719,218 @@
                 <div className="flex items-center"><input id="remember_reg" name="remember" type="checkbox" checked={registerData.remember} onChange={handleRegisterChange} className="h-4 w-4 text-brand-cta border-brand-tertiary rounded focus:ring-brand-cta" /><label htmlFor="remember_reg" className="ml-2 block text-sm text-brand-accent">{t('auth_remember_me')}</label></div>
               </AuthForm>
             )}
+          </div>
+        );
+      };
+
+      // Modal de selección de roles para nuevos usuarios
+      const RoleSelectionModal = ({ isOpen, onComplete, onSkip, userNickname }) => {
+        const [selectedRoles, setSelectedRoles] = useState(['jugador']); // Jugador por defecto
+        
+        const toggleRole = (role) => {
+          setSelectedRoles(prev => 
+            prev.includes(role) 
+              ? prev.filter(r => r !== role)
+              : [...prev, role]
+          );
+        };
+        
+        const handleComplete = async () => {
+          console.log('🎯 Roles seleccionados:', selectedRoles);
+          
+          try {
+            // Aquí se enviarían los roles al backend
+            const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+              ? 'https://playtest-backend.onrender.com' 
+              : '';
+              
+            const token = localStorage.getItem('playtest_auth_token');
+            
+            if (token) {
+              const response = await fetch(`${API_BASE_URL}/api/users/me/roles`, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ roles: selectedRoles })
+              });
+              
+              if (response.ok) {
+                console.log('✅ Roles guardados correctamente');
+              } else {
+                console.warn('⚠️ Error guardando roles, continuando...');
+              }
+            }
+          } catch (error) {
+            console.warn('⚠️ Error enviando roles:', error);
+          }
+          
+          onComplete(selectedRoles);
+        };
+        
+        const handleSkip = () => {
+          console.log('⏭️ Usuario omitió selección de roles');
+          onSkip();
+        };
+        
+        if (!isOpen) return null;
+        
+        return (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(13, 27, 42, 0.9)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px'
+          }}>
+            <div style={{
+              backgroundColor: '#1B263B',
+              border: '1px solid #415A77',
+              borderRadius: '12px',
+              padding: '30px',
+              maxWidth: '500px',
+              width: '100%',
+              maxHeight: '80vh',
+              overflowY: 'auto'
+            }}>
+              <h2 style={{
+                fontSize: '24px',
+                fontWeight: 'bold',
+                color: '#E0E1DD',
+                marginBottom: '10px',
+                textAlign: 'center'
+              }}>
+                🎉 ¡Bienvenido a PLAYTEST, {userNickname}!
+              </h2>
+              
+              <p style={{
+                color: '#778DA9',
+                marginBottom: '25px',
+                textAlign: 'center'
+              }}>
+                Selecciona todos los roles que te interesen. Puedes cambiarlos después:
+              </p>
+              
+              <div style={{ marginBottom: '25px' }}>
+                {[
+                  {
+                    id: 'jugador',
+                    icon: '🎮',
+                    title: 'Jugador',
+                    description: 'Participar en juegos, duelos y trivias'
+                  },
+                  {
+                    id: 'creador',
+                    icon: '🎨', 
+                    title: 'Creador de Contenido',
+                    description: 'Crear bloques, monetizar contenido, analytics'
+                  },
+                  {
+                    id: 'profesor',
+                    icon: '👨‍🏫',
+                    title: 'Profesor', 
+                    description: 'Gestionar estudiantes, crear actividades educativas'
+                  }
+                ].map(role => (
+                  <label key={role.id} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '15px',
+                    backgroundColor: selectedRoles.includes(role.id) ? '#415A77' : '#0D1B2A',
+                    border: `1px solid ${selectedRoles.includes(role.id) ? '#3B82F6' : '#415A77'}`,
+                    borderRadius: '8px',
+                    marginBottom: '12px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedRoles.includes(role.id)}
+                      onChange={() => toggleRole(role.id)}
+                      style={{ 
+                        marginRight: '15px',
+                        accentColor: '#3B82F6'
+                      }}
+                    />
+                    <div>
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '10px',
+                        marginBottom: '4px'
+                      }}>
+                        <span style={{ fontSize: '20px' }}>{role.icon}</span>
+                        <h3 style={{
+                          color: '#E0E1DD',
+                          fontWeight: 'bold',
+                          margin: 0
+                        }}>{role.title}</h3>
+                      </div>
+                      <p style={{
+                        color: '#778DA9',
+                        fontSize: '14px',
+                        margin: 0
+                      }}>{role.description}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              
+              <div style={{ 
+                display: 'flex', 
+                gap: '12px',
+                marginBottom: '15px'
+              }}>
+                <button
+                  onClick={handleComplete}
+                  disabled={selectedRoles.length === 0}
+                  style={{
+                    flex: 1,
+                    backgroundColor: selectedRoles.length > 0 ? '#3B82F6' : '#415A77',
+                    color: '#E0E1DD',
+                    border: 'none',
+                    padding: '12px 20px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: selectedRoles.length > 0 ? 'pointer' : 'not-allowed',
+                    transition: 'background-color 0.3s ease'
+                  }}
+                >
+                  ✅ Continuar con mis roles
+                </button>
+                
+                <button
+                  onClick={handleSkip}
+                  style={{
+                    backgroundColor: '#778DA9',
+                    color: '#E0E1DD',
+                    border: 'none',
+                    padding: '12px 20px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.3s ease'
+                  }}
+                >
+                  ⏭️ Decidir después
+                </button>
+              </div>
+              
+              <p style={{
+                fontSize: '12px',
+                color: '#778DA9',
+                textAlign: 'center',
+                margin: 0
+              }}>
+                💡 Puedes cambiar tus roles en cualquier momento desde Configuración
+              </p>
+            </div>
           </div>
         );
       };
@@ -3467,6 +4034,8 @@
         console.log("🔐 AuthController component initialized");
         const [currentUser, setCurrentUser] = useState(null);
         const [isLoading, setIsLoading] = useState(true);
+        const [showRoleModal, setShowRoleModal] = useState(false);
+        const [pendingUser, setPendingUser] = useState(null);
 
         useEffect(() => {
           console.log('Checking for existing session...');
@@ -3523,8 +4092,8 @@
           setIsLoading(false);
         }, []);
 
-        const handleLogin = (user, token, remember) => {
-          console.log('handleLogin called with:', user, 'token:', token ? 'exists' : 'missing', 'remember:', remember);
+        const handleLogin = (user, token, remember, isNewUser = false) => {
+          console.log('handleLogin called with:', user, 'token:', token ? 'exists' : 'missing', 'remember:', remember, 'isNewUser:', isNewUser);
           
           // Save both session data AND auth token
           const sessionData = { 
@@ -3540,16 +4109,62 @@
           const savedSession = localStorage.getItem('playtest_session');
           console.log('🔍 Verification - what was actually saved:', savedSession);
           
-          // Then set the user state
-          setCurrentUser(user);
-          console.log('✅ User state set successfully');
-          
           if (remember) {
             localStorage.setItem('playtest_session', JSON.stringify({
               userId: user.id,
               nickname: user.nickname
             }));
           }
+          
+          // Si es un usuario nuevo o no tiene roles definidos, mostrar modal de selección
+          const hasRoles = user.roles && user.roles.length > 0;
+          const hasRoleInfo = user.role || user.role_name;
+          
+          if (isNewUser || (!hasRoles && !hasRoleInfo)) {
+            console.log('🎯 Usuario nuevo o sin roles, mostrando modal de selección');
+            setPendingUser(user);
+            setShowRoleModal(true);
+          } else {
+            // Usuario existente con roles, continuar normalmente
+            console.log('✅ Usuario existente con roles, continuando...');
+            setCurrentUser(user);
+          }
+        };
+        
+        const handleRoleSelectionComplete = (selectedRoles) => {
+          console.log('🎯 Roles seleccionados completados:', selectedRoles);
+          
+          // Actualizar el usuario con los roles seleccionados
+          const updatedUser = {
+            ...pendingUser,
+            roles: selectedRoles,
+            role: selectedRoles[0], // Primer rol como principal
+            role_name: selectedRoles[0]
+          };
+          
+          setCurrentUser(updatedUser);
+          setShowRoleModal(false);
+          setPendingUser(null);
+          
+          console.log('✅ Usuario configurado con roles:', updatedUser);
+        };
+        
+        const handleRoleSelectionSkip = () => {
+          console.log('⏭️ Selección de roles omitida');
+          
+          // Asignar rol por defecto
+          const defaultUser = {
+            ...pendingUser,
+            roles: ['jugador'],
+            role: 'jugador',
+            role_name: 'jugador'
+          };
+          
+          setCurrentUser(defaultUser);
+          setShowRoleModal(false);
+          setPendingUser(null);
+          
+          console.log('✅ Usuario configurado con rol por defecto:', defaultUser);
         };
 
         const handleLogout = async () => {
@@ -3578,6 +4193,14 @@
         return (
           <UserContext.Provider value={{ currentUser, logout: handleLogout }}>
             {currentUser ? <App /> : <AuthPage onLogin={handleLogin} />}
+            
+            {/* Modal de selección de roles para usuarios nuevos */}
+            <RoleSelectionModal
+              isOpen={showRoleModal}
+              userNickname={pendingUser?.nickname || ''}
+              onComplete={handleRoleSelectionComplete}
+              onSkip={handleRoleSelectionSkip}
+            />
           </UserContext.Provider>
         );
       }

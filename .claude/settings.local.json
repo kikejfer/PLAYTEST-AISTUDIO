@@ -34,7 +34,8 @@
       "Bash(start admin-principal-panel.html)",
       "Bash(start admin-secundario-panel.html)",
       "Bash(start admin-secundario-panel-test.html)",
-      "Bash(start index.html)"
+      "Bash(start index.html)",
+      "Bash(del \"C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\test-roles.js\")"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
