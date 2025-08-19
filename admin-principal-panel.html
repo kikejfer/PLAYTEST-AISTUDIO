@@ -509,14 +509,49 @@
             </div>
         </div>
 
-        <!-- Sección 2: Profesores/Creadores -->
+        <!-- Sección 2: Profesores -->
         <div class="section">
             <div class="section-header">
-                <span>Profesores/Creadores de Contenido</span>
+                <span>Profesores</span>
+                <div class="section-actions">
+                    <input type="text" id="profesores-search" placeholder="Buscar profesores..." style="padding: 5px 10px; border: 1px solid #415A77; border-radius: 3px; background: #1B263B; color: #E0E1DD; font-size: 14px;">
+                </div>
             </div>
             <div class="section-content">
                 <div class="table-container">
                     <table id="profesores-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Nickname / Nombre</th>
+                                <th>Email</th>
+                                <th>Rol</th>
+                                <th>Núm. Estudiantes</th>
+                                <th>Núm. Clases</th>
+                                <th>Admin. Secundario Asignado</th>
+                                <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
+                                <th>🗑️</th>
+                            </tr>
+                        </thead>
+                        <tbody id="profesores-tbody">
+                            <!-- Los datos se cargan dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección 3: Creadores de Contenido -->
+        <div class="section">
+            <div class="section-header">
+                <span>Creadores de Contenido</span>
+                <div class="section-actions">
+                    <input type="text" id="creadores-search" placeholder="Buscar creadores..." style="padding: 5px 10px; border: 1px solid #415A77; border-radius: 3px; background: #1B263B; color: #E0E1DD; font-size: 14px;">
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="table-container">
+                    <table id="creadores-table">
                         <thead>
                             <tr>
                                 <th></th>
@@ -531,7 +566,7 @@
                                 <th>🗑️</th>
                             </tr>
                         </thead>
-                        <tbody id="profesores-tbody">
+                        <tbody id="creadores-tbody">
                             <!-- Los datos se cargan dinámicamente -->
                         </tbody>
                     </table>
@@ -539,7 +574,7 @@
             </div>
         </div>
 
-        <!-- Sección 3: Usuarios (Jugadores) -->
+        <!-- Sección 4: Usuarios (Jugadores) -->
         <div class="section">
             <div class="section-header">
                 <span>Usuarios (Jugadores)</span>
@@ -955,6 +990,7 @@
         function renderTables() {
             renderAdminsTable();
             renderProfesoresTable();
+            renderCreadoresTable();
             renderUsuariosTable();
         }
 
@@ -997,14 +1033,16 @@
             const tbody = document.getElementById('profesores-tbody');
             tbody.innerHTML = '';
 
-            panelData.profesoresCreadores.forEach((profesor, index) => {
+            const profesores = panelData.profesoresCreadores.filter(user => user.role_name === 'profesor');
+            
+            profesores.forEach((profesor, index) => {
                 const row = document.createElement('tr');
                 const isExpanded = expandedRows.has(`profesor-${profesor.id}`);
-                const roleDisplay = profesor.role_name === 'profesor' ? 'Profesor' : 'Creador de Contenido';
                 const fullName = [profesor.first_name, profesor.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
-                // Usar los datos disponibles directamente - el backend debería proporcionar esta información
-                const totalUsuarios = profesor.total_users_blocks || 0;
+                // Información específica para profesores
+                const totalEstudiantes = profesor.total_students || 0;
+                const totalClases = profesor.total_classes || 0;
                 
                 row.innerHTML = `
                     <td>
@@ -1014,10 +1052,9 @@
                     </td>
                     <td><strong>${profesor.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
                     <td>${profesor.email || 'Sin email'}</td>
-                    <td><span style="color: #F59E0B;">${roleDisplay}</span></td>
-                    <td><strong style="color: #10B981;">${profesor.blocks_created || 0}</strong></td>
-                    <td><strong style="color: #3B82F6;">${profesor.total_questions || 0}</strong></td>
-                    <td><strong style="color: #8B5CF6;">${totalUsuarios}</strong></td>
+                    <td><span style="color: #3B82F6;">Profesor</span></td>
+                    <td><strong style="color: #10B981;">${totalEstudiantes}</strong></td>
+                    <td><strong style="color: #8B5CF6;">${totalClases}</strong></td>
                     <td>
                         <select onchange="reassignUser(${profesor.id}, this.value)">
                             <option value="">${profesor.assigned_admin_nickname || 'Sin asignar'}</option>
@@ -1046,6 +1083,64 @@
                     `;
                     tbody.appendChild(expandRow);
                     loadProfesorBlocks(profesor.id);
+                }
+            });
+        }
+
+        function renderCreadoresTable() {
+            const tbody = document.getElementById('creadores-tbody');
+            tbody.innerHTML = '';
+
+            const creadores = panelData.profesoresCreadores.filter(user => user.role_name === 'creador');
+            
+            creadores.forEach((creador, index) => {
+                const row = document.createElement('tr');
+                const isExpanded = expandedRows.has(`creador-${creador.id}`);
+                const fullName = [creador.first_name, creador.last_name].filter(Boolean).join(' ') || 'No especificado';
+                
+                // Información específica para creadores de contenido
+                const totalUsuarios = creador.total_users_blocks || 0;
+                
+                row.innerHTML = `
+                    <td>
+                        <button class="btn btn-expand" onclick="toggleCreadorExpansion(${creador.id})">
+                            ${isExpanded ? '−' : '+'}
+                        </button>
+                    </td>
+                    <td><strong>${creador.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
+                    <td>${creador.email || 'Sin email'}</td>
+                    <td><span style="color: #10B981;">Creador de Contenido</span></td>
+                    <td><strong style="color: #F59E0B;">${creador.blocks_created || 0}</strong></td>
+                    <td><strong style="color: #3B82F6;">${creador.total_questions || 0}</strong></td>
+                    <td><strong style="color: #8B5CF6;">${totalUsuarios}</strong></td>
+                    <td>
+                        <select onchange="reassignUser(${creador.id}, this.value)">
+                            <option value="">${creador.assigned_admin_nickname || 'Sin asignar'}</option>
+                            ${getAdminOptions(creador.assigned_admin_id)}
+                        </select>
+                    </td>
+                    <td class="luminarias">
+                        ${creador.luminarias_actuales || 0}
+                    </td>
+                    <td>
+                        <button onclick="deleteUser(${creador.id}, '${creador.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+
+                // Fila expandible para bloques
+                if (isExpanded) {
+                    const expandRow = document.createElement('tr');
+                    expandRow.className = 'expandable-row show';
+                    expandRow.innerHTML = `
+                        <td colspan="10">
+                            <div id="creador-blocks-${creador.id}">
+                                <div class="loading">Cargando bloques...</div>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(expandRow);
+                    loadCreadorBlocks(creador.id);
                 }
             });
         }
@@ -1098,6 +1193,7 @@
                 expandedRows.add(key);
             }
             renderProfesoresTable();
+            renderCreadoresTable();
         }
 
         async function loadProfesorBlocks(profesorId) {
@@ -1152,6 +1248,72 @@
             } catch (error) {
                 console.error('Error cargando bloques:', error);
                 document.getElementById(`profesor-blocks-${profesorId}`).innerHTML = 
+                    '<p style="color: red;">Error al cargar los bloques</p>';
+            }
+        }
+
+        function toggleCreadorExpansion(creadorId) {
+            const key = `creador-${creadorId}`;
+            if (expandedRows.has(key)) {
+                expandedRows.delete(key);
+            } else {
+                expandedRows.add(key);
+            }
+            renderCreadoresTable();
+        }
+
+        async function loadCreadorBlocks(creadorId) {
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/creadores/${creadorId}/bloques`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Error al cargar bloques');
+
+                const result = await response.json();
+                const blocks = result.bloques || [];
+                const container = document.getElementById(`creador-blocks-${creadorId}`);
+                
+                if (blocks.length === 0) {
+                    container.innerHTML = '<p>No tiene bloques públicos creados</p>';
+                    return;
+                }
+
+                let html = '<table class="nested-table"><thead><tr><th></th><th>Bloque</th><th>Núm. Temas</th><th>Total Preguntas</th><th>Usuarios</th><th>Fecha Creación</th></tr></thead><tbody>';
+                
+                blocks.forEach(block => {
+                    html += `
+                        <tr>
+                            <td>
+                                <button class="btn btn-expand" onclick="toggleBlockExpansion(${block.id})" style="font-size: 18px; padding: 4px 8px;">+</button>
+                            </td>
+                            <td><strong>${block.name}</strong></td>
+                            <td>${block.num_temas}</td>
+                            <td>${block.total_preguntas}</td>
+                            <td>${block.usuarios_bloque}</td>
+                            <td>${new Date(block.created_at).toLocaleDateString()}</td>
+                        </tr>
+                        <tr id="block-expansion-${block.id}" style="display: none;">
+                            <td colspan="6">
+                                <div id="block-topics-${block.id}">Cargando temas...</div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error cargando bloques:', error);
+                document.getElementById(`creador-blocks-${creadorId}`).innerHTML = 
                     '<p style="color: red;">Error al cargar los bloques</p>';
             }
         }
@@ -1573,6 +1735,51 @@ Total elementos eliminados: ${result.total_deleted}`);
                 console.error('Error borrando usuario:', error);
                 alert('❌ Error: ' + error.message);
             }
+        }
+
+        // Funciones de filtrado para las tablas
+        document.addEventListener('DOMContentLoaded', function() {
+            // Filtro para tabla de profesores
+            const profesoresSearch = document.getElementById('profesores-search');
+            if (profesoresSearch) {
+                profesoresSearch.addEventListener('input', function() {
+                    filterTable('profesores-table', this.value);
+                });
+            }
+
+            // Filtro para tabla de creadores
+            const creadoresSearch = document.getElementById('creadores-search');
+            if (creadoresSearch) {
+                creadoresSearch.addEventListener('input', function() {
+                    filterTable('creadores-table', this.value);
+                });
+            }
+        });
+
+        function filterTable(tableId, searchTerm) {
+            const table = document.getElementById(tableId);
+            const tbody = table.querySelector('tbody');
+            const rows = tbody.querySelectorAll('tr');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                if (row.classList.contains('expandable-row')) {
+                    // Skip expandable rows
+                    return;
+                }
+                
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 1 && cells[0].hasAttribute('colspan')) {
+                    // Es una fila de expansión, mantenerla oculta si no hay resultados
+                    return;
+                }
+                
+                const text = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+                const isVisible = text.includes(searchTerm.toLowerCase());
+                
+                row.style.display = isVisible ? '' : 'none';
+                if (isVisible) visibleCount++;
+            });
         }
 
     </script>
