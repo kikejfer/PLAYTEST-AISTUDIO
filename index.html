@@ -3368,6 +3368,101 @@
         );
       };
 
+      // Function to fetch complete user data including role
+      const fetchCompleteUserData = async (userId, token) => {
+        try {
+          const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+            ? 'https://playtest-backend.onrender.com' 
+            : '';
+          
+          console.log(`🔍 Fetching complete user data for ID: ${userId}`);
+          
+          // Try multiple endpoints to get user role information
+          const endpoints = [
+            `${API_BASE_URL}/api/roles-updated/admin-principal-panel`,
+            `${API_BASE_URL}/api/users/${userId}`,
+            `${API_BASE_URL}/api/auth/me`
+          ];
+          
+          for (const endpoint of endpoints) {
+            try {
+              console.log(`🔗 Trying endpoint: ${endpoint}`);
+              const response = await fetch(endpoint, {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                }
+              });
+              
+              if (response.ok) {
+                const data = await response.json();
+                console.log(`📦 Response from ${endpoint}:`, data);
+                
+                // Look for user data in different possible structures
+                let userData = null;
+                
+                if (data.profesoresCreadores) {
+                  // Admin panel endpoint - look in profesoresCreadores
+                  userData = data.profesoresCreadores.find(p => p.id === userId);
+                  if (userData) {
+                    console.log('👨‍🏫 Found user in profesoresCreadores:', userData);
+                    return {
+                      id: userData.id,
+                      nickname: userData.nickname,
+                      role: 'creador',
+                      role_name: 'creador',
+                      first_name: userData.first_name,
+                      last_name: userData.last_name,
+                      email: userData.email
+                    };
+                  }
+                }
+                
+                if (data.usuarios) {
+                  // Admin panel endpoint - look in usuarios
+                  userData = data.usuarios.find(u => u.id === userId);
+                  if (userData) {
+                    console.log('👤 Found user in usuarios:', userData);
+                    return {
+                      id: userData.id,
+                      nickname: userData.nickname,
+                      role: userData.role || 'user',
+                      role_name: userData.role_name || userData.role || 'user',
+                      first_name: userData.first_name,
+                      last_name: userData.last_name,
+                      email: userData.email
+                    };
+                  }
+                }
+                
+                if (data.id === userId) {
+                  // Direct user endpoint
+                  console.log('🎯 Found direct user data:', data);
+                  return {
+                    id: data.id,
+                    nickname: data.nickname,
+                    role: data.role || data.user_role,
+                    role_name: data.role_name || data.role || data.user_role,
+                    first_name: data.first_name,
+                    last_name: data.last_name,
+                    email: data.email
+                  };
+                }
+              }
+            } catch (endpointError) {
+              console.warn(`⚠️ Error with endpoint ${endpoint}:`, endpointError);
+            }
+          }
+          
+          console.log('❌ User not found in any endpoint');
+          return null;
+          
+        } catch (error) {
+          console.error('❌ Error fetching complete user data:', error);
+          return null;
+        }
+      };
+
       const AuthController = () => {
         console.log("🔐 AuthController component initialized");
         const [currentUser, setCurrentUser] = useState(null);
@@ -3387,12 +3482,12 @@
               
               // Check if session has valid data
               if (session && session.userId && session.nickname) {
-                // Create user object from session data (no need to query local DB)
+                // Create user object from session data initially
                 const user = {
                   id: session.userId,
                   nickname: session.nickname
                 };
-                console.log('✅ Restoring user session:', user);
+                console.log('✅ Restoring user session (basic data):', user);
                 setCurrentUser(user);
                 
                 // Ensure apiDataService has the token
@@ -3400,6 +3495,17 @@
                   apiDataService.token = token;
                   console.log('Set token in apiDataService');
                 }
+                
+                // Fetch complete user data from backend including role
+                fetchCompleteUserData(user.id, token).then(completeUser => {
+                  if (completeUser) {
+                    console.log('✅ Updated user with complete data:', completeUser);
+                    setCurrentUser(completeUser);
+                  }
+                }).catch(error => {
+                  console.warn('⚠️ Could not fetch complete user data:', error);
+                  // Keep basic user data if backend call fails
+                });
               } else {
                 console.log('❌ Session data is invalid or incomplete, clearing...');
                 localStorage.removeItem('playtest_session');
