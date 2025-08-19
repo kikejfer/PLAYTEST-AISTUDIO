@@ -2864,6 +2864,14 @@
         useEffect(() => {
           if (!currentUser) return;
           
+          console.log('🔍 CHECKING USER FOR REDIRECTS:', currentUser);
+          console.log('📊 User role details:', {
+            role: currentUser?.role,
+            role_name: currentUser?.role_name,
+            nickname: currentUser?.nickname,
+            fullObject: currentUser
+          });
+          
           // Known secondary admins list
           const secondaryAdmins = ['kikejfer', 'admin_sec_1', 'admin_secundario'];
           
@@ -2900,8 +2908,21 @@
           } else if (currentUser?.role === 'creador' || 
                      currentUser?.role_name === 'creador' ||
                      currentUser?.role === 'creator' || 
-                     currentUser?.role_name === 'creator') {
+                     currentUser?.role_name === 'creator' ||
+                     currentUser?.role === 'profesor_creador' ||
+                     currentUser?.role_name === 'profesor_creador' ||
+                     currentUser?.isCreator || 
+                     currentUser?.is_creator ||
+                     (currentUser?.roles && currentUser.roles.includes('creador')) ||
+                     (currentUser?.roles && currentUser.roles.includes('creator'))) {
             console.log(`🎨 CONTENT CREATOR DETECTED (${currentUser.nickname}) - Starting redirect process`);
+            console.log('🔍 Creator detection details:', {
+              role: currentUser?.role,
+              role_name: currentUser?.role_name,
+              isCreator: currentUser?.isCreator,
+              is_creator: currentUser?.is_creator,
+              roles: currentUser?.roles
+            });
             
             const url = window.location.href;
             const isInCreatorPanel = url.includes('creators-panel-content.html');
@@ -2913,6 +2934,12 @@
             } else {
               console.log('✅ Content Creator already in correct location');
             }
+          } else {
+            console.log('❓ User role not matching any admin or creator pattern:', {
+              role: currentUser?.role,
+              role_name: currentUser?.role_name,
+              nickname: currentUser?.nickname
+            });
           }
         }, [currentUser]);
         
