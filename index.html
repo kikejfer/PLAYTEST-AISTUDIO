@@ -1415,6 +1415,7 @@
       
       const UserBlockManagement = ({ blocks, onViewBlock, onDeleteBlock, onOpenAddBlockModal, onOpenStatsModal, setCurrentView }) => {
           const { t } = useLanguage();
+          const { currentUser } = useUser();
           const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
           const [expandedBlockId, setExpandedBlockId] = useState(null);
 
