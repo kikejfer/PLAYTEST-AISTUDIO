@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cronogramas Académicos - Panel de Profesores | PLAYTEST</title>
+    <title>Cronogramas Académicos - Panel de Profesores | LumiQuiz</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="navigation-service.js"></script>
     <style>
@@ -28,16 +28,21 @@
             color: #E0E1DD;
         }
 
-        /* User header styles */
+        /* User header styles - fixed position */
         .user-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
             background: #415A77;
             color: #E0E1DD;
-            padding: 10px 20px;
+            padding: 12px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            height: 60px;
         }
 
         .user-info {
@@ -47,42 +52,104 @@
         }
 
         .user-avatar {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            background: #3B82F6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
             color: white;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .user-details h4 {
             margin: 0;
-            font-size: 14px;
+            font-size: 16px;
             color: #E0E1DD;
+            font-weight: 600;
         }
 
         .user-details p {
             margin: 0;
-            font-size: 12px;
+            font-size: 13px;
             color: #778DA9;
         }
 
-        .logout-btn {
-            background: #EF4444;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: background 0.3s ease;
+        .user-dropdown {
+            position: relative;
         }
 
-        .logout-btn:hover {
-            background: #DC2626;
+        .dropdown-toggle {
+            background: transparent;
+            border: 1px solid #778DA9;
+            color: #E0E1DD;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-toggle:hover {
+            background: rgba(119, 141, 169, 0.2);
+            border-color: #E0E1DD;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            min-width: 240px;
+            overflow: hidden;
+            transform: translateY(10px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .dropdown-menu.show {
+            transform: translateY(5px);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #333;
+            text-decoration: none;
+            transition: background 0.2s ease;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f9fa;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item.danger {
+            color: #dc3545;
+        }
+
+        .dropdown-item.danger:hover {
+            background: #ffeaea;
         }
 
         .container {
@@ -592,21 +659,56 @@
     </style>
 </head>
 <body>
-    <!-- User Header -->
+    <!-- Unified User Header -->
     <div class="user-header">
         <div class="user-info">
-            <div class="user-avatar" id="user-avatar">P</div>
+            <div class="user-avatar" id="user-avatar">L</div>
             <div class="user-details">
                 <h4 id="user-name">Cargando...</h4>
                 <p id="user-role">Profesor</p>
             </div>
         </div>
-        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        <div class="user-dropdown">
+            <button class="dropdown-toggle" onclick="toggleDropdown()">
+                <span id="dropdown-user-name">Usuario</span>
+                <span>▼</span>
+            </button>
+            <div class="dropdown-menu" id="dropdown-menu">
+                <a href="#" class="dropdown-item" onclick="openPersonalDataModal()">
+                    <span>👤</span>
+                    <span>Datos Personales</span>
+                </a>
+                <a href="#" class="dropdown-item" onclick="openPasswordChangeModal()">
+                    <span>🔐</span>
+                    <span>Cambiar Contraseña</span>
+                </a>
+                <a href="#" class="dropdown-item" onclick="openCurrentRolesModal()">
+                    <span>🎭</span>
+                    <span>Roles Actuales</span>
+                </a>
+                <a href="#" class="dropdown-item" onclick="openGamePresentationModal()">
+                    <span>🎮</span>
+                    <span>Presentación del Juego</span>
+                </a>
+                <a href="#" class="dropdown-item" onclick="openLuminariasModal()">
+                    <span>✨</span>
+                    <span>Explicación de Luminarias</span>
+                </a>
+                <a href="#" class="dropdown-item" onclick="openRoleLevelsModal()">
+                    <span>🏆</span>
+                    <span>Niveles de Roles</span>
+                </a>
+                <a href="#" class="dropdown-item danger" onclick="logout()">
+                    <span>🚪</span>
+                    <span>Cerrar Sesión</span>
+                </a>
+            </div>
+        </div>
     </div>
     <div class="container">
         <div class="header">
             <h1>📅 Panel de Profesores - Cronogramas Académicos y Planificación</h1>
-            <p>Planificación temporal estructurada, asignación inteligente de contenido y gestión de evaluaciones</p>
+            <p>Planificación temporal estructurada con Lumi, asignación inteligente de contenido y gestión de evaluaciones</p>
         </div>
 
         <div class="tabs-container">
@@ -848,7 +950,7 @@
                     <label class="form-label">Bloques a Asignar (IDs separados por comas)</label>
                     <input type="text" class="form-control" name="block_ids" 
                            placeholder="Ej: 1, 2, 3, 5, 8">
-                    <small style="color: #666;">IDs de los bloques de PLAYTEST que quieres asignar</small>
+                    <small style="color: #666;">IDs de los bloques de LumiQuiz que quieres asignar</small>
                 </div>
 
                 <div class="form-group">
@@ -1349,16 +1451,92 @@
             document.getElementById(containerId).innerHTML = `<div class="error">${message}</div>`;
         }
 
+        // Dropdown functionality
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdown-menu');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('dropdown-menu');
+            const toggle = event.target.closest('.dropdown-toggle');
+            
+            if (!toggle && dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // User dropdown functions
+        function openPersonalDataModal() {
+            document.getElementById('personalDataModal').style.display = 'block';
+            toggleDropdown();
+        }
+
+        function openPasswordChangeModal() {
+            document.getElementById('passwordChangeModal').style.display = 'block';
+            toggleDropdown();
+        }
+
+        function openCurrentRolesModal() {
+            document.getElementById('currentRolesModal').style.display = 'block';
+            toggleDropdown();
+        }
+
+        function openGamePresentationModal() {
+            document.getElementById('gamePresentationModal').style.display = 'block';
+            toggleDropdown();
+        }
+
+        function openLuminariasModal() {
+            document.getElementById('luminariasModal').style.display = 'block';
+            toggleDropdown();
+        }
+
+        function openRoleLevelsModal() {
+            document.getElementById('roleLevelsModal').style.display = 'block';
+            toggleDropdown();
+        }
+
+        // Close modal functions
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
         // Cerrar modales al hacer click fuera
         window.onclick = function(event) {
             const scheduleModal = document.getElementById('scheduleModal');
             const assignmentModal = document.getElementById('assignmentModal');
+            const personalDataModal = document.getElementById('personalDataModal');
+            const passwordChangeModal = document.getElementById('passwordChangeModal');
+            const currentRolesModal = document.getElementById('currentRolesModal');
+            const gamePresentationModal = document.getElementById('gamePresentationModal');
+            const luminariasModal = document.getElementById('luminariasModal');
+            const roleLevelsModal = document.getElementById('roleLevelsModal');
             
             if (event.target === scheduleModal) {
                 closeScheduleModal();
             }
             if (event.target === assignmentModal) {
                 closeAssignmentModal();
+            }
+            if (event.target === personalDataModal) {
+                closeModal('personalDataModal');
+            }
+            if (event.target === passwordChangeModal) {
+                closeModal('passwordChangeModal');
+            }
+            if (event.target === currentRolesModal) {
+                closeModal('currentRolesModal');
+            }
+            if (event.target === gamePresentationModal) {
+                closeModal('gamePresentationModal');
+            }
+            if (event.target === luminariasModal) {
+                closeModal('luminariasModal');
+            }
+            if (event.target === roleLevelsModal) {
+                closeModal('roleLevelsModal');
             }
         }
     </script>
@@ -1389,18 +1567,22 @@
                     const userData = JSON.parse(jsonPayload);
                     currentUser = userData;
                     
-                    document.getElementById('user-name').textContent = userData.email || userData.username || 'Profesor';
-                    document.getElementById('user-avatar').textContent = (userData.email || userData.username || 'P')[0].toUpperCase();
+                    const userName = userData.email || userData.username || userData.nickname || 'Profesor';
+                    document.getElementById('user-name').textContent = userName;
+                    document.getElementById('dropdown-user-name').textContent = userName;
+                    document.getElementById('user-avatar').textContent = userName[0].toUpperCase();
                     
                 } catch (tokenError) {
                     document.getElementById('user-name').textContent = 'Profesor';
-                    document.getElementById('user-avatar').textContent = 'P';
+                    document.getElementById('dropdown-user-name').textContent = 'Profesor';
+                    document.getElementById('user-avatar').textContent = 'L';
                 }
                 
             } catch (error) {
                 console.error('Error loading user data:', error);
                 document.getElementById('user-name').textContent = 'Profesor';
-                document.getElementById('user-avatar').textContent = 'P';
+                document.getElementById('dropdown-user-name').textContent = 'Profesor';
+                document.getElementById('user-avatar').textContent = 'L';
             }
         }
 
@@ -1417,5 +1599,255 @@
             window.location.href = 'index.html';
         }
     </script>
+
+    <!-- User Dropdown Modals -->
+    
+    <!-- Personal Data Modal -->
+    <div id="personalDataModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">👤 Datos Personales</h3>
+                <button class="close" onclick="closeModal('personalDataModal')">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <div class="form-group">
+                    <label class="form-label">Nombre de Usuario:</label>
+                    <p id="personal-username" style="font-weight: 600; color: #333;">-</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email:</label>
+                    <p id="personal-email" style="font-weight: 600; color: #333;">-</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Rol Principal:</label>
+                    <p id="personal-role" style="font-weight: 600; color: #667eea;">-</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fecha de Registro:</label>
+                    <p id="personal-date" style="font-weight: 600; color: #333;">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Change Modal -->
+    <div id="passwordChangeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">🔐 Cambiar Contraseña</h3>
+                <button class="close" onclick="closeModal('passwordChangeModal')">&times;</button>
+            </div>
+            <form style="padding: 20px;">
+                <div class="form-group">
+                    <label class="form-label">Contraseña Actual:</label>
+                    <input type="password" class="form-control" placeholder="Ingresa tu contraseña actual">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nueva Contraseña:</label>
+                    <input type="password" class="form-control" placeholder="Ingresa tu nueva contraseña">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirmar Nueva Contraseña:</label>
+                    <input type="password" class="form-control" placeholder="Confirma tu nueva contraseña">
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('passwordChangeModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Current Roles Modal -->
+    <div id="currentRolesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">🎭 Roles Actuales</h3>
+                <button class="close" onclick="closeModal('currentRolesModal')">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <p style="color: #666; margin-bottom: 20px;">Estos son los roles actualmente asignados a tu cuenta en LumiQuiz:</p>
+                <div id="user-roles-list">
+                    <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px;">
+                        <span style="font-size: 24px;">👨‍🏫</span>
+                        <div>
+                            <strong>Profesor</strong>
+                            <p style="margin: 0; font-size: 14px; color: #666;">Gestiona clases, cronogramas y estudiantes</p>
+                        </div>
+                    </div>
+                </div>
+                <p style="color: #666; font-size: 14px; margin-top: 20px;">¿Necesitas cambiar tus roles? Contacta al administrador del sistema.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Presentation Modal -->
+    <div id="gamePresentationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">🎮 Presentación del Juego - LumiQuiz</h3>
+                <button class="close" onclick="closeModal('gamePresentationModal')">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 48px; margin-bottom: 10px;">✨</div>
+                    <h2 style="color: #667eea; margin-bottom: 10px;">¡Bienvenido a LumiQuiz!</h2>
+                    <p style="color: #666; font-size: 16px;">La plataforma educativa interactiva con tu compañera Lumi</p>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                    <div style="padding: 15px; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #667eea;">
+                        <h4 style="color: #667eea; margin-bottom: 10px;">🎯 Aprendizaje Gamificado</h4>
+                        <p style="color: #666; font-size: 14px;">Convierte el aprendizaje en una aventura emocionante con desafíos y recompensas.</p>
+                    </div>
+                    <div style="padding: 15px; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #28a745;">
+                        <h4 style="color: #28a745; margin-bottom: 10px;">📊 Analytics Avanzados</h4>
+                        <p style="color: #666; font-size: 14px;">Obtén insights detallados sobre el progreso y rendimiento de tus estudiantes.</p>
+                    </div>
+                    <div style="padding: 15px; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #ffc107;">
+                        <h4 style="color: #856404; margin-bottom: 10px;">🏆 Sistema de Logros</h4>
+                        <p style="color: #666; font-size: 14px;">Motiva a tus estudiantes con un sistema de logros y rankings.</p>
+                    </div>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                    <h4 style="margin-bottom: 10px;">🌟 ¡Descubre el poder de Lumi!</h4>
+                    <p style="margin: 0; opacity: 0.9;">Tu asistente de IA que personaliza la experiencia de aprendizaje para cada estudiante.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Luminarias Explanation Modal -->
+    <div id="luminariasModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">✨ Sistema de Luminarias</h3>
+                <button class="close" onclick="closeModal('luminariasModal')">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 48px; margin-bottom: 10px;">✨</div>
+                    <h3 style="color: #667eea; margin-bottom: 10px;">¿Qué son las Luminarias?</h3>
+                    <p style="color: #666;">Las Luminarias son la moneda virtual de LumiQuiz que refleja el progreso y logros de los estudiantes.</p>
+                </div>
+                
+                <div style="display: grid; gap: 15px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #fff3cd; border-radius: 10px;">
+                        <span style="font-size: 32px;">🌟</span>
+                        <div>
+                            <h4 style="color: #856404; margin-bottom: 5px;">Luminarias de Conocimiento</h4>
+                            <p style="margin: 0; color: #666; font-size: 14px;">Se ganan al completar ejercicios y alcanzar objetivos de aprendizaje.</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #d4edda; border-radius: 10px;">
+                        <span style="font-size: 32px;">⚡</span>
+                        <div>
+                            <h4 style="color: #155724; margin-bottom: 5px;">Luminarias de Velocidad</h4>
+                            <p style="margin: 0; color: #666; font-size: 14px;">Otorgadas por resolver problemas rápidamente y mantener rachas.</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #d1ecf1; border-radius: 10px;">
+                        <span style="font-size: 32px;">💎</span>
+                        <div>
+                            <h4 style="color: #0c5460; margin-bottom: 5px;">Luminarias de Maestría</h4>
+                            <p style="margin: 0; color: #666; font-size: 14px;">Las más valiosas, se obtienen al dominar completamente un tema.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                    <h4 style="margin-bottom: 10px;">💡 Consejo de Lumi</h4>
+                    <p style="margin: 0; opacity: 0.9;">¡Las Luminarias motivan a tus estudiantes y te ayudan a identificar quiénes más se esfuerzan!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role Levels Modal -->
+    <div id="roleLevelsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">🏆 Niveles de Roles</h3>
+                <button class="close" onclick="closeModal('roleLevelsModal')">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <p style="color: #666; margin-bottom: 20px; text-align: center;">Cada rol en LumiQuiz tiene diferentes niveles de experiencia y privilegios.</p>
+                
+                <div style="display: grid; gap: 20px;">
+                    <!-- Professor Levels -->
+                    <div style="border: 2px solid #667eea; border-radius: 10px; overflow: hidden;">
+                        <div style="background: #667eea; color: white; padding: 15px; text-align: center;">
+                            <h4 style="margin: 0;">👨‍🏫 Niveles de Profesor</h4>
+                        </div>
+                        <div style="padding: 15px;">
+                            <div style="display: grid; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                                    <span style="font-size: 20px;">🥉</span>
+                                    <div>
+                                        <strong>Profesor Novato</strong>
+                                        <p style="margin: 0; font-size: 13px; color: #666;">0-100 estudiantes enseñados</p>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                                    <span style="font-size: 20px;">🥈</span>
+                                    <div>
+                                        <strong>Profesor Experimentado</strong>
+                                        <p style="margin: 0; font-size: 13px; color: #666;">100-500 estudiantes enseñados</p>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                                    <span style="font-size: 20px;">🥇</span>
+                                    <div>
+                                        <strong>Profesor Maestro</strong>
+                                        <p style="margin: 0; font-size: 13px; color: #666;">500+ estudiantes enseñados</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Student Levels -->
+                    <div style="border: 2px solid #28a745; border-radius: 10px; overflow: hidden;">
+                        <div style="background: #28a745; color: white; padding: 15px; text-align: center;">
+                            <h4 style="margin: 0;">🎓 Niveles de Estudiante</h4>
+                        </div>
+                        <div style="padding: 15px;">
+                            <div style="display: grid; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                                    <span style="font-size: 20px;">🌱</span>
+                                    <div>
+                                        <strong>Aprendiz</strong>
+                                        <p style="margin: 0; font-size: 13px; color: #666;">0-1000 Luminarias</p>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                                    <span style="font-size: 20px;">🌟</span>
+                                    <div>
+                                        <strong>Estudiante Estrella</strong>
+                                        <p style="margin: 0; font-size: 13px; color: #666;">1000-5000 Luminarias</p>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                                    <span style="font-size: 20px;">👑</span>
+                                    <div>
+                                        <strong>Erudito</strong>
+                                        <p style="margin: 0; font-size: 13px; color: #666;">5000+ Luminarias</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: #fff3cd; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: center;">
+                    <h4 style="color: #856404; margin-bottom: 10px;">🎯 Tu Progreso Actual</h4>
+                    <p style="margin: 0; color: #666;">Como profesor, tu nivel aumenta según el número de estudiantes que hayas guiado exitosamente en su aprendizaje.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

@@ -17,14 +17,14 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <title>PLAYTEST Admin Panel v2.5.0</title>
+    <title>LumiQuiz Admin Panel v2.5.0</title>
     <meta name="cache-buster" content="2025-08-18-20:30:00" />
     <link rel="icon" type="image/png" href="Imagenes/Playtest.png">
 
     <!-- Embedded Global Stylesheet -->
     <style>
       /*
-      * Global styles and custom animations for the PLAYTEST Admin Panel.
+      * Global styles and custom animations for the LumiQuiz Admin Panel.
       */
 
       body {
@@ -171,7 +171,7 @@
 }
 </script>
   <link rel="stylesheet" href="/index.css">
-    <!-- Sistema Persistente PLAYTEST -->
+    <!-- Sistema Persistente LumiQuiz -->
     <script type="module" src="persistent-system-init.js"></script>
 
 </head>
@@ -190,7 +190,7 @@
       // is expected to populate process.env.API_KEY.
       globalThis.process = globalThis.process || { env: {} };
       
-      console.log("🎮 PLAYTEST JavaScript loaded successfully!");
+      console.log("🎮 LumiQuiz JavaScript loaded successfully!");
       console.log("📅 Script version: 2025-08-17-v2.5 - CACHE BUSTED - Fixed admin redirect loop by correcting token storage and retrieval");
       
       // Nuclear option: Unregister any service workers that might be caching
@@ -288,7 +288,7 @@
           // Password Modal
           password_modal_title: 'Cambiar Contraseña', password_modal_current: 'Contraseña Actual', password_modal_new: 'Nueva Contraseña', password_modal_confirm: 'Confirmar Nueva Contraseña', password_modal_change: 'Cambiar', password_modal_success: 'Contraseña actualizada con éxito.', password_modal_error_current: 'La contraseña actual es incorrecta.',
           // General
-          header_title: 'Aplicación PLAYTEST', header_subtitle: 'La forma más divertida de estudiar', language: 'Idioma', english: 'Inglés', spanish: 'Español',
+          header_title: 'Aplicación LumiQuiz', header_subtitle: 'La forma más divertida de estudiar', language: 'Idioma', english: 'Inglés', spanish: 'Español',
           add_question_title: 'Agregar Pregunta', add_question_desc: 'Crea preguntas para tus bloques usando IA, subiendo un fichero o de forma manual.', add_question_button: 'Añadir Preguntas',
           game_setup_title: 'Configuración de partida', game_setup_category: 'Modalidad', game_setup_training: 'Entrenamiento', game_setup_competition: 'Competición', game_setup_mode: 'Juego', game_setup_blocks_topics: 'Selección de bloques', game_setup_configure: 'Configurar', game_setup_not_selected: 'No seleccionado', game_setup_all_topics: 'Todos los temas', game_setup_topics_selected: '{count} tema(s) seleccionado(s)', game_setup_button_create: 'Nueva Partida',
           game_mode_classic: 'Modo Clásico', game_mode_timetrial: 'Modo Contrarreloj', game_mode_lives: 'Modo Vidas', game_mode_levels: 'Por Niveles', game_mode_streak: 'Racha de Aciertos', game_mode_exam: 'Examen Simulado', game_mode_duel: 'Duelo', game_mode_marathon: 'Maratón', game_mode_trivial: 'Trivial',
@@ -307,7 +307,7 @@
           delete_topic_confirm: '¿Estás seguro de que quieres eliminar el tema "{topicName}"? Todas sus preguntas serán borradas permanentemente. Esta acción no se puede deshacer.', delete_topic_prompt_title: 'Borrar Tema',
           delete_question_prompt_confirm: 'SI', delete_question_prompt_cancel: 'NO',
           generic_cancel: 'Cancelar', delete: 'Eliminar', error: 'Error', loading: 'Cargando...',
-          footer_text: '© 2024 PLAYTEST. Todos los derechos reservados.',
+          footer_text: '© 2024 LumiQuiz. Todos los derechos reservados.',
           admin_blocks_general: 'Bloques Generales', admin_blocks_public: 'Bloques Públicos de Usuarios', admin_blocks_private: 'Bloques Privados de Usuarios', admin_blocks_by: 'de', admin_blocks_no_category: 'No hay bloques en esta categoría.',
           block_modal_owner: 'Propietario', block_modal_users: 'Usuarios',
           admin_manage_blocks: 'Gestionar ({count})',
@@ -339,7 +339,7 @@
           // Password Modal
           password_modal_title: 'Change Password', password_modal_current: 'Current Password', password_modal_new: 'New Password', password_modal_confirm: 'Confirm New Password', password_modal_change: 'Change', password_modal_success: 'Password updated successfully.', password_modal_error_current: 'The current password is incorrect.',
           // General
-          header_title: 'PLAYTEST App', header_subtitle: 'The most fun way to study', language: 'Language', english: 'English', spanish: 'Spanish',
+          header_title: 'LumiQuiz App', header_subtitle: 'The most fun way to study', language: 'Language', english: 'English', spanish: 'Spanish',
           add_question_title: 'Add Question', add_question_desc: 'Create questions for your blocks using AI, uploading a file, or manually.', add_question_button: 'Add Questions',
           game_setup_title: 'Game Setup', game_setup_category: 'Category', game_setup_training: 'Training', game_setup_competition: 'Competition', game_setup_mode: 'Game Mode', game_setup_blocks_topics: 'Block Selection', game_setup_configure: 'Configure', game_setup_not_selected: 'Not selected', game_setup_all_topics: 'All Topics', game_setup_topics_selected: '{count} topic(s) selected', game_setup_button_create: 'New Game',
           game_mode_classic: 'Classic Mode', game_mode_timetrial: 'Time Trial Mode', game_mode_lives: 'Lives Mode', game_mode_levels: 'By Levels', game_mode_streak: 'Streak Mode', game_mode_exam: 'Exam Simulation', game_mode_duel: 'Duel', game_mode_marathon: 'Marathon', game_mode_trivial: 'Trivial',
@@ -358,7 +358,7 @@
           delete_topic_confirm: 'Are you sure you want to delete the topic "{topicName}"? All of its questions will be permanently deleted. This action cannot be undone.', delete_topic_prompt_title: 'Delete Topic',
           delete_question_prompt_confirm: 'YES', delete_question_prompt_cancel: 'NO',
           generic_cancel: 'Cancel', delete: 'Delete', error: 'Error', loading: 'Loading...',
-          footer_text: '© 2024 PLAYTEST. All rights reserved.',
+          footer_text: '© 2024 LumiQuiz. All rights reserved.',
           admin_blocks_general: 'General Blocks', admin_blocks_public: 'Public User Blocks', admin_blocks_private: 'Private User Blocks', admin_blocks_by: 'by', admin_blocks_no_category: 'No blocks in this category.',
           block_modal_owner: 'Owner', block_modal_users: 'Users',
           admin_manage_blocks: 'Manage ({count})',
@@ -3807,7 +3807,7 @@
                 marginBottom: '10px',
                 textAlign: 'center'
               }}>
-                🎉 ¡Bienvenido a PLAYTEST, {userNickname}!
+                🎉 ¡Bienvenido a LumiQuiz, {userNickname}!
               </h2>
               
               <p style={{

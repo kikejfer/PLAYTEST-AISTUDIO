@@ -1370,18 +1370,22 @@
                     const userData = JSON.parse(jsonPayload);
                     currentUser = userData;
                     
-                    document.getElementById('user-name').textContent = userData.email || userData.username || 'Profesor';
-                    document.getElementById('user-avatar').textContent = (userData.email || userData.username || 'P')[0].toUpperCase();
+                    const userName = userData.email || userData.username || userData.nickname || 'Profesor';
+                    document.getElementById('user-name').textContent = userName;
+                    document.getElementById('dropdown-user-name').textContent = userName;
+                    document.getElementById('user-avatar').textContent = userName[0].toUpperCase();
                     
                 } catch (tokenError) {
                     document.getElementById('user-name').textContent = 'Profesor';
-                    document.getElementById('user-avatar').textContent = 'P';
+                    document.getElementById('dropdown-user-name').textContent = 'Profesor';
+                    document.getElementById('user-avatar').textContent = 'L';
                 }
                 
             } catch (error) {
                 console.error('Error loading user data:', error);
                 document.getElementById('user-name').textContent = 'Profesor';
-                document.getElementById('user-avatar').textContent = 'P';
+                document.getElementById('dropdown-user-name').textContent = 'Profesor';
+                document.getElementById('user-avatar').textContent = 'L';
             }
         }
 
