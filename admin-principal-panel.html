@@ -1401,20 +1401,8 @@
 
         async function loadProfesorBlocks(profesorId) {
             try {
-                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
-                    ? 'https://playtest-backend.onrender.com' 
-                    : '';
-                const response = await fetch(`${API_BASE_URL}/api/roles-updated/profesores/${profesorId}/bloques`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) throw new Error('Error al cargar bloques');
-
-                const result = await response.json();
+                // Use API service instead of direct fetch
+                const result = await apiDataService.apiCall(`/roles-updated/profesores/${profesorId}/bloques`);
                 const blocks = result.bloques || [];
                 const container = document.getElementById(`profesor-blocks-${profesorId}`);
                 
@@ -1467,20 +1455,8 @@
 
         async function loadCreadorBlocks(creadorId) {
             try {
-                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
-                    ? 'https://playtest-backend.onrender.com' 
-                    : '';
-                const response = await fetch(`${API_BASE_URL}/api/roles-updated/creadores/${creadorId}/bloques`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) throw new Error('Error al cargar bloques');
-
-                const result = await response.json();
+                // Use API service instead of direct fetch
+                const result = await apiDataService.apiCall(`/roles-updated/profesores/${creadorId}/bloques`);
                 const blocks = result.bloques || [];
                 const container = document.getElementById(`creador-blocks-${creadorId}`);
                 
@@ -1533,20 +1509,8 @@
 
         async function loadBlockTopics(blockId) {
             try {
-                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
-                    ? 'https://playtest-backend.onrender.com' 
-                    : '';
-                const response = await fetch(`${API_BASE_URL}/api/roles-updated/bloques/${blockId}/temas`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) throw new Error('Error al cargar temas');
-
-                const result = await response.json();
+                // Use API service instead of direct fetch
+                const result = await apiDataService.apiCall(`/roles-updated/bloques/${blockId}/temas`);
                 const topics = result.temas || [];
                 const container = document.getElementById(`block-topics-${blockId}`);
                 
