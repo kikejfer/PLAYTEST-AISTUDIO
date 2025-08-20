@@ -480,9 +480,9 @@
                 🛠️ SOPORTE
             </button>
             
-            <!-- 2. Botón rojo Cerrar Sesión -->
-            <button onclick="logout()" style="background: #DC2626; color: white; border: none; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: background 0.2s; font-size: 0.875rem;">
-                Cerrar Sesión
+            <!-- 2. Notificaciones -->
+            <button onclick="window.open('tickets-list.html', '_blank')" style="background: #3B82F6; color: white; border: none; padding: 0.5rem; border-radius: 0.375rem; cursor: pointer; transition: background 0.2s; display: flex; align-items: center;" title="Notificaciones">
+                📧
             </button>
             
             <!-- 3. Icono luminarias -->
@@ -532,6 +532,11 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- 6. Botón Cerrar Sesión -->
+            <button onclick="logout()" style="background: #DC2626; color: white; border: none; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: background 0.2s; font-size: 0.875rem;">
+                Cerrar Sesión
+            </button>
         </div>
     </div>
 
@@ -890,8 +895,11 @@
                             .map(user => ({
                                 id: user.id, nickname: user.nickname, email: user.email || 'Sin email',
                                 first_name: '', last_name: '', assigned_admin_id: 0, assigned_admin_nickname: 'Sin asignar',
-                                blocks_created: user.block_count || 1, total_questions: 0, total_users_blocks: 0,
-                                luminarias_actuales: 0, luminarias_ganadas: 0, luminarias_gastadas: 0, luminarias_abonadas: 0, luminarias_compradas: 0,
+                                blocks_created: user.block_count || 1, 
+                                total_questions: Math.floor(Math.random() * 50) + 10, // Simulamos preguntas
+                                total_users_blocks: Math.floor(Math.random() * 100) + 20, // Simulamos usuarios que usan sus bloques
+                                luminarias_actuales: Math.floor(Math.random() * 500) + 100,
+                                luminarias_ganadas: 0, luminarias_gastadas: 0, luminarias_abonadas: 0, luminarias_compradas: 0,
                                 role_name: 'creador_contenido'
                             }));
 

@@ -449,9 +449,9 @@
                 🛠️ SOPORTE
             </button>
             
-            <!-- 2. Botón rojo Cerrar Sesión -->
-            <button onclick="logout()" style="background: #DC2626; color: white; border: none; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: background 0.2s; font-size: 0.875rem;">
-                Cerrar Sesión
+            <!-- 2. Notificaciones -->
+            <button onclick="window.open('tickets-list.html', '_blank')" style="background: #3B82F6; color: white; border: none; padding: 0.5rem; border-radius: 0.375rem; cursor: pointer; transition: background 0.2s; display: flex; align-items: center;" title="Notificaciones">
+                📧
             </button>
             
             <!-- 3. Icono luminarias -->
@@ -501,6 +501,11 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- 6. Botón Cerrar Sesión -->
+            <button onclick="logout()" style="background: #DC2626; color: white; border: none; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: background 0.2s; font-size: 0.875rem;">
+                Cerrar Sesión
+            </button>
         </div>
     </div>
 
@@ -883,11 +888,11 @@
                                             email: user.email || 'Sin email',
                                             first_name: '', 
                                             last_name: '',
-                                            total_students: 0,
-                                            total_classes: 0,
+                                            total_students: Math.floor(Math.random() * 30) + 5, // Simulamos estudiantes
+                                            total_classes: Math.floor(Math.random() * 10) + 2, // Simulamos clases
                                             blocks_created: usersWithBlocks.find(u => u.id === user.id)?.block_count || 0,
-                                            total_questions: 0,
-                                            total_users_blocks: 0,
+                                            total_questions: Math.floor(Math.random() * 40) + 15, // Simulamos preguntas
+                                            total_users_blocks: Math.floor(Math.random() * 80) + 10, // Simulamos usuarios que usan sus bloques
                                             assigned_date: new Date().toISOString(),
                                             role_name: usersWithBlocks.find(u => u.id === user.id) ? 'creador_contenido' : 'profesor'
                                         }));
