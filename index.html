@@ -2175,13 +2175,57 @@
       // Modal de Datos Personales
       const ProfileModal = ({ currentUser, onClose, t }) => {
         const [formData, setFormData] = useState({
-          nickname: currentUser?.nickname || '',
-          firstName: currentUser?.firstName || currentUser?.first_name || '',
-          lastName: currentUser?.lastName || currentUser?.last_name || '',
-          email: currentUser?.email || ''
+          nickname: '',
+          firstName: '',
+          lastName: '',
+          email: ''
         });
         const [isLoading, setIsLoading] = useState(false);
         const [message, setMessage] = useState('');
+
+        // Load current user data when modal opens
+        useEffect(() => {
+          const loadUserData = async () => {
+            try {
+              const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+              const response = await fetch('/api/users/profile', {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                }
+              });
+
+              if (response.ok) {
+                const userData = await response.json();
+                setFormData({
+                  nickname: userData.nickname || '',
+                  firstName: userData.first_name || userData.firstName || '',
+                  lastName: userData.last_name || userData.lastName || '',
+                  email: userData.email || ''
+                });
+              } else {
+                // Fallback to current user data
+                setFormData({
+                  nickname: currentUser?.nickname || '',
+                  firstName: currentUser?.firstName || currentUser?.first_name || '',
+                  lastName: currentUser?.lastName || currentUser?.last_name || '',
+                  email: currentUser?.email || ''
+                });
+              }
+            } catch (error) {
+              console.error('Error loading user data:', error);
+              // Fallback to current user data
+              setFormData({
+                nickname: currentUser?.nickname || '',
+                firstName: currentUser?.firstName || currentUser?.first_name || '',
+                lastName: currentUser?.lastName || currentUser?.last_name || '',
+                email: currentUser?.email || ''
+              });
+            }
+          };
+
+          loadUserData();
+        }, [currentUser]);
 
         const handleSubmit = async (e) => {
           e.preventDefault();
@@ -2438,6 +2482,12 @@
         const [currentPanel, setCurrentPanel] = useState('juego');
         const dropdownRef = useRef(null);
         const notificationDropdownRef = useRef(null);
+
+        // Function to load user data for modal
+        const loadUserDataForModal = useCallback(async () => {
+          // This will be handled by the ProfileModal component when it opens
+          // The currentUser prop already contains the user data
+        }, []);
 
         // Obtener roles disponibles del usuario actual
         const getUserAvailablePanels = () => {
@@ -2747,7 +2797,7 @@
                             </>
                           )}
                           
-                          <a href="#" onClick={(e) => { e.preventDefault(); setIsProfileModalOpen(true); setIsDropdownOpen(false); }} className="flex items-center gap-3 px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">
+                          <a href="#" onClick={(e) => { e.preventDefault(); loadUserDataForModal(); setIsProfileModalOpen(true); setIsDropdownOpen(false); }} className="flex items-center gap-3 px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>

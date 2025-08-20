@@ -653,8 +653,8 @@
                                 <th>Nickname / Nombre</th>
                                 <th>Rol</th>
                                 <th>Email</th>
-                                <th>Núm. Profesores</th>
-                                <th>Núm. Creadores</th>
+                                <th>Profesores</th>
+                                <th>Creadores</th>
                                 <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                                 <th>🗑️</th>
                             </tr>
@@ -683,9 +683,9 @@
                                 <th></th>
                                 <th>Nickname / Nombre</th>
                                 <th>Email</th>
-                                <th>Núm. Estudiantes</th>
-                                <th>Núm. Clases</th>
-                                <th>Admin. Secundario Asignado</th>
+                                <th>Estudiantes</th>
+                                <th>Clases</th>
+                                <th>Adm.Secundario</th>
                                 <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                                 <th>🗑️</th>
                             </tr>
@@ -714,10 +714,10 @@
                                 <th></th>
                                 <th>Nickname / Nombre</th>
                                 <th>Email</th>
-                                <th>Núm. Bloques Creados</th>
-                                <th>Núm. Preguntas</th>
-                                <th>Núm. Usuarios</th>
-                                <th>Admin. Secundario Asignado</th>
+                                <th>Bloques Creados</th>
+                                <th>Preguntas</th>
+                                <th>Usuarios</th>
+                                <th>Adm.Secundario</th>
                                 <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                                 <th>🗑️</th>
                             </tr>
@@ -745,8 +745,8 @@
                             <tr>
                                 <th>Nickname / Nombre</th>
                                 <th>Email</th>
-                                <th>Núm. Bloques Cargados</th>
-                                <th>Admin. Secundario Asignado</th>
+                                <th>Bloques Cargados</th>
+                                <th>Adm.Secundario</th>
                                 <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                                 <th>🗑️</th>
                             </tr>
@@ -1550,7 +1550,7 @@
                 const topics = result.temas || [];
                 const container = document.getElementById(`block-topics-${blockId}`);
                 
-                let html = '<h5>Temas del bloque:</h5><table class="nested-table"><thead><tr><th>Tema</th><th>Núm. Preguntas</th><th>Acciones</th></tr></thead><tbody>';
+                let html = '<h5>Temas del bloque:</h5><table class="nested-table"><thead><tr><th>Tema</th><th>Preguntas</th><th>Acciones</th></tr></thead><tbody>';
                 
                 topics.forEach(topic => {
                     html += `
@@ -2010,11 +2010,15 @@ Total elementos eliminados: ${result.total_deleted}`);
             submenu.style.display = isVisible ? 'none' : 'block';
         }
 
-        function openPersonalDataModal() {
+        async function openPersonalDataModal() {
+            // Load current user data
+            await loadCurrentUserData();
             showModal('profile-modal');
         }
 
-        function openRoleModificationModal() {
+        async function openRoleModificationModal() {
+            // Load current user roles
+            await loadCurrentUserRoles();
             showModal('role-modal');
         }
 
@@ -2051,6 +2055,71 @@ Total elementos eliminados: ${result.total_deleted}`);
         // Funciones para manejar modales
         function showModal(modalId) {
             document.getElementById(modalId).style.display = 'flex';
+        }
+
+        // Función para cargar datos del usuario actual
+        async function loadCurrentUserData() {
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const response = await fetch('/api/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    // Poblar el formulario con los datos actuales
+                    document.getElementById('profile-nickname').value = userData.nickname || '';
+                    document.getElementById('profile-firstname').value = userData.first_name || userData.firstName || '';
+                    document.getElementById('profile-lastname').value = userData.last_name || userData.lastName || '';
+                    document.getElementById('profile-email').value = userData.email || '';
+                } else {
+                    // Si no se pueden obtener los datos, usar los del token
+                    if (currentUser) {
+                        document.getElementById('profile-nickname').value = currentUser.nickname || '';
+                        document.getElementById('profile-firstname').value = currentUser.first_name || currentUser.firstName || '';
+                        document.getElementById('profile-lastname').value = currentUser.last_name || currentUser.lastName || '';
+                        document.getElementById('profile-email').value = currentUser.email || '';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                // Fallback to current user data if available
+                if (currentUser) {
+                    document.getElementById('profile-nickname').value = currentUser.nickname || '';
+                    document.getElementById('profile-firstname').value = currentUser.first_name || currentUser.firstName || '';
+                    document.getElementById('profile-lastname').value = currentUser.last_name || currentUser.lastName || '';
+                    document.getElementById('profile-email').value = currentUser.email || '';
+                }
+            }
+        }
+
+        // Función para cargar roles del usuario actual
+        async function loadCurrentUserRoles() {
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const response = await fetch('/api/users/roles', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const userRoles = await response.json();
+                    // Marcar los checkboxes según los roles actuales
+                    const checkboxes = document.querySelectorAll('#role-modal input[type="checkbox"]');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = userRoles.includes(checkbox.value);
+                    });
+                } else {
+                    console.warn('Could not load user roles');
+                }
+            } catch (error) {
+                console.error('Error loading user roles:', error);
+            }
         }
 
         function closeModal(modalId) {
@@ -2136,40 +2205,36 @@ Total elementos eliminados: ${result.total_deleted}`);
             }
         }
 
-        // Función para asignar/remover roles
-        async function updateUserRole() {
-            const userId = document.getElementById('role-user-select').value;
-            const newRole = document.getElementById('role-select').value;
-            const action = document.getElementById('role-action').value;
-
-            if (!userId || !newRole) {
-                showError('Por favor selecciona un usuario y un rol');
-                return;
-            }
+        // Función para actualizar roles del usuario actual
+        async function updateUserRoles() {
+            // Obtener todos los checkboxes marcados
+            const checkboxes = document.querySelectorAll('#role-modal input[type="checkbox"]:checked');
+            const selectedRoles = Array.from(checkboxes).map(cb => cb.value);
 
             try {
                 const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-                const endpoint = action === 'assign' ? '/api/admin/assign-role' : '/api/admin/remove-role';
                 
-                const response = await fetch(endpoint, {
+                const response = await fetch('/api/users/update-roles', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        userId: userId,
-                        role: newRole
+                        roles: selectedRoles
                     })
                 });
 
                 if (response.ok) {
-                    showSuccess(`Rol ${action === 'assign' ? 'asignado' : 'removido'} correctamente`);
+                    showSuccess('Roles actualizados correctamente');
                     closeModal('role-modal');
-                    // Recargar los datos del panel
-                    loadPanelData();
+                    // Recargar los datos del panel si es necesario
+                    if (typeof loadPanelData === 'function') {
+                        loadPanelData();
+                    }
                 } else {
-                    showError('Error al modificar el rol');
+                    const error = await response.json();
+                    showError(error.message || 'Error al actualizar los roles');
                 }
             } catch (error) {
                 showError('Error de conexión');
@@ -2255,45 +2320,54 @@ Total elementos eliminados: ${result.total_deleted}`);
 
     <!-- Modal de Modificar Roles -->
     <div id="role-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
-        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 90%; max-width: 600px; border: 1px solid #415A77;" onclick="event.stopPropagation();">
+        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 90%; max-width: 500px; border: 1px solid #415A77;" onclick="event.stopPropagation();">
             <div style="padding: 24px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                    <h3 style="color: #E0E1DD; font-size: 20px; font-weight: bold; margin: 0;">Modificar Roles de Usuario</h3>
+                    <h3 style="color: #E0E1DD; font-size: 20px; font-weight: bold; margin: 0;">Modificar Mis Roles</h3>
                     <button onclick="closeModal('role-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
                 </div>
                 
-                <form onsubmit="event.preventDefault(); updateUserRole();" style="display: flex; flex-direction: column; gap: 16px;">
+                <form onsubmit="event.preventDefault(); updateUserRoles();" style="display: flex; flex-direction: column; gap: 16px;">
                     <div>
-                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Acción</label>
-                        <select id="role-action" style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;">
-                            <option value="assign">Asignar Rol</option>
-                            <option value="remove">Remover Rol</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Usuario</label>
-                        <select id="role-user-select" style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;">
-                            <option value="">Seleccionar usuario...</option>
-                            <!-- Se llenarán dinámicamente -->
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Rol</label>
-                        <select id="role-select" style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;">
-                            <option value="">Seleccionar rol...</option>
-                            <option value="admin_principal">Administrador Principal</option>
-                            <option value="admin_secundario">Administrador Secundario</option>
-                            <option value="profesor">Profesor</option>
-                            <option value="creador_contenido">Creador de Contenido</option>
-                            <option value="jugador">Jugador</option>
-                        </select>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 12px;">Selecciona tus roles:</label>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            
+                            <label style="display: flex; align-items: center; gap: 8px; color: #E0E1DD; cursor: pointer; padding: 8px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(65,90,119,0.3)'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" value="admin_principal" style="width: 16px; height: 16px; accent-color: #3B82F6;">
+                                <span style="font-size: 16px;">🔒</span>
+                                <span>Administrador Principal</span>
+                            </label>
+                            
+                            <label style="display: flex; align-items: center; gap: 8px; color: #E0E1DD; cursor: pointer; padding: 8px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(65,90,119,0.3)'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" value="admin_secundario" style="width: 16px; height: 16px; accent-color: #3B82F6;">
+                                <span style="font-size: 16px;">🔐</span>
+                                <span>Administrador Secundario</span>
+                            </label>
+                            
+                            <label style="display: flex; align-items: center; gap: 8px; color: #E0E1DD; cursor: pointer; padding: 8px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(65,90,119,0.3)'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" value="profesor" style="width: 16px; height: 16px; accent-color: #3B82F6;">
+                                <span style="font-size: 16px;">👨‍🏫</span>
+                                <span>Profesor</span>
+                            </label>
+                            
+                            <label style="display: flex; align-items: center; gap: 8px; color: #E0E1DD; cursor: pointer; padding: 8px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(65,90,119,0.3)'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" value="creador_contenido" style="width: 16px; height: 16px; accent-color: #3B82F6;">
+                                <span style="font-size: 16px;">🎨</span>
+                                <span>Creador de Contenido</span>
+                            </label>
+                            
+                            <label style="display: flex; align-items: center; gap: 8px; color: #E0E1DD; cursor: pointer; padding: 8px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(65,90,119,0.3)'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" value="jugador" style="width: 16px; height: 16px; accent-color: #3B82F6;">
+                                <span style="font-size: 16px;">🎮</span>
+                                <span>Jugador</span>
+                            </label>
+                            
+                        </div>
                     </div>
                     
                     <div style="display: flex; gap: 12px; margin-top: 24px;">
                         <button type="button" onclick="closeModal('role-modal')" style="flex: 1; padding: 12px; background: #415A77; color: #E0E1DD; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#4F6B8A'" onmouseout="this.style.background='#415A77'">Cancelar</button>
-                        <button type="submit" style="flex: 1; padding: 12px; background: #3B82F6; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">Aplicar</button>
+                        <button type="submit" style="flex: 1; padding: 12px; background: #3B82F6; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">Guardar</button>
                     </div>
                 </form>
             </div>
