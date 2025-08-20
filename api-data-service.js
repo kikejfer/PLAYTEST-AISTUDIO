@@ -37,6 +37,15 @@ class APIDataService {
 
       return await response.json();
     } catch (error) {
+      // Mejorar mensajes de error para problemas comunes
+      if (error.message === 'Failed to fetch') {
+        console.error(`🚨 Backend no disponible en ${this.baseURL}`);
+        console.error('💡 Posibles soluciones:');
+        console.error('  1. Verificar que el backend esté ejecutándose');
+        console.error('  2. Comprobar la conexión a internet');
+        console.error('  3. Revisar la configuración de CORS');
+      }
+      
       console.error(`API call failed for ${endpoint}:`, error);
       throw error;
     }
