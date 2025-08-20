@@ -367,6 +367,71 @@
             }
         }
 
+        /* Estilos para las pestañas */
+        .tabs-container {
+            margin-bottom: 20px;
+        }
+
+        .tabs-header {
+            display: flex;
+            background: #1B263B;
+            border-radius: 10px 10px 0 0;
+            border: 1px solid #415A77;
+            border-bottom: none;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .tab-button {
+            flex: 1;
+            background: #1B263B;
+            border: none;
+            padding: 15px 20px;
+            color: #778DA9;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .tab-button:hover {
+            background: #415A77;
+            color: #E0E1DD;
+        }
+
+        .tab-button.active {
+            background: #3B82F6;
+            color: white;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #60A5FA;
+        }
+
+        .tab-icon {
+            font-size: 18px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding-top: 70px;
@@ -410,6 +475,17 @@
                 margin: 10px;
                 width: calc(100vw - 20px);
                 max-width: none;
+            }
+
+            .tab-button {
+                padding: 12px 10px;
+                font-size: 14px;
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .tab-icon {
+                font-size: 16px;
             }
         }
 
@@ -542,10 +618,27 @@
 
     <div class="container">
         <div class="header">
-            <h1>Gestión completa del sistema de roles y usuarios</h1>
-            <p>Panel del Administrador Principal - PLAYTEST</p>
+            <h1>Panel del Administrador Principal</h1>
+            <p>PLAYTEST - Gestión completa del sistema</p>
         </div>
 
+        <!-- Pestañas de navegación -->
+        <div class="tabs-container">
+            <div class="tabs-header">
+                <button class="tab-button active" onclick="switchTab('roles')">
+                    <span class="tab-icon">👥</span>
+                    <span>Gestión de Roles</span>
+                </button>
+                <button class="tab-button" onclick="switchTab('blocks')">
+                    <span class="tab-icon">📚</span>
+                    <span>Configuración Modular</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenido de la pestaña Gestión de Roles -->
+        <div id="roles-tab" class="tab-content active">
+        
         <!-- Sección 1: Administradores Secundarios -->
         <div class="section">
             <div class="section-header">
@@ -680,6 +773,14 @@
             </div>
             <div id="modal-message"></div>
         </div>
+        
+        </div> <!-- Fin del contenido de Gestión de Roles -->
+
+        <!-- Contenido de la pestaña Configuración Modular -->
+        <div id="blocks-tab" class="tab-content">
+            <iframe id="blocks-iframe" src="block-management.html" style="width: 100%; height: 800px; border: none; border-radius: 10px; background: white;"></iframe>
+        </div>
+        
     </div>
 
     <script src="api-data-service.js"></script>
@@ -772,6 +873,41 @@
                 console.error('Error loading user data:', error);
                 document.getElementById('user-name').textContent = 'Administrador Principal';
                 document.getElementById('user-avatar').textContent = 'A';
+            }
+        }
+
+        // Función para cambiar entre pestañas
+        function switchTab(tabName) {
+            // Ocultar todos los contenidos de pestañas
+            const allTabContents = document.querySelectorAll('.tab-content');
+            allTabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Desactivar todos los botones de pestaña
+            const allTabButtons = document.querySelectorAll('.tab-button');
+            allTabButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Mostrar el contenido de la pestaña seleccionada
+            const selectedTab = document.getElementById(tabName + '-tab');
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+
+            // Activar el botón de la pestaña seleccionada
+            const selectedButton = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+            if (selectedButton) {
+                selectedButton.classList.add('active');
+            }
+
+            // Si se selecciona la pestaña de bloques, asegurar que el iframe se carga correctamente
+            if (tabName === 'blocks') {
+                const iframe = document.getElementById('blocks-iframe');
+                if (iframe && !iframe.src.includes('block-management.html')) {
+                    iframe.src = 'block-management.html';
+                }
             }
         }
 
@@ -1875,11 +2011,11 @@ Total elementos eliminados: ${result.total_deleted}`);
         }
 
         function openPersonalDataModal() {
-            alert('Modal de Datos Personales - En desarrollo');
+            showModal('profile-modal');
         }
 
         function openRoleModificationModal() {
-            alert('Modal de Modificar Roles - En desarrollo');
+            showModal('role-modal');
         }
 
         function openGameTypesModal() {
@@ -1899,7 +2035,7 @@ Total elementos eliminados: ${result.total_deleted}`);
         }
 
         function openPasswordChangeModal() {
-            alert('Modal de Cambio de Contraseña - En desarrollo');
+            showModal('password-modal');
         }
 
         // Cerrar dropdown al hacer clic fuera
@@ -1912,6 +2048,257 @@ Total elementos eliminados: ${result.total_deleted}`);
             }
         });
 
+        // Funciones para manejar modales
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Función para actualizar datos personales
+        async function updateProfile() {
+            const formData = {
+                nickname: document.getElementById('profile-nickname').value,
+                firstName: document.getElementById('profile-firstname').value,
+                lastName: document.getElementById('profile-lastname').value,
+                email: document.getElementById('profile-email').value
+            };
+
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const response = await fetch('/api/users/update-profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    showSuccess('Datos actualizados correctamente');
+                    closeModal('profile-modal');
+                    // Actualizar el nombre en el header
+                    document.getElementById('user-name').textContent = formData.nickname;
+                } else {
+                    showError('Error al actualizar los datos');
+                }
+            } catch (error) {
+                showError('Error de conexión');
+            }
+        }
+
+        // Función para cambiar contraseña
+        async function changePassword() {
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            if (newPassword !== confirmPassword) {
+                showError('Las contraseñas no coinciden');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showError('La contraseña debe tener al menos 6 caracteres');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const response = await fetch('/api/users/change-password', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
+                    })
+                });
+
+                if (response.ok) {
+                    showSuccess('Contraseña actualizada correctamente');
+                    closeModal('password-modal');
+                    // Limpiar el formulario
+                    document.getElementById('current-password').value = '';
+                    document.getElementById('new-password').value = '';
+                    document.getElementById('confirm-password').value = '';
+                } else {
+                    const error = await response.json();
+                    showError(error.message || 'La contraseña actual es incorrecta');
+                }
+            } catch (error) {
+                showError('Error de conexión');
+            }
+        }
+
+        // Función para asignar/remover roles
+        async function updateUserRole() {
+            const userId = document.getElementById('role-user-select').value;
+            const newRole = document.getElementById('role-select').value;
+            const action = document.getElementById('role-action').value;
+
+            if (!userId || !newRole) {
+                showError('Por favor selecciona un usuario y un rol');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const endpoint = action === 'assign' ? '/api/admin/assign-role' : '/api/admin/remove-role';
+                
+                const response = await fetch(endpoint, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        role: newRole
+                    })
+                });
+
+                if (response.ok) {
+                    showSuccess(`Rol ${action === 'assign' ? 'asignado' : 'removido'} correctamente`);
+                    closeModal('role-modal');
+                    // Recargar los datos del panel
+                    loadPanelData();
+                } else {
+                    showError('Error al modificar el rol');
+                }
+            } catch (error) {
+                showError('Error de conexión');
+            }
+        }
+
     </script>
+
+    <!-- Modales -->
+    
+    <!-- Modal de Datos Personales -->
+    <div id="profile-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 90%; max-width: 500px; border: 1px solid #415A77;" onclick="event.stopPropagation();">
+            <div style="padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h3 style="color: #E0E1DD; font-size: 20px; font-weight: bold; margin: 0;">Editar Datos Personales</h3>
+                    <button onclick="closeModal('profile-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
+                </div>
+                
+                <form onsubmit="event.preventDefault(); updateProfile();" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Nickname</label>
+                        <input type="text" id="profile-nickname" style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;" />
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Nombre</label>
+                        <input type="text" id="profile-firstname" style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;" />
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Apellidos</label>
+                        <input type="text" id="profile-lastname" style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;" />
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Email</label>
+                        <input type="email" id="profile-email" style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;" />
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button type="button" onclick="closeModal('profile-modal')" style="flex: 1; padding: 12px; background: #415A77; color: #E0E1DD; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#4F6B8A'" onmouseout="this.style.background='#415A77'">Cancelar</button>
+                        <button type="submit" style="flex: 1; padding: 12px; background: #3B82F6; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Cambio de Contraseña -->
+    <div id="password-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 90%; max-width: 500px; border: 1px solid #415A77;" onclick="event.stopPropagation();">
+            <div style="padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h3 style="color: #E0E1DD; font-size: 20px; font-weight: bold; margin: 0;">Cambiar Contraseña</h3>
+                    <button onclick="closeModal('password-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
+                </div>
+                
+                <form onsubmit="event.preventDefault(); changePassword();" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Contraseña Actual</label>
+                        <input type="password" id="current-password" required style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;" />
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Nueva Contraseña</label>
+                        <input type="password" id="new-password" required style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;" />
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Confirmar Nueva Contraseña</label>
+                        <input type="password" id="confirm-password" required style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;" />
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button type="button" onclick="closeModal('password-modal')" style="flex: 1; padding: 12px; background: #415A77; color: #E0E1DD; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#4F6B8A'" onmouseout="this.style.background='#415A77'">Cancelar</button>
+                        <button type="submit" style="flex: 1; padding: 12px; background: #3B82F6; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">Cambiar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Modificar Roles -->
+    <div id="role-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 90%; max-width: 600px; border: 1px solid #415A77;" onclick="event.stopPropagation();">
+            <div style="padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h3 style="color: #E0E1DD; font-size: 20px; font-weight: bold; margin: 0;">Modificar Roles de Usuario</h3>
+                    <button onclick="closeModal('role-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
+                </div>
+                
+                <form onsubmit="event.preventDefault(); updateUserRole();" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Acción</label>
+                        <select id="role-action" style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;">
+                            <option value="assign">Asignar Rol</option>
+                            <option value="remove">Remover Rol</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Usuario</label>
+                        <select id="role-user-select" style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;">
+                            <option value="">Seleccionar usuario...</option>
+                            <!-- Se llenarán dinámicamente -->
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Rol</label>
+                        <select id="role-select" style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;">
+                            <option value="">Seleccionar rol...</option>
+                            <option value="admin_principal">Administrador Principal</option>
+                            <option value="admin_secundario">Administrador Secundario</option>
+                            <option value="profesor">Profesor</option>
+                            <option value="creador_contenido">Creador de Contenido</option>
+                            <option value="jugador">Jugador</option>
+                        </select>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button type="button" onclick="closeModal('role-modal')" style="flex: 1; padding: 12px; background: #415A77; color: #E0E1DD; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#4F6B8A'" onmouseout="this.style.background='#415A77'">Cancelar</button>
+                        <button type="submit" style="flex: 1; padding: 12px; background: #3B82F6; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">Aplicar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
