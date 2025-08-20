@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Panel Administrador Principal - PlayTest</title>
+    <title>Panel Administrador Principal - PlayTest v2.1</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
     
     <!-- Tailwind CSS from CDN -->
@@ -1403,6 +1403,7 @@
 
         async function loadProfesorBlocks(profesorId) {
             try {
+                console.log(`👨‍🏫 Loading blocks for PROFESOR ID: ${profesorId}`);
                 // Use API service instead of direct fetch
                 const result = await apiDataService.apiCall(`/roles-updated/profesores/${profesorId}/bloques`);
                 const blocks = result.bloques || [];
@@ -1457,7 +1458,8 @@
 
         async function loadCreadorBlocks(creadorId) {
             try {
-                // Use API service instead of direct fetch
+                console.log(`🎨 Loading blocks for CREADOR ID: ${creadorId}`);
+                // Use API service instead of direct fetch - FIXED: using creadores endpoint
                 const result = await apiDataService.apiCall(`/roles-updated/creadores/${creadorId}/bloques`);
                 const blocks = result.bloques || [];
                 const container = document.getElementById(`creador-blocks-${creadorId}`);
