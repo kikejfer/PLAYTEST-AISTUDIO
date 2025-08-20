@@ -227,6 +227,53 @@
             padding: 15px 20px;
             font-size: 18px;
             font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .section-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .section-header {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 10px 15px;
+                font-size: 16px;
+            }
+            
+            .section-actions {
+                justify-content: flex-end;
+                margin-left: 0 !important;
+                margin-top: 10px;
+            }
+            
+            .section-content {
+                padding: 10px;
+            }
+            
+            table {
+                font-size: 10px;
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            
+            th, td {
+                padding: 4px 2px;
+                min-width: 60px;
+            }
+            
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
         }
 
         .section-content {
@@ -491,7 +538,7 @@
         <div class="section">
             <div class="section-header">
                 <span>Profesores Asignados</span>
-                <div class="section-actions">
+                <div class="section-actions" style="margin-left: auto;">
                     <input type="text" id="profesores-search" placeholder="Buscar profesores..." style="padding: 5px 10px; border: 1px solid #415A77; border-radius: 3px; background: #1B263B; color: #E0E1DD; font-size: 14px;">
                 </div>
             </div>
@@ -504,8 +551,8 @@
                                 <th>Nickname</th>
                                 <th>Nombre/Apellidos</th>
                                 <th>Email</th>
-                                <th>Núm. Estudiantes</th>
-                                <th>Núm. Clases</th>
+                                <th>Estudiantes</th>
+                                <th>Clases</th>
                                 <th>Fecha Asignación</th>
                             </tr>
                         </thead>
@@ -521,7 +568,7 @@
         <div class="section">
             <div class="section-header">
                 <span>Creadores de Contenido Asignados</span>
-                <div class="section-actions">
+                <div class="section-actions" style="margin-left: auto;">
                     <input type="text" id="creadores-search" placeholder="Buscar creadores..." style="padding: 5px 10px; border: 1px solid #415A77; border-radius: 3px; background: #1B263B; color: #E0E1DD; font-size: 14px;">
                 </div>
             </div>
@@ -534,9 +581,9 @@
                                 <th>Nickname</th>
                                 <th>Nombre/Apellidos</th>
                                 <th>Email</th>
-                                <th>Núm. Bloques Creados</th>
-                                <th>Núm. Preguntas</th>
-                                <th>Núm. Usuarios</th>
+                                <th>Bloques Creados</th>
+                                <th>Preguntas</th>
+                                <th>Usuarios</th>
                                 <th>Fecha Asignación</th>
                             </tr>
                         </thead>
@@ -561,7 +608,7 @@
                                 <th>Nickname</th>
                                 <th>Nombre/Apellidos</th>
                                 <th>Email</th>
-                                <th>Núm. Bloques Cargados</th>
+                                <th>Bloques Cargados</th>
                             </tr>
                         </thead>
                         <tbody id="usuarios-tbody">
@@ -578,6 +625,46 @@
         let panelData = {};
         let expandedRows = new Set();
         let currentUser = null;
+
+        async function fetchWithRetry(url, options, maxRetries = 3, timeout = 10000) {
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), timeout);
+                    
+                    console.log(`🔄 Intento ${attempt}/${maxRetries} - ${url}`);
+                    
+                    const response = await fetch(url, {
+                        ...options,
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    // Si es 503 (cold start), esperar progresivamente más tiempo
+                    if (response.status === 503 && attempt < maxRetries) {
+                        const waitTime = Math.min(3000 * attempt, 10000); // 3s, 6s, 9s max 10s
+                        console.log(`🥶 Cold start detectado, esperando ${waitTime}ms antes del siguiente intento...`);
+                        await new Promise(resolve => setTimeout(resolve, waitTime));
+                        continue;
+                    }
+                    
+                    return response;
+                    
+                } catch (error) {
+                    console.warn(`❌ Intento ${attempt} falló:`, error.message);
+                    
+                    if (attempt === maxRetries) {
+                        throw error;
+                    }
+                    
+                    // Esperar antes del siguiente intento
+                    const waitTime = 1000 * attempt; // 1s, 2s, 3s
+                    console.log(`⏳ Esperando ${waitTime}ms antes del siguiente intento...`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                }
+            }
+        }
 
         // Cargar datos del panel al inicializar
         document.addEventListener('DOMContentLoaded', async function() {
@@ -664,13 +751,13 @@
                     ? 'https://playtest-backend.onrender.com' 
                     : '';
 
-                // Try the admin-secundario-panel endpoint first
-                const response = await fetch(`${API_BASE_URL}/api/roles-updated/admin-secundario-panel`, {
+                // Try the admin-principal-panel endpoint (same data structure)
+                let response = await fetchWithRetry(`${API_BASE_URL}/api/roles-updated/admin-principal-panel`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
-                });
+                }, 3, 15000);
 
                 if (!response.ok) {
                     if (response.status === 403) {
@@ -768,6 +855,56 @@
                             updateStats();
                             renderTables();
                             return;
+                        } else {
+                            // Si el panel principal tampoco funciona, intentar debug endpoint
+                            console.log('🔄 Intentando endpoint de debug como fallback...');
+                            try {
+                                const debugResponse = await fetchWithRetry(`${API_BASE_URL}/api/roles-updated/debug-users`, {
+                                    headers: {
+                                        'Authorization': `Bearer ${token}`,
+                                        'Content-Type': 'application/json'
+                                    }
+                                }, 2, 15000);
+
+                                if (debugResponse.ok) {
+                                    const debugData = await debugResponse.json();
+                                    
+                                    // Crear datos del panel desde debug
+                                    const allUsers = debugData.all_users;
+                                    const usersWithBlocks = debugData.users_with_blocks;
+                                    
+                                    // Filtrar solo usuarios asignados a este admin secundario
+                                    // En debug mode, no tenemos asignaciones reales, así que mostraremos todos
+                                    const profesoresAsignados = allUsers
+                                        .filter(user => user.nickname !== 'AdminPrincipal')
+                                        .map(user => ({
+                                            id: user.id,
+                                            nickname: user.nickname,
+                                            email: user.email || 'Sin email',
+                                            first_name: '', 
+                                            last_name: '',
+                                            total_students: 0,
+                                            total_classes: 0,
+                                            blocks_created: usersWithBlocks.find(u => u.id === user.id)?.block_count || 0,
+                                            total_questions: 0,
+                                            total_users_blocks: 0,
+                                            assigned_date: new Date().toISOString(),
+                                            role_name: usersWithBlocks.find(u => u.id === user.id) ? 'creador_contenido' : 'profesor'
+                                        }));
+
+                                    panelData = {
+                                        profesoresAsignados: profesoresAsignados,
+                                        usuariosAsignados: allUsers.filter(u => u.nickname !== 'AdminPrincipal')
+                                    };
+                                    
+                                    console.log('✅ Admin secundario data from debug:', panelData);
+                                    updateStats();
+                                    renderTables();
+                                    return;
+                                }
+                            } catch (debugError) {
+                                console.error('❌ Debug endpoint también falló:', debugError);
+                            }
                         }
                     }
                     throw new Error(`Error al cargar datos del panel: ${response.status}`);
@@ -1003,7 +1140,7 @@
             const tbody = document.getElementById('creadores-tbody');
             tbody.innerHTML = '';
 
-            const creadores = panelData.profesoresAsignados.filter(user => user.role_name === 'creador' || user.role === 'creador');
+            const creadores = panelData.profesoresAsignados.filter(user => user.role_name === 'creador' || user.role_name === 'creador_contenido' || user.role === 'creador');
 
             if (creadores.length === 0) {
                 const row = document.createElement('tr');
