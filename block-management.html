@@ -607,7 +607,10 @@
 
         async function loadBlocks() {
             try {
-                const response = await fetch('/api/blocks/created', {
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                const response = await fetch(`${API_BASE_URL}/api/blocks/created`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }

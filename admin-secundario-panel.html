@@ -1785,7 +1785,10 @@
         async function loadCurrentUserData() {
             try {
                 const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-                const response = await fetch('/api/users/profile', {
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -1811,7 +1814,11 @@
         async function loadCurrentUserRoles() {
             try {
                 const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-                const response = await fetch('/api/users/roles', {
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                // Use debug endpoint to get user roles
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/debug-users`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -1819,11 +1826,17 @@
                 });
 
                 if (response.ok) {
-                    const userRoles = await response.json();
+                    const debugData = await response.json();
+                    // Extract current user's roles from debug data
+                    const currentUserId = currentUser?.id || currentUser?.userId;
+                    const currentUserRoles = debugData.users_with_roles
+                        ?.filter(u => u.id === currentUserId)
+                        ?.map(u => u.role_name) || [];
+                    
                     // Marcar los checkboxes según los roles actuales
                     const checkboxes = document.querySelectorAll('#role-modal input[type="checkbox"]');
                     checkboxes.forEach(checkbox => {
-                        checkbox.checked = userRoles.includes(checkbox.value);
+                        checkbox.checked = currentUserRoles.includes(checkbox.value);
                     });
                 } else {
                     console.warn('Could not load user roles');

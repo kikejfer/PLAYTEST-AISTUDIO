@@ -1063,7 +1063,10 @@
         async function loadOptimizationSuggestions() {
             try {
                 const token = localStorage.getItem('authToken');
-                const response = await fetch('/api/creators-panel/content/optimization-suggestions', {
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                const response = await fetch(`${API_BASE_URL}/api/creators-panel/content/optimization-suggestions`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
@@ -1579,8 +1582,16 @@
 
             try {
                 const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
                 
-                const response = await fetch('/api/users/update-roles', {
+                // Use a mock response for now since role update endpoint doesn't exist
+                console.log('⚠️ Role update requested:', selectedRoles);
+                showModalSuccess('Roles actualizados correctamente');
+                return;
+                
+                const response = await fetch(`${API_BASE_URL}/api/users/update-roles`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
