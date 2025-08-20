@@ -731,10 +731,10 @@
             </div>
         </div>
 
-        <!-- Sección 4: Usuarios (Jugadores) -->
+        <!-- Sección 4: Jugadores -->
         <div class="section">
             <div class="section-header">
-                <span>Usuarios (Jugadores)</span>
+                <span>Jugadores</span>
                 <div class="section-actions">
                     <input type="text" id="usuarios-search" placeholder="Buscar usuarios..." style="padding: 5px 10px; border: 1px solid #415A77; border-radius: 3px; background: #1B263B; color: #E0E1DD; font-size: 14px;">
                 </div>
@@ -1368,7 +1368,9 @@
             const tbody = document.getElementById('usuarios-tbody');
             tbody.innerHTML = '';
 
-            panelData.usuarios.forEach(usuario => {
+            // Usar la lista de jugadores en lugar de usuarios
+            const jugadoresData = panelData.jugadores || [];
+            jugadoresData.forEach(usuario => {
                 const fullName = [usuario.first_name, usuario.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
                 // Usar los datos disponibles directamente - el backend debería proporcionar esta información
