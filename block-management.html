@@ -607,44 +607,11 @@
 
         async function loadBlocks() {
             try {
-                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
-                    ? 'https://playtest-backend.onrender.com' 
-                    : '';
-                const response = await fetch(`${API_BASE_URL}/api/blocks/created`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error al cargar bloques');
-                }
-
-                const blocks = await response.json();
+                // Use the API service instead of direct fetch
+                const blocks = await apiDataService.fetchCreatedBlocks();
                 
-                // Obtener información completa de cada bloque
-                const detailedBlocks = await Promise.all(
-                    blocks.map(async (block) => {
-                        try {
-                            const detailResponse = await fetch(`/api/blocks/${block.id}/complete`, {
-                                headers: {
-                                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                                }
-                            });
-                            
-                            if (detailResponse.ok) {
-                                return await detailResponse.json();
-                            } else {
-                                return block; // Fallback al bloque básico
-                            }
-                        } catch (error) {
-                            console.error('Error cargando detalles del bloque:', block.id, error);
-                            return block; // Fallback al bloque básico
-                        }
-                    })
-                );
-
-                currentBlocks = detailedBlocks;
+                // Use blocks directly from API service
+                currentBlocks = blocks;
                 filteredBlocks = [...currentBlocks];
                 renderBlocks();
 
@@ -833,20 +800,11 @@
 
         async function validateForPublication(blockId) {
             try {
-                const response = await fetch(`/api/blocks/${blockId}/validate`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    }
+                const response = await apiDataService.apiCall(`/blocks/${blockId}/validate`, {
+                    method: 'POST'
                 });
 
-                if (response.ok) {
-                    const validation = await response.json();
-                    showValidationResults(validation);
-                } else {
-                    const error = await response.json();
-                    alert('Error al validar: ' + error.error);
-                }
+                showValidationResults(response);
             } catch (error) {
                 console.error('Error validando bloque:', error);
                 alert('Error al validar el bloque');
@@ -906,27 +864,14 @@
             const reason = document.getElementById('state-reason').value;
             
             try {
-                const response = await fetch(`/api/blocks/${currentBlockId}/state`, {
+                const response = await apiDataService.apiCall(`/blocks/${currentBlockId}/state`, {
                     method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify({ state: newState, reason: reason })
                 });
 
-                if (response.ok) {
-                    closeStateModal();
-                    await loadBlocks(); // Recargar bloques
-                    alert('Estado del bloque actualizado exitosamente');
-                } else {
-                    const error = await response.json();
-                    if (error.validation_required) {
-                        alert('El bloque no cumple los requisitos para publicación. Usa la función "Validar" para ver los detalles.');
-                    } else {
-                        alert('Error al cambiar estado: ' + error.error);
-                    }
-                }
+                closeStateModal();
+                await loadBlocks(); // Recargar bloques
+                alert('Estado del bloque actualizado exitosamente');
             } catch (error) {
                 console.error('Error cambiando estado:', error);
                 alert('Error al cambiar el estado del bloque');
@@ -935,18 +880,8 @@
 
         async function viewBlockDetails(blockId) {
             try {
-                const response = await fetch(`/api/blocks/${blockId}/complete`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    }
-                });
-
-                if (response.ok) {
-                    const block = await response.json();
-                    showBlockDetails(block);
-                } else {
-                    alert('Error al cargar detalles del bloque');
-                }
+                const block = await apiDataService.apiCall(`/blocks/${blockId}/complete`);
+                showBlockDetails(block);
             } catch (error) {
                 console.error('Error cargando detalles:', error);
                 alert('Error al cargar los detalles del bloque');
