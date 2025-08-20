@@ -1089,6 +1089,12 @@
                         usuarios: panelData.usuarios.length
                     });
                     
+                    // LOG TEMPORAL: Ver roles de profesoresCreadores
+                    console.log('🔍 FRONTEND DEBUG - profesoresCreadores roles:');
+                    panelData.profesoresCreadores.forEach(user => {
+                        console.log(`  - ${user.nickname} (ID: ${user.id}): role = "${user.role_name}"`);
+                    });
+                    
                     renderTables();
                 } else {
                     // Si llegamos aquí, ningún endpoint funcionó
