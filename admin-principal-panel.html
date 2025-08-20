@@ -1080,19 +1080,32 @@
                 panelData = {
                     administradoresSecundarios: data.adminSecundarios || [],
                     profesoresCreadores: data.profesoresCreadores || [],
+                    profesores: data.profesores || [],
+                    creadores: data.creadores || [],
+                    jugadores: data.jugadores || [],
                     usuarios: data.usuarios || []
                 };
                 
                     console.log('✅ Panel Data loaded from backend:', {
                         admins: panelData.administradoresSecundarios.length,
-                        creadores: panelData.profesoresCreadores.length,
+                        profesores: panelData.profesores?.length || 0,
+                        creadores: panelData.creadores?.length || 0,
+                        jugadores: panelData.jugadores?.length || 0,
                         usuarios: panelData.usuarios.length
                     });
                     
-                    // LOG TEMPORAL: Ver roles de profesoresCreadores
-                    console.log('🔍 FRONTEND DEBUG - profesoresCreadores roles:');
-                    panelData.profesoresCreadores.forEach(user => {
-                        console.log(`  - ${user.nickname} (ID: ${user.id}): role = "${user.role_name}"`);
+                    // LOG TEMPORAL: Ver listas separadas
+                    console.log('🔍 FRONTEND DEBUG - Profesores:');
+                    panelData.profesores?.forEach(user => {
+                        console.log(`  - ${user.nickname} (ID: ${user.id})`);
+                    });
+                    console.log('🔍 FRONTEND DEBUG - Creadores:');
+                    panelData.creadores?.forEach(user => {
+                        console.log(`  - ${user.nickname} (ID: ${user.id})`);
+                    });
+                    console.log('🔍 FRONTEND DEBUG - Jugadores:');
+                    panelData.jugadores?.forEach(user => {
+                        console.log(`  - ${user.nickname} (ID: ${user.id})`);
                     });
                     
                     renderTables();
