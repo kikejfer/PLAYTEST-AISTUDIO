@@ -604,6 +604,9 @@
         <div class="section">
             <div class="section-header">
                 <span>Usuarios (Jugadores) Asignados</span>
+                <div class="section-actions" style="margin-left: auto;">
+                    <input type="text" id="usuarios-search" placeholder="Buscar usuarios..." style="padding: 5px 10px; border: 1px solid #415A77; border-radius: 3px; background: #1B263B; color: #E0E1DD; font-size: 14px;">
+                </div>
             </div>
             <div class="section-content">
                 <div class="table-container">
@@ -1672,6 +1675,14 @@
             if (creadoresSearch) {
                 creadoresSearch.addEventListener('input', function() {
                     filterTable('creadores-table', this.value);
+                });
+            }
+
+            // Filtro para tabla de usuarios
+            const usuariosSearch = document.getElementById('usuarios-search');
+            if (usuariosSearch) {
+                usuariosSearch.addEventListener('input', function() {
+                    filterTable('usuarios-table', this.value);
                 });
             }
         });
