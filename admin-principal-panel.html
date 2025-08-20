@@ -716,6 +716,7 @@
                                 <th>Email</th>
                                 <th>Bloques Creados</th>
                                 <th>Preguntas</th>
+                                <th>Temas</th>
                                 <th>Usuarios</th>
                                 <th>Adm.Secundario</th>
                                 <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
@@ -1315,6 +1316,7 @@
                     <td>${creador.email || 'Sin email'}</td>
                     <td><strong style="color: #F59E0B;">${creador.blocks_created || 0}</strong></td>
                     <td><strong style="color: #3B82F6;">${creador.total_questions || 0}</strong></td>
+                    <td><strong style="color: #10B981;">${creador.total_topics || 0}</strong></td>
                     <td><strong style="color: #8B5CF6;">${totalUsuarios}</strong></td>
                     <td>
                         <select onchange="reassignUser(${creador.id}, this.value)">
