@@ -1730,12 +1730,16 @@
             submenu.style.display = isVisible ? 'none' : 'block';
         }
 
-        function openPersonalDataModal() {
-            alert('Modal de Datos Personales - En desarrollo');
+        async function openPersonalDataModal() {
+            // Load current user data
+            await loadCurrentUserData();
+            showModal('profile-modal');
         }
 
-        function openRoleModificationModal() {
-            alert('Modal de Modificar Roles - En desarrollo');
+        async function openRoleModificationModal() {
+            // Load current user roles
+            await loadCurrentUserRoles();
+            showModal('role-modal');
         }
 
         function openGameTypesModal() {
@@ -1755,7 +1759,7 @@
         }
 
         function openPasswordChangeModal() {
-            alert('Modal de Cambio de Contraseña - En desarrollo');
+            showModal('password-modal');
         }
 
         // Cerrar dropdown al hacer clic fuera
@@ -1767,6 +1771,308 @@
                 closeUserDropdown();
             }
         });
+
+        // Funciones para manejar modales
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Función para cargar datos del usuario actual
+        async function loadCurrentUserData() {
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const response = await fetch('/api/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    // Poblar el formulario con los datos actuales
+                    document.getElementById('profile-nickname').value = userData.nickname || '';
+                    document.getElementById('profile-firstname').value = userData.first_name || userData.firstName || '';
+                    document.getElementById('profile-lastname').value = userData.last_name || userData.lastName || '';
+                    document.getElementById('profile-email').value = userData.email || '';
+                } else {
+                    console.warn('Could not load user profile data');
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Función para cargar roles del usuario actual
+        async function loadCurrentUserRoles() {
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const response = await fetch('/api/users/roles', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const userRoles = await response.json();
+                    // Marcar los checkboxes según los roles actuales
+                    const checkboxes = document.querySelectorAll('#role-modal input[type="checkbox"]');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = userRoles.includes(checkbox.value);
+                    });
+                } else {
+                    console.warn('Could not load user roles');
+                }
+            } catch (error) {
+                console.error('Error loading user roles:', error);
+            }
+        }
+
+        // Función para actualizar datos personales
+        async function updateProfile() {
+            const formData = {
+                nickname: document.getElementById('profile-nickname').value,
+                firstName: document.getElementById('profile-firstname').value,
+                lastName: document.getElementById('profile-lastname').value,
+                email: document.getElementById('profile-email').value
+            };
+
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const response = await fetch('/api/users/update-profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    alert('Datos actualizados correctamente');
+                    closeModal('profile-modal');
+                } else {
+                    alert('Error al actualizar los datos');
+                }
+            } catch (error) {
+                alert('Error de conexión');
+            }
+        }
+
+        // Función para cambiar contraseña
+        async function changePassword() {
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            if (newPassword !== confirmPassword) {
+                alert('Las contraseñas no coinciden');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                alert('La contraseña debe tener al menos 6 caracteres');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const response = await fetch('/api/users/change-password', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Contraseña actualizada correctamente');
+                    closeModal('password-modal');
+                    // Limpiar el formulario
+                    document.getElementById('current-password').value = '';
+                    document.getElementById('new-password').value = '';
+                    document.getElementById('confirm-password').value = '';
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'La contraseña actual es incorrecta');
+                }
+            } catch (error) {
+                alert('Error de conexión');
+            }
+        }
+
+        // Función para actualizar roles del usuario actual
+        async function updateUserRoles() {
+            const checkboxes = document.querySelectorAll('#role-modal input[type="checkbox"]:checked');
+            const selectedRoles = Array.from(checkboxes).map(cb => cb.value);
+
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                
+                const response = await fetch('/api/users/update-roles', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        roles: selectedRoles
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Roles actualizados correctamente');
+                    closeModal('role-modal');
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Error al actualizar los roles');
+                }
+            } catch (error) {
+                alert('Error de conexión');
+            }
+        }
+
     </script>
+
+    <!-- Modales -->
+    
+    <!-- Modal de Datos Personales -->
+    <div id="profile-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 90%; max-width: 500px; border: 1px solid #415A77;" onclick="event.stopPropagation();">
+            <div style="padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h3 style="color: #E0E1DD; font-size: 20px; font-weight: bold; margin: 0;">Editar Datos Personales</h3>
+                    <button onclick="closeModal('profile-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
+                </div>
+                
+                <form onsubmit="event.preventDefault(); updateProfile();" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Nickname</label>
+                        <input type="text" id="profile-nickname" style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;" />
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Nombre</label>
+                        <input type="text" id="profile-firstname" style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;" />
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Apellidos</label>
+                        <input type="text" id="profile-lastname" style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;" />
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Email</label>
+                        <input type="email" id="profile-email" style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;" />
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button type="button" onclick="closeModal('profile-modal')" style="flex: 1; padding: 12px; background: #415A77; color: #E0E1DD; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#4F6B8A'" onmouseout="this.style.background='#415A77'">Cancelar</button>
+                        <button type="submit" style="flex: 1; padding: 12px; background: #3B82F6; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Cambio de Contraseña -->
+    <div id="password-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 90%; max-width: 500px; border: 1px solid #415A77;" onclick="event.stopPropagation();">
+            <div style="padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h3 style="color: #E0E1DD; font-size: 20px; font-weight: bold; margin: 0;">Cambiar Contraseña</h3>
+                    <button onclick="closeModal('password-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
+                </div>
+                
+                <form onsubmit="event.preventDefault(); changePassword();" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Contraseña Actual</label>
+                        <input type="password" id="current-password" required style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;" />
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Nueva Contraseña</label>
+                        <input type="password" id="new-password" required style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;" />
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 4px;">Confirmar Nueva Contraseña</label>
+                        <input type="password" id="confirm-password" required style="width: 100%; padding: 12px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; font-size: 14px;" />
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button type="button" onclick="closeModal('password-modal')" style="flex: 1; padding: 12px; background: #415A77; color: #E0E1DD; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#4F6B8A'" onmouseout="this.style.background='#415A77'">Cancelar</button>
+                        <button type="submit" style="flex: 1; padding: 12px; background: #3B82F6; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">Cambiar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Modificar Roles -->
+    <div id="role-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 90%; max-width: 500px; border: 1px solid #415A77;" onclick="event.stopPropagation();">
+            <div style="padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h3 style="color: #E0E1DD; font-size: 20px; font-weight: bold; margin: 0;">Modificar Mis Roles</h3>
+                    <button onclick="closeModal('role-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
+                </div>
+                
+                <form onsubmit="event.preventDefault(); updateUserRoles();" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div>
+                        <label style="display: block; color: #E0E1DD; font-size: 14px; font-weight: 500; margin-bottom: 12px;">Selecciona tus roles:</label>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            
+                            <label style="display: flex; align-items: center; gap: 8px; color: #E0E1DD; cursor: pointer; padding: 8px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(65,90,119,0.3)'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" value="admin_principal" style="width: 16px; height: 16px; accent-color: #3B82F6;">
+                                <span style="font-size: 16px;">🔒</span>
+                                <span>Administrador Principal</span>
+                            </label>
+                            
+                            <label style="display: flex; align-items: center; gap: 8px; color: #E0E1DD; cursor: pointer; padding: 8px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(65,90,119,0.3)'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" value="admin_secundario" style="width: 16px; height: 16px; accent-color: #3B82F6;">
+                                <span style="font-size: 16px;">🔐</span>
+                                <span>Administrador Secundario</span>
+                            </label>
+                            
+                            <label style="display: flex; align-items: center; gap: 8px; color: #E0E1DD; cursor: pointer; padding: 8px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(65,90,119,0.3)'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" value="profesor" style="width: 16px; height: 16px; accent-color: #3B82F6;">
+                                <span style="font-size: 16px;">👨‍🏫</span>
+                                <span>Profesor</span>
+                            </label>
+                            
+                            <label style="display: flex; align-items: center; gap: 8px; color: #E0E1DD; cursor: pointer; padding: 8px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(65,90,119,0.3)'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" value="creador_contenido" style="width: 16px; height: 16px; accent-color: #3B82F6;">
+                                <span style="font-size: 16px;">🎨</span>
+                                <span>Creador de Contenido</span>
+                            </label>
+                            
+                            <label style="display: flex; align-items: center; gap: 8px; color: #E0E1DD; cursor: pointer; padding: 8px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(65,90,119,0.3)'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" value="jugador" style="width: 16px; height: 16px; accent-color: #3B82F6;">
+                                <span style="font-size: 16px;">🎮</span>
+                                <span>Jugador</span>
+                            </label>
+                            
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button type="button" onclick="closeModal('role-modal')" style="flex: 1; padding: 12px; background: #415A77; color: #E0E1DD; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#4F6B8A'" onmouseout="this.style.background='#415A77'">Cancelar</button>
+                        <button type="submit" style="flex: 1; padding: 12px; background: #3B82F6; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

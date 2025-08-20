@@ -860,8 +860,8 @@
                     currentUser = userData;
                     
                     // Update UI
-                    document.getElementById('user-name').textContent = userData.email || userData.username || 'Administrador';
-                    document.getElementById('user-avatar').textContent = (userData.email || userData.username || 'A')[0].toUpperCase();
+                    document.getElementById('user-name').textContent = userData.nickname || userData.username || userData.email || 'Administrador';
+                    document.getElementById('user-avatar').textContent = (userData.nickname || userData.username || userData.email || 'A')[0].toUpperCase();
                     
                 } catch (tokenError) {
                     // If token decode fails, use fallback
@@ -1793,9 +1793,23 @@
             const successDiv = document.createElement('div');
             successDiv.className = 'success';
             successDiv.textContent = message;
-            document.querySelector('.container').insertBefore(successDiv, document.querySelector('.section'));
+            
+            // Try to insert before the first section, but handle if no section exists
+            const container = document.querySelector('.container');
+            const firstSection = container ? container.querySelector('.section') : null;
+            if (container && firstSection) {
+                container.insertBefore(successDiv, firstSection);
+            } else if (container) {
+                container.appendChild(successDiv);
+            } else {
+                document.body.appendChild(successDiv);
+            }
 
-            setTimeout(() => successDiv.remove(), 3000);
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.remove();
+                }
+            }, 3000);
         }
 
         function showWakeUpMessage() {

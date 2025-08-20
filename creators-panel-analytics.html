@@ -959,8 +959,8 @@
                     const userData = JSON.parse(jsonPayload);
                     currentUser = userData;
                     
-                    document.getElementById('user-name').textContent = userData.email || userData.username || 'Creador';
-                    document.getElementById('user-avatar').textContent = (userData.email || userData.username || 'C')[0].toUpperCase();
+                    document.getElementById('user-name').textContent = userData.nickname || userData.username || userData.email || 'Creador';
+                    document.getElementById('user-avatar').textContent = (userData.nickname || userData.username || userData.email || 'C')[0].toUpperCase();
                     
                 } catch (tokenError) {
                     document.getElementById('user-name').textContent = 'Creador de Contenido';

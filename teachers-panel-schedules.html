@@ -1499,12 +1499,16 @@
             submenu.style.display = isVisible ? 'none' : 'block';
         }
 
-        function openPersonalDataModal() {
-            alert('Modal de Datos Personales - En desarrollo');
+        async function openPersonalDataModal() {
+            // Load current user data
+            await loadCurrentUserData();
+            showModal('personalDataModal');
         }
 
-        function openRoleModificationModal() {
-            alert('Modal de Modificar Roles - En desarrollo');
+        async function openRoleModificationModal() {
+            // Load current user roles
+            await loadCurrentUserRoles();
+            showModal('currentRolesModal');
         }
 
         function openGameTypesModal() {
@@ -1524,7 +1528,7 @@
         }
 
         function openPasswordChangeModal() {
-            alert('Modal de Cambio de Contraseña - En desarrollo');
+            showModal('passwordChangeModal');
         }
 
         // Cerrar dropdown al hacer clic fuera
@@ -1578,6 +1582,69 @@
                 closeModal('roleLevelsModal');
             }
         }
+
+        // Funciones para manejar modales de opciones de usuario
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        // Función para cargar datos del usuario actual
+        async function loadCurrentUserData() {
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const response = await fetch('/api/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    // Poblar el formulario con los datos actuales si existe el modal
+                    const profileNickname = document.getElementById('profile-nickname');
+                    const profileFirstname = document.getElementById('profile-firstname');
+                    const profileLastname = document.getElementById('profile-lastname');
+                    const profileEmail = document.getElementById('profile-email');
+                    
+                    if (profileNickname) profileNickname.value = userData.nickname || '';
+                    if (profileFirstname) profileFirstname.value = userData.first_name || userData.firstName || '';
+                    if (profileLastname) profileLastname.value = userData.last_name || userData.lastName || '';
+                    if (profileEmail) profileEmail.value = userData.email || '';
+                } else {
+                    console.warn('Could not load user profile data');
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Función para cargar roles del usuario actual
+        async function loadCurrentUserRoles() {
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const response = await fetch('/api/users/roles', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const userRoles = await response.json();
+                    // Marcar los checkboxes según los roles actuales si existe el modal
+                    const checkboxes = document.querySelectorAll('#role-modal input[type="checkbox"], #currentRolesModal input[type="checkbox"]');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = userRoles.includes(checkbox.value);
+                    });
+                } else {
+                    console.warn('Could not load user roles');
+                }
+            } catch (error) {
+                console.error('Error loading user roles:', error);
+            }
+        }
+
     </script>
     <script>
         let currentUser = null;
@@ -1606,7 +1673,7 @@
                     const userData = JSON.parse(jsonPayload);
                     currentUser = userData;
                     
-                    const userName = userData.email || userData.username || userData.nickname || 'Profesor';
+                    const userName = userData.nickname || userData.username || userData.email || 'Profesor';
                     document.getElementById('user-name').textContent = userName;
                     document.getElementById('dropdown-user-name').textContent = userName;
                     document.getElementById('user-avatar').textContent = userName[0].toUpperCase();
