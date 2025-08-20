@@ -34,10 +34,15 @@ ADD COLUMN IF NOT EXISTS apellido VARCHAR(100);
 ALTER TABLE blocks 
 ADD COLUMN IF NOT EXISTS observaciones TEXT;
 
+-- 5. Add user_role_id field to blocks table to track creation role
+ALTER TABLE blocks 
+ADD COLUMN IF NOT EXISTS user_role_id INTEGER REFERENCES roles(id);
+
 -- Indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_topic_answers_block_id ON topic_answers(block_id);
 CREATE INDEX IF NOT EXISTS idx_topic_answers_topic ON topic_answers(topic);
 CREATE INDEX IF NOT EXISTS idx_block_answers_block_id ON block_answers(block_id);
+CREATE INDEX IF NOT EXISTS idx_blocks_user_role_id ON blocks(user_role_id);
 
 -- Function to update topic_answers and block_answers when questions are added/removed
 CREATE OR REPLACE FUNCTION update_question_counts()
