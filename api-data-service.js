@@ -4,16 +4,17 @@
 class APIDataService {
   constructor(baseURL = 'http://localhost:3000/api') {
     this.baseURL = baseURL;
-    this.token = localStorage.getItem('playtest_auth_token');
+    this.token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
   }
 
   // Helper method para hacer llamadas HTTP
   async apiCall(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
+    const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
     const defaultOptions = {
       headers: {
         'Content-Type': 'application/json',
-        ...(this.token && { 'Authorization': `Bearer ${this.token}` })
+        ...(token && { 'Authorization': `Bearer ${token}` })
       }
     };
 
@@ -58,6 +59,7 @@ class APIDataService {
     if (response.token) {
       this.token = response.token;
       localStorage.setItem('playtest_auth_token', this.token);
+      localStorage.setItem('authToken', this.token);
       
       // Para compatibilidad con sistema existente
       localStorage.setItem('playtest_session', JSON.stringify({
@@ -78,6 +80,7 @@ class APIDataService {
     if (response.token) {
       this.token = response.token;
       localStorage.setItem('playtest_auth_token', this.token);
+      localStorage.setItem('authToken', this.token);
       
       localStorage.setItem('playtest_session', JSON.stringify({
         userId: response.user.id,
@@ -92,6 +95,7 @@ class APIDataService {
     await this.apiCall('/auth/logout', { method: 'POST' });
     this.token = null;
     localStorage.removeItem('playtest_auth_token');
+    localStorage.removeItem('authToken');
     localStorage.removeItem('playtest_session');
   }
 
