@@ -1633,6 +1633,7 @@
 
                 if (response.ok) {
                     const userRoles = await response.json();
+                    console.log('🎭 Current user roles:', userRoles);
                     // Marcar los checkboxes según los roles actuales si existe el modal
                     const checkboxes = document.querySelectorAll('#role-modal input[type="checkbox"], #currentRolesModal input[type="checkbox"]');
                     checkboxes.forEach(checkbox => {
@@ -1643,6 +1644,46 @@
                 }
             } catch (error) {
                 console.error('Error loading user roles:', error);
+            }
+        }
+
+        async function updateUserRoles() {
+            try {
+                const checkboxes = document.querySelectorAll('#currentRolesModal input[type="checkbox"]:checked');
+                const selectedRoles = Array.from(checkboxes).map(cb => cb.value);
+                
+                console.log('🎭 Updating roles to:', selectedRoles);
+                
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                const response = await fetch('/api/users/update-roles', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ roles: selectedRoles })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('✅ Roles updated successfully:', result);
+                    
+                    // Show success message
+                    alert('Roles actualizados correctamente');
+                    
+                    // Close modal
+                    closeModal('currentRolesModal');
+                    
+                    // Reload user data to reflect changes
+                    await loadUserData();
+                } else {
+                    const error = await response.json();
+                    console.error('❌ Error updating roles:', error);
+                    alert('Error al actualizar roles: ' + (error.error || 'Error desconocido'));
+                }
+            } catch (error) {
+                console.error('❌ Error updating roles:', error);
+                alert('Error al actualizar roles: ' + error.message);
             }
         }
 
@@ -1773,17 +1814,45 @@
                 <button class="close" onclick="closeModal('currentRolesModal')">&times;</button>
             </div>
             <div style="padding: 20px;">
-                <p style="color: #666; margin-bottom: 20px;">Estos son los roles actualmente asignados a tu cuenta en LumiQuiz:</p>
-                <div id="user-roles-list">
-                    <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px;">
-                        <span style="font-size: 24px;">👨‍🏫</span>
+                <p style="color: #666; margin-bottom: 20px;">Selecciona los roles que deseas tener asignados en tu cuenta:</p>
+                <div id="roles-selection" style="display: grid; gap: 12px;">
+                    <label style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #f8f9fa; border-radius: 8px; cursor: pointer;">
+                        <input type="checkbox" value="administrador_principal" style="transform: scale(1.2);">
+                        <span style="font-size: 20px;">👑</span>
+                        <div>
+                            <strong>Administrador Principal</strong>
+                            <p style="margin: 0; font-size: 12px; color: #666;">Control total del sistema</p>
+                        </div>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #f8f9fa; border-radius: 8px; cursor: pointer;">
+                        <input type="checkbox" value="administrador_secundario" style="transform: scale(1.2);">
+                        <span style="font-size: 20px;">🛡️</span>
+                        <div>
+                            <strong>Administrador Secundario</strong>
+                            <p style="margin: 0; font-size: 12px; color: #666;">Gestión de usuarios asignados</p>
+                        </div>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #f8f9fa; border-radius: 8px; cursor: pointer;">
+                        <input type="checkbox" value="creador_contenido" style="transform: scale(1.2);">
+                        <span style="font-size: 20px;">🎨</span>
+                        <div>
+                            <strong>Creador de Contenido</strong>
+                            <p style="margin: 0; font-size: 12px; color: #666;">Crea y gestiona bloques de preguntas</p>
+                        </div>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #f8f9fa; border-radius: 8px; cursor: pointer;">
+                        <input type="checkbox" value="profesor" style="transform: scale(1.2);">
+                        <span style="font-size: 20px;">👨‍🏫</span>
                         <div>
                             <strong>Profesor</strong>
-                            <p style="margin: 0; font-size: 14px; color: #666;">Gestiona clases, cronogramas y estudiantes</p>
+                            <p style="margin: 0; font-size: 12px; color: #666;">Gestiona clases, cronogramas y estudiantes</p>
                         </div>
-                    </div>
+                    </label>
                 </div>
-                <p style="color: #666; font-size: 14px; margin-top: 20px;">¿Necesitas cambiar tus roles? Contacta al administrador del sistema.</p>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('currentRolesModal')">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="updateUserRoles()">Guardar Cambios</button>
+                </div>
             </div>
         </div>
     </div>

@@ -1587,10 +1587,7 @@
                     ? 'https://playtest-backend.onrender.com' 
                     : '';
                 
-                // Use a mock response for now since role update endpoint doesn't exist
-                console.log('⚠️ Role update requested:', selectedRoles);
-                showModalSuccess('Roles actualizados correctamente');
-                return;
+                console.log('🎭 Updating roles to:', selectedRoles);
                 
                 const response = await fetch(`${API_BASE_URL}/api/users/update-roles`, {
                     method: 'PUT',
