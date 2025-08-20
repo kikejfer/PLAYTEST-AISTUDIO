@@ -3869,7 +3869,7 @@
           
           try {
             const { confirmPassword, ...newUserPayload } = registerData;
-            const response = await apiDataService.register(newUserPayload.nickname, newUserPayload.password, newUserPayload.email);
+            const response = await apiDataService.register(newUserPayload.nickname, newUserPayload.password, newUserPayload.email, newUserPayload.firstName, newUserPayload.lastName);
             if (response && response.user && response.token) {
               // Marcar como usuario nuevo para mostrar modal de roles
               onLogin(response.user, response.token, registerData.remember, true);

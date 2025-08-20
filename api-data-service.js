@@ -80,10 +80,16 @@ class APIDataService {
     return this.simulateDelay(response);
   }
 
-  async register(nickname, password, email) {
+  async register(nickname, password, email, firstName, lastName) {
     const response = await this.apiCall('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ nickname, password, email })
+      body: JSON.stringify({ 
+        nickname, 
+        password, 
+        email,
+        nombre: firstName,
+        apellido: lastName
+      })
     });
 
     if (response.token) {
