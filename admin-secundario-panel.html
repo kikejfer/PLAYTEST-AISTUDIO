@@ -417,7 +417,11 @@
         <div class="stats-summary">
             <div class="stat-card">
                 <div class="stat-number" id="total-profesores">0</div>
-                <div class="stat-label">Profesores/Creadores</div>
+                <div class="stat-label">Profesores</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-creadores">0</div>
+                <div class="stat-label">Creadores</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="total-usuarios">0</div>
@@ -433,10 +437,13 @@
             </div>
         </div>
 
-        <!-- Sección 1: Profesores/Creadores Asignados -->
+        <!-- Sección 1: Profesores Asignados -->
         <div class="section">
             <div class="section-header">
-                <span>Profesores/Creadores de Contenido Asignados</span>
+                <span>Profesores Asignados</span>
+                <div class="section-actions">
+                    <input type="text" id="profesores-search" placeholder="Buscar profesores..." style="padding: 5px 10px; border: 1px solid #415A77; border-radius: 3px; background: #1B263B; color: #E0E1DD; font-size: 14px;">
+                </div>
             </div>
             <div class="section-content">
                 <div class="table-container">
@@ -447,9 +454,9 @@
                                 <th>Nickname</th>
                                 <th>Nombre/Apellidos</th>
                                 <th>Email</th>
-                                <th>Núm. Bloques</th>
-                                <th>Núm. Preguntas</th>
-                                <th>Núm. Usuarios</th>
+                                <th>Núm. Estudiantes</th>
+                                <th>Núm. Clases</th>
+                                <th>Fecha Asignación</th>
                             </tr>
                         </thead>
                         <tbody id="profesores-tbody">
@@ -460,7 +467,38 @@
             </div>
         </div>
 
-        <!-- Sección 2: Usuarios Asignados -->
+        <!-- Sección 2: Creadores de Contenido Asignados -->
+        <div class="section">
+            <div class="section-header">
+                <span>Creadores de Contenido Asignados</span>
+                <div class="section-actions">
+                    <input type="text" id="creadores-search" placeholder="Buscar creadores..." style="padding: 5px 10px; border: 1px solid #415A77; border-radius: 3px; background: #1B263B; color: #E0E1DD; font-size: 14px;">
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="table-container">
+                    <table id="creadores-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Nickname</th>
+                                <th>Nombre/Apellidos</th>
+                                <th>Email</th>
+                                <th>Núm. Bloques Creados</th>
+                                <th>Núm. Preguntas</th>
+                                <th>Núm. Usuarios</th>
+                                <th>Fecha Asignación</th>
+                            </tr>
+                        </thead>
+                        <tbody id="creadores-tbody">
+                            <!-- Los datos se cargan dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección 3: Usuarios Asignados -->
         <div class="section">
             <div class="section-header">
                 <span>Usuarios (Jugadores) Asignados</span>
@@ -813,14 +851,21 @@
         }
 
         function updateStats() {
-            const totalProfesores = panelData.profesoresAsignados?.length || 0;
+            const profesores = panelData.profesoresAsignados?.filter(user => user.role_name === 'profesor' || user.role === 'profesor') || [];
+            const creadores = panelData.profesoresAsignados?.filter(user => user.role_name === 'creador' || user.role === 'creador') || [];
+            
+            const totalProfesores = profesores.length;
+            const totalCreadores = creadores.length;
             const totalUsuarios = panelData.usuariosAsignados?.length || 0;
-            const totalBloques = panelData.profesoresAsignados?.reduce((sum, p) => 
-                sum + (p.blocks_created || p.bloques_creados || 0), 0) || 0;
-            const totalPreguntas = panelData.profesoresAsignados?.reduce((sum, p) => 
-                sum + (p.total_questions || p.preguntas_totales || 0), 0) || 0;
+            
+            // Estadísticas de bloques y preguntas solo para creadores
+            const totalBloques = creadores.reduce((sum, c) => 
+                sum + (c.blocks_created || c.bloques_creados || 0), 0);
+            const totalPreguntas = creadores.reduce((sum, c) => 
+                sum + (c.total_questions || c.preguntas_totales || 0), 0);
 
             document.getElementById('total-profesores').textContent = totalProfesores;
+            document.getElementById('total-creadores').textContent = totalCreadores;
             document.getElementById('total-usuarios').textContent = totalUsuarios;
             document.getElementById('total-bloques').textContent = totalBloques;
             document.getElementById('total-preguntas').textContent = totalPreguntas;
@@ -828,6 +873,7 @@
 
         function renderTables() {
             renderProfesoresTable();
+            renderCreadoresTable();
             renderUsuariosTable();
         }
 
@@ -835,20 +881,22 @@
             const tbody = document.getElementById('profesores-tbody');
             tbody.innerHTML = '';
 
-            if (panelData.profesoresAsignados.length === 0) {
+            const profesores = panelData.profesoresAsignados.filter(user => user.role_name === 'profesor' || user.role === 'profesor');
+
+            if (profesores.length === 0) {
                 const row = document.createElement('tr');
                 row.innerHTML = `<td colspan="7" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
                     <div style="padding: 20px;">
-                        <div style="font-size: 18px; margin-bottom: 10px;">📋</div>
-                        <div style="font-weight: bold; margin-bottom: 5px;">No tienes profesores/creadores asignados</div>
-                        <div style="font-size: 12px; color: #778DA9;">Un administrador principal debe asignarte profesores y creadores para gestionar.</div>
+                        <div style="font-size: 18px; margin-bottom: 10px;">👨‍🏫</div>
+                        <div style="font-weight: bold; margin-bottom: 5px;">No tienes profesores asignados</div>
+                        <div style="font-size: 12px; color: #778DA9;">Un administrador principal debe asignarte profesores para gestionar.</div>
                     </div>
                 </td>`;
                 tbody.appendChild(row);
                 return;
             }
 
-            panelData.profesoresAsignados.forEach((profesor, index) => {
+            profesores.forEach((profesor, index) => {
                 // Debug logging
                 console.log(`👨‍🏫 Processing profesor ${index}:`, profesor);
                 
@@ -862,12 +910,12 @@
                 const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'No especificado';
                 const email = profesor.email || 'Sin email';
                 
-                // Try multiple field combinations for stats
-                const blocksCreated = profesor.blocks_created || profesor.bloques_creados || profesor.num_bloques || 0;
-                const totalQuestions = profesor.total_questions || profesor.preguntas_totales || profesor.num_preguntas || 0;
-                const totalUsers = profesor.total_users_blocks || profesor.usuarios_bloques_publicos || profesor.total_usuarios || 0;
+                // Información específica para profesores
+                const totalEstudiantes = profesor.total_students || profesor.num_estudiantes || 0;
+                const totalClases = profesor.total_classes || profesor.num_clases || 0;
+                const fechaAsignacion = profesor.assigned_date || profesor.fecha_asignacion || 'No especificada';
                 
-                console.log(`📊 Mapped data: ${nickname}, ${fullName}, ${email}, blocks: ${blocksCreated}, questions: ${totalQuestions}, users: ${totalUsers}`);
+                console.log(`👨‍🏫 Mapped profesor data: ${nickname}, ${fullName}, ${email}, estudiantes: ${totalEstudiantes}, clases: ${totalClases}`);
                 
                 row.innerHTML = `
                     <td>
@@ -878,9 +926,9 @@
                     <td><strong>${nickname}</strong></td>
                     <td>${fullName}</td>
                     <td>${email}</td>
-                    <td><strong style="color: #10B981;">${blocksCreated}</strong></td>
-                    <td><strong style="color: #3B82F6;">${totalQuestions}</strong></td>
-                    <td><strong style="color: #8B5CF6;">${totalUsers}</strong></td>
+                    <td><strong style="color: #10B981;">${totalEstudiantes}</strong></td>
+                    <td><strong style="color: #3B82F6;">${totalClases}</strong></td>
+                    <td><small style="color: #778DA9;">${fechaAsignacion}</small></td>
                 `;
                 tbody.appendChild(row);
 
@@ -897,6 +945,80 @@
                     `;
                     tbody.appendChild(expandRow);
                     loadProfesorBlocks(profesor.id);
+                }
+            });
+        }
+
+        function renderCreadoresTable() {
+            const tbody = document.getElementById('creadores-tbody');
+            tbody.innerHTML = '';
+
+            const creadores = panelData.profesoresAsignados.filter(user => user.role_name === 'creador' || user.role === 'creador');
+
+            if (creadores.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="8" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
+                    <div style="padding: 20px;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">🎨</div>
+                        <div style="font-weight: bold; margin-bottom: 5px;">No tienes creadores de contenido asignados</div>
+                        <div style="font-size: 12px; color: #778DA9;">Un administrador principal debe asignarte creadores para gestionar.</div>
+                    </div>
+                </td>`;
+                tbody.appendChild(row);
+                return;
+            }
+
+            creadores.forEach((creador, index) => {
+                // Debug logging
+                console.log(`🎨 Processing creador ${index}:`, creador);
+                
+                const row = document.createElement('tr');
+                const isExpanded = expandedRows.has(`creador-${creador.id}`);
+                
+                // Try multiple field combinations for name
+                const nickname = creador.nickname || creador.username || `Usuario_${creador.id}`;
+                const firstName = creador.first_name || creador.firstName || creador.nombre || '';
+                const lastName = creador.last_name || creador.lastName || creador.apellido || creador.apellidos || '';
+                const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'No especificado';
+                const email = creador.email || 'Sin email';
+                
+                // Información específica para creadores de contenido
+                const blocksCreated = creador.blocks_created || creador.bloques_creados || creador.num_bloques || 0;
+                const totalQuestions = creador.total_questions || creador.preguntas_totales || creador.num_preguntas || 0;
+                const totalUsers = creador.total_users_blocks || creador.usuarios_bloques_publicos || creador.total_usuarios || 0;
+                const fechaAsignacion = creador.assigned_date || creador.fecha_asignacion || 'No especificada';
+                
+                console.log(`🎨 Mapped creador data: ${nickname}, ${fullName}, ${email}, bloques: ${blocksCreated}, preguntas: ${totalQuestions}, usuarios: ${totalUsers}`);
+                
+                row.innerHTML = `
+                    <td>
+                        <button class="btn btn-expand" onclick="toggleCreadorExpansion(${creador.id})">
+                            ${isExpanded ? '−' : '+'}
+                        </button>
+                    </td>
+                    <td><strong>${nickname}</strong></td>
+                    <td>${fullName}</td>
+                    <td>${email}</td>
+                    <td><strong style="color: #F59E0B;">${blocksCreated}</strong></td>
+                    <td><strong style="color: #3B82F6;">${totalQuestions}</strong></td>
+                    <td><strong style="color: #8B5CF6;">${totalUsers}</strong></td>
+                    <td><small style="color: #778DA9;">${fechaAsignacion}</small></td>
+                `;
+                tbody.appendChild(row);
+
+                // Fila expandible para bloques
+                if (isExpanded) {
+                    const expandRow = document.createElement('tr');
+                    expandRow.className = 'expandable-row show';
+                    expandRow.innerHTML = `
+                        <td colspan="8">
+                            <div id="creador-blocks-${creador.id}">
+                                <div class="loading">Cargando bloques...</div>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(expandRow);
+                    loadCreadorBlocks(creador.id);
                 }
             });
         }
@@ -1261,6 +1383,131 @@
         function showBlockDetails(blockId) {
             // Implementar modal o ventana con detalles completos del bloque
             alert(`Ver detalles completos del bloque ID: ${blockId}`);
+        }
+
+        // Funciones para creadores de contenido
+        async function toggleCreadorExpansion(creadorId) {
+            const key = `creador-${creadorId}`;
+            if (expandedRows.has(key)) {
+                expandedRows.delete(key);
+            } else {
+                expandedRows.add(key);
+            }
+            renderCreadoresTable();
+        }
+
+        async function loadCreadorBlocks(creadorId) {
+            console.log(`🔄 Loading blocks for creador ID: ${creadorId}`);
+            const container = document.getElementById(`creador-blocks-${creadorId}`);
+            
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                if (!token) {
+                    console.error('❌ No auth token found for loading blocks');
+                    container.innerHTML = '<p style="color: #EF4444;">Error: No hay token de autenticación</p>';
+                    return;
+                }
+                
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                    
+                const url = `${API_BASE_URL}/api/roles-updated/creadores/${creadorId}/bloques`;
+                console.log(`🔗 Fetching blocks from: ${url}`);
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log(`📡 Response status: ${response.status}`);
+
+                if (!response.ok) {
+                    console.error(`❌ HTTP error: ${response.status} - ${response.statusText}`);
+                    
+                    // Try alternative endpoint
+                    console.log('🔄 Trying alternative blocks endpoint...');
+                    const altUrl = `${API_BASE_URL}/api/roles-updated/bloques?creador_id=${creadorId}`;
+                    console.log(`🔗 Alternative URL: ${altUrl}`);
+                    
+                    try {
+                        const altResponse = await fetch(altUrl, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (altResponse.ok) {
+                            const altResult = await altResponse.json();
+                            console.log('✅ Alternative blocks loaded successfully:', altResult);
+                            displayBlocks(altResult.bloques || altResult.blocks || altResult, container);
+                            return;
+                        }
+                    } catch (altError) {
+                        console.error('❌ Alternative endpoint also failed:', altError);
+                    }
+                    
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log('✅ Creador blocks loaded successfully:', result);
+                displayBlocks(result.bloques || result.blocks || result, container);
+                
+            } catch (error) {
+                console.error('❌ Error cargando bloques del creador:', error);
+                if (container) {
+                    container.innerHTML = `<p style="color: #EF4444;">Error al cargar los bloques: ${error.message}</p>`;
+                }
+            }
+        }
+
+        // Funciones de filtrado para las tablas
+        document.addEventListener('DOMContentLoaded', function() {
+            // Filtro para tabla de profesores
+            const profesoresSearch = document.getElementById('profesores-search');
+            if (profesoresSearch) {
+                profesoresSearch.addEventListener('input', function() {
+                    filterTable('profesores-table', this.value);
+                });
+            }
+
+            // Filtro para tabla de creadores
+            const creadoresSearch = document.getElementById('creadores-search');
+            if (creadoresSearch) {
+                creadoresSearch.addEventListener('input', function() {
+                    filterTable('creadores-table', this.value);
+                });
+            }
+        });
+
+        function filterTable(tableId, searchTerm) {
+            const table = document.getElementById(tableId);
+            const tbody = table.querySelector('tbody');
+            const rows = tbody.querySelectorAll('tr');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                if (row.classList.contains('expandable-row')) {
+                    // Skip expandable rows
+                    return;
+                }
+                
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 1 && cells[0].hasAttribute('colspan')) {
+                    // Es una fila de expansión, mantenerla oculta si no hay resultados
+                    return;
+                }
+                
+                const text = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+                const isVisible = text.includes(searchTerm.toLowerCase());
+                
+                row.style.display = isVisible ? '' : 'none';
+                if (isVisible) visibleCount++;
+            });
         }
     </script>
 </body>
