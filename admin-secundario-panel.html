@@ -384,26 +384,76 @@
 
 </head>
 <body>
-    <!-- User Header -->
-    <div class="user-header">
-        <div class="header-left">
-            <a href="index.html" class="playtest-logo">
-                <img src="Imagenes/LumiQuiz.png" alt="LumiQuiz Logo" style="object-fit: contain;">
-                <span>PLAYTEST</span>
-            </a>
+    <!-- Header Unificado LumiQuiz -->
+    <div class="user-header" style="background: #415A77; color: #E0E1DD; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); position: fixed; top: 0; left: 0; right: 0; z-index: 1000;">
+        <!-- Lado izquierdo: Logo + Frase -->
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <img src="./Imagenes/LumiQuiz.png" alt="LumiQuiz Logo" style="height: 6rem; width: 6rem; object-fit: contain;">
+            <div style="display: flex; flex-direction: column;">
+                <span style="font-size: 1.125rem; font-weight: 500; color: #E0E1DD;">La forma más divertida de estudiar</span>
+                <span style="font-size: 1rem; font-weight: 700; color: #3B82F6; letter-spacing: 0.1em;">PANEL ADMINISTRADOR SECUNDARIO</span>
+            </div>
         </div>
-        <div class="header-actions">
-            <a href="all-blocks.html" class="dashboard-btn">
-                🏠 Dashboard
-            </a>
-            <div class="user-info">
-                <div class="user-avatar" id="user-avatar">A</div>
-                <div class="user-details">
-                    <h4 id="user-name">Cargando...</h4>
-                    <p id="user-role">Admin Secundario</p>
+        
+        <!-- Lado derecho: Elementos ordenados de derecha a izquierda -->
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <!-- 1. Botón Soporte -->
+            <button onclick="window.open('support-form.html?type=global', '_blank')" style="background: #059669; color: white; border: none; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: background 0.2s; font-size: 0.875rem;">
+                🛠️ SOPORTE
+            </button>
+            
+            <!-- 2. Botón rojo Cerrar Sesión -->
+            <button onclick="logout()" style="background: #DC2626; color: white; border: none; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-weight: 500; cursor: pointer; transition: background 0.2s; font-size: 0.875rem;">
+                Cerrar Sesión
+            </button>
+            
+            <!-- 3. Icono luminarias -->
+            <div style="display: flex; align-items: center; gap: 0.25rem;">
+                <img src="Imagenes/1lum.png" alt="Luminarias" style="height: 1.25rem; width: 1.25rem; object-fit: contain;">
+                <span id="user-luminarias" style="color: #FFD700; font-weight: bold; font-size: 0.875rem;">0</span>
+            </div>
+            
+            <!-- 4. Nombre usuario + rol -->
+            <div style="text-align: right;">
+                <div id="user-name" style="font-weight: bold; color: #E0E1DD; font-size: 0.875rem;">Cargando...</div>
+                <div style="font-size: 0.75rem; color: #778DA9;">Administrador Secundario</div>
+            </div>
+            
+            <!-- 5. Círculo azul con inicial y dropdown -->
+            <div style="position: relative;">
+                <button id="user-dropdown-btn" onclick="toggleUserDropdown()" style="width: 2.5rem; height: 2.5rem; background: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: none; cursor: pointer; transition: background 0.2s;" title="Opciones de usuario">
+                    <span id="user-avatar">A</span>
+                </button>
+                <div id="user-dropdown" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 0.5rem; width: 250px; background: #1B263B; border-radius: 0.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid #415A77; z-index: 2000;">
+                    <div style="padding: 0.5rem 0;">
+                        <a href="#" onclick="openPersonalDataModal(); closeUserDropdown(); return false;" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: #E0E1DD; text-decoration: none; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='transparent'">
+                            <span style="font-size: 1rem;">👤</span>
+                            <span>Datos Personales</span>
+                        </a>
+                        <a href="#" onclick="openRoleModificationModal(); closeUserDropdown(); return false;" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: #E0E1DD; text-decoration: none; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='transparent'">
+                            <span style="font-size: 1rem;">🎭</span>
+                            <span>Modificar Roles</span>
+                        </a>
+                        <div style="position: relative;">
+                            <a href="#" onclick="toggleGameExplanationSubmenu(); return false;" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: #E0E1DD; text-decoration: none; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='transparent'">
+                                <span style="font-size: 1rem;">🎮</span>
+                                <span>Explicación del Juego</span>
+                                <span style="margin-left: auto;">▶</span>
+                            </a>
+                            <div id="game-explanation-submenu" style="display: none; background: #0D1B2A; border-radius: 0.375rem; margin: 0.25rem; border: 1px solid #415A77;">
+                                <a href="#" onclick="openGameTypesModal(); closeUserDropdown(); return false;" style="display: block; padding: 0.5rem 1rem; color: #E0E1DD; text-decoration: none; font-size: 0.875rem;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='transparent'">Tipos de Juegos</a>
+                                <a href="#" onclick="openRoleLevelsModal(); closeUserDropdown(); return false;" style="display: block; padding: 0.5rem 1rem; color: #E0E1DD; text-decoration: none; font-size: 0.875rem;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='transparent'">Niveles por Roles</a>
+                                <a href="#" onclick="openTopicDevelopmentModal(); closeUserDropdown(); return false;" style="display: block; padding: 0.5rem 1rem; color: #E0E1DD; text-decoration: none; font-size: 0.875rem;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='transparent'">Desarrollo de Temarios</a>
+                                <a href="#" onclick="openLuminariasModal(); closeUserDropdown(); return false;" style="display: block; padding: 0.5rem 1rem; color: #E0E1DD; text-decoration: none; font-size: 0.875rem;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='transparent'">Luminarias</a>
+                            </div>
+                        </div>
+                        <a href="#" onclick="openPasswordChangeModal(); closeUserDropdown(); return false;" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: #E0E1DD; text-decoration: none; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='transparent'">
+                            <span style="font-size: 1rem;">🔐</span>
+                            <span>Cambio de Contraseña</span>
+                        </a>
+                    </div>
                 </div>
             </div>
-            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
         </div>
     </div>
 
@@ -1509,6 +1559,61 @@
                 if (isVisible) visibleCount++;
             });
         }
+
+        // Funciones del menú dropdown del usuario
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('user-dropdown');
+            const isVisible = dropdown.style.display !== 'none';
+            dropdown.style.display = isVisible ? 'none' : 'block';
+        }
+
+        function closeUserDropdown() {
+            document.getElementById('user-dropdown').style.display = 'none';
+        }
+
+        function toggleGameExplanationSubmenu() {
+            const submenu = document.getElementById('game-explanation-submenu');
+            const isVisible = submenu.style.display !== 'none';
+            submenu.style.display = isVisible ? 'none' : 'block';
+        }
+
+        function openPersonalDataModal() {
+            alert('Modal de Datos Personales - En desarrollo');
+        }
+
+        function openRoleModificationModal() {
+            alert('Modal de Modificar Roles - En desarrollo');
+        }
+
+        function openGameTypesModal() {
+            alert('Modal de Tipos de Juegos - En desarrollo');
+        }
+
+        function openRoleLevelsModal() {
+            alert('Modal de Niveles por Roles - En desarrollo');
+        }
+
+        function openTopicDevelopmentModal() {
+            alert('Modal de Desarrollo de Temarios - En desarrollo');
+        }
+
+        function openLuminariasModal() {
+            alert('Modal de Luminarias - En desarrollo');
+        }
+
+        function openPasswordChangeModal() {
+            alert('Modal de Cambio de Contraseña - En desarrollo');
+        }
+
+        // Cerrar dropdown al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('user-dropdown');
+            const dropdownBtn = document.getElementById('user-dropdown-btn');
+            
+            if (!dropdown.contains(event.target) && !dropdownBtn.contains(event.target)) {
+                closeUserDropdown();
+            }
+        });
     </script>
 </body>
 </html>
