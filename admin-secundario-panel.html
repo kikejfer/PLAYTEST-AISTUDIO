@@ -881,24 +881,39 @@
                                     const allUsers = debugData.all_users;
                                     const usersWithBlocks = debugData.users_with_blocks;
                                     
+                                    console.log('🔧 Debug mode: usando fallback con roles simulados');
+                                    
                                     // Filtrar solo usuarios asignados a este admin secundario
                                     // En debug mode, no tenemos asignaciones reales, así que mostraremos todos
                                     const profesoresAsignados = allUsers
                                         .filter(user => user.nickname !== 'AdminPrincipal')
-                                        .map(user => ({
-                                            id: user.id,
-                                            nickname: user.nickname,
-                                            email: user.email || 'Sin email',
-                                            first_name: '', 
-                                            last_name: '',
-                                            total_students: Math.floor(Math.random() * 30) + 5, // Simulamos estudiantes
-                                            total_classes: Math.floor(Math.random() * 10) + 2, // Simulamos clases
-                                            blocks_created: usersWithBlocks.find(u => u.id === user.id)?.block_count || 0,
-                                            total_questions: Math.floor(Math.random() * 40) + 15, // Simulamos preguntas
-                                            total_users_blocks: Math.floor(Math.random() * 80) + 10, // Simulamos usuarios que usan sus bloques
-                                            assigned_date: new Date().toISOString(),
-                                            role_name: usersWithBlocks.find(u => u.id === user.id) ? 'creador_contenido' : 'profesor'
-                                        }));
+                                        .map(user => {
+                                            const hasBlocks = usersWithBlocks.find(u => u.id === user.id);
+                                            // En modo debug, asignar roles de forma más realista
+                                            let debugRole = 'usuario';
+                                            if (hasBlocks) {
+                                                // Usuarios con bloques pueden ser creadores o profesores
+                                                debugRole = Math.random() > 0.6 ? 'creador_contenido' : 'profesor';
+                                            } else {
+                                                // Usuarios sin bloques pueden ser profesores o usuarios normales
+                                                debugRole = Math.random() > 0.7 ? 'profesor' : 'usuario';
+                                            }
+                                            
+                                            return {
+                                                id: user.id,
+                                                nickname: user.nickname,
+                                                email: user.email || 'Sin email',
+                                                first_name: '', 
+                                                last_name: '',
+                                                total_students: Math.floor(Math.random() * 30) + 5, // Simulamos estudiantes
+                                                total_classes: Math.floor(Math.random() * 10) + 2, // Simulamos clases
+                                                blocks_created: hasBlocks?.block_count || 0,
+                                                total_questions: Math.floor(Math.random() * 40) + 15, // Simulamos preguntas
+                                                total_users_blocks: Math.floor(Math.random() * 80) + 10, // Simulamos usuarios que usan sus bloques
+                                                assigned_date: new Date().toISOString(),
+                                                role_name: debugRole
+                                            };
+                                        });
 
                                     panelData = {
                                         profesoresAsignados: profesoresAsignados,
