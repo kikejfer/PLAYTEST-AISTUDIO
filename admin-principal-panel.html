@@ -1458,7 +1458,7 @@
         async function loadCreadorBlocks(creadorId) {
             try {
                 // Use API service instead of direct fetch
-                const result = await apiDataService.apiCall(`/roles-updated/profesores/${creadorId}/bloques`);
+                const result = await apiDataService.apiCall(`/roles-updated/creadores/${creadorId}/bloques`);
                 const blocks = result.bloques || [];
                 const container = document.getElementById(`creador-blocks-${creadorId}`);
                 
