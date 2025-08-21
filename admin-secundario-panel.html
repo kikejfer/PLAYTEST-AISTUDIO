@@ -616,7 +616,7 @@
                                 <th>Nickname</th>
                                 <th>Nombre/Apellidos</th>
                                 <th>Email</th>
-                                <th>Bloques Cargados</th>
+                                <th>Bloques</th>
                             </tr>
                         </thead>
                         <tbody id="usuarios-tbody">
@@ -708,7 +708,7 @@
                     // Update role display
                     const roleElement = document.getElementById('user-role');
                     if (roleElement) {
-                        roleElement.textContent = 'Admin Secundario';
+                        roleElement.textContent = 'Administrador';
                     }
                     
                 } catch (tokenError) {
@@ -759,8 +759,8 @@
                     ? 'https://playtest-backend.onrender.com' 
                     : '';
 
-                // Try the admin-principal-panel endpoint (same data structure)
-                let response = await fetchWithRetry(`${API_BASE_URL}/api/roles-updated/admin-principal-panel`, {
+                // Try the admin-secundario-panel endpoint (same data structure but without admins)
+                let response = await fetchWithRetry(`${API_BASE_URL}/api/roles-updated/admin-secundario-panel`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -1262,7 +1262,7 @@
                 const email = usuario.email || 'Sin email';
                 
                 // Try multiple field combinations for blocks
-                const blocksLoaded = usuario.blocks_loaded || usuario.bloques_cargados || usuario.num_bloques || 0;
+                const blocksLoaded = usuario.bloques || usuario.blocks_loaded || usuario.bloques_cargados || usuario.num_bloques || 0;
                 
                 console.log(`📊 Mapped data: ${nickname}, ${fullName}, ${email}, blocks: ${blocksLoaded}`);
                 

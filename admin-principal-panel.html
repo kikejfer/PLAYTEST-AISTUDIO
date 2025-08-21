@@ -720,7 +720,7 @@
                                 <th>Bloques Creados</th>
                                 <th>Estudiantes</th>
                                 <th>Preguntas</th>
-                                <th>Adm.Secundario</th>
+                                <th>Administrador</th>
                                 <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                                 <th>🗑️</th>
                             </tr>
@@ -753,7 +753,7 @@
                                 <th>Preguntas</th>
                                 <th>Temas</th>
                                 <th>Usuarios</th>
-                                <th>Adm.Secundario</th>
+                                <th>Administrador</th>
                                 <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                                 <th>🗑️</th>
                             </tr>
@@ -766,10 +766,68 @@
             </div>
         </div>
 
-        <!-- Sección 4: Jugadores -->
+        <!-- Sección 4: Jugadores Administrador Principal -->
         <div class="section">
             <div class="section-header">
-                <span>Jugadores</span>
+                <span>Jugadores - Administrador Principal</span>
+                <div class="section-actions">
+                    <input type="text" id="jugadores-admin-principal-search" placeholder="Buscar jugadores..." style="padding: 5px 10px; border: 1px solid #415A77; border-radius: 3px; background: #1B263B; color: #E0E1DD; font-size: 14px;">
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="table-container">
+                    <table id="jugadores-admin-principal-table">
+                        <thead>
+                            <tr>
+                                <th>Nickname / Nombre</th>
+                                <th>Email</th>
+                                <th>Bloques</th>
+                                <th>Administrador</th>
+                                <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
+                                <th>🗑️</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jugadores-admin-principal-tbody">
+                            <!-- Los datos se cargan dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección 5: Jugadores Otros Administradores -->
+        <div class="section">
+            <div class="section-header">
+                <span>Jugadores - Otros Administradores</span>
+                <div class="section-actions">
+                    <input type="text" id="jugadores-otros-admins-search" placeholder="Buscar jugadores..." style="padding: 5px 10px; border: 1px solid #415A77; border-radius: 3px; background: #1B263B; color: #E0E1DD; font-size: 14px;">
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="table-container">
+                    <table id="jugadores-otros-admins-table">
+                        <thead>
+                            <tr>
+                                <th>Nickname / Nombre</th>
+                                <th>Email</th>
+                                <th>Bloques</th>
+                                <th>Administrador</th>
+                                <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
+                                <th>🗑️</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jugadores-otros-admins-tbody">
+                            <!-- Los datos se cargan dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección 6: Usuarios -->
+        <div class="section">
+            <div class="section-header">
+                <span>Usuarios</span>
                 <div class="section-actions">
                     <input type="text" id="usuarios-search" placeholder="Buscar usuarios..." style="padding: 5px 10px; border: 1px solid #415A77; border-radius: 3px; background: #1B263B; color: #E0E1DD; font-size: 14px;">
                 </div>
@@ -781,8 +839,8 @@
                             <tr>
                                 <th>Nickname / Nombre</th>
                                 <th>Email</th>
-                                <th>Bloques Cargados</th>
-                                <th>Adm.Secundario</th>
+                                <th>Bloques</th>
+                                <th>Administrador</th>
                                 <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                                 <th>🗑️</th>
                             </tr>
@@ -1248,6 +1306,8 @@
             renderProfesoresTable();
             renderCreadoresTable();
             renderUsuariosTable();
+            renderJugadoresAdminPrincipalTable();
+            renderJugadoresOtrosAdminsTable();
         }
 
         function updateStatistics(data) {
@@ -1440,17 +1500,45 @@
             });
         }
 
-        function renderUsuariosTable() {
-            const tbody = document.getElementById('usuarios-tbody');
+        function renderJugadoresAdminPrincipalTable() {
+            const tbody = document.getElementById('jugadores-admin-principal-tbody');
             tbody.innerHTML = '';
 
-            // Usar la lista de jugadores en lugar de usuarios
-            const jugadoresData = panelData.jugadores || [];
+            const jugadoresData = panelData.jugadoresAdminPrincipal || [];
             jugadoresData.forEach(usuario => {
                 const fullName = [usuario.first_name, usuario.last_name].filter(Boolean).join(' ') || 'No especificado';
+                const bloquesReales = usuario.bloques || usuario.blocks_loaded || 0;
                 
-                // Usar los datos disponibles directamente - el backend debería proporcionar esta información
-                const bloquesReales = usuario.blocks_loaded || 0;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${usuario.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
+                    <td>${usuario.email || 'Sin email'}</td>
+                    <td><strong style="color: #8B5CF6;">${bloquesReales}</strong></td>
+                    <td>
+                        <select onchange="reassignUser(${usuario.id}, this.value)">
+                            <option value="">${usuario.assigned_admin_nickname || 'Administrador Principal'}</option>
+                            ${getAdminOptions(usuario.assigned_admin_id)}
+                        </select>
+                    </td>
+                    <td class="luminarias">
+                        ${usuario.luminarias_actuales || 0}
+                    </td>
+                    <td>
+                        <button onclick="deleteUser(${usuario.id}, '${usuario.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderJugadoresOtrosAdminsTable() {
+            const tbody = document.getElementById('jugadores-otros-admins-tbody');
+            tbody.innerHTML = '';
+
+            const jugadoresData = panelData.jugadoresOtrosAdmins || [];
+            jugadoresData.forEach(usuario => {
+                const fullName = [usuario.first_name, usuario.last_name].filter(Boolean).join(' ') || 'No especificado';
+                const bloquesReales = usuario.bloques || usuario.blocks_loaded || 0;
                 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -1460,6 +1548,38 @@
                     <td>
                         <select onchange="reassignUser(${usuario.id}, this.value)">
                             <option value="">${usuario.assigned_admin_nickname || 'Sin asignar'}</option>
+                            ${getAdminOptions(usuario.assigned_admin_id)}
+                        </select>
+                    </td>
+                    <td class="luminarias">
+                        ${usuario.luminarias_actuales || 0}
+                    </td>
+                    <td>
+                        <button onclick="deleteUser(${usuario.id}, '${usuario.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderUsuariosTable() {
+            const tbody = document.getElementById('usuarios-tbody');
+            tbody.innerHTML = '';
+
+            // Ahora usar la lista de usuarios normales (sin roles específicos)
+            const usuariosData = panelData.usuarios || [];
+            usuariosData.forEach(usuario => {
+                const fullName = [usuario.first_name, usuario.last_name].filter(Boolean).join(' ') || 'No especificado';
+                const bloquesReales = usuario.bloques || usuario.blocks_loaded || 0;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${usuario.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
+                    <td>${usuario.email || 'Sin email'}</td>
+                    <td><strong style="color: #8B5CF6;">${bloquesReales}</strong></td>
+                    <td>
+                        <select onchange="reassignUser(${usuario.id}, this.value)">
+                            <option value="">${usuario.assigned_admin_nickname || 'Administrador Principal'}</option>
                             ${getAdminOptions(usuario.assigned_admin_id)}
                         </select>
                     </td>
