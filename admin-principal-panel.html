@@ -1571,9 +1571,10 @@
 
 
         function getAdminOptions(currentAdminId) {
+            console.log('🔍 DEBUG getAdminOptions - Available admins:', panelData.administradoresSecundarios);
             return panelData.administradoresSecundarios.map(admin => 
                 `<option value="${admin.id}" ${admin.id === currentAdminId ? 'selected' : ''}>
-                    ${admin.nickname}
+                    ${admin.nickname} (${admin.role_name})
                 </option>`
             ).join('');
         }
