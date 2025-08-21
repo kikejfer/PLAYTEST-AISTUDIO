@@ -2624,7 +2624,7 @@
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex items-center justify-between h-16">
                 <div className="flex items-center space-x-3">
-                  <img src="./Imagenes/LumiQuiz.png" alt="LumiQuiz Logo" className="h-24 w-24 object-contain" style={{height: '6rem', width: '6rem'}} />
+                  <img src="./Imagenes/LumiQuiz.png" alt="LumiQuiz Logo" className="h-16 w-auto object-contain" />
                   <div className="flex items-center gap-4">
                     <div className="flex flex-col">
                       <span className="text-xl md:text-2xl font-bold tracking-wider text-brand-light">La forma más divertida de estudiar</span>
@@ -3804,7 +3804,7 @@
       const AuthForm = ({ title, children, onSubmit, buttonText, error, isLoading, bottomText, onBottomLinkClick, bottomLinkText}) => (
         <div className="w-full max-w-md bg-brand-secondary p-8 rounded-2xl shadow-2xl animate-fade-in">
             <div className="text-center mb-8">
-            <img src="./Imagenes/LumiQuiz.png" alt="LumiQuiz Logo" className="h-16 w-16 mx-auto" />
+            <img src="./Imagenes/LumiQuiz.png" alt="LumiQuiz Logo" className="h-16 w-auto mx-auto object-contain" />
             <h2 className="mt-4 text-3xl font-bold text-brand-light">{title}</h2>
             </div>
             <form onSubmit={onSubmit} className="space-y-6">
