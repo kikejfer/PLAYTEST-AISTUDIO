@@ -87,8 +87,8 @@ class APIDataService {
         nickname, 
         password, 
         email,
-        nombre: firstName,
-        apellido: lastName
+        firstName,
+        lastName
       })
     });
 
