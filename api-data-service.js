@@ -2,52 +2,96 @@
 // Reemplaza las funciones de localStorage con llamadas a la API
 
 class APIDataService {
-  constructor(baseURL = 'http://localhost:3000/api') {
-    this.baseURL = baseURL;
+  constructor(baseURL = null) {
+    // Auto-detect API URL based on environment
+    if (!baseURL) {
+      // Check if running in development or production
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        // Development - try multiple local ports
+        this.baseURL = 'http://localhost:3002/api'; // Updated to use current port
+        this.fallbackURLs = [
+          'http://localhost:3000/api',
+          'http://localhost:3001/api'
+        ];
+      } else {
+        // Production - use Render backend
+        this.baseURL = 'https://playtest-backend.onrender.com/api';
+        this.fallbackURLs = [];
+      }
+    } else {
+      this.baseURL = baseURL;
+      this.fallbackURLs = [];
+    }
+    
     this.token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+    console.log(`🌐 API Service initialized with base URL: ${this.baseURL}`);
   }
 
-  // Helper method para hacer llamadas HTTP
+  // Helper method para hacer llamadas HTTP con respaldo
   async apiCall(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
-    const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-    const defaultOptions = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` })
-      }
-    };
+    const urls = [this.baseURL, ...this.fallbackURLs];
+    let lastError;
 
-    const finalOptions = {
-      ...defaultOptions,
-      ...options,
-      headers: {
-        ...defaultOptions.headers,
-        ...options.headers
-      }
-    };
+    for (let i = 0; i < urls.length; i++) {
+      const baseUrl = urls[i];
+      const url = `${baseUrl}${endpoint}`;
+      const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+      const defaultOptions = {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        }
+      };
 
-    try {
-      const response = await fetch(url, finalOptions);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${response.status}`);
-      }
+      const finalOptions = {
+        ...defaultOptions,
+        ...options,
+        headers: {
+          ...defaultOptions.headers,
+          ...options.headers
+        }
+      };
 
-      return await response.json();
-    } catch (error) {
-      // Mejorar mensajes de error para problemas comunes
-      if (error.message === 'Failed to fetch') {
-        console.error(`🚨 Backend no disponible en ${this.baseURL}`);
-        console.error('💡 Posibles soluciones:');
-        console.error('  1. Verificar que el backend esté ejecutándose');
-        console.error('  2. Comprobar la conexión a internet');
-        console.error('  3. Revisar la configuración de CORS');
+      try {
+        const response = await fetch(url, finalOptions);
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `HTTP ${response.status}`);
+        }
+
+        // Si la llamada fue exitosa con una URL diferente, actualizar la base URL
+        if (i > 0) {
+          console.log(`✅ Switched to working API URL: ${baseUrl}`);
+          this.baseURL = baseUrl;
+        }
+
+        return await response.json();
+      } catch (error) {
+        lastError = error;
+        
+        if (i === 0) {
+          console.warn(`⚠️ Primary API URL failed (${url}):`, error.message);
+        } else if (i < urls.length - 1) {
+          console.warn(`⚠️ Fallback API URL failed (${url}):`, error.message);
+        }
+        
+        // If this is the last URL, throw the error
+        if (i === urls.length - 1) {
+          // Mejorar mensajes de error para problemas comunes
+          if (error.message === 'Failed to fetch') {
+            console.error('🚨 Todos los backends no están disponibles:');
+            urls.forEach(url => console.error(`  - ${url}`));
+            console.error('💡 Posibles soluciones:');
+            console.error('  1. Verificar que el backend esté ejecutándose');
+            console.error('  2. Comprobar la conexión a internet');
+            console.error('  3. Revisar la configuración de CORS');
+          }
+          
+          console.error(`❌ API call failed for ${endpoint} on all URLs:`, error);
+          throw error;
+        }
       }
-      
-      console.error(`API call failed for ${endpoint}:`, error);
-      throw error;
     }
   }
 
