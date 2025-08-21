@@ -1308,6 +1308,25 @@
             renderUsuariosTable();
             renderJugadoresAdminPrincipalTable();
             renderJugadoresOtrosAdminsTable();
+            
+            // Aplicar límite inicial de 10 registros a todas las tablas
+            setTimeout(() => {
+                applyInitialLimits();
+            }, 100);
+        }
+
+        function applyInitialLimits() {
+            const tablesToLimit = [
+                'profesores-table',
+                'creadores-table', 
+                'usuarios-table',
+                'jugadores-admin-principal-table',
+                'jugadores-otros-admins-table'
+            ];
+            
+            tablesToLimit.forEach(tableId => {
+                filterTable(tableId, ''); // Aplicar filtro vacío para activar límite
+            });
         }
 
         function updateStatistics(data) {
@@ -2159,6 +2178,22 @@ Total elementos eliminados: ${result.total_deleted}`);
                     filterTable('usuarios-table', this.value);
                 });
             }
+
+            // Filtro para tabla de jugadores admin principal
+            const jugadoresAPSearch = document.getElementById('jugadores-admin-principal-search');
+            if (jugadoresAPSearch) {
+                jugadoresAPSearch.addEventListener('input', function() {
+                    filterTable('jugadores-admin-principal-table', this.value);
+                });
+            }
+
+            // Filtro para tabla de jugadores otros admins
+            const jugadoresOASearch = document.getElementById('jugadores-otros-admins-search');
+            if (jugadoresOASearch) {
+                jugadoresOASearch.addEventListener('input', function() {
+                    filterTable('jugadores-otros-admins-table', this.value);
+                });
+            }
         });
 
         function filterTable(tableId, searchTerm) {
@@ -2166,6 +2201,7 @@ Total elementos eliminados: ${result.total_deleted}`);
             const tbody = table.querySelector('tbody');
             const rows = tbody.querySelectorAll('tr');
             let visibleCount = 0;
+            const maxVisible = 10; // Máximo 10 registros visibles
             
             rows.forEach(row => {
                 if (row.classList.contains('expandable-row')) {
@@ -2180,11 +2216,19 @@ Total elementos eliminados: ${result.total_deleted}`);
                 }
                 
                 const text = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
-                const isVisible = text.includes(searchTerm.toLowerCase());
+                const matchesSearch = text.includes(searchTerm.toLowerCase());
+                const shouldShow = matchesSearch && visibleCount < maxVisible;
                 
-                row.style.display = isVisible ? '' : 'none';
-                if (isVisible) visibleCount++;
+                row.style.display = shouldShow ? '' : 'none';
+                if (shouldShow) visibleCount++;
             });
+            
+            // Agregar scroll automático al contenedor de tabla si hay muchos resultados
+            const tableContainer = table.closest('.table-container');
+            if (tableContainer) {
+                tableContainer.style.maxHeight = visibleCount >= maxVisible ? '400px' : 'auto';
+                tableContainer.style.overflowY = visibleCount >= maxVisible ? 'auto' : 'visible';
+            }
         }
 
         // Funciones del menú dropdown del usuario
