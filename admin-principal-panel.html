@@ -639,6 +639,40 @@
         <!-- Contenido de la pestaña Gestión de Roles -->
         <div id="roles-tab" class="tab-content active">
         
+        <!-- Sección 0: Estadísticas Generales -->
+        <div class="section">
+            <div class="section-header">
+                <span>📊 Estadísticas Generales del Sistema</span>
+                <button class="btn btn-secondary" onclick="refreshStatistics()" style="background: #415A77; border: 1px solid #778DA9;">
+                    🔄 Actualizar
+                </button>
+            </div>
+            <div class="section-content">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px;">
+                    <div style="background: #415A77; border-radius: 8px; padding: 15px; text-align: center;">
+                        <div style="font-size: 2em; color: #3B82F6; font-weight: bold;" id="stats-admins">0</div>
+                        <div style="color: #778DA9; font-size: 0.9em;">👑 Administradores</div>
+                    </div>
+                    <div style="background: #415A77; border-radius: 8px; padding: 15px; text-align: center;">
+                        <div style="font-size: 2em; color: #10B981; font-weight: bold;" id="stats-profesores">0</div>
+                        <div style="color: #778DA9; font-size: 0.9em;">👨‍🏫 Profesores</div>
+                    </div>
+                    <div style="background: #415A77; border-radius: 8px; padding: 15px; text-align: center;">
+                        <div style="font-size: 2em; color: #F59E0B; font-weight: bold;" id="stats-creadores">0</div>
+                        <div style="color: #778DA9; font-size: 0.9em;">🎨 Creadores</div>
+                    </div>
+                    <div style="background: #415A77; border-radius: 8px; padding: 15px; text-align: center;">
+                        <div style="font-size: 2em; color: #EF4444; font-weight: bold;" id="stats-jugadores">0</div>
+                        <div style="color: #778DA9; font-size: 0.9em;">🎮 Jugadores</div>
+                    </div>
+                    <div style="background: #415A77; border-radius: 8px; padding: 15px; text-align: center;">
+                        <div style="font-size: 2em; color: #778DA9; font-weight: bold;" id="stats-usuarios">0</div>
+                        <div style="color: #778DA9; font-size: 0.9em;">👤 Usuarios</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Sección 1: Administradores Secundarios -->
         <div class="section">
             <div class="section-header">
@@ -1109,6 +1143,7 @@
                     });
                     
                     renderTables();
+                    updateStatistics(data);
                 } else {
                     // Si llegamos aquí, ningún endpoint funcionó
                     throw new Error('No se pudo conectar con el backend');
@@ -1214,6 +1249,37 @@
             renderUsuariosTable();
         }
 
+        function updateStatistics(data) {
+            console.log('📊 Updating statistics with data:', data);
+            
+            // Usar las estadísticas corregidas del backend si están disponibles
+            if (data && data.statistics) {
+                document.getElementById('stats-admins').textContent = data.statistics.admins;
+                document.getElementById('stats-profesores').textContent = data.statistics.profesores;
+                document.getElementById('stats-creadores').textContent = data.statistics.creadores;
+                document.getElementById('stats-jugadores').textContent = data.statistics.jugadores;
+                document.getElementById('stats-usuarios').textContent = data.statistics.usuarios;
+            } else {
+                // Fallback: calcular desde los arrays (pueden tener duplicados)
+                const admins = panelData.administradoresSecundarios?.length || 0;
+                const profesores = panelData.profesores?.length || 0;
+                const creadores = panelData.creadores?.length || 0;
+                const jugadores = panelData.jugadores?.length || 0;
+                const usuarios = panelData.usuarios?.length || 0;
+                
+                document.getElementById('stats-admins').textContent = admins;
+                document.getElementById('stats-profesores').textContent = profesores;
+                document.getElementById('stats-creadores').textContent = creadores;
+                document.getElementById('stats-jugadores').textContent = jugadores;
+                document.getElementById('stats-usuarios').textContent = usuarios;
+            }
+        }
+
+        function refreshStatistics() {
+            console.log('🔄 Refreshing statistics...');
+            loadPanelData();
+        }
+
         function renderAdminsTable() {
             const tbody = document.getElementById('admins-tbody');
             tbody.innerHTML = '';
@@ -1228,7 +1294,7 @@
                 ).length;
                 
                 const creadoresAsignados = panelData.profesoresCreadores.filter(c => 
-                    c.assigned_admin_id === admin.id && c.role_name === 'creador_contenido'
+                    c.assigned_admin_id === admin.id && c.role_name === 'creador'
                 ).length;
                 
                 const row = document.createElement('tr');
@@ -1253,7 +1319,7 @@
             const tbody = document.getElementById('profesores-tbody');
             tbody.innerHTML = '';
 
-            const profesores = panelData.profesoresCreadores.filter(user => user.role_name === 'profesor');
+            const profesores = panelData.profesores || panelData.profesoresCreadores.filter(user => user.role_name === 'profesor');
             
             profesores.forEach((profesor, index) => {
                 const row = document.createElement('tr');
@@ -1310,7 +1376,7 @@
             const tbody = document.getElementById('creadores-tbody');
             tbody.innerHTML = '';
 
-            const creadores = panelData.profesoresCreadores.filter(user => user.role_name === 'creador' || user.role_name === 'creador_contenido');
+            const creadores = panelData.creadores || panelData.profesoresCreadores.filter(user => user.role_name === 'creador');
             
             creadores.forEach((creador, index) => {
                 const row = document.createElement('tr');
