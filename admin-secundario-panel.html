@@ -849,8 +849,8 @@
                                 } else {
                                     // Last resort: show a few sample entries for kikejfer
                                     console.log(`⚠️ Could not find user ID, showing sample data for kikejfer`);
-                                    profesoresAsignados = (mainData.profesoresCreadores || []).slice(0, 2);
-                                    usuariosAsignados = (mainData.usuarios || []).slice(0, 3);
+                                    profesoresAsignados = (mainData.profesores || []).slice(0, 2);
+                                    usuariosAsignados = (mainData.jugadores || []).slice(0, 3);
                                 }
                             }
                             
@@ -1000,8 +1000,8 @@
                             console.log(`🔄 Found admin by nickname, using ID: ${adminUser.id}`);
                         } else {
                             // Show sample data
-                            profesoresAsignados = (data.profesoresCreadores || []).slice(0, 2);
-                            usuariosAsignados = (data.usuarios || []).slice(0, 3);
+                            profesoresAsignados = (data.profesores || []).slice(0, 2);
+                            usuariosAsignados = (data.jugadores || []).slice(0, 3);
                             console.log(`⚠️ Showing sample data for ${currentUserNickname}`);
                         }
                     } else {
@@ -1009,15 +1009,17 @@
                     }
                     
                     panelData = {
-                        profesoresAsignados: profesoresAsignados,
-                        usuariosAsignados: usuariosAsignados
+                        profesores: profesoresAsignados,
+                        creadores: data.creadores || [],
+                        jugadores: usuariosAsignados
                     };
                 } else {
                     // Fallback structure
                     console.log('⚠️ Using fallback structure');
                     panelData = {
-                        profesoresAsignados: [],
-                        usuariosAsignados: []
+                        profesores: [],
+                        creadores: [],
+                        jugadores: []
                     };
                 }
                 
@@ -1076,12 +1078,12 @@
                 document.getElementById('total-preguntas').textContent = panelData.statistics.preguntas || 0;
             } else {
                 // Fallback: calcular desde los arrays (pueden tener duplicados)
-                const profesores = panelData.profesoresAsignados?.filter(user => user.role_name === 'profesor' || user.role === 'profesor') || [];
-                const creadores = panelData.profesoresAsignados?.filter(user => user.role_name === 'creador' || user.role === 'creador') || [];
+                const profesores = panelData.profesores || [];
+                const creadores = panelData.creadores || [];
                 
                 const totalProfesores = profesores.length;
                 const totalCreadores = creadores.length;
-                const totalUsuarios = panelData.usuariosAsignados?.length || 0;
+                const totalUsuarios = panelData.jugadores?.length || 0;
                 
                 // Estadísticas de bloques y preguntas solo para creadores
                 const totalBloques = creadores.reduce((sum, c) => 
@@ -1255,7 +1257,7 @@
             const tbody = document.getElementById('usuarios-tbody');
             tbody.innerHTML = '';
 
-            if (panelData.usuariosAsignados.length === 0) {
+            if (panelData.jugadores.length === 0) {
                 const row = document.createElement('tr');
                 row.innerHTML = `<td colspan="4" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
                     <div style="padding: 20px;">
@@ -1268,7 +1270,7 @@
                 return;
             }
 
-            panelData.usuariosAsignados.forEach((usuario, index) => {
+            panelData.jugadores.forEach((usuario, index) => {
                 // Debug logging
                 console.log(`👤 Processing usuario ${index}:`, usuario);
                 
