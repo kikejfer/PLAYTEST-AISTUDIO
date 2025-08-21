@@ -717,8 +717,9 @@
                                 <th></th>
                                 <th>Nickname / Nombre</th>
                                 <th>Email</th>
+                                <th>Bloques Creados</th>
                                 <th>Estudiantes</th>
-                                <th>Clases</th>
+                                <th>Preguntas</th>
                                 <th>Adm.Secundario</th>
                                 <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                                 <th>🗑️</th>
@@ -1117,7 +1118,10 @@
                     profesores: data.profesores || [],
                     creadores: data.creadores || [],
                     jugadores: data.jugadores || [],
-                    usuarios: data.usuarios || []
+                    usuarios: data.usuarios || [],
+                    // Nuevos datos detallados
+                    profesoresDetallados: data.profesoresDetallados || [],
+                    creadoresDetallados: data.creadoresDetallados || []
                 };
                 
                     console.log('✅ Panel Data loaded from backend:', {
@@ -1319,29 +1323,36 @@
             const tbody = document.getElementById('profesores-tbody');
             tbody.innerHTML = '';
 
-            const profesores = panelData.profesores || panelData.profesoresCreadores.filter(user => user.role_name === 'profesor');
+            // Usar datos detallados si están disponibles, sino fallback
+            const profesores = panelData.profesoresDetallados || 
+                              panelData.profesores || 
+                              panelData.profesoresCreadores.filter(user => user.role_name === 'profesor');
             
             profesores.forEach((profesor, index) => {
                 const row = document.createElement('tr');
-                const isExpanded = expandedRows.has(`profesor-${profesor.id}`);
-                const fullName = [profesor.first_name, profesor.last_name].filter(Boolean).join(' ') || 'No especificado';
+                const profesorId = profesor.id || profesor.user_id;
+                const isExpanded = expandedRows.has(`profesor-${profesorId}`);
+                const fullName = profesor.first_name || 
+                                [profesor.first_name, profesor.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
-                // Información específica para profesores
-                const totalEstudiantes = profesor.total_students || 0;
-                const totalClases = profesor.total_classes || 0;
+                // Información específica para profesores con nuevas métricas
+                const bloquesCreados = profesor.bloques_creados || 0;
+                const totalEstudiantes = profesor.estudiantes || 0;
+                const totalPreguntas = profesor.total_preguntas || 0;
                 
                 row.innerHTML = `
                     <td>
-                        <button class="btn btn-expand" onclick="toggleProfesorExpansion(${profesor.id})">
+                        <button class="btn btn-expand" onclick="toggleProfesorExpansion(${profesorId})">
                             ${isExpanded ? '−' : '+'}
                         </button>
                     </td>
                     <td><strong>${profesor.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
                     <td>${profesor.email || 'Sin email'}</td>
+                    <td><strong style="color: #3B82F6;">${bloquesCreados}</strong></td>
                     <td><strong style="color: #10B981;">${totalEstudiantes}</strong></td>
-                    <td><strong style="color: #8B5CF6;">${totalClases}</strong></td>
+                    <td><strong style="color: #8B5CF6;">${totalPreguntas}</strong></td>
                     <td>
-                        <select onchange="reassignUser(${profesor.id}, this.value)">
+                        <select onchange="reassignUser(${profesorId}, this.value)">
                             <option value="">${profesor.assigned_admin_nickname || 'Sin asignar'}</option>
                             ${getAdminOptions(profesor.assigned_admin_id)}
                         </select>
@@ -1350,7 +1361,7 @@
                         ${profesor.luminarias_actuales || 0}
                     </td>
                     <td>
-                        <button onclick="deleteUser(${profesor.id}, '${profesor.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️</button>
+                        <button onclick="deleteUser(${profesorId}, '${profesor.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -1360,14 +1371,14 @@
                     const expandRow = document.createElement('tr');
                     expandRow.className = 'expandable-row show';
                     expandRow.innerHTML = `
-                        <td colspan="10">
-                            <div id="profesor-blocks-${profesor.id}">
+                        <td colspan="9">
+                            <div id="profesor-blocks-${profesorId}">
                                 <div class="loading">Cargando bloques...</div>
                             </div>
                         </td>
                     `;
                     tbody.appendChild(expandRow);
-                    loadProfesorBlocks(profesor.id);
+                    loadProfesorBlocks(profesorId);
                 }
             });
         }
@@ -1376,30 +1387,38 @@
             const tbody = document.getElementById('creadores-tbody');
             tbody.innerHTML = '';
 
-            const creadores = panelData.creadores || panelData.profesoresCreadores.filter(user => user.role_name === 'creador');
+            // Usar datos detallados si están disponibles, sino fallback
+            const creadores = panelData.creadoresDetallados || 
+                             panelData.creadores || 
+                             panelData.profesoresCreadores.filter(user => user.role_name === 'creador');
             
             creadores.forEach((creador, index) => {
                 const row = document.createElement('tr');
-                const isExpanded = expandedRows.has(`creador-${creador.id}`);
-                const fullName = [creador.first_name, creador.last_name].filter(Boolean).join(' ') || 'No especificado';
+                const creadorId = creador.id || creador.user_id;
+                const isExpanded = expandedRows.has(`creador-${creadorId}`);
+                const fullName = creador.first_name || 
+                                [creador.first_name, creador.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
-                // Información específica para creadores de contenido
+                // Información específica para creadores con nuevas métricas
+                const bloquesCreados = creador.bloques_creados || 0;
+                const totalPreguntas = creador.total_preguntas || 0;
+                const totalTemas = creador.total_temas || 0;
                 const totalUsuarios = creador.total_users_blocks || 0;
                 
                 row.innerHTML = `
                     <td>
-                        <button class="btn btn-expand" onclick="toggleCreadorExpansion(${creador.id})">
+                        <button class="btn btn-expand" onclick="toggleCreadorExpansion(${creadorId})">
                             ${isExpanded ? '−' : '+'}
                         </button>
                     </td>
                     <td><strong>${creador.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
                     <td>${creador.email || 'Sin email'}</td>
-                    <td><strong style="color: #F59E0B;">${creador.blocks_created || 0}</strong></td>
-                    <td><strong style="color: #3B82F6;">${creador.total_questions || 0}</strong></td>
-                    <td><strong style="color: #10B981;">${creador.total_topics || 0}</strong></td>
+                    <td><strong style="color: #F59E0B;">${bloquesCreados}</strong></td>
+                    <td><strong style="color: #3B82F6;">${totalPreguntas}</strong></td>
+                    <td><strong style="color: #10B981;">${totalTemas}</strong></td>
                     <td><strong style="color: #8B5CF6;">${totalUsuarios}</strong></td>
                     <td>
-                        <select onchange="reassignUser(${creador.id}, this.value)">
+                        <select onchange="reassignUser(${creadorId}, this.value)">
                             <option value="">${creador.assigned_admin_nickname || 'Sin asignar'}</option>
                             ${getAdminOptions(creador.assigned_admin_id)}
                         </select>
@@ -1408,7 +1427,7 @@
                         ${creador.luminarias_actuales || 0}
                     </td>
                     <td>
-                        <button onclick="deleteUser(${creador.id}, '${creador.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️</button>
+                        <button onclick="deleteUser(${creadorId}, '${creador.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -1419,13 +1438,13 @@
                     expandRow.className = 'expandable-row show';
                     expandRow.innerHTML = `
                         <td colspan="10">
-                            <div id="creador-blocks-${creador.id}">
+                            <div id="creador-blocks-${creadorId}">
                                 <div class="loading">Cargando bloques...</div>
                             </div>
                         </td>
                     `;
                     tbody.appendChild(expandRow);
-                    loadCreadorBlocks(creador.id);
+                    loadCreadorBlocks(creadorId);
                 }
             });
         }
