@@ -559,12 +559,12 @@
                         <thead>
                             <tr>
                                 <th></th>
-                                <th>Nickname</th>
-                                <th>Nombre/Apellidos</th>
+                                <th>Nickname / Nombre</th>
                                 <th>Email</th>
+                                <th>Bloques Creados</th>
                                 <th>Estudiantes</th>
-                                <th>Clases</th>
-                                <th>Fecha Asignación</th>
+                                <th>Preguntas</th>
+                                <th>Administrador</th>
                             </tr>
                         </thead>
                         <tbody id="profesores-tbody">
@@ -589,13 +589,13 @@
                         <thead>
                             <tr>
                                 <th></th>
-                                <th>Nickname</th>
-                                <th>Nombre/Apellidos</th>
+                                <th>Nickname / Nombre</th>
                                 <th>Email</th>
                                 <th>Bloques Creados</th>
                                 <th>Preguntas</th>
+                                <th>Temas</th>
                                 <th>Usuarios</th>
-                                <th>Fecha Asignación</th>
+                                <th>Administrador</th>
                             </tr>
                         </thead>
                         <tbody id="creadores-tbody">
@@ -1107,7 +1107,7 @@
             const tbody = document.getElementById('profesores-tbody');
             tbody.innerHTML = '';
 
-            const profesores = panelData.profesoresAsignados.filter(user => user.role_name === 'profesor' || user.role === 'profesor');
+            const profesores = panelData.profesores || [];
 
             if (profesores.length === 0) {
                 const row = document.createElement('tr');
@@ -1136,25 +1136,26 @@
                 const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'No especificado';
                 const email = profesor.email || 'Sin email';
                 
-                // Información específica para profesores
-                const totalEstudiantes = profesor.total_students || profesor.num_estudiantes || 0;
-                const totalClases = profesor.total_classes || profesor.num_clases || 0;
-                const fechaAsignacion = profesor.assigned_date || profesor.fecha_asignacion || 'No especificada';
+                // Información específica para profesores con nuevos campos
+                const bloquesCreados = profesor.bloques_creados || 0;
+                const estudiantes = profesor.estudiantes || 0;
+                const preguntas = profesor.total_preguntas || 0;
+                const administrador = profesor.assigned_admin_nickname || 'Administrador Principal';
                 
-                console.log(`👨‍🏫 Mapped profesor data: ${nickname}, ${fullName}, ${email}, estudiantes: ${totalEstudiantes}, clases: ${totalClases}`);
+                console.log(`👨‍🏫 Mapped profesor data: ${nickname}, ${fullName}, ${email}, bloques: ${bloquesCreados}, estudiantes: ${estudiantes}, preguntas: ${preguntas}`);
                 
                 row.innerHTML = `
                     <td>
-                        <button class="btn btn-expand" onclick="toggleProfesorExpansion(${profesor.id})">
+                        <button class="btn btn-expand" onclick="toggleProfesorExpansion(${profesor.user_id})">
                             ${isExpanded ? '−' : '+'}
                         </button>
                     </td>
-                    <td><strong>${nickname}</strong></td>
-                    <td>${fullName}</td>
+                    <td><strong>${nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
                     <td>${email}</td>
-                    <td><strong style="color: #10B981;">${totalEstudiantes}</strong></td>
-                    <td><strong style="color: #3B82F6;">${totalClases}</strong></td>
-                    <td><small style="color: #778DA9;">${fechaAsignacion}</small></td>
+                    <td><strong style="color: #8B5CF6;">${bloquesCreados}</strong></td>
+                    <td><strong style="color: #10B981;">${estudiantes}</strong></td>
+                    <td><strong style="color: #06B6D4;">${preguntas}</strong></td>
+                    <td><small style="color: #778DA9;">${administrador}</small></td>
                 `;
                 tbody.appendChild(row);
 
@@ -1179,7 +1180,7 @@
             const tbody = document.getElementById('creadores-tbody');
             tbody.innerHTML = '';
 
-            const creadores = panelData.profesoresAsignados.filter(user => user.role_name === 'creador' || user.role_name === 'creador_contenido' || user.role === 'creador');
+            const creadores = panelData.creadores || [];
 
             if (creadores.length === 0) {
                 const row = document.createElement('tr');
@@ -1208,27 +1209,28 @@
                 const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'No especificado';
                 const email = creador.email || 'Sin email';
                 
-                // Información específica para creadores de contenido
-                const blocksCreated = creador.blocks_created || creador.bloques_creados || creador.num_bloques || 0;
-                const totalQuestions = creador.total_questions || creador.preguntas_totales || creador.num_preguntas || 0;
-                const totalUsers = creador.total_users_blocks || creador.usuarios_bloques_publicos || creador.total_usuarios || 0;
-                const fechaAsignacion = creador.assigned_date || creador.fecha_asignacion || 'No especificada';
+                // Información específica para creadores con nuevos campos
+                const bloquesCreados = creador.bloques_creados || 0;
+                const preguntas = creador.total_preguntas || 0;
+                const temas = creador.total_temas || 0;
+                const usuarios = creador.total_usuarios || 0;
+                const administrador = creador.assigned_admin_nickname || 'Administrador Principal';
                 
-                console.log(`🎨 Mapped creador data: ${nickname}, ${fullName}, ${email}, bloques: ${blocksCreated}, preguntas: ${totalQuestions}, usuarios: ${totalUsers}`);
+                console.log(`🎨 Mapped creador data: ${nickname}, ${fullName}, ${email}, bloques: ${bloquesCreados}, preguntas: ${preguntas}, temas: ${temas}, usuarios: ${usuarios}`);
                 
                 row.innerHTML = `
                     <td>
-                        <button class="btn btn-expand" onclick="toggleCreadorExpansion(${creador.id})">
+                        <button class="btn btn-expand" onclick="toggleCreadorExpansion(${creador.user_id})">
                             ${isExpanded ? '−' : '+'}
                         </button>
                     </td>
-                    <td><strong>${nickname}</strong></td>
-                    <td>${fullName}</td>
+                    <td><strong>${nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
                     <td>${email}</td>
-                    <td><strong style="color: #F59E0B;">${blocksCreated}</strong></td>
-                    <td><strong style="color: #3B82F6;">${totalQuestions}</strong></td>
-                    <td><strong style="color: #8B5CF6;">${totalUsers}</strong></td>
-                    <td><small style="color: #778DA9;">${fechaAsignacion}</small></td>
+                    <td><strong style="color: #8B5CF6;">${bloquesCreados}</strong></td>
+                    <td><strong style="color: #06B6D4;">${preguntas}</strong></td>
+                    <td><strong style="color: #F59E0B;">${temas}</strong></td>
+                    <td><strong style="color: #10B981;">${usuarios}</strong></td>
+                    <td><small style="color: #778DA9;">${administrador}</small></td>
                 `;
                 tbody.appendChild(row);
 
