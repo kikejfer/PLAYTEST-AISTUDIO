@@ -1119,9 +1119,6 @@
                     creadores: data.creadores || [],
                     jugadores: data.jugadores || [],
                     usuarios: data.usuarios || [],
-                    // Nuevos datos detallados
-                    profesoresDetallados: data.profesoresDetallados || [],
-                    creadoresDetallados: data.creadoresDetallados || []
                 };
                 
                     console.log('✅ Panel Data loaded from backend:', {
@@ -1323,10 +1320,7 @@
             const tbody = document.getElementById('profesores-tbody');
             tbody.innerHTML = '';
 
-            // Usar datos detallados si están disponibles, sino fallback
-            const profesores = panelData.profesoresDetallados || 
-                              panelData.profesores || 
-                              panelData.profesoresCreadores.filter(user => user.role_name === 'profesor');
+            const profesores = panelData.profesores || panelData.profesoresCreadores.filter(user => user.role_name === 'profesor');
             
             profesores.forEach((profesor, index) => {
                 const row = document.createElement('tr');
@@ -1335,10 +1329,10 @@
                 const fullName = profesor.first_name || 
                                 [profesor.first_name, profesor.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
-                // Información específica para profesores con nuevas métricas
-                const bloquesCreados = profesor.bloques_creados || 0;
-                const totalEstudiantes = profesor.estudiantes || 0;
-                const totalPreguntas = profesor.total_preguntas || 0;
+                // Información específica para profesores (valores básicos)
+                const bloquesCreados = profesor.blocks_created || 0;
+                const totalEstudiantes = profesor.total_students || 0;
+                const totalPreguntas = profesor.total_questions || 0;
                 
                 row.innerHTML = `
                     <td>
@@ -1387,10 +1381,7 @@
             const tbody = document.getElementById('creadores-tbody');
             tbody.innerHTML = '';
 
-            // Usar datos detallados si están disponibles, sino fallback
-            const creadores = panelData.creadoresDetallados || 
-                             panelData.creadores || 
-                             panelData.profesoresCreadores.filter(user => user.role_name === 'creador');
+            const creadores = panelData.creadores || panelData.profesoresCreadores.filter(user => user.role_name === 'creador');
             
             creadores.forEach((creador, index) => {
                 const row = document.createElement('tr');
@@ -1399,10 +1390,10 @@
                 const fullName = creador.first_name || 
                                 [creador.first_name, creador.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
-                // Información específica para creadores con nuevas métricas
-                const bloquesCreados = creador.bloques_creados || 0;
-                const totalPreguntas = creador.total_preguntas || 0;
-                const totalTemas = creador.total_temas || 0;
+                // Información específica para creadores (valores básicos)
+                const bloquesCreados = creador.blocks_created || 0;
+                const totalPreguntas = creador.total_questions || 0;
+                const totalTemas = creador.total_topics || 0;
                 const totalUsuarios = creador.total_users_blocks || 0;
                 
                 row.innerHTML = `
