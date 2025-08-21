@@ -36,7 +36,8 @@
       "Bash(start admin-secundario-panel-test.html)",
       "Bash(start index.html)",
       "Bash(del \"C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\test-roles.js\")",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(del \"C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\playtest-backend\\test-principal-endpoint.js\")"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

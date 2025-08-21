@@ -1502,6 +1502,10 @@
             tbody.innerHTML = '';
 
             const jugadoresData = panelData.jugadoresAdminPrincipal || [];
+            console.log('🎯 DEBUG renderJugadoresAdminPrincipalTable:', {
+                jugadoresAdminPrincipal: jugadoresData,
+                length: jugadoresData.length
+            });
             jugadoresData.forEach(usuario => {
                 const fullName = [usuario.first_name, usuario.last_name].filter(Boolean).join(' ') || 'No especificado';
                 const bloquesReales = usuario.bloques || usuario.blocks_loaded || 0;
@@ -1533,6 +1537,10 @@
             tbody.innerHTML = '';
 
             const jugadoresData = panelData.jugadoresOtrosAdmins || [];
+            console.log('🎯 DEBUG renderJugadoresOtrosAdminsTable:', {
+                jugadoresOtrosAdmins: jugadoresData,
+                length: jugadoresData.length
+            });
             jugadoresData.forEach(usuario => {
                 const fullName = [usuario.first_name, usuario.last_name].filter(Boolean).join(' ') || 'No especificado';
                 const bloquesReales = usuario.bloques || usuario.blocks_loaded || 0;
