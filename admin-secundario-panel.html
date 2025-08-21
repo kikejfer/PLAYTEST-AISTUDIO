@@ -564,6 +564,7 @@
                                 <th>Bloques Creados</th>
                                 <th>Estudiantes</th>
                                 <th>Preguntas</th>
+                                <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                                 <th>Administrador</th>
                             </tr>
                         </thead>
@@ -595,6 +596,7 @@
                                 <th>Preguntas</th>
                                 <th>Temas</th>
                                 <th>Usuarios</th>
+                                <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                                 <th>Administrador</th>
                             </tr>
                         </thead>
@@ -1113,7 +1115,7 @@
 
             if (profesores.length === 0) {
                 const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="7" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
+                row.innerHTML = `<td colspan="9" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
                     <div style="padding: 20px;">
                         <div style="font-size: 18px; margin-bottom: 10px;">👨‍🏫</div>
                         <div style="font-weight: bold; margin-bottom: 5px;">No tienes profesores asignados</div>
@@ -1157,6 +1159,7 @@
                     <td><strong style="color: #8B5CF6;">${bloquesCreados}</strong></td>
                     <td><strong style="color: #10B981;">${estudiantes}</strong></td>
                     <td><strong style="color: #06B6D4;">${preguntas}</strong></td>
+                    <td class="luminarias">${profesor.luminarias_actuales || 0}</td>
                     <td><small style="color: #778DA9;">${administrador}</small></td>
                 `;
                 tbody.appendChild(row);
@@ -1186,7 +1189,7 @@
 
             if (creadores.length === 0) {
                 const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="8" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
+                row.innerHTML = `<td colspan="9" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
                     <div style="padding: 20px;">
                         <div style="font-size: 18px; margin-bottom: 10px;">🎨</div>
                         <div style="font-weight: bold; margin-bottom: 5px;">No tienes creadores de contenido asignados</div>
@@ -1232,6 +1235,7 @@
                     <td><strong style="color: #06B6D4;">${preguntas}</strong></td>
                     <td><strong style="color: #F59E0B;">${temas}</strong></td>
                     <td><strong style="color: #10B981;">${usuarios}</strong></td>
+                    <td class="luminarias">${creador.luminarias_actuales || 0}</td>
                     <td><small style="color: #778DA9;">${administrador}</small></td>
                 `;
                 tbody.appendChild(row);
