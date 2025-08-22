@@ -488,7 +488,7 @@
                                 <span style="margin-left: auto;">▶</span>
                             </a>
                             <div id="game-explanation-submenu" style="display: none; background: #0D1B2A; border-radius: 0.375rem; margin: 0.25rem; border: 1px solid #415A77;">
-                                <a href="#" onclick="openGameTypesModal(); closeUserDropdown(); return false;" style="display: block; padding: 0.5rem 1rem; color: #E0E1DD; text-decoration: none; font-size: 0.875rem;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='transparent'">Tipos de Juegos</a>
+                                <a href="#" onclick="openGameModesModal(); closeUserDropdown(); return false;" style="display: block; padding: 0.5rem 1rem; color: #E0E1DD; text-decoration: none; font-size: 0.875rem;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='transparent'">Modalidades de Juego</a>
                                 <a href="#" onclick="openRoleLevelsModal(); closeUserDropdown(); return false;" style="display: block; padding: 0.5rem 1rem; color: #E0E1DD; text-decoration: none; font-size: 0.875rem;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='transparent'">Niveles por Roles</a>
                                 <a href="#" onclick="openTopicDevelopmentModal(); closeUserDropdown(); return false;" style="display: block; padding: 0.5rem 1rem; color: #E0E1DD; text-decoration: none; font-size: 0.875rem;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='transparent'">Desarrollo de Temarios</a>
                                 <a href="#" onclick="openLuminariasModal(); closeUserDropdown(); return false;" style="display: block; padding: 0.5rem 1rem; color: #E0E1DD; text-decoration: none; font-size: 0.875rem;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='transparent'">Luminarias</a>
@@ -1784,12 +1784,12 @@
             showModal('role-modal');
         }
 
-        function openGameTypesModal() {
-            alert('Modal de Tipos de Juegos - En desarrollo');
+        function openGameModesModal() {
+            showModal('game-modes-modal');
         }
 
         function openRoleLevelsModal() {
-            alert('Modal de Niveles por Roles - En desarrollo');
+            showModal('role-levels-modal');
         }
 
         function openTopicDevelopmentModal() {
@@ -2125,6 +2125,321 @@
                         <button type="submit" style="flex: 1; padding: 12px; background: #3B82F6; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">Guardar</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Niveles por Roles -->
+    <div id="role-levels-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 95%; max-width: 900px; max-height: 85vh; border: 1px solid #415A77; overflow-y: auto;" onclick="event.stopPropagation();">
+            <div style="padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h3 style="color: #E0E1DD; font-size: 24px; font-weight: bold; margin: 0;">🎯 Niveles por Roles</h3>
+                    <button onclick="closeModal('role-levels-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
+                </div>
+                
+                <div style="color: #E0E1DD; line-height: 1.6;">
+                    <!-- Jugadores -->
+                    <div style="margin-bottom: 32px;">
+                        <h4 style="color: #3B82F6; font-size: 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            🧠 Avatares del Jugador (Conocimiento)
+                        </h4>
+                        
+                        <div style="display: grid; gap: 16px;">
+                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #10B981;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <span style="font-size: 24px;">📜</span>
+                                    <span style="color: #10B981; font-weight: bold; font-size: 18px;">Nivel 1: Aprendiz</span>
+                                </div>
+                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 📜 Un pergamino enrollado.</p>
+                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Representa el inicio del viaje del conocimiento. El cerebro sostiene el pergamino como si estuviera a punto de empezar su primera lección, simbolizando la curiosidad y la base del aprendizaje.</p>
+                            </div>
+                            
+                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #3B82F6;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <span style="font-size: 24px;">🧭</span>
+                                    <span style="color: #3B82F6; font-weight: bold; font-size: 18px;">Nivel 2: Explorador</span>
+                                </div>
+                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🧭 Una brújula.</p>
+                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Este personaje simboliza la búsqueda activa de nuevos conceptos. El cerebro con la brújula en mano está listo para descubrir y adentrarse en territorios inexplorados del conocimiento.</p>
+                            </div>
+                            
+                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #8B5CF6;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <span style="font-size: 24px;">♟️</span>
+                                    <span style="color: #8B5CF6; font-weight: bold; font-size: 18px;">Nivel 3: Estratega</span>
+                                </div>
+                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> ♟️ Un tablero de ajedrez.</p>
+                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Simboliza la habilidad para planificar y pensar con anticipación. El tablero de ajedrez sobre su cabeza representa la lógica, la estrategia y la capacidad de anticipar los movimientos para resolver desafíos en el juego.</p>
+                            </div>
+                            
+                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #F59E0B;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <span style="font-size: 24px;">🌍</span>
+                                    <span style="color: #F59E0B; font-weight: bold; font-size: 18px;">Nivel 4: Sabio</span>
+                                </div>
+                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🌍 Un globo terráqueo.</p>
+                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Este personaje ha adquirido un conocimiento vasto y global. El globo terráqueo en sus manos o bajo el brazo simboliza que ha explorado y dominado una amplia gama de temas, conectando diferentes áreas del saber.</p>
+                            </div>
+                            
+                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #EAB308;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <span style="font-size: 24px;">👑</span>
+                                    <span style="color: #EAB308; font-weight: bold; font-size: 18px;">Nivel 5: Gran Maestro</span>
+                                </div>
+                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 👑 Una corona dorada.</p>
+                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Representa la cima del conocimiento. La corona simboliza el dominio total del tema, su estatus de rey en el mundo del conocimiento, y su autoridad en el juego.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Creadores -->
+                    <div style="margin-bottom: 32px;">
+                        <h4 style="color: #10B981; font-size: 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            ✍️ Avatares del Creador de Contenido (Impacto)
+                        </h4>
+                        
+                        <div style="display: grid; gap: 16px;">
+                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #10B981;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <span style="font-size: 24px;">🌱</span>
+                                    <span style="color: #10B981; font-weight: bold; font-size: 18px;">Nivel 1: Semilla</span>
+                                </div>
+                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🌱 Una pequeña maceta.</p>
+                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Simboliza el inicio de una idea. El cerebro asoma de una maceta con una pequeña hoja verde, representando cómo las ideas comienzan a germinar y a crecer, aunque todavía sean pequeñas.</p>
+                            </div>
+                            
+                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #3B82F6;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <span style="font-size: 24px;">🔦</span>
+                                    <span style="color: #3B82F6; font-weight: bold; font-size: 18px;">Nivel 2: Chispa</span>
+                                </div>
+                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🔦 Una linterna.</p>
+                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> La linterna que el cerebro sostiene simboliza una idea que se enciende o un destello de creatividad. Es el momento en que una idea brillante surge y comienza a tomar forma, iluminando el camino para el creador.</p>
+                            </div>
+                            
+                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #8B5CF6;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <span style="font-size: 24px;">🔨</span>
+                                    <span style="color: #8B5CF6; font-weight: bold; font-size: 18px;">Nivel 3: Constructor</span>
+                                </div>
+                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🔨 Un martillo.</p>
+                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> El martillo que porta este personaje representa la acción de construir y dar forma a las ideas. Es el creador que trabaja en la elaboración de su contenido de forma metódica y estructurada.</p>
+                            </div>
+                            
+                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #F59E0B;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <span style="font-size: 24px;">📣</span>
+                                    <span style="color: #F59E0B; font-weight: bold; font-size: 18px;">Nivel 4: Orador</span>
+                                </div>
+                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 📣 Un megáfono.</p>
+                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Con el megáfono, este personaje se enfoca en la difusión y el impacto de su contenido. Es el creador que tiene una voz fuerte y clara y que logra conectar con una audiencia más amplia.</p>
+                            </div>
+                            
+                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #EAB308;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <span style="font-size: 24px;">🌟</span>
+                                    <span style="color: #EAB308; font-weight: bold; font-size: 18px;">Nivel 5: Visionario</span>
+                                </div>
+                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🌟 Una estrella brillante.</p>
+                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Este avatar ha logrado la cima del impacto. La estrella brillante sobre su cabeza simboliza su capacidad para inspirar y guiar a otros, siendo una luz que deja una marca duradera en la comunidad.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Profesores -->
+                    <div style="margin-bottom: 24px;">
+                        <h4 style="color: #EF4444; font-size: 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            📚 Avatares del Profesor (Alumnado Activo)
+                        </h4>
+                        
+                        <div style="display: grid; gap: 16px;">
+                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #10B981;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <span style="font-size: 24px;">📔</span>
+                                    <span style="color: #10B981; font-weight: bold; font-size: 18px;">Nivel 1: Guía</span>
+                                </div>
+                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 📔 Una libreta pequeña.</p>
+                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Representa la guía inicial y el seguimiento. La libreta que lleva consigo simboliza la toma de notas y el registro del progreso de sus alumnos.</p>
+                            </div>
+                            
+                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #3B82F6;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <span style="font-size: 24px;">🖊️</span>
+                                    <span style="color: #3B82F6; font-weight: bold; font-size: 18px;">Nivel 2: Instructor</span>
+                                </div>
+                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🖊️ Un puntero láser.</p>
+                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> El puntero láser que usa este personaje simboliza su rol de guiar y destacar los puntos más importantes de un tema, enfocando la atención de los estudiantes y dirigiendo el aprendizaje.</p>
+                            </div>
+                            
+                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #8B5CF6;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <span style="font-size: 24px;">🔥</span>
+                                    <span style="color: #8B5CF6; font-weight: bold; font-size: 18px;">Nivel 3: Consejero</span>
+                                </div>
+                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🔥 Una antorcha.</p>
+                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> La antorcha que sostiene este personaje simboliza la sabiduría y la guía que proporciona, alumbrando el camino para que sus alumnos puedan superar los obstáculos y encontrar su propio conocimiento.</p>
+                            </div>
+                            
+                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #F59E0B;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <span style="font-size: 24px;">🎓</span>
+                                    <span style="color: #F59E0B; font-weight: bold; font-size: 18px;">Nivel 4: Erudito</span>
+                                </div>
+                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🎓 Un sombrero académico (birrete).</p>
+                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Este personaje porta un birrete académico, lo que representa su amplio conocimiento y su estatus formal como educador. Simboliza la culminación de un proceso de aprendizaje y el inicio de la enseñanza.</p>
+                            </div>
+                            
+                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #EAB308;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <span style="font-size: 24px;">⚔️</span>
+                                    <span style="color: #EAB308; font-weight: bold; font-size: 18px;">Nivel 5: Maestro Jedi</span>
+                                </div>
+                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> ⚔️ Una espada láser.</p>
+                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Con una espada láser, este avatar simboliza el poder de la sabiduría y la inmensa influencia que tiene sobre sus estudiantes. Es un mentor que ayuda a sus alumnos a dominar "la fuerza del conocimiento" y a alcanzar su máximo potencial.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: center; margin-top: 24px;">
+                    <button onclick="closeModal('role-levels-modal')" style="padding: 12px 24px; background: #3B82F6; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Modalidades de Juego -->
+    <div id="game-modes-modal" class="modal" onclick="hideModal('game-modes-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2 style="color: #E0E1DD; margin: 0; font-size: 1.5rem;">🎮 Modalidades de Juego</h2>
+                <span class="close" onclick="hideModal('game-modes-modal')">&times;</span>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem; line-height: 1.6;">
+                <!-- Sección Entrenamiento -->
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #2E5266, #415A77); border-radius: 12px; border-left: 4px solid #FFB347;">
+                    <h3 style="color: #FFB347; margin: 0 0 1rem 0; font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem;">
+                        🎓 ENTRENAMIENTO - Domina a tu ritmo
+                    </h3>
+                    <p style="color: #E0E1DD; font-style: italic; margin-bottom: 1.5rem; font-size: 1rem;">"El conocimiento es poder, pero la práctica lo convierte en superpoder"</p>
+                    
+                    <!-- Modo Clásico -->
+                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
+                        <h4 style="color: #4CAF50; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🧘‍♂️ Modo Clásico</h4>
+                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡El zen del estudio! Responde a tu ritmo con feedback instantáneo. Perfecto para aprender sin presión y consolidar conocimientos de forma relajada.</p>
+                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
+                            <li>Sin límite de tiempo</li>
+                            <li>Feedback inmediato en cada respuesta</li>
+                            <li>Ideal para estudio tranquilo</li>
+                            <li>Perfecto para principiantes</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Modo Vidas -->
+                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
+                        <h4 style="color: #E91E63; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">💗 Modo Vidas</h4>
+                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡Como un videojuego clásico! Empiezas con 5 vidas y cada error te cuesta una. Pero no te preocupes: ¡cada racha de 10 aciertos te devuelve una vida!</p>
+                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
+                            <li>5 vidas iniciales</li>
+                            <li>Recupera 1 vida cada 10 aciertos</li>
+                            <li>Tensión equilibrada</li>
+                            <li>Fomenta la concentración</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Modo Contrarreloj -->
+                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
+                        <h4 style="color: #FF5722; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">⏰ Modo Contrarreloj</h4>
+                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡La adrenalina pura del conocimiento! Responde el máximo número de preguntas antes de que se agote el tiempo. ¿Cuál será tu mejor marca?</p>
+                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
+                            <li>Tiempo límite configurable</li>
+                            <li>Máxima velocidad mental</li>
+                            <li>Desafío contra el cronómetro</li>
+                            <li>Mejora tus reflejos</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Por Niveles -->
+                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
+                        <h4 style="color: #9C27B0; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🏔️ Por Niveles</h4>
+                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡Escala la montaña del conocimiento! Cada nivel tiene mayor dificultad y necesitas un mínimo de aciertos para avanzar. ¿Llegarás a la cima?</p>
+                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
+                            <li>Dificultad progresiva</li>
+                            <li>Requisitos de avance</li>
+                            <li>Sensación de progreso</li>
+                            <li>Desbloquea nuevos desafíos</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Racha de Aciertos -->
+                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
+                        <h4 style="color: #FF9800; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🔥 Racha de Aciertos</h4>
+                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡Enciende tu racha y que no se apague! Tu objetivo es conseguir el mayor número de respuestas correctas consecutivas. Un solo error y... ¡vuelta a empezar!</p>
+                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
+                            <li>Aciertos consecutivos</li>
+                            <li>Un error reinicia la racha</li>
+                            <li>Máxima concentración</li>
+                            <li>Superación personal</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Examen Simulado -->
+                    <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
+                        <h4 style="color: #607D8B; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">📋 Examen Simulado</h4>
+                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡La simulación más real! Preguntas fijas, tiempo límite y sin feedback hasta el final. Incluye penalización por fallos para máximo realismo.</p>
+                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
+                            <li>Número fijo de preguntas</li>
+                            <li>Sin feedback hasta el final</li>
+                            <li>Penalización opcional</li>
+                            <li>Máximo realismo de examen</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Sección Competición -->
+                <div style="padding: 1.5rem; background: linear-gradient(135deg, #8B0000, #DC143C); border-radius: 12px; border-left: 4px solid #FFD700;">
+                    <h3 style="color: #FFD700; margin: 0 0 1rem 0; font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem;">
+                        ⚔️ COMPETICIÓN - ¡Demuestra quién manda!
+                    </h3>
+                    <p style="color: #E0E1DD; font-style: italic; margin-bottom: 1.5rem; font-size: 1rem;">"En la arena del conocimiento, solo los más preparados alcanzan la gloria"</p>
+                    
+                    <!-- Maratón -->
+                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
+                        <h4 style="color: #2196F3; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🏃‍♂️ Maratón</h4>
+                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡La resistencia definitiva! Completa TODAS las preguntas del bloque. Los aciertos te dan tiempo extra, los fallos te lo quitan. ¿Tendrás la resistencia mental para llegar al final?</p>
+                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
+                            <li>Todas las preguntas del bloque</li>
+                            <li>Aciertos suman tiempo</li>
+                            <li>Fallos restan tiempo</li>
+                            <li>Prueba de resistencia mental</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Duelo -->
+                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
+                        <h4 style="color: #F44336; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">⚔️ Duelo</h4>
+                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡Mano a mano, cerebro a cerebro! Dos jugadores se enfrentan por turnos. Ganas puntos por acierto y velocidad. ¡El más rápido y certero se lleva la victoria!</p>
+                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
+                            <li>1 vs 1 por turnos</li>
+                            <li>Puntos por acierto y rapidez</li>
+                            <li>Tensión máxima</li>
+                            <li>Sistema de retos</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Trivial -->
+                    <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
+                        <h4 style="color: #795548; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🧩 Trivial</h4>
+                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡El clásico reinventado! Consigue "fichas" (quesitos) de diferentes temas para completar tu medallón. El primero en conseguir todas las fichas... ¡se corona campeón!</p>
+                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
+                            <li>Fichas por tema</li>
+                            <li>Estrategia de temas</li>
+                            <li>Competición épica</li>
+                            <li>Victoria por completar medallón</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
