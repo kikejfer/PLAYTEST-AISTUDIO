@@ -2213,335 +2213,671 @@
                     <h3 style="color: #E0E1DD; font-size: 24px; font-weight: bold; margin: 0;">🎯 Niveles por Roles</h3>
                     <button onclick="closeModal('role-levels-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
                 </div>
+            <div class="modal-body" style="padding: 1.5rem; line-height: 1.6; min-height: 400px;">
                 
-                <div style="color: #E0E1DD; line-height: 1.6;">
-                    <!-- Jugadores -->
-                    <div style="margin-bottom: 32px;">
-                        <h4 style="color: #3B82F6; font-size: 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-                            🧠 Avatares del Jugador (Conocimiento)
-                        </h4>
-                        
-                        <div style="display: grid; gap: 16px;">
-                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #10B981;">
-                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                    <span style="font-size: 24px;">📜</span>
-                                    <span style="color: #10B981; font-weight: bold; font-size: 18px;">Nivel 1: Aprendiz</span>
-                                </div>
-                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 📜 Un pergamino enrollado.</p>
-                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Representa el inicio del viaje del conocimiento. El cerebro sostiene el pergamino como si estuviera a punto de empezar su primera lección, simbolizando la curiosidad y la base del aprendizaje.</p>
+                <!-- Pantalla 1: Introducción -->
+                <div id="role-level-screen-1" style="display: block; text-align: center;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px;">
+                        <h3 style="color: #FFB347; margin: 0 0 1rem 0; font-size: 1.5rem;">🎯 Niveles por Roles</h3>
+                        <p style="color: #E0E1DD; font-size: 1.1rem; margin-bottom: 1.5rem;">"Cada rol tiene su propio camino de evolución"</p>
+                        <div style="display: flex; justify-content: center; gap: 2rem; margin: 2rem 0;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 3rem; margin-bottom: 0.5rem;">🧠</div>
+                                <p style="color: #3B82F6; font-weight: bold; margin: 0;">JUGADOR</p>
+                                <p style="color: #E0E1DD; font-size: 0.9rem; margin: 0.25rem 0 0 0;">Conocimiento</p>
                             </div>
-                            
-                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #3B82F6;">
-                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                    <span style="font-size: 24px;">🧭</span>
-                                    <span style="color: #3B82F6; font-weight: bold; font-size: 18px;">Nivel 2: Explorador</span>
-                                </div>
-                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🧭 Una brújula.</p>
-                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Este personaje simboliza la búsqueda activa de nuevos conceptos. El cerebro con la brújula en mano está listo para descubrir y adentrarse en territorios inexplorados del conocimiento.</p>
+                            <div style="text-align: center;">
+                                <div style="font-size: 3rem; margin-bottom: 0.5rem;">✍️</div>
+                                <p style="color: #10B981; font-weight: bold; margin: 0;">CREADOR</p>
+                                <p style="color: #E0E1DD; font-size: 0.9rem; margin: 0.25rem 0 0 0;">Impacto</p>
                             </div>
-                            
-                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #8B5CF6;">
-                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                    <span style="font-size: 24px;">♟️</span>
-                                    <span style="color: #8B5CF6; font-weight: bold; font-size: 18px;">Nivel 3: Estratega</span>
-                                </div>
-                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> ♟️ Un tablero de ajedrez.</p>
-                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Simboliza la habilidad para planificar y pensar con anticipación. El tablero de ajedrez sobre su cabeza representa la lógica, la estrategia y la capacidad de anticipar los movimientos para resolver desafíos en el juego.</p>
-                            </div>
-                            
-                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #F59E0B;">
-                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                    <span style="font-size: 24px;">🌍</span>
-                                    <span style="color: #F59E0B; font-weight: bold; font-size: 18px;">Nivel 4: Sabio</span>
-                                </div>
-                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🌍 Un globo terráqueo.</p>
-                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Este personaje ha adquirido un conocimiento vasto y global. El globo terráqueo en sus manos o bajo el brazo simboliza que ha explorado y dominado una amplia gama de temas, conectando diferentes áreas del saber.</p>
-                            </div>
-                            
-                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #EAB308;">
-                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                    <span style="font-size: 24px;">👑</span>
-                                    <span style="color: #EAB308; font-weight: bold; font-size: 18px;">Nivel 5: Gran Maestro</span>
-                                </div>
-                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 👑 Una corona dorada.</p>
-                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Representa la cima del conocimiento. La corona simboliza el dominio total del tema, su estatus de rey en el mundo del conocimiento, y su autoridad en el juego.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Creadores -->
-                    <div style="margin-bottom: 32px;">
-                        <h4 style="color: #10B981; font-size: 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-                            ✍️ Avatares del Creador de Contenido (Impacto)
-                        </h4>
-                        
-                        <div style="display: grid; gap: 16px;">
-                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #10B981;">
-                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                    <span style="font-size: 24px;">🌱</span>
-                                    <span style="color: #10B981; font-weight: bold; font-size: 18px;">Nivel 1: Semilla</span>
-                                </div>
-                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🌱 Una pequeña maceta.</p>
-                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Simboliza el inicio de una idea. El cerebro asoma de una maceta con una pequeña hoja verde, representando cómo las ideas comienzan a germinar y a crecer, aunque todavía sean pequeñas.</p>
-                            </div>
-                            
-                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #3B82F6;">
-                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                    <span style="font-size: 24px;">🔦</span>
-                                    <span style="color: #3B82F6; font-weight: bold; font-size: 18px;">Nivel 2: Chispa</span>
-                                </div>
-                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🔦 Una linterna.</p>
-                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> La linterna que el cerebro sostiene simboliza una idea que se enciende o un destello de creatividad. Es el momento en que una idea brillante surge y comienza a tomar forma, iluminando el camino para el creador.</p>
-                            </div>
-                            
-                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #8B5CF6;">
-                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                    <span style="font-size: 24px;">🔨</span>
-                                    <span style="color: #8B5CF6; font-weight: bold; font-size: 18px;">Nivel 3: Constructor</span>
-                                </div>
-                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🔨 Un martillo.</p>
-                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> El martillo que porta este personaje representa la acción de construir y dar forma a las ideas. Es el creador que trabaja en la elaboración de su contenido de forma metódica y estructurada.</p>
-                            </div>
-                            
-                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #F59E0B;">
-                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                    <span style="font-size: 24px;">📣</span>
-                                    <span style="color: #F59E0B; font-weight: bold; font-size: 18px;">Nivel 4: Orador</span>
-                                </div>
-                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 📣 Un megáfono.</p>
-                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Con el megáfono, este personaje se enfoca en la difusión y el impacto de su contenido. Es el creador que tiene una voz fuerte y clara y que logra conectar con una audiencia más amplia.</p>
-                            </div>
-                            
-                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #EAB308;">
-                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                    <span style="font-size: 24px;">🌟</span>
-                                    <span style="color: #EAB308; font-weight: bold; font-size: 18px;">Nivel 5: Visionario</span>
-                                </div>
-                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🌟 Una estrella brillante.</p>
-                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Este avatar ha logrado la cima del impacto. La estrella brillante sobre su cabeza simboliza su capacidad para inspirar y guiar a otros, siendo una luz que deja una marca duradera en la comunidad.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Profesores -->
-                    <div style="margin-bottom: 24px;">
-                        <h4 style="color: #EF4444; font-size: 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-                            📚 Avatares del Profesor (Alumnado Activo)
-                        </h4>
-                        
-                        <div style="display: grid; gap: 16px;">
-                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #10B981;">
-                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                    <span style="font-size: 24px;">📔</span>
-                                    <span style="color: #10B981; font-weight: bold; font-size: 18px;">Nivel 1: Guía</span>
-                                </div>
-                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 📔 Una libreta pequeña.</p>
-                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Representa la guía inicial y el seguimiento. La libreta que lleva consigo simboliza la toma de notas y el registro del progreso de sus alumnos.</p>
-                            </div>
-                            
-                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #3B82F6;">
-                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                    <span style="font-size: 24px;">🖊️</span>
-                                    <span style="color: #3B82F6; font-weight: bold; font-size: 18px;">Nivel 2: Instructor</span>
-                                </div>
-                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🖊️ Un puntero láser.</p>
-                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> El puntero láser que usa este personaje simboliza su rol de guiar y destacar los puntos más importantes de un tema, enfocando la atención de los estudiantes y dirigiendo el aprendizaje.</p>
-                            </div>
-                            
-                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #8B5CF6;">
-                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                    <span style="font-size: 24px;">🔥</span>
-                                    <span style="color: #8B5CF6; font-weight: bold; font-size: 18px;">Nivel 3: Consejero</span>
-                                </div>
-                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🔥 Una antorcha.</p>
-                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> La antorcha que sostiene este personaje simboliza la sabiduría y la guía que proporciona, alumbrando el camino para que sus alumnos puedan superar los obstáculos y encontrar su propio conocimiento.</p>
-                            </div>
-                            
-                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #F59E0B;">
-                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                    <span style="font-size: 24px;">🎓</span>
-                                    <span style="color: #F59E0B; font-weight: bold; font-size: 18px;">Nivel 4: Erudito</span>
-                                </div>
-                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> 🎓 Un sombrero académico (birrete).</p>
-                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Este personaje porta un birrete académico, lo que representa su amplio conocimiento y su estatus formal como educador. Simboliza la culminación de un proceso de aprendizaje y el inicio de la enseñanza.</p>
-                            </div>
-                            
-                            <div style="background: #0D1B2A; padding: 16px; border-radius: 8px; border-left: 4px solid #EAB308;">
-                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                                    <span style="font-size: 24px;">⚔️</span>
-                                    <span style="color: #EAB308; font-weight: bold; font-size: 18px;">Nivel 5: Maestro Jedi</span>
-                                </div>
-                                <p style="margin: 8px 0; color: #E0E1DD;"><strong>Elemento:</strong> ⚔️ Una espada láser.</p>
-                                <p style="margin: 0; color: #E0E1DD;"><strong>Símbolo:</strong> Con una espada láser, este avatar simboliza el poder de la sabiduría y la inmensa influencia que tiene sobre sus estudiantes. Es un mentor que ayuda a sus alumnos a dominar "la fuerza del conocimiento" y a alcanzar su máximo potencial.</p>
+                            <div style="text-align: center;">
+                                <div style="font-size: 3rem; margin-bottom: 0.5rem;">📚</div>
+                                <p style="color: #EF4444; font-weight: bold; margin: 0;">PROFESOR</p>
+                                <p style="color: #E0E1DD; font-size: 0.9rem; margin: 0.25rem 0 0 0;">Alumnado Activo</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <div style="display: flex; justify-content: center; margin-top: 24px;">
-                    <button onclick="closeModal('role-levels-modal')" style="padding: 12px 24px; background: #3B82F6; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">Cerrar</button>
+
+                <!-- Pantalla 2: Introducción Jugador -->
+                <div id="role-level-screen-2" style="display: none; text-align: center;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px;">
+                        <h3 style="color: #3B82F6; margin: 0 0 1rem 0; font-size: 1.5rem;">🧠 Avatares del Jugador</h3>
+                        <p style="color: #E0E1DD; font-size: 1.1rem; margin-bottom: 1.5rem;">Evolución basada en el <strong style="color: #3B82F6;">Conocimiento</strong></p>
+                        <div style="display: flex; justify-content: center; gap: 1rem; margin: 2rem 0; flex-wrap: wrap;">
+                            <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border-left: 4px solid #10B981; min-width: 120px;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">📜</div>
+                                <p style="color: #10B981; font-weight: bold; margin: 0; font-size: 0.9rem;">Aprendiz</p>
+                            </div>
+                            <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border-left: 4px solid #3B82F6; min-width: 120px;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🧭</div>
+                                <p style="color: #3B82F6; font-weight: bold; margin: 0; font-size: 0.9rem;">Explorador</p>
+                            </div>
+                            <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border-left: 4px solid #8B5CF6; min-width: 120px;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">♟️</div>
+                                <p style="color: #8B5CF6; font-weight: bold; margin: 0; font-size: 0.9rem;">Estratega</p>
+                            </div>
+                            <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border-left: 4px solid #F59E0B; min-width: 120px;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌍</div>
+                                <p style="color: #F59E0B; font-weight: bold; margin: 0; font-size: 0.9rem;">Sabio</p>
+                            </div>
+                            <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border-left: 4px solid #EAB308; min-width: 120px;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">👑</div>
+                                <p style="color: #EAB308; font-weight: bold; margin: 0; font-size: 0.9rem;">Gran Maestro</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Pantalla 3: Jugador Nivel 1 -->
+                <div id="role-level-screen-3" style="display: none;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #10B981;">
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                            <img src="./Imagenes/Estudiante-N1-Aprendiz.png" alt="Aprendiz" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #10B981;">
+                            <div>
+                                <h3 style="color: #10B981; margin: 0 0 0.5rem 0; font-size: 1.8rem;">📜 Nivel 1: Aprendiz</h3>
+                            </div>
+                        </div>
+                        <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                            <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #10B981;">Elemento:</strong> 📜 Un pergamino enrollado.</p>
+                            <p style="margin: 0; color: #E0E1DD;"><strong style="color: #10B981;">Símbolo:</strong> Representa el inicio del viaje del conocimiento. El cerebro sostiene el pergamino como si estuviera a punto de empezar su primera lección, simbolizando la curiosidad y la base del aprendizaje.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 4: Jugador Nivel 2 -->
+                <div id="role-level-screen-4" style="display: none;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #3B82F6;">
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                            <img src="./Imagenes/Estudiante-N2-Explorador.png" alt="Explorador" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #3B82F6;">
+                            <div>
+                                <h3 style="color: #3B82F6; margin: 0 0 0.5rem 0; font-size: 1.8rem;">🧭 Nivel 2: Explorador</h3>
+                            </div>
+                        </div>
+                        <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                            <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #3B82F6;">Elemento:</strong> 🧭 Una brújula.</p>
+                            <p style="margin: 0; color: #E0E1DD;"><strong style="color: #3B82F6;">Símbolo:</strong> Este personaje simboliza la búsqueda activa de nuevos conceptos. El cerebro con la brújula en mano está listo para descubrir y adentrarse en territorios inexplorados del conocimiento.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 5: Jugador Nivel 3 -->
+                <div id="role-level-screen-5" style="display: none;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #8B5CF6;">
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                            <img src="./Imagenes/Estudiante-N3-Estratega.png" alt="Estratega" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #8B5CF6;">
+                            <div>
+                                <h3 style="color: #8B5CF6; margin: 0 0 0.5rem 0; font-size: 1.8rem;">♟️ Nivel 3: Estratega</h3>
+                            </div>
+                        </div>
+                        <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                            <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #8B5CF6;">Elemento:</strong> ♟️ Un tablero de ajedrez.</p>
+                            <p style="margin: 0; color: #E0E1DD;"><strong style="color: #8B5CF6;">Símbolo:</strong> Simboliza la habilidad para planificar y pensar con anticipación. El tablero de ajedrez sobre su cabeza representa la lógica, la estrategia y la capacidad de anticipar los movimientos para resolver desafíos en el juego.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 6: Jugador Nivel 4 -->
+                <div id="role-level-screen-6" style="display: none;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #F59E0B;">
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                            <img src="./Imagenes/Estudiante-N4-Sabio.png" alt="Sabio" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #F59E0B;">
+                            <div>
+                                <h3 style="color: #F59E0B; margin: 0 0 0.5rem 0; font-size: 1.8rem;">🌍 Nivel 4: Sabio</h3>
+                            </div>
+                        </div>
+                        <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                            <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #F59E0B;">Elemento:</strong> 🌍 Un globo terráqueo.</p>
+                            <p style="margin: 0; color: #E0E1DD;"><strong style="color: #F59E0B;">Símbolo:</strong> Este personaje ha adquirido un conocimiento vasto y global. El globo terráqueo en sus manos o bajo el brazo simboliza que ha explorado y dominado una amplia gama de temas, conectando diferentes áreas del saber.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 7: Jugador Nivel 5 -->
+                <div id="role-level-screen-7" style="display: none;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #EAB308;">
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                            <img src="./Imagenes/Estudiante-N5-Gran Maestro.png" alt="Gran Maestro" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #EAB308;">
+                            <div>
+                                <h3 style="color: #EAB308; margin: 0 0 0.5rem 0; font-size: 1.8rem;">👑 Nivel 5: Gran Maestro</h3>
+                            </div>
+                        </div>
+                        <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                            <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #EAB308;">Elemento:</strong> 👑 Una corona dorada.</p>
+                            <p style="margin: 0; color: #E0E1DD;"><strong style="color: #EAB308;">Símbolo:</strong> Representa la cima del conocimiento. La corona simboliza el dominio total del tema, su estatus de rey en el mundo del conocimiento, y su autoridad en el juego.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 8: Introducción Creador -->
+                <div id="role-level-screen-8" style="display: none; text-align: center;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px;">
+                        <h3 style="color: #10B981; margin: 0 0 1rem 0; font-size: 1.5rem;">✍️ Avatares del Creador</h3>
+                        <p style="color: #E0E1DD; font-size: 1.1rem; margin-bottom: 1.5rem;">Evolución basada en el <strong style="color: #10B981;">Impacto</strong></p>
+                        <div style="display: flex; justify-content: center; gap: 1rem; margin: 2rem 0; flex-wrap: wrap;">
+                            <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border-left: 4px solid #10B981; min-width: 120px;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌱</div>
+                                <p style="color: #10B981; font-weight: bold; margin: 0; font-size: 0.9rem;">Semilla</p>
+                            </div>
+                            <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border-left: 4px solid #3B82F6; min-width: 120px;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔦</div>
+                                <p style="color: #3B82F6; font-weight: bold; margin: 0; font-size: 0.9rem;">Chispa</p>
+                            </div>
+                            <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border-left: 4px solid #8B5CF6; min-width: 120px;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔨</div>
+                                <p style="color: #8B5CF6; font-weight: bold; margin: 0; font-size: 0.9rem;">Constructor</p>
+                            </div>
+                            <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border-left: 4px solid #F59E0B; min-width: 120px;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">📣</div>
+                                <p style="color: #F59E0B; font-weight: bold; margin: 0; font-size: 0.9rem;">Orador</p>
+                            </div>
+                            <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border-left: 4px solid #EAB308; min-width: 120px;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌟</div>
+                                <p style="color: #EAB308; font-weight: bold; margin: 0; font-size: 0.9rem;">Visionario</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 9: Creador Nivel 1 -->
+                <div id="role-level-screen-9" style="display: none;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #10B981;">
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                            <img src="./Imagenes/Creador-N1-Semilla.png" alt="Semilla" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #10B981;">
+                            <div>
+                                <h3 style="color: #10B981; margin: 0 0 0.5rem 0; font-size: 1.8rem;">🌱 Nivel 1: Semilla</h3>
+                            </div>
+                        </div>
+                        <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                            <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #10B981;">Elemento:</strong> 🌱 Una pequeña maceta.</p>
+                            <p style="margin: 0; color: #E0E1DD;"><strong style="color: #10B981;">Símbolo:</strong> Simboliza el inicio de una idea. El cerebro asoma de una maceta con una pequeña hoja verde, representando cómo las ideas comienzan a germinar y a crecer, aunque todavía sean pequeñas.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 10: Creador Nivel 2 -->
+                <div id="role-level-screen-10" style="display: none;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #3B82F6;">
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                            <img src="./Imagenes/Creador-N2-Chispa.png" alt="Chispa" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #3B82F6;">
+                            <div>
+                                <h3 style="color: #3B82F6; margin: 0 0 0.5rem 0; font-size: 1.8rem;">🔦 Nivel 2: Chispa</h3>
+                            </div>
+                        </div>
+                        <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                            <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #3B82F6;">Elemento:</strong> 🔦 Una linterna.</p>
+                            <p style="margin: 0; color: #E0E1DD;"><strong style="color: #3B82F6;">Símbolo:</strong> La linterna que el cerebro sostiene simboliza una idea que se enciende o un destello de creatividad. Es el momento en que una idea brillante surge y comienza a tomar forma, iluminando el camino para el creador.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 11: Creador Nivel 3 -->
+                <div id="role-level-screen-11" style="display: none;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #8B5CF6;">
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                            <img src="./Imagenes/Creador-N3-Constructor.png" alt="Constructor" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #8B5CF6;">
+                            <div>
+                                <h3 style="color: #8B5CF6; margin: 0 0 0.5rem 0; font-size: 1.8rem;">🔨 Nivel 3: Constructor</h3>
+                            </div>
+                        </div>
+                        <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                            <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #8B5CF6;">Elemento:</strong> 🔨 Un martillo.</p>
+                            <p style="margin: 0; color: #E0E1DD;"><strong style="color: #8B5CF6;">Símbolo:</strong> El martillo que porta este personaje representa la acción de construir y dar forma a las ideas. Es el creador que trabaja en la elaboración de su contenido de forma metódica y estructurada.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 12: Creador Nivel 4 -->
+                <div id="role-level-screen-12" style="display: none;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #F59E0B;">
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                            <img src="./Imagenes/Creador-N4-Orador.png" alt="Orador" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #F59E0B;">
+                            <div>
+                                <h3 style="color: #F59E0B; margin: 0 0 0.5rem 0; font-size: 1.8rem;">📣 Nivel 4: Orador</h3>
+                            </div>
+                        </div>
+                        <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                            <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #F59E0B;">Elemento:</strong> 📣 Un megáfono.</p>
+                            <p style="margin: 0; color: #E0E1DD;"><strong style="color: #F59E0B;">Símbolo:</strong> Con el megáfono, este personaje se enfoca en la difusión y el impacto de su contenido. Es el creador que tiene una voz fuerte y clara y que logra conectar con una audiencia más amplia.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 13: Creador Nivel 5 -->
+                <div id="role-level-screen-13" style="display: none;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #EAB308;">
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                            <img src="./Imagenes/Creador-N5-Visionario.png" alt="Visionario" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #EAB308;">
+                            <div>
+                                <h3 style="color: #EAB308; margin: 0 0 0.5rem 0; font-size: 1.8rem;">🌟 Nivel 5: Visionario</h3>
+                            </div>
+                        </div>
+                        <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                            <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #EAB308;">Elemento:</strong> 🌟 Una estrella brillante.</p>
+                            <p style="margin: 0; color: #E0E1DD;"><strong style="color: #EAB308;">Símbolo:</strong> Este avatar ha logrado la cima del impacto. La estrella brillante sobre su cabeza simboliza su capacidad para inspirar y guiar a otros, siendo una luz que deja una marca duradera en la comunidad.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 14: Introducción Profesor -->
+                <div id="role-level-screen-14" style="display: none; text-align: center;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px;">
+                        <h3 style="color: #EF4444; margin: 0 0 1rem 0; font-size: 1.5rem;">📚 Avatares del Profesor</h3>
+                        <p style="color: #E0E1DD; font-size: 1.1rem; margin-bottom: 1.5rem;">Evolución basada en el <strong style="color: #EF4444;">Alumnado Activo</strong></p>
+                        <div style="display: flex; justify-content: center; gap: 1rem; margin: 2rem 0; flex-wrap: wrap;">
+                            <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border-left: 4px solid #10B981; min-width: 120px;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">📔</div>
+                                <p style="color: #10B981; font-weight: bold; margin: 0; font-size: 0.9rem;">Guía</p>
+                            </div>
+                            <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border-left: 4px solid #3B82F6; min-width: 120px;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🖊️</div>
+                                <p style="color: #3B82F6; font-weight: bold; margin: 0; font-size: 0.9rem;">Instructor</p>
+                            </div>
+                            <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border-left: 4px solid #8B5CF6; min-width: 120px;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔥</div>
+                                <p style="color: #8B5CF6; font-weight: bold; margin: 0; font-size: 0.9rem;">Consejero</p>
+                            </div>
+                            <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border-left: 4px solid #F59E0B; min-width: 120px;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎓</div>
+                                <p style="color: #F59E0B; font-weight: bold; margin: 0; font-size: 0.9rem;">Erudito</p>
+                            </div>
+                            <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border-left: 4px solid #EAB308; min-width: 120px;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚔️</div>
+                                <p style="color: #EAB308; font-weight: bold; margin: 0; font-size: 0.9rem;">Maestro Jedi</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 15: Profesor Nivel 1 -->
+                <div id="role-level-screen-15" style="display: none;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #10B981;">
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                            <img src="./Imagenes/Profesor-N1-Guía.png" alt="Guía" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #10B981;">
+                            <div>
+                                <h3 style="color: #10B981; margin: 0 0 0.5rem 0; font-size: 1.8rem;">📔 Nivel 1: Guía</h3>
+                            </div>
+                        </div>
+                        <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                            <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #10B981;">Elemento:</strong> 📔 Una libreta pequeña.</p>
+                            <p style="margin: 0; color: #E0E1DD;"><strong style="color: #10B981;">Símbolo:</strong> Representa la guía inicial y el seguimiento. La libreta que lleva consigo simboliza la toma de notas y el registro del progreso de sus alumnos.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 16: Profesor Nivel 2 -->
+                <div id="role-level-screen-16" style="display: none;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #3B82F6;">
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                            <img src="./Imagenes/Profesor-N2-Instructor.png" alt="Instructor" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #3B82F6;">
+                            <div>
+                                <h3 style="color: #3B82F6; margin: 0 0 0.5rem 0; font-size: 1.8rem;">🖊️ Nivel 2: Instructor</h3>
+                            </div>
+                        </div>
+                        <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                            <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #3B82F6;">Elemento:</strong> 🖊️ Un puntero láser.</p>
+                            <p style="margin: 0; color: #E0E1DD;"><strong style="color: #3B82F6;">Símbolo:</strong> El puntero láser que usa este personaje simboliza su rol de guiar y destacar los puntos más importantes de un tema, enfocando la atención de los estudiantes y dirigiendo el aprendizaje.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 17: Profesor Nivel 3 -->
+                <div id="role-level-screen-17" style="display: none;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #8B5CF6;">
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                            <img src="./Imagenes/Profesor-N3-Consejero.png" alt="Consejero" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #8B5CF6;">
+                            <div>
+                                <h3 style="color: #8B5CF6; margin: 0 0 0.5rem 0; font-size: 1.8rem;">🔥 Nivel 3: Consejero</h3>
+                            </div>
+                        </div>
+                        <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                            <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #8B5CF6;">Elemento:</strong> 🔥 Una antorcha.</p>
+                            <p style="margin: 0; color: #E0E1DD;"><strong style="color: #8B5CF6;">Símbolo:</strong> La antorcha que sostiene este personaje simboliza la sabiduría y la guía que proporciona, alumbrando el camino para que sus alumnos puedan superar los obstáculos y encontrar su propio conocimiento.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 18: Profesor Nivel 4 -->
+                <div id="role-level-screen-18" style="display: none;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #F59E0B;">
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                            <img src="./Imagenes/Profesor-N4-Erudito.png" alt="Erudito" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #F59E0B;">
+                            <div>
+                                <h3 style="color: #F59E0B; margin: 0 0 0.5rem 0; font-size: 1.8rem;">🎓 Nivel 4: Erudito</h3>
+                            </div>
+                        </div>
+                        <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                            <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #F59E0B;">Elemento:</strong> 🎓 Un sombrero académico (birrete).</p>
+                            <p style="margin: 0; color: #E0E1DD;"><strong style="color: #F59E0B;">Símbolo:</strong> Este personaje porta un birrete académico, lo que representa su amplio conocimiento y su estatus formal como educador. Simboliza la culminación de un proceso de aprendizaje y el inicio de la enseñanza.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 19: Profesor Nivel 5 -->
+                <div id="role-level-screen-19" style="display: none;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #EAB308;">
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                            <img src="./Imagenes/Profesor-N5-Maestro Jedi.png" alt="Maestro Jedi" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #EAB308;">
+                            <div>
+                                <h3 style="color: #EAB308; margin: 0 0 0.5rem 0; font-size: 1.8rem;">⚔️ Nivel 5: Maestro Jedi</h3>
+                            </div>
+                        </div>
+                        <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                            <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #EAB308;">Elemento:</strong> ⚔️ Una espada láser.</p>
+                            <p style="margin: 0; color: #E0E1DD;"><strong style="color: #EAB308;">Símbolo:</strong> Con una espada láser, este avatar simboliza el poder de la sabiduría y la inmensa influencia que tiene sobre sus estudiantes. Es un mentor que ayuda a sus alumnos a dominar "la fuerza del conocimiento" y a alcanzar su máximo potencial.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Navegación -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding: 0 1.5rem;">
+                <button id="prev-role-level-btn" onclick="previousRoleLevelScreen()" style="padding: 0.75rem 1.5rem; background: #415A77; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2E4258'" onmouseout="this.style.background='#415A77'">◀ Anterior</button>
+                
+                <span id="role-level-counter" style="color: #778DA9; font-weight: 500;">1 / 19</span>
+                
+                <button id="next-role-level-btn" onclick="nextRoleLevelScreen()" style="padding: 0.75rem 1.5rem; background: #3B82F6; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">Siguiente ▶</button>
+            </div>
             </div>
         </div>
     </div>
 
     <!-- Modal de Modalidades de Juego -->
-    <div id="game-modes-modal" class="modal" onclick="hideModal('game-modes-modal')">
-        <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
-            <div class="modal-header">
-                <h2 style="color: #E0E1DD; margin: 0; font-size: 1.5rem;">🎮 Modalidades de Juego</h2>
-                <span class="close" onclick="hideModal('game-modes-modal')">&times;</span>
-            </div>
-            <div class="modal-body" style="padding: 1.5rem; line-height: 1.6;">
-                <!-- Sección Entrenamiento -->
-                <div style="margin-bottom: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #2E5266, #415A77); border-radius: 12px; border-left: 4px solid #FFB347;">
-                    <h3 style="color: #FFB347; margin: 0 0 1rem 0; font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem;">
-                        🎓 ENTRENAMIENTO - Domina a tu ritmo
-                    </h3>
-                    <p style="color: #E0E1DD; font-style: italic; margin-bottom: 1.5rem; font-size: 1rem;">"El conocimiento es poder, pero la práctica lo convierte en superpoder"</p>
-                    
-                    <!-- Modo Clásico -->
-                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #4CAF50; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🧘‍♂️ Modo Clásico</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 1rem 0; font-weight: 500;">¡El zen del estudio! Responde a tu ritmo con feedback instantáneo. Perfecto para aprender sin presión y consolidar conocimientos de forma relajada.</p>
-                        <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                            <img src="./Imagenes/Clasico.png" alt="Modo Clásico" style="width: 60px; height: 60px; object-fit: contain; flex-shrink: 0;">
-                            <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; flex: 1;">
-                                <li>Sin límite de tiempo</li>
-                                <li>Feedback inmediato en cada respuesta</li>
-                                <li>Ideal para estudio tranquilo</li>
-                                <li>Perfecto para principiantes</li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <!-- Modo Vidas -->
-                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #E91E63; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">💗 Modo Vidas</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 1rem 0; font-weight: 500;">¡Como un videojuego clásico! Empiezas con 5 vidas y cada error te cuesta una. Pero no te preocupes: ¡cada racha de 10 aciertos te devuelve una vida!</p>
-                        <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                            <img src="./Imagenes/Vidas.png" alt="Modo Vidas" style="width: 60px; height: 60px; object-fit: contain; flex-shrink: 0;">
-                            <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; flex: 1;">
-                                <li>5 vidas iniciales</li>
-                                <li>Recupera 1 vida cada 10 aciertos</li>
-                                <li>Tensión equilibrada</li>
-                                <li>Fomenta la concentración</li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <!-- Modo Contrarreloj -->
-                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #FF5722; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">⏰ Modo Contrarreloj</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 1rem 0; font-weight: 500;">¡La adrenalina pura del conocimiento! Responde el máximo número de preguntas antes de que se agote el tiempo. ¿Cuál será tu mejor marca?</p>
-                        <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                            <img src="./Imagenes/Contrarreloj.png" alt="Modo Contrarreloj" style="width: 60px; height: 60px; object-fit: contain; flex-shrink: 0;">
-                            <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; flex: 1;">
-                                <li>Tiempo límite configurable</li>
-                                <li>Máxima velocidad mental</li>
-                                <li>Desafío contra el cronómetro</li>
-                                <li>Mejora tus reflejos</li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <!-- Por Niveles -->
-                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #9C27B0; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🏔️ Por Niveles</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 1rem 0; font-weight: 500;">¡Escala la montaña del conocimiento! Cada nivel tiene mayor dificultad y necesitas un mínimo de aciertos para avanzar. ¿Llegarás a la cima?</p>
-                        <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                            <img src="./Imagenes/Niveles.png" alt="Por Niveles" style="width: 60px; height: 60px; object-fit: contain; flex-shrink: 0;">
-                            <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; flex: 1;">
-                                <li>Dificultad progresiva</li>
-                                <li>Requisitos de avance</li>
-                                <li>Sensación de progreso</li>
-                                <li>Desbloquea nuevos desafíos</li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <!-- Racha de Aciertos -->
-                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #FF9800; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🔥 Racha de Aciertos</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 1rem 0; font-weight: 500;">¡Enciende tu racha y que no se apague! Tu objetivo es conseguir el mayor número de respuestas correctas consecutivas. Un solo error y... ¡vuelta a empezar!</p>
-                        <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                            <img src="./Imagenes/Racha.png" alt="Racha de Aciertos" style="width: 60px; height: 60px; object-fit: contain; flex-shrink: 0;">
-                            <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; flex: 1;">
-                                <li>Aciertos consecutivos</li>
-                                <li>Un error reinicia la racha</li>
-                                <li>Máxima concentración</li>
-                                <li>Superación personal</li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <!-- Examen Simulado -->
-                    <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #607D8B; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">📋 Examen Simulado</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 1rem 0; font-weight: 500;">¡La simulación más real! Preguntas fijas, tiempo límite y sin feedback hasta el final. Incluye penalización por fallos para máximo realismo.</p>
-                        <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                            <img src="./Imagenes/Examen.png" alt="Examen Simulado" style="width: 60px; height: 60px; object-fit: contain; flex-shrink: 0;">
-                            <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; flex: 1;">
-                                <li>Número fijo de preguntas</li>
-                                <li>Sin feedback hasta el final</li>
-                                <li>Penalización opcional</li>
-                                <li>Máximo realismo de examen</li>
-                            </ul>
+    <div id="game-modes-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 95%; max-width: 900px; max-height: 85vh; border: 1px solid #415A77; overflow-y: auto;" onclick="event.stopPropagation();">
+            <div style="padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h3 style="color: #E0E1DD; font-size: 24px; font-weight: bold; margin: 0;">🎮 Modalidades de Juego</h3>
+                    <button onclick="closeModal('game-modes-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
+                </div>
+            <div class="modal-body" style="padding: 1.5rem; line-height: 1.6; min-height: 400px;">
+                
+                <!-- Pantalla 1: Introducción -->
+                <div id="game-mode-screen-1" style="display: block; text-align: center;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px;">
+                        <h3 style="color: #FFB347; margin: 0 0 1rem 0; font-size: 1.5rem;">🎮 Modalidades de Juego</h3>
+                        <p style="color: #E0E1DD; font-size: 1.1rem; margin-bottom: 1.5rem;">"Elige tu camino hacia el conocimiento"</p>
+                        <div style="display: flex; justify-content: center; gap: 2rem; margin: 2rem 0;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎓</div>
+                                <p style="color: #FFB347; font-weight: bold; margin: 0;">ENTRENAMIENTO</p>
+                                <p style="color: #C7C8C4; font-size: 0.9rem; margin: 0;">6 Modalidades</p>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 3rem; margin-bottom: 0.5rem;">⚔️</div>
+                                <p style="color: #FFD700; font-weight: bold; margin: 0;">COMPETICIÓN</p>
+                                <p style="color: #C7C8C4; font-size: 0.9rem; margin: 0;">3 Modalidades</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Sección Competición -->
-                <div style="padding: 1.5rem; background: linear-gradient(135deg, #8B0000, #DC143C); border-radius: 12px; border-left: 4px solid #FFD700;">
-                    <h3 style="color: #FFD700; margin: 0 0 1rem 0; font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem;">
-                        ⚔️ COMPETICIÓN - ¡Demuestra quién manda!
-                    </h3>
-                    <p style="color: #E0E1DD; font-style: italic; margin-bottom: 1.5rem; font-size: 1rem;">"En la arena del conocimiento, solo los más preparados alcanzan la gloria"</p>
-                    
-                    <!-- Maratón -->
-                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #2196F3; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🏃‍♂️ Maratón</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 1rem 0; font-weight: 500;">¡La resistencia definitiva! Completa TODAS las preguntas del bloque. Los aciertos te dan tiempo extra, los fallos te lo quitan. ¿Tendrás la resistencia mental para llegar al final?</p>
-                        <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                            <img src="./Imagenes/Maraton.png" alt="Maratón" style="width: 60px; height: 60px; object-fit: contain; flex-shrink: 0;">
-                            <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; flex: 1;">
-                                <li>Todas las preguntas del bloque</li>
-                                <li>Aciertos suman tiempo</li>
-                                <li>Fallos restan tiempo</li>
-                                <li>Prueba de resistencia mental</li>
-                            </ul>
+
+                <!-- Pantalla 2: Sección Entrenamiento -->
+                <div id="game-mode-screen-2" style="display: none; text-align: center;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #2E5266, #415A77); border-radius: 12px; border-left: 4px solid #FFB347;">
+                        <h3 style="color: #FFB347; margin: 0 0 1rem 0; font-size: 1.3rem;">🎓 ENTRENAMIENTO</h3>
+                        <p style="color: #E0E1DD; font-style: italic; margin-bottom: 1.5rem; font-size: 1.1rem;">"Domina a tu ritmo"</p>
+                        <p style="color: #E0E1DD; font-style: italic; margin-bottom: 2rem;">"El conocimiento es poder, pero la práctica lo convierte en superpoder"</p>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1.5rem;">
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <div style="font-size: 2rem;">🧘‍♂️</div>
+                                <p style="color: #4CAF50; font-weight: bold; margin: 0;">Clásico</p>
+                            </div>
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <div style="font-size: 2rem;">💗</div>
+                                <p style="color: #E91E63; font-weight: bold; margin: 0;">Vidas</p>
+                            </div>
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <div style="font-size: 2rem;">⏰</div>
+                                <p style="color: #FF5722; font-weight: bold; margin: 0;">Contrarreloj</p>
+                            </div>
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <div style="font-size: 2rem;">🏔️</div>
+                                <p style="color: #9C27B0; font-weight: bold; margin: 0;">Por Niveles</p>
+                            </div>
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <div style="font-size: 2rem;">🔥</div>
+                                <p style="color: #FF9800; font-weight: bold; margin: 0;">Racha</p>
+                            </div>
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <div style="font-size: 2rem;">📋</div>
+                                <p style="color: #607D8B; font-weight: bold; margin: 0;">Examen</p>
+                            </div>
                         </div>
                     </div>
-                    
-                    <!-- Duelo -->
-                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #F44336; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">⚔️ Duelo</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 1rem 0; font-weight: 500;">¡Mano a mano, cerebro a cerebro! Dos jugadores se enfrentan por turnos. Ganas puntos por acierto y velocidad. ¡El más rápido y certero se lleva la victoria!</p>
-                        <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                            <img src="./Imagenes/Duelo.png" alt="Duelo" style="width: 60px; height: 60px; object-fit: contain; flex-shrink: 0;">
-                            <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; flex: 1;">
-                                <li>1 vs 1 por turnos</li>
-                                <li>Puntos por acierto y rapidez</li>
-                                <li>Tensión máxima</li>
-                                <li>Sistema de retos</li>
-                            </ul>
+                </div>
+
+                <!-- Pantalla 3: Modo Clásico -->
+                <div id="game-mode-screen-3" style="display: none;">
+                    <div style="padding: 2rem; background: rgba(76, 175, 80, 0.1); border-radius: 12px; border-left: 4px solid #4CAF50;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <h3 style="color: #4CAF50; margin: 0; font-size: 1.5rem;">Modo Clásico</h3>
+                        </div>
+                        <p style="color: #E0E1DD; font-weight: 500; text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem;">¡El zen del estudio! Responde a tu ritmo con feedback instantáneo. Perfecto para aprender sin presión y consolidar conocimientos de forma relajada.</p>
+                        <div style="background: rgba(224, 225, 221, 0.1); padding: 1.5rem; border-radius: 8px; display: flex; align-items: flex-start; gap: 1.5rem;">
+                            <img src="./Imagenes/Clasico.png" alt="Modo Clásico" style="width: 80px; height: 80px; object-fit: contain; flex-shrink: 0;">
+                            <div style="flex: 1;">
+                                <h4 style="color: #4CAF50; margin: 0 0 1rem 0;">Características:</h4>
+                                <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; list-style-type: none;">
+                                    <li style="margin-bottom: 0.5rem;">✓ Sin límite de tiempo</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Feedback inmediato en cada respuesta</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Ideal para estudio tranquilo</li>
+                                    <li>✓ Perfecto para principiantes</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                    
-                    <!-- Trivial -->
-                    <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #795548; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🧩 Trivial</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 1rem 0; font-weight: 500;">¡El clásico reinventado! Consigue "fichas" (quesitos) de diferentes temas para completar tu medallón. El primero en conseguir todas las fichas... ¡se corona campeón!</p>
-                        <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                            <img src="./Imagenes/Trivia.png" alt="Trivial" style="width: 60px; height: 60px; object-fit: contain; flex-shrink: 0;">
-                            <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; flex: 1;">
-                                <li>Fichas por tema</li>
-                                <li>Estrategia de temas</li>
-                                <li>Competición épica</li>
-                                <li>Victoria por completar medallón</li>
-                            </ul>
+                </div>
+
+                <!-- Pantalla 4: Modo Vidas -->
+                <div id="game-mode-screen-4" style="display: none;">
+                    <div style="padding: 2rem; background: rgba(233, 30, 99, 0.1); border-radius: 12px; border-left: 4px solid #E91E63;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <h3 style="color: #E91E63; margin: 0; font-size: 1.5rem;">Modo Vidas</h3>
+                        </div>
+                        <p style="color: #E0E1DD; font-weight: 500; text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem;">¡Como un videojuego clásico! Empiezas con 5 vidas y cada error te cuesta una. Pero no te preocupes: ¡cada racha de 10 aciertos te devuelve una vida!</p>
+                        <div style="background: rgba(224, 225, 221, 0.1); padding: 1.5rem; border-radius: 8px; display: flex; align-items: flex-start; gap: 1.5rem;">
+                            <img src="./Imagenes/Vidas.png" alt="Modo Vidas" style="width: 80px; height: 80px; object-fit: contain; flex-shrink: 0;">
+                            <div style="flex: 1;">
+                                <h4 style="color: #E91E63; margin: 0 0 1rem 0;">Características:</h4>
+                                <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; list-style-type: none;">
+                                    <li style="margin-bottom: 0.5rem;">✓ 5 vidas iniciales</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Recupera 1 vida cada 10 aciertos</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Tensión equilibrada</li>
+                                    <li>✓ Fomenta la concentración</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Pantalla 5: Modo Contrarreloj -->
+                <div id="game-mode-screen-5" style="display: none;">
+                    <div style="padding: 2rem; background: rgba(255, 87, 34, 0.1); border-radius: 12px; border-left: 4px solid #FF5722;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <h3 style="color: #FF5722; margin: 0; font-size: 1.5rem;">Modo Contrarreloj</h3>
+                        </div>
+                        <p style="color: #E0E1DD; font-weight: 500; text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem;">¡La adrenalina pura del conocimiento! Responde el máximo número de preguntas antes de que se agote el tiempo. ¿Cuál será tu mejor marca?</p>
+                        <div style="background: rgba(224, 225, 221, 0.1); padding: 1.5rem; border-radius: 8px; display: flex; align-items: flex-start; gap: 1.5rem;">
+                            <img src="./Imagenes/Contrarreloj.png" alt="Modo Contrarreloj" style="width: 80px; height: 80px; object-fit: contain; flex-shrink: 0;">
+                            <div style="flex: 1;">
+                                <h4 style="color: #FF5722; margin: 0 0 1rem 0;">Características:</h4>
+                                <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; list-style-type: none;">
+                                    <li style="margin-bottom: 0.5rem;">✓ Tiempo límite configurable</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Máxima velocidad mental</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Desafío contra el cronómetro</li>
+                                    <li>✓ Mejora tus reflejos</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 6: Modo Por Niveles -->
+                <div id="game-mode-screen-6" style="display: none;">
+                    <div style="padding: 2rem; background: rgba(156, 39, 176, 0.1); border-radius: 12px; border-left: 4px solid #9C27B0;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <h3 style="color: #9C27B0; margin: 0; font-size: 1.5rem;">Por Niveles</h3>
+                        </div>
+                        <p style="color: #E0E1DD; font-weight: 500; text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem;">¡Escala la montaña del conocimiento! Cada nivel tiene mayor dificultad y necesitas un mínimo de aciertos para avanzar. ¿Llegarás a la cima?</p>
+                        <div style="background: rgba(224, 225, 221, 0.1); padding: 1.5rem; border-radius: 8px; display: flex; align-items: flex-start; gap: 1.5rem;">
+                            <img src="./Imagenes/Niveles.png" alt="Por Niveles" style="width: 80px; height: 80px; object-fit: contain; flex-shrink: 0;">
+                            <div style="flex: 1;">
+                                <h4 style="color: #9C27B0; margin: 0 0 1rem 0;">Características:</h4>
+                                <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; list-style-type: none;">
+                                    <li style="margin-bottom: 0.5rem;">✓ Dificultad progresiva</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Requisitos de avance</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Sensación de progreso</li>
+                                    <li>✓ Desbloquea nuevos desafíos</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 7: Modo Racha de Aciertos -->
+                <div id="game-mode-screen-7" style="display: none;">
+                    <div style="padding: 2rem; background: rgba(255, 152, 0, 0.1); border-radius: 12px; border-left: 4px solid #FF9800;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <h3 style="color: #FF9800; margin: 0; font-size: 1.5rem;">Racha de Aciertos</h3>
+                        </div>
+                        <p style="color: #E0E1DD; font-weight: 500; text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem;">¡Enciende tu racha y que no se apague! Tu objetivo es conseguir el mayor número de respuestas correctas consecutivas. Un solo error y... ¡vuelta a empezar!</p>
+                        <div style="background: rgba(224, 225, 221, 0.1); padding: 1.5rem; border-radius: 8px; display: flex; align-items: flex-start; gap: 1.5rem;">
+                            <img src="./Imagenes/Racha.png" alt="Racha de Aciertos" style="width: 80px; height: 80px; object-fit: contain; flex-shrink: 0;">
+                            <div style="flex: 1;">
+                                <h4 style="color: #FF9800; margin: 0 0 1rem 0;">Características:</h4>
+                                <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; list-style-type: none;">
+                                    <li style="margin-bottom: 0.5rem;">✓ Aciertos consecutivos</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Un error reinicia la racha</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Máxima concentración</li>
+                                    <li>✓ Superación personal</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 8: Modo Examen Simulado -->
+                <div id="game-mode-screen-8" style="display: none;">
+                    <div style="padding: 2rem; background: rgba(96, 125, 139, 0.1); border-radius: 12px; border-left: 4px solid #607D8B;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <h3 style="color: #607D8B; margin: 0; font-size: 1.5rem;">Examen Simulado</h3>
+                        </div>
+                        <p style="color: #E0E1DD; font-weight: 500; text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem;">¡La simulación más real! Preguntas fijas, tiempo límite y sin feedback hasta el final. Incluye penalización por fallos para máximo realismo.</p>
+                        <div style="background: rgba(224, 225, 221, 0.1); padding: 1.5rem; border-radius: 8px; display: flex; align-items: flex-start; gap: 1.5rem;">
+                            <img src="./Imagenes/Examen.png" alt="Examen Simulado" style="width: 80px; height: 80px; object-fit: contain; flex-shrink: 0;">
+                            <div style="flex: 1;">
+                                <h4 style="color: #607D8B; margin: 0 0 1rem 0;">Características:</h4>
+                                <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; list-style-type: none;">
+                                    <li style="margin-bottom: 0.5rem;">✓ Número fijo de preguntas</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Sin feedback hasta el final</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Penalización opcional</li>
+                                    <li>✓ Máximo realismo de examen</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 9: Sección Competición -->
+                <div id="game-mode-screen-9" style="display: none; text-align: center;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #8B0000, #DC143C); border-radius: 12px; border-left: 4px solid #FFD700;">
+                        <h3 style="color: #FFD700; margin: 0 0 1rem 0; font-size: 1.3rem;">⚔️ COMPETICIÓN</h3>
+                        <p style="color: #E0E1DD; font-style: italic; margin-bottom: 1rem; font-size: 1.1rem;">"¡Demuestra quién manda!"</p>
+                        <p style="color: #E0E1DD; font-style: italic; margin-bottom: 2rem;">"En la arena del conocimiento, solo los más preparados alcanzan la gloria"</p>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem;">
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏃‍♂️</div>
+                                <p style="color: #2196F3; font-weight: bold; margin: 0;">Maratón</p>
+                                <p style="color: #C7C8C4; font-size: 0.8rem; margin: 0.5rem 0 0 0;">Resistencia</p>
+                            </div>
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚔️</div>
+                                <p style="color: #F44336; font-weight: bold; margin: 0;">Duelo</p>
+                                <p style="color: #C7C8C4; font-size: 0.8rem; margin: 0.5rem 0 0 0;">1 vs 1</p>
+                            </div>
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🧩</div>
+                                <p style="color: #795548; font-weight: bold; margin: 0;">Trivial</p>
+                                <p style="color: #C7C8C4; font-size: 0.8rem; margin: 0.5rem 0 0 0;">Estrategia</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 10: Maratón -->
+                <div id="game-mode-screen-10" style="display: none;">
+                    <div style="padding: 2rem; background: rgba(33, 150, 243, 0.1); border-radius: 12px; border-left: 4px solid #2196F3;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <h3 style="color: #2196F3; margin: 0; font-size: 1.5rem;">🏃‍♂️ Maratón</h3>
+                        </div>
+                        <p style="color: #E0E1DD; font-weight: 500; text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem;">¡La resistencia definitiva! Completa TODAS las preguntas del bloque. Los aciertos te dan tiempo extra, los fallos te lo quitan. ¿Tendrás la resistencia mental para llegar al final?</p>
+                        <div style="background: rgba(224, 225, 221, 0.1); padding: 1.5rem; border-radius: 8px; display: flex; align-items: flex-start; gap: 1.5rem;">
+                            <img src="./Imagenes/Maraton.png" alt="Maratón" style="width: 80px; height: 80px; object-fit: contain; flex-shrink: 0;">
+                            <div style="flex: 1;">
+                                <h4 style="color: #2196F3; margin: 0 0 1rem 0;">Características:</h4>
+                                <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; list-style-type: none;">
+                                    <li style="margin-bottom: 0.5rem;">✓ Todas las preguntas del bloque</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Aciertos suman tiempo</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Fallos restan tiempo</li>
+                                    <li>✓ Prueba de resistencia mental</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 11: Duelo -->
+                <div id="game-mode-screen-11" style="display: none;">
+                    <div style="padding: 2rem; background: rgba(244, 67, 54, 0.1); border-radius: 12px; border-left: 4px solid #F44336;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <h3 style="color: #F44336; margin: 0; font-size: 1.5rem;">⚔️ Duelo</h3>
+                        </div>
+                        <p style="color: #E0E1DD; font-weight: 500; text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem;">¡Mano a mano, cerebro a cerebro! Dos jugadores se enfrentan por turnos. Ganas puntos por acierto y velocidad. ¡El más rápido y certero se lleva la victoria!</p>
+                        <div style="background: rgba(224, 225, 221, 0.1); padding: 1.5rem; border-radius: 8px; display: flex; align-items: flex-start; gap: 1.5rem;">
+                            <img src="./Imagenes/Duelo.png" alt="Duelo" style="width: 80px; height: 80px; object-fit: contain; flex-shrink: 0;">
+                            <div style="flex: 1;">
+                                <h4 style="color: #F44336; margin: 0 0 1rem 0;">Características:</h4>
+                                <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; list-style-type: none;">
+                                    <li style="margin-bottom: 0.5rem;">✓ 1 vs 1 por turnos</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Puntos por acierto y rapidez</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Tensión máxima</li>
+                                    <li>✓ Sistema de retos</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 12: Trivial -->
+                <div id="game-mode-screen-12" style="display: none;">
+                    <div style="padding: 2rem; background: rgba(121, 85, 72, 0.1); border-radius: 12px; border-left: 4px solid #795548;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <h3 style="color: #795548; margin: 0; font-size: 1.5rem;">🧩 Trivial</h3>
+                        </div>
+                        <p style="color: #E0E1DD; font-weight: 500; text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem;">¡El clásico reinventado! Consigue "fichas" (quesitos) de diferentes temas para completar tu medallón. El primero en conseguir todas las fichas... ¡se corona campeón!</p>
+                        <div style="background: rgba(224, 225, 221, 0.1); padding: 1.5rem; border-radius: 8px; display: flex; align-items: flex-start; gap: 1.5rem;">
+                            <img src="./Imagenes/Trivia.png" alt="Trivial" style="width: 80px; height: 80px; object-fit: contain; flex-shrink: 0;">
+                            <div style="flex: 1;">
+                                <h4 style="color: #795548; margin: 0 0 1rem 0;">Características:</h4>
+                                <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; list-style-type: none;">
+                                    <li style="margin-bottom: 0.5rem;">✓ Fichas por tema</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Estrategia de temas</li>
+                                    <li style="margin-bottom: 0.5rem;">✓ Competición épica</li>
+                                    <li>✓ Victoria por completar medallón</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navegación -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #415A77;">
+                    <button id="game-modes-prev-btn" onclick="previousGameModeScreen()" style="padding: 8px 16px; background: #415A77; color: #E0E1DD; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; display: none;">← Anterior</button>
+                    <span id="game-modes-counter" style="color: #778DA9; font-weight: 500;">1 / 12</span>
+                    <button id="game-modes-next-btn" onclick="nextGameModeScreen()" style="padding: 8px 16px; background: #3B82F6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Siguiente →</button>
                 </div>
             </div>
         </div>
