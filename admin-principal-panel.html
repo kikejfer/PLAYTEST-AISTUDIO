@@ -862,20 +862,41 @@
                     const userData = JSON.parse(jsonPayload);
                     currentUser = userData;
                     
-                    // Update UI
-                    document.getElementById('user-name').textContent = userData.nickname || userData.username || userData.email || 'Administrador';
-                    document.getElementById('user-avatar').textContent = (userData.nickname || userData.username || userData.email || 'A')[0].toUpperCase();
+                    // Update UI (verificar que los elementos existan)
+                    const userNameElement = document.getElementById('user-name');
+                    const userAvatarElement = document.getElementById('user-avatar');
+                    
+                    if (userNameElement) {
+                        userNameElement.textContent = userData.nickname || userData.username || userData.email || 'Administrador';
+                    }
+                    if (userAvatarElement) {
+                        userAvatarElement.textContent = (userData.nickname || userData.username || userData.email || 'A')[0].toUpperCase();
+                    }
                     
                 } catch (tokenError) {
                     // If token decode fails, use fallback
-                    document.getElementById('user-name').textContent = 'Administrador Principal';
-                    document.getElementById('user-avatar').textContent = 'A';
+                    const userNameElement = document.getElementById('user-name');
+                    const userAvatarElement = document.getElementById('user-avatar');
+                    
+                    if (userNameElement) {
+                        userNameElement.textContent = 'Administrador Principal';
+                    }
+                    if (userAvatarElement) {
+                        userAvatarElement.textContent = 'A';
+                    }
                 }
                 
             } catch (error) {
                 console.error('Error loading user data:', error);
-                document.getElementById('user-name').textContent = 'Administrador Principal';
-                document.getElementById('user-avatar').textContent = 'A';
+                const userNameElement = document.getElementById('user-name');
+                const userAvatarElement = document.getElementById('user-avatar');
+                
+                if (userNameElement) {
+                    userNameElement.textContent = 'Administrador Principal';
+                }
+                if (userAvatarElement) {
+                    userAvatarElement.textContent = 'A';
+                }
             }
         }
 
@@ -2359,7 +2380,10 @@ Total elementos eliminados: ${result.total_deleted}`);
                     showSuccess('Datos actualizados correctamente');
                     closeModal('profile-modal');
                     // Actualizar el nombre en el header
-                    document.getElementById('user-name').textContent = formData.nickname;
+                    const userNameElement = document.getElementById('user-name');
+                    if (userNameElement) {
+                        userNameElement.textContent = formData.nickname;
+                    }
                 } else {
                     showError('Error al actualizar los datos');
                 }

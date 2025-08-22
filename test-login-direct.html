@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login Directo - PLAYTEST</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #0D1B2A; 
+            color: #E0E1DD; 
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 500px; 
+            margin: 0 auto; 
+            background: #1B263B; 
+            padding: 20px; 
+            border-radius: 8px; 
+        }
+        input { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border: 1px solid #415A77; 
+            background: #0D1B2A; 
+            color: #E0E1DD; 
+            border-radius: 4px; 
+        }
+        button { 
+            background: #3B82F6; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px; 
+        }
+        button:hover { background: #2563EB; }
+        .status { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+        }
+        .success { background: #065F46; border: 1px solid #10B981; }
+        .error { background: #7F1D1D; border: 1px solid #EF4444; }
+        .info { background: #1E3A8A; border: 1px solid #3B82F6; }
+        pre { background: #0D1B2A; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Test Login Directo</h1>
+        <p>Conecta directamente con tu backend de Render para probar el login.</p>
+        
+        <div id="backend-status" class="status info">
+            Verificando estado del backend...
+        </div>
+        
+        <form id="login-form">
+            <h3>Iniciar Sesión</h3>
+            <input type="text" id="nickname" placeholder="Nickname" required>
+            <input type="password" id="password" placeholder="Contraseña" required>
+            <button type="submit">🚀 Login</button>
+        </form>
+        
+        <div style="margin-top: 20px;">
+            <button onclick="testBackend()">🔍 Test Backend</button>
+            <button onclick="createTestUser()">👤 Crear Usuario Test</button>
+            <button onclick="checkTokens()">🎫 Verificar Tokens</button>
+            <button onclick="clearStorage()">🧹 Limpiar Storage</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://playtest-backend.onrender.com/api';
+        
+        function showResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+        
+        // Test login form
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nickname = document.getElementById('nickname').value;
+            const password = document.getElementById('password').value;
+            
+            showResult('🔐 Intentando login...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nickname, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    // Guardar token
+                    localStorage.setItem('playtest_auth_token', data.token);
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('playtest_session', JSON.stringify({
+                        userId: data.user.id,
+                        nickname: data.user.nickname
+                    }));
+                    
+                    showResult(`✅ Login exitoso!<br>Usuario: ${data.user.nickname}<br>Token guardado en localStorage`, 'success');
+                    
+                    // Decodificar y mostrar token
+                    try {
+                        const payload = JSON.parse(atob(data.token.split('.')[1]));
+                        showResult(`🎫 Token JWT decodificado:<br><pre>${JSON.stringify(payload, null, 2)}</pre>`, 'success');
+                    } catch (err) {
+                        showResult('⚠️ No se pudo decodificar el token JWT', 'error');
+                    }
+                    
+                } else {
+                    showResult(`❌ Error de login: ${data.error || data.message || 'Credenciales inválidas'}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Error de conexión: ${error.message}`, 'error');
+            }
+        });
+        
+        // Test backend connectivity
+        async function testBackend() {
+            showResult('🔍 Probando conectividad con backend...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/blocks`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult(`✅ Backend responde correctamente<br>Bloques encontrados: ${data.length}`, 'success');
+                } else {
+                    showResult(`⚠️ Backend responde con error: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ No se puede conectar al backend: ${error.message}`, 'error');
+            }
+        }
+        
+        // Create test user
+        async function createTestUser() {
+            const nickname = `test_${Date.now()}`;
+            const password = 'test123';
+            
+            showResult(`👤 Creando usuario de prueba: ${nickname}`, 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nickname,
+                        password,
+                        email: `${nickname}@test.com`,
+                        firstName: 'Test',
+                        lastName: 'User'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    showResult(`✅ Usuario creado exitosamente!<br>Nickname: ${nickname}<br>Password: ${password}`, 'success');
+                    
+                    // Auto-fill form
+                    document.getElementById('nickname').value = nickname;
+                    document.getElementById('password').value = password;
+                } else {
+                    showResult(`❌ Error creando usuario: ${data.error || data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Error de conexión: ${error.message}`, 'error');
+            }
+        }
+        
+        // Check existing tokens
+        function checkTokens() {
+            const token1 = localStorage.getItem('playtest_auth_token');
+            const token2 = localStorage.getItem('authToken');
+            const session = localStorage.getItem('playtest_session');
+            
+            showResult(`🎫 Estado actual de tokens:<br>
+                playtest_auth_token: ${token1 ? '✅ Presente' : '❌ Ausente'}<br>
+                authToken: ${token2 ? '✅ Presente' : '❌ Ausente'}<br>
+                playtest_session: ${session ? '✅ Presente' : '❌ Ausente'}`, 'info');
+                
+            if (token1) {
+                try {
+                    const payload = JSON.parse(atob(token1.split('.')[1]));
+                    showResult(`🔍 Contenido del token:<br><pre>${JSON.stringify(payload, null, 2)}</pre>`, 'info');
+                } catch (err) {
+                    showResult('❌ Error decodificando token', 'error');
+                }
+            }
+        }
+        
+        // Clear localStorage
+        function clearStorage() {
+            localStorage.removeItem('playtest_auth_token');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('playtest_session');
+            localStorage.removeItem('activeRole');
+            showResult('🧹 LocalStorage limpiado', 'info');
+        }
+        
+        // Check backend status on load
+        window.addEventListener('load', () => {
+            testBackend();
+            checkTokens();
+        });
+    </script>
+</body>
+</html>

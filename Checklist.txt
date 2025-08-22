@@ -1,0 +1,117 @@
+# ✅ Checklist Completo del Proyecto PLAYTEST
+
+Este documento proporciona un checklist detallado de todas las funcionalidades implementadas en el proyecto PLAYTEST, junto con una estimación de tiempo para su **implementación** técnica y funcional.
+
+**Estimación Total de Implementación**: ~270 horas (~34 días-hombre)
+
+---
+
+## 1. Sistemas Centrales (Core Systems) - (Tiempo estimado: 29 horas)
+
+| Funcionalidad | Archivos Clave | Estado | Tiempo Estimado (Implementación) | Sub-funcionalidades a Comprobar |
+|---|---|---|---|---|
+| **Autenticación de Usuarios** | `index.html`, `api-data-service.js` | ✅ | 8 horas | - Formularios de Registro y Login con validación.<br>- "Recordar sesión" y manejo de tokens JWT.<br>- Logout y limpieza de sesión.<br>- Manejo de errores (credenciales incorrectas, nickname en uso). |
+| **Redirección por Rol** | `index.html` (AuthController) | ✅ | 3 horas | - Redirección automática para Admin Principal.<br>- Redirección automática para Admin Secundario.<br>- No redirección para otros roles (panel de juego por defecto). |
+| **Selección de Roles Múltiples**| `index.html` (RoleSelectionModal) | ✅ | 4 horas | - El modal aparece para usuarios nuevos o sin roles definidos.<br>- Permite selección múltiple de roles.<br>- Los roles se guardan correctamente al continuar.<br>- Asigna rol "jugador" por defecto si se omite. |
+| **Servicio de Datos (API)** | `api-data-service.js` | ✅ | 6 horas | - Correcta implementación de todas las llamadas al backend.<br>- Manejo de errores de red y de API (status 4xx, 5xx).<br>- Inyección del token de autenticación en las cabeceras. |
+| **Sistema Persistente** | `persistent-system-init.js`, `persistent-api-service.js` | ✅ | 4 horas | - Detección automática del entorno (local vs. Render).<br>- Conexión correcta a la URL del backend de producción.<br>- Mecanismos de fallback (si aplica). |
+| **Migración de Datos** | `data-migration-client.js` | ✅ | 2 horas | - Detección de datos en `localStorage` en el primer login.<br>- Migración exitosa de los datos al backend.<br>- Marcado local de la migración para evitar ejecuciones repetidas. |
+| **Internacionalización (i18n)**| (Incrustado en cada archivo HTML) | ✅ | 2 horas | - Funcionalidad para cambiar entre Español e Inglés.<br>- Verificación de que todas las cadenas de texto están traducidas. |
+
+---
+
+## 2. 🎮 Modalidades de Juego (Tiempo estimado: 57 horas)
+
+| Funcionalidad | Archivos Clave | Estado | Tiempo Estimado (Implementación) | Sub-funcionalidades a Comprobar |
+|---|---|---|---|---|
+| **Configuración de Partida** | `index.html` (GameSetup) | ✅ | 8 horas | - UI para seleccionar modalidad, bloques y temas.<br>- Funcionalidad del modal para configurar temas.<br>- UI para retar a usuarios en modos competitivos. |
+| **Panel de Partidas Activas**| `index.html` (ActiveGames), `all-games.html` | ✅ | 6 horas | - Listado correcto de partidas en curso.<br>- Listado y gestión de retos pendientes.<br>- Navegación correcta a las partidas. |
+| **Hub de Partida** | `active-game.html` | ✅ | 5 horas | - Muestra la información correcta de la partida.<br>- El botón de empezar redirige al juego correcto. |
+| **Modo Clásico** | `game-classic.html` | ✅ | 4 horas | - Flujo de pregunta y respuesta.<br>- Feedback inmediato (correcto/incorrecto).<br>- Cálculo y guardado de puntuación. |
+| **Modo Contrarreloj** | `game-time-trial.html` | ✅ | 3 horas | - El temporizador funciona correctamente.<br>- El juego termina cuando el tiempo llega a cero.<br>- Guardado de puntuación. |
+| **Modo Vidas** | `game-lives.html` | ✅ | 3 horas | - El contador de vidas decrementa con errores.<br>- Se gana una vida cada 10 aciertos seguidos.<br>- El juego termina al llegar a 0 vidas. |
+| **Modo Por Niveles** | `game-by-levels.html` | ✅ | 5 horas | - Progresión correcta a través de los niveles.<br>- Requisitos de aciertos por nivel funcionan.<br>- La dificultad de las preguntas aumenta. |
+| **Modo Racha** | `game-streak.html` | ✅ | 3 horas | - El contador de racha incrementa con aciertos.<br>- La racha se reinicia con un error.<br>- Se guarda la racha máxima al finalizar. |
+| **Modo Examen** | `game-exam.html` | ✅ | 6 horas | - El número de preguntas es el seleccionado.<br>- El temporizador funciona.<br>- El cálculo de la nota con penalización es correcto.<br>- No hay feedback hasta el final. |
+| **Modo Duelo** | `game-duel.html` | ✅ | 8 horas | - Lógica de turnos entre jugadores.<br>- Puntuación por acierto y rapidez.<br>- Declaración correcta del ganador. |
+| **Modo Trivial** | `game-trivial.html` | ✅ | 10 horas| - Ruleta funcional.<br>- Lógica de obtención y seguimiento de "fichas".<br>- Condición de victoria al completar todas las fichas. |
+| **Modo Maratón** | `game-marathon.html` | ✅ | 4 horas| - Bonus de tiempo por acierto.<br>- Penalización de tiempo por error.<br>- El juego finaliza correctamente. |
+| **Rankings** | `active-game.html` (componentes) | ✅ | 2 horas | - Cada modalidad muestra su ranking correspondiente.<br>- Las puntuaciones están ordenadas correctamente. |
+
+---
+
+## 3. 🎨 Gestión de Contenido (Paneles de Creador) - (Tiempo estimado: 41 horas)
+
+| Funcionalidad | Archivos Clave | Estado | Tiempo Estimado (Implementación) | Sub-funcionalidades a Comprobar |
+|---|---|---|---|---|
+| **Creación de Preguntas** | `add-question.html` | ✅ | 12 horas | - Pestaña Generador IA: Valida API key y genera preguntas.<br>- Pestaña Subir Fichero: Parsea el formato TXT correctamente.<br>- Pestaña Manual: Valida y guarda la pregunta. |
+| **Gestión de Bloques (Admin)** | `all-blocks.html` | ✅ | 8 horas | - Ver, editar y eliminar bloques (con confirmación).<br>- Desplegar temas y preguntas de un bloque.<br>- Filtrar por categorías (General, Público, Privado). |
+| **Vista de Preguntas** | `block-questions.html` | ✅ | 4 horas | - Filtrar preguntas por tema.<br>- Editar el texto, respuestas y explicación de una pregunta.<br>- Eliminar preguntas individuales. |
+| **Búsqueda/Vista Previa Bloque**| `block-search.html`, `block-preview.html` | ✅ | 6 horas | - La búsqueda avanzada filtra correctamente.<br>- El modal de vista previa muestra todos los metadatos. |
+| **Paneles de Creador (x5)**| `creators-panel-*.html` | ✅ | 11 horas | - Navegación correcta entre los 5 paneles.<br>- Cada panel carga y muestra sus datos específicos.<br>- Funcionalidad básica de cada panel (ej. crear campaña). |
+
+---
+
+## 4. ⚙️ Paneles de Administración - (Tiempo estimado: 46 horas)
+
+| Funcionalidad | Archivos Clave | Estado | Tiempo Estimado (Implementación) | Sub-funcionalidades a Comprobar |
+|---|---|---|---|---|
+| **Panel Admin Principal** | `admin-principal-panel.html` | ✅ | 10 horas | - Todas las secciones cargan los datos correctos.<br>- Asignar/reasignar admins funciona.<br>- Las vistas expandibles cargan datos anidados. |
+| **Panel Admin Secundario**| `admin-secundario-panel.html` | ✅ | 6 horas | - Solo se muestran los usuarios asignados.<br>- Las acciones restringidas (reasignar) están deshabilitadas. |
+| **Gestión de Feature Flags** | `feature-flags-admin-panel.html` y JS | ✅ | 8 horas | - Activar/desactivar flags.<br>- Comprobar dependencias entre flags.<br>- Interfaz de A/B testing. |
+| **Gestión de Retos** | `challenges-management-panel.html` | ✅ | 5 horas | - El asistente de creación de retos funciona.<br>- Se pueden monitorizar los retos activos. |
+| **Panel de Retos de Usuario**| `challenges-user-panel.html` | ✅ | 5 horas | - Ver retos disponibles.<br>- Unirse a un reto.<br>- Seguir el progreso en los retos activos. |
+| **Gestión de Luminarias (x4)** | `luminarias-*.html` | ✅ | 12 horas | - **Admin:** Configurar valores y ver estadísticas.<br>- **Usuario:** Solicitar conversión, ver historial, usar tienda/marketplace. |
+
+---
+
+## 5. 👨‍🏫 Paneles de Profesor - (Tiempo estimado: 20 horas)
+
+| Funcionalidad | Archivos Clave | Estado | Tiempo Estimado (Implementación) | Sub-funcionalidades a Comprobar |
+|---|---|---|---|---|
+| **Gestión de Alumnos y Clases** | `teachers-panel-students.html` | ✅ | 8 horas | - Crear y editar clases.<br>- Generar y usar códigos de inscripción.<br>- Ver y editar perfiles académicos de alumnos. |
+| **Cronogramas Académicos** | `teachers-panel-schedules.html` | ✅ | 7 horas | - Crear cronogramas con fechas y objetivos.<br>- Asignar contenido del temario al cronograma.<br>- Planificar evaluaciones. |
+| **Suite de Paneles (Analytics, etc.)**| `teachers-panel-*.html` | ✅ | 5 horas | - Navegación correcta a los paneles de Analytics, Intervenciones y Recursos.<br>- Carga de datos inicial en cada panel. |
+
+---
+
+## 6. 💰 Sistema de Luminarias (Monetización) - (Tiempo estimado: 25 horas)
+
+| Funcionalidad | Archivos Clave | Estado | Tiempo Estimado (Implementación) | Sub-funcionalidades a Comprobar |
+|---|---|---|---|---|
+| **Admin. de Luminarias** | `luminarias-admin.html` | ✅ | 6 horas | - Se pueden actualizar los valores de configuración.<br>- Las estadísticas globales son precisas.<br>- La gestión de conversiones funciona. |
+| **Conversión a Dinero Real**| `luminarias-conversion.html` | ✅ | 7 horas | - La comprobación de elegibilidad (nivel Maestro+) es correcta.<br>- El formulario de solicitud y cálculo funcionan.<br>- Las solicitudes aparecen en el panel de admin. |
+| **Historial de Transacciones** | `luminarias-history.html` | ✅ | 5 horas | - Se registran todos los tipos de transacciones.<br>- Los filtros funcionan correctamente. |
+| **Tienda y Marketplace** | `luminarias-store.html`, `luminarias-marketplace.html`| ✅ | 7 horas | - Se pueden ver los ítems/servicios.<br>- La lógica de compra y deducción de Luminarias funciona. |
+
+---
+
+## 7. 📊 Ayuda al Estudio y Estadísticas - (Tiempo estimado: 8 horas)
+
+| Funcionalidad | Archivos Clave | Estado | Tiempo Estimado (Implementación) | Sub-funcionalidades a Comprobar |
+|---|---|---|---|---|
+| **Estadísticas de Bloque** | `index.html` (StatisticsModal) | ✅ | 5 horas | - El modal se abre con los datos del bloque correcto.<br>- La matriz de historial de respuestas es precisa.<br>- Se puede expandir para ver el texto de la pregunta. |
+| **Historial de Partidas** | `index.html` (GameHistory) | ✅ | 3 horas | - La tabla lista todas las partidas finalizadas.<br>- Los datos (puntuación, fecha, etc.) son correctos. |
+
+---
+
+## 8. 📞 Sistema de Soporte - (Tiempo estimado: 38 horas)
+
+| Funcionalidad | Archivos Clave | Estado | Tiempo Estimado (Implementación) | Sub-funcionalidades a Comprobar |
+|---|---|---|---|---|
+| **Formulario de Soporte** | `support-form.html` | ✅ | 6 horas | - Detección de contexto (global/bloque).<br>- Carga de categorías y adjuntos.<br>- El ticket se crea y asigna correctamente. |
+| **Lista de Tickets** | `tickets-list.html` | ✅ | 5 horas | - El usuario ve sus tickets.<br>- Los filtros funcionan.<br>- Las notificaciones de nuevos mensajes son visibles. |
+| **Chat de Tickets** | `ticket-chat.html` | ✅ | 12 horas| - Carga de historial de mensajes.<br>- Envío y recepción de mensajes en tiempo real (polling).<br>- Notas internas y cambio de estado para admins. |
+| **Dashboard de Soporte** | `support-dashboard.html` | ✅ | 5 horas | - Las métricas KPI se cargan y son precisas.<br>- Las alertas del sistema se muestran correctamente. |
+| **Analytics de Soporte** | `support-analytics.html` | ✅ | 5 horas | - Los gráficos se generan con datos correctos.<br>- La generación de reportes funciona. |
+| **Base de Conocimiento** | `support-knowledge.html` | ✅ | 5 horas | - Crear, editar y ver artículos.<br>- La búsqueda de artículos funciona. |
+
+---
+
+## 9. 📄 Documentación y Configuración - (Tiempo estimado: 5 horas)
+
+| Elemento | Archivo/s Clave | Estado | Tiempo Estimado (Implementación) | Sub-funcionalidades a Comprobar |
+|---|---|---|---|---|
+| **Configuración de Vite** | `vite.config.ts` | ✅ | 1 hora | - `process.env.API_KEY` se inyecta correctamente y está disponible. |
+| **Dependencias del Proyecto** | `package.json`, `package-lock.json` | ✅ | 1 hora | - `npm install` instala todas las dependencias sin errores.<br>- `npm run dev` inicia el servidor de desarrollo. |
+| **Guías y Documentación** | Varios archivos `.md` | ✅ | 3 horas | - Revisar todos los archivos `.md` para asegurar que la información técnica y las guías de uso están actualizadas y son claras. |

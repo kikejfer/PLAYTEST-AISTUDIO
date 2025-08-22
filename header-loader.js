@@ -4,37 +4,34 @@
  */
 
 // Configuración de los paneles (solo declarar si no existe)
-const PANEL_CONFIGS = window.PANEL_CONFIGS || {
-    'PAP': {
-        title: 'PANEL ADMINISTRADOR PRINCIPAL',
-        role: 'Administrador Principal',
-        avatar: 'A'
-    },
-    'PAS': {
-        title: 'PANEL ADMINISTRADOR SECUNDARIO',
-        role: 'Administrador Secundario',
-        avatar: 'A'
-    },
-    'PCC': {
-        title: 'PANEL CREADOR DE CONTENIDO',
-        role: 'Creador de Contenido',
-        avatar: 'C'
-    },
-    'PPF': {
-        title: 'PANEL PROFESOR',
-        role: 'Profesor',
-        avatar: 'P'
-    },
-    'PJG': {
-        title: 'PANEL JUGADOR',
-        role: 'Jugador',
-        avatar: 'J'
-    }
-};
-
-// Asegurar que esté disponible globalmente
 if (!window.PANEL_CONFIGS) {
-    window.PANEL_CONFIGS = PANEL_CONFIGS;
+    window.PANEL_CONFIGS = {
+        'PAP': {
+            title: 'PANEL ADMINISTRADOR PRINCIPAL',
+            role: 'Administrador Principal',
+            avatar: 'A'
+        },
+        'PAS': {
+            title: 'PANEL ADMINISTRADOR SECUNDARIO',
+            role: 'Administrador Secundario',
+            avatar: 'A'
+        },
+        'PCC': {
+            title: 'PANEL CREADOR DE CONTENIDO',
+            role: 'Creador de Contenido',
+            avatar: 'C'
+        },
+        'PPF': {
+            title: 'PANEL PROFESOR',
+            role: 'Profesor',
+            avatar: 'P'
+        },
+        'PJG': {
+            title: 'PANEL JUGADOR',
+            role: 'Jugador',
+            avatar: 'J'
+        }
+    };
 }
 
 /**
@@ -50,11 +47,11 @@ if (!window.PANEL_CONFIGS) {
 async function loadHeader(panelType, containerId = 'header-container', userData = {}) {
     try {
         // Verificar que el tipo de panel sea válido
-        if (!PANEL_CONFIGS[panelType]) {
+        if (!window.PANEL_CONFIGS[panelType]) {
             throw new Error(`Tipo de panel no válido: ${panelType}`);
         }
 
-        const config = PANEL_CONFIGS[panelType];
+        const config = window.PANEL_CONFIGS[panelType];
         
         // Cargar el template del header
         const response = await fetch('header-component.html');
@@ -90,9 +87,12 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
         updateUserData(userInfo);
         
         // Inicializar selector de roles si el usuario tiene múltiples roles
+        console.log('🔍 DEBUG: userInfo.roles:', userInfo.roles, 'length:', userInfo.roles.length);
         if (userInfo.roles.length > 1) {
+            console.log('🔍 DEBUG: Inicializando selector de roles');
             initializeRoleSelector(userInfo.roles, userInfo.activeRole);
         } else {
+            console.log('🔍 DEBUG: Usuario tiene solo un rol, ocultando selector');
             // Ocultar selector si solo tiene un rol
             const roleSelectorContainer = document.getElementById('role-selector-container');
             if (roleSelectorContainer) {
@@ -154,7 +154,7 @@ async function loadModals() {
  * @param {string} containerId - ID del contenedor
  */
 function createFallbackHeader(panelType, containerId) {
-    const config = PANEL_CONFIGS[panelType] || {
+    const config = window.PANEL_CONFIGS[panelType] || {
         title: 'PANEL DESCONOCIDO',
         role: 'Usuario',
         avatar: '?'
@@ -368,11 +368,16 @@ function getUserRolesFromSystem(profile, session) {
 function getTokenRoles() {
     try {
         const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-        if (!token) return [];
+        if (!token) {
+            console.log('🔍 DEBUG: No hay token disponible');
+            return [];
+        }
         
         // Decodificar JWT (solo la parte del payload)
         const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.roles || [];
+        const roles = payload.roles || [];
+        console.log('🔍 DEBUG: Roles del token:', roles);
+        return roles;
     } catch (error) {
         console.warn('⚠️ Error decodificando token JWT:', error);
         return [];
@@ -642,4 +647,3 @@ function initializeHeaderFunctions() {
 // Exportar funciones para uso manual
 window.loadHeader = loadHeader;
 window.updateUserData = updateUserData;
-window.PANEL_CONFIGS = PANEL_CONFIGS;

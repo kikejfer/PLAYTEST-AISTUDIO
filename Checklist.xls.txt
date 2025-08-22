@@ -1,0 +1,58 @@
+Checklist Completo del Proyecto PLAYTEST				Estimación Total de Implementación: 217 horas					
+1. Sistemas Centrales (Core Systems)			Tiempo estimado: 	29	horas				
+	 Funcionalidad 		 Archivos Clave 	 Estado 	 T Estimado	 Notas 	Anotaciones		
+	 **Autenticación de Usuarios** 		 `index.html`, `api-data-service.js` 		 8 horas 	" Registro, Login (con ""recuérdame""), Logout, manejo de sesión JWT. "			
+	 **Redirección por Rol** 		 `index.html` (AuthController) 		 3 horas 	 Redirige a Admin Principal/Secundario si corresponde. 			
+	 **Selección de Roles Múltiples**		 `index.html` (RoleSelectionModal) 		 4 horas 	 Modal para nuevos usuarios o usuarios sin roles definidos. 			
+	 **Servicio de Datos (API)** 		 `api-data-service.js` 		 6 horas 	 Capa de abstracción para todas las llamadas al backend. 			
+	 **Sistema Persistente** 		 `persistent-system-init.js`, `persistent-api-service.js` 		 4 horas 	 Detección de entorno (local/Render) y conexión. 			
+	 **Migración de Datos** 		 `data-migration-client.js` 		 2 horas 	 Migra datos de `localStorage` a PostgreSQL en el primer login. 			
+	 **Internacionalización (i18n)** 		 (Incrustado en cada archivo HTML) 		 2 horas 	 Soporte para Español e Inglés en todas las interfaces. 			
+									
+2. Modalidades de Juego							Tiempo estimado: 	57	horas
+	 Funcionalidad 		 Archivos Clave 	 Estado 	 T Estimado	 Notas 	Anotaciones		
+	 **Configuración de Partida** 		 `index.html` (GameSetup) 		 8 horas 	 UI para seleccionar modo, bloques y temas. Retar a usuarios. 			
+	 **Panel de Partidas Activas** 		 `index.html` (ActiveGames), `all-games.html` 		 6 horas 	 Muestra partidas en curso y retos pendientes. 			
+	 **Hub de Partida** 		 `active-game.html` 		 5 horas 	 Página de espera y configuración antes de iniciar una partida. 			
+	 **Modo Clásico** 		 `game-classic.html` 		 4 horas 	 Juego base sin tiempo ni vidas, con feedback inmediato. 			
+	 **Modo Contrarreloj** 		 `game-time-trial.html` 		 3 horas 	 Lógica de temporizador. 			
+	 **Modo Vidas** 		 `game-lives.html` 		 3 horas 	 Lógica de vidas y rachas. 			
+	 **Modo Por Niveles** 		 `game-by-levels.html` 		 5 horas 	 Progresión a través de niveles de dificultad creciente. 			
+	 **Modo Racha** 		 `game-streak.html` 		 3 horas 	 El objetivo es la racha más larga de aciertos. 			
+	 **Modo Examen** 		 `game-exam.html` 		 6 horas 	 Simulación de examen con tiempo y penalización por fallos. 			
+	 **Modo Duelo** 		 `game-duel.html` 		 8 horas 	 Lógica de turnos y puntuación por rapidez. 			
+	 **Modo Trivial** 		 `game-trivial.html` 		 10 horas	" Lógica de ruleta, temas y ""fichas"" (quesitos). "			
+	 **Modo Maratón** 		 `game-marathon.html` 		 4 horas	 Gestión de tiempo con bonus y penalizaciones. 			
+	 **Rankings** 		 `active-game.html` (componentes) 		 2 horas 	 UI para mostrar rankings de cada modalidad. 			
+									
+3. Gestión de Contenido (Paneles de Creador)							Tiempo estimado: 	41	horas
+	 Funcionalidad 		 Archivos Clave 	 Estado 	 T Estimado	 Notas 	Anotaciones		
+	 **Creación de Preguntas** 		 `add-question.html` 		 12 horas 	 Tres métodos: Generador IA (Gemini), Subida de Fichero, Manual. 			
+	 **Gestión de Bloques (Admin)** 		 `all-blocks.html` 		 8 horas 	 CRUD de bloques, temas y preguntas. Panel para admins/creadores. 			
+	 **Vista de Preguntas** 		 `block-questions.html` 		 4 horas 	 Visualizar y editar todas las preguntas de un bloque. 			
+	 **Búsqueda/Vista Previa Bloque** 		 `block-search.html`, `block-preview.html` 		 6 horas 	 Búsqueda avanzada y vista detallada con metadatos. 			
+	 **Paneles de Creador (x5)** 		 `creators-panel-*.html` 		 11 horas 	 Analytics, Marketing, Torneos, Monetización y Contenido. 			
+									
+4. Paneles de Administración							Tiempo estimado: 	46	horas
+	 Funcionalidad 		 Archivos Clave 	 Estado 	 T Estimado	 Notas 	Anotaciones		
+	 **Panel Admin Principal** 		 `admin-principal-panel.html` 		 10 horas 	 Gestión total: admins, profesores, creadores, jugadores. 			
+	 **Panel Admin Secundario** 		 `admin-secundario-panel.html` 		 6 horas 	 Vista limitada a usuarios asignados. 			
+	 **Gestión de Feature Flags** 		 `feature-flags-admin-panel.html` y JS 		 8 horas 	 Sistema modular para activar/desactivar funcionalidades. 			
+	 **Gestión de Retos** 		 `challenges-management-panel.html` 		 5 horas 	 Creación y seguimiento de retos para la comunidad. 			
+	 **Panel de Retos de Usuario** 		 `challenges-user-panel.html` 		 5 horas 	 Interfaz para que los usuarios vean y participen en retos. 			
+	 **Gestión de Luminarias (x4)** 		 `luminarias-*.html` 		 12 horas 	 Sistema completo para la moneda virtual (admin y usuario). 			
+									
+5. Sistema de Soporte							Tiempo estimado: 	38	horas
+	 Funcionalidad 		 Archivos Clave 	 Estado 	 T Estimado	 Notas 	Anotaciones		
+	 **Formulario de Soporte** 		 `support-form.html` 		 6 horas 	 Formulario unificado con detección de contexto (global/bloque). 			
+	 **Lista de Tickets** 		 `tickets-list.html` 		 5 horas 	 Panel para que los usuarios vean el estado de sus tickets. 			
+	 **Chat de Tickets** 		 `ticket-chat.html` 		 12 horas	 Interfaz de chat en tiempo real para resolver incidencias. 			
+	 **Dashboard de Soporte** 		 `support-dashboard.html` 		 5 horas 	 Panel para agentes con métricas y alertas. 			
+	 **Analytics de Soporte** 		 `support-analytics.html` 		 5 horas 	 Reportes avanzados sobre el rendimiento del equipo de soporte. 			
+	 **Base de Conocimiento** 		 `support-knowledge.html` 		 5 horas 	 Creación y consulta de artículos de ayuda. 			
+									
+6. Documentación y Configuración							Tiempo estimado: 	5	horas
+	Elemento		 Archivos Clave 	 Estado 	 T Estimado	 Notas 	Anotaciones		
+	 **Configuración de Vite** 		 `vite.config.ts` 		 1 hora 	 Configuración para variables de entorno (API Key). 			
+	 **Dependencias del Proyecto** 		 `package.json`, `package-lock.json` 		 1 hora 	 `serve` para producción, `vite` para desarrollo. 			
+	 **Guías y Documentación** 		 Varios archivos `.md` 		 3 horas 	 Documentación técnica de roles, comunicación, etc. 			
