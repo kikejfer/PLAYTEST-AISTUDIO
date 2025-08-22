@@ -1,0 +1,52 @@
+/* Estilos para el header unificado de todos los paneles */
+.user-header {
+    background: #415A77;
+    color: #E0E1DD;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+/* Estilos para el contenido principal con padding para el header fijo */
+.main-content {
+    padding-top: 80px; /* Ajustar según altura del header */
+}
+
+/* Asegurar que el padding del body tenga en cuenta el header fijo */
+body.with-fixed-header {
+    padding-top: 80px;
+}
+
+/* Responsive design para el header */
+@media (max-width: 768px) {
+    .user-header {
+        padding: 8px 15px;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .user-header > div:first-child {
+        order: 1;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .user-header > div:last-child {
+        order: 2;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .main-content,
+    body.with-fixed-header {
+        padding-top: 120px; /* Más espacio en móvil */
+    }
+}
