@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="panel-type" content="PAP">
+    <meta name="header-container" content="header-container">
+    <title>Test Sistema de Roles - PLAYTEST</title>
+    
+    <!-- Dependencias del header -->
+    <link rel="stylesheet" href="header-styles.css">
+    <script src="header-loader.js"></script>
+    <script src="api-data-service.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0D1B2A;
+            color: #E0E1DD;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .test-container {
+            padding: 100px 20px 20px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            background: #1B263B;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #415A77;
+        }
+        
+        .test-button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        .test-button:hover {
+            background: #2563EB;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .status.success {
+            background: #065F46;
+            border: 1px solid #10B981;
+        }
+        
+        .status.error {
+            background: #7F1D1D;
+            border: 1px solid #EF4444;
+        }
+        
+        .status.info {
+            background: #1E3A8A;
+            border: 1px solid #3B82F6;
+        }
+    </style>
+</head>
+<body>
+    <!-- El header se carga aquí automáticamente -->
+    <div id="header-container"></div>
+    
+    <div class="test-container">
+        <div class="test-section">
+            <h2>🧪 Test del Sistema de Roles Múltiples</h2>
+            <p>Esta página sirve para probar que el sistema de header con múltiples roles funciona correctamente.</p>
+            
+            <div id="test-results"></div>
+            
+            <h3>Pruebas Automáticas:</h3>
+            <button class="test-button" onclick="testUserData()">🔍 Probar getUserData()</button>
+            <button class="test-button" onclick="testTokenDecoding()">🔐 Probar Decodificación JWT</button>
+            <button class="test-button" onclick="testRoleMapping()">🎭 Probar Mapeo de Roles</button>
+            <button class="test-button" onclick="testRoleSelector()">📋 Probar Selector de Roles</button>
+            
+            <h3>Pruebas Manuales:</h3>
+            <button class="test-button" onclick="simulateMultipleRoles()">👥 Simular Usuario Multi-Rol</button>
+            <button class="test-button" onclick="simulateSingleRole()">👤 Simular Usuario Single-Rol</button>
+            <button class="test-button" onclick="simulateLoggedOut()">🚪 Simular Usuario Sin Login</button>
+            <button class="test-button" onclick="clearTests()">🧹 Limpiar Tests</button>
+            
+            <h3>Información del Sistema:</h3>
+            <div id="system-info">
+                <p><strong>Panel Actual:</strong> <span id="current-panel">PAP (Administrador Principal)</span></p>
+                <p><strong>Token JWT:</strong> <span id="token-status">Verificando...</span></p>
+                <p><strong>API Service:</strong> <span id="api-status">Verificando...</span></p>
+                <p><strong>Rol Activo:</strong> <span id="active-role">Detectando...</span></p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Variables globales para testing
+        let testResults = [];
+        
+        // Función para mostrar resultados
+        function showResult(test, status, message) {
+            const resultsDiv = document.getElementById('test-results');
+            const statusClass = status === 'success' ? 'success' : status === 'error' ? 'error' : 'info';
+            
+            const resultHTML = `
+                <div class="status ${statusClass}">
+                    <strong>${test}:</strong> ${message}
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = resultHTML + resultsDiv.innerHTML;
+        }
+        
+        // Test 1: Verificar getUserData
+        async function testUserData() {
+            try {
+                showResult('getUserData', 'info', 'Probando obtención de datos del usuario...');
+                
+                if (typeof getUserData === 'function') {
+                    const userData = await getUserData();
+                    showResult('getUserData', 'success', 
+                        `Datos obtenidos: ${userData.name}, ${userData.roles.length} roles, rol activo: ${userData.activeRole}`);
+                } else {
+                    showResult('getUserData', 'error', 'Función getUserData no encontrada');
+                }
+            } catch (error) {
+                showResult('getUserData', 'error', `Error: ${error.message}`);
+            }
+        }
+        
+        // Test 2: Verificar decodificación JWT
+        async function testTokenDecoding() {
+            try {
+                showResult('JWT Decoding', 'info', 'Probando decodificación de token JWT...');
+                
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                if (token) {
+                    if (typeof getTokenRoles === 'function') {
+                        const roles = getTokenRoles();
+                        showResult('JWT Decoding', 'success', `Roles en token: ${roles.join(', ') || 'ninguno'}`);
+                    } else {
+                        showResult('JWT Decoding', 'error', 'Función getTokenRoles no encontrada');
+                    }
+                } else {
+                    showResult('JWT Decoding', 'info', 'No hay token JWT presente');
+                }
+            } catch (error) {
+                showResult('JWT Decoding', 'error', `Error: ${error.message}`);
+            }
+        }
+        
+        // Test 3: Verificar mapeo de roles
+        async function testRoleMapping() {
+            showResult('Role Mapping', 'info', 'Probando mapeo de roles...');
+            
+            const testRoles = ['administrador_principal', 'profesor', 'creador', 'jugador', 'rol_inexistente'];
+            const results = [];
+            
+            for (const role of testRoles) {
+                // Simular el mapeo que hace getUserRolesFromSystem
+                const roleMapping = {
+                    'administrador_principal': 'PAP - Administrador Principal',
+                    'administrador_secundario': 'PAS - Administrador Secundario',
+                    'creador': 'PCC - Creador de Contenido',
+                    'profesor': 'PPF - Profesor',
+                    'jugador': 'PJG - Jugador'
+                };
+                
+                const mapped = roleMapping[role] || 'Sin mapeo';
+                results.push(`${role} → ${mapped}`);
+            }
+            
+            showResult('Role Mapping', 'success', `Mapeos: ${results.join(', ')}`);
+        }
+        
+        // Test 4: Verificar selector de roles
+        async function testRoleSelector() {
+            showResult('Role Selector', 'info', 'Verificando selector de roles...');
+            
+            const container = document.getElementById('role-selector-container');
+            const dropdown = document.getElementById('role-selector-dropdown');
+            
+            if (container && dropdown) {
+                const isVisible = container.style.display !== 'none';
+                showResult('Role Selector', 'success', 
+                    `Selector ${isVisible ? 'visible' : 'oculto'}, Dropdown presente`);
+            } else {
+                showResult('Role Selector', 'info', 'Selector de roles no encontrado (normal si usuario tiene 1 solo rol)');
+            }
+        }
+        
+        // Simular usuario multi-rol
+        function simulateMultipleRoles() {
+            localStorage.setItem('playtest_session', JSON.stringify({
+                userId: 'test123',
+                nickname: 'UsuarioMultiRol'
+            }));
+            
+            // Simular token con múltiples roles
+            const mockToken = btoa(JSON.stringify({
+                header: { alg: 'HS256', typ: 'JWT' }
+            })) + '.' + btoa(JSON.stringify({
+                id: 'test123',
+                nickname: 'UsuarioMultiRol',
+                roles: ['administrador_principal', 'profesor', 'creador']
+            })) + '.signature';
+            
+            localStorage.setItem('playtest_auth_token', mockToken);
+            
+            showResult('Simulación', 'success', 'Usuario multi-rol simulado. Recarga la página para ver cambios.');
+        }
+        
+        // Simular usuario single-rol
+        function simulateSingleRole() {
+            localStorage.setItem('playtest_session', JSON.stringify({
+                userId: 'test456',
+                nickname: 'UsuarioSingleRol'
+            }));
+            
+            const mockToken = btoa(JSON.stringify({
+                header: { alg: 'HS256', typ: 'JWT' }
+            })) + '.' + btoa(JSON.stringify({
+                id: 'test456',
+                nickname: 'UsuarioSingleRol',
+                roles: ['jugador']
+            })) + '.signature';
+            
+            localStorage.setItem('playtest_auth_token', mockToken);
+            
+            showResult('Simulación', 'success', 'Usuario single-rol simulado. Recarga la página para ver cambios.');
+        }
+        
+        // Simular usuario sin login
+        function simulateLoggedOut() {
+            localStorage.removeItem('playtest_session');
+            localStorage.removeItem('playtest_auth_token');
+            localStorage.removeItem('authToken');
+            
+            showResult('Simulación', 'success', 'Usuario sin login simulado. Recarga la página para ver cambios.');
+        }
+        
+        // Limpiar tests
+        function clearTests() {
+            document.getElementById('test-results').innerHTML = '';
+            showResult('Sistema', 'info', 'Tests limpiados');
+        }
+        
+        // Verificar estado del sistema al cargar
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                // Verificar token
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                document.getElementById('token-status').textContent = token ? '✅ Presente' : '❌ Ausente';
+                
+                // Verificar API Service
+                document.getElementById('api-status').textContent = window.apiDataService ? '✅ Disponible' : '❌ No disponible';
+                
+                // Verificar rol activo
+                const activeRole = localStorage.getItem('activeRole') || 'No detectado';
+                document.getElementById('active-role').textContent = activeRole;
+                
+                showResult('Sistema', 'info', 'Página de test cargada correctamente');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
