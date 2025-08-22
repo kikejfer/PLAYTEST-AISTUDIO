@@ -3,8 +3,8 @@
  * Carga el header-component.html y reemplaza los placeholders
  */
 
-// Configuración de los paneles
-const PANEL_CONFIGS = {
+// Configuración de los paneles (solo declarar si no existe)
+const PANEL_CONFIGS = window.PANEL_CONFIGS || {
     'PAP': {
         title: 'PANEL ADMINISTRADOR PRINCIPAL',
         role: 'Administrador Principal',
@@ -31,6 +31,11 @@ const PANEL_CONFIGS = {
         avatar: 'J'
     }
 };
+
+// Asegurar que esté disponible globalmente
+if (!window.PANEL_CONFIGS) {
+    window.PANEL_CONFIGS = PANEL_CONFIGS;
+}
 
 /**
  * Carga el header dinámicamente
@@ -176,6 +181,14 @@ function createFallbackHeader(panelType, containerId) {
  * Inicializa el header automáticamente basado en metadatos de la página
  */
 async function initializeHeader() {
+    // Verificar si hay un sistema de header existente activo
+    if (document.querySelector('.user-header') && !document.getElementById('header-container')) {
+        console.info('🔄 Sistema de header existente detectado, header-loader.js en modo compatibilidad');
+        // Solo agregar funciones de roles múltiples al sistema existente
+        await enhanceExistingHeader();
+        return;
+    }
+    
     // Buscar metadatos del panel en el HTML
     const panelMeta = document.querySelector('meta[name="panel-type"]');
     const containerMeta = document.querySelector('meta[name="header-container"]');
@@ -184,6 +197,15 @@ async function initializeHeader() {
         const panelType = panelMeta.getAttribute('content');
         const containerId = containerMeta ? containerMeta.getAttribute('content') : 'header-container';
         
+        // Verificar que el contenedor existe
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.warn(`📦 Contenedor ${containerId} no encontrado, header-loader.js en espera`);
+            return;
+        }
+        
+        console.info('🚀 Inicializando header-loader.js para panel:', panelType);
+        
         // Obtener datos del usuario de forma asíncrona
         const userData = await getUserData();
         
@@ -191,6 +213,80 @@ async function initializeHeader() {
     } else {
         console.warn('No se encontró metadato panel-type. El header debe cargarse manualmente.');
     }
+}
+
+/**
+ * Mejora el header existente agregando funcionalidad de múltiples roles
+ */
+async function enhanceExistingHeader() {
+    try {
+        console.info('🔧 Mejorando header existente con sistema de roles múltiples');
+        
+        // Obtener datos del usuario
+        const userData = await getUserData();
+        
+        // Si el usuario tiene múltiples roles, agregar selector
+        if (userData.roles && userData.roles.length > 1) {
+            await addRoleSelectorToExistingHeader(userData);
+        }
+        
+        // Inicializar funciones del header si no existen
+        if (!window.logout) {
+            initializeHeaderFunctions();
+        }
+        
+        console.info('✅ Header existente mejorado correctamente');
+        
+    } catch (error) {
+        console.warn('⚠️ Error mejorando header existente:', error);
+    }
+}
+
+/**
+ * Agrega selector de roles al header existente
+ */
+async function addRoleSelectorToExistingHeader(userData) {
+    const userHeader = document.querySelector('.user-header');
+    if (!userHeader) return;
+    
+    // Buscar donde insertar el selector (antes del botón de logout)
+    const logoutButton = userHeader.querySelector('button[onclick*="logout"]');
+    const insertPoint = logoutButton ? logoutButton.parentNode : userHeader;
+    
+    // Crear el selector de roles
+    const roleSelectorHTML = `
+        <div style="position: relative; margin-right: 10px;" id="role-selector-container">
+            <button id="role-selector-btn" onclick="toggleRoleSelector()" style="background: #2E5266; color: #E0E1DD; border: 1px solid #415A77; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='#2E5266'">
+                <span id="current-role-name">${getCurrentRoleName(userData)}</span>
+                <span style="font-size: 0.75rem;">▼</span>
+            </button>
+            <div id="role-selector-dropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 0.25rem; background: #1B263B; border: 1px solid #415A77; border-radius: 0.375rem; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 2001; min-width: 200px;">
+                <div id="role-options" style="padding: 0.25rem 0;">
+                    <!-- Las opciones de rol se cargan dinámicamente -->
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Insertar antes del punto de inserción
+    if (logoutButton) {
+        logoutButton.insertAdjacentHTML('beforebegin', roleSelectorHTML);
+    } else {
+        insertPoint.insertAdjacentHTML('beforeend', roleSelectorHTML);
+    }
+    
+    // Inicializar el selector con los roles
+    initializeRoleSelector(userData.roles, userData.activeRole);
+}
+
+/**
+ * Obtiene el nombre del rol actual para mostrar
+ */
+function getCurrentRoleName(userData) {
+    if (!userData.roles || userData.roles.length === 0) return 'Usuario';
+    
+    const activeRole = userData.roles.find(role => role.code === userData.activeRole);
+    return activeRole ? activeRole.name : userData.roles[0].name;
 }
 
 /**
