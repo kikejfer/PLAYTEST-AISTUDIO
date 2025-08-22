@@ -2212,10 +2212,98 @@ Total elementos eliminados: ${result.total_deleted}`);
 
         function openGameModesModal() {
             showModal('game-modes-modal');
+            currentGameModeScreen = 1;
+            showGameModeScreen(1);
+        }
+        
+        let currentGameModeScreen = 1;
+        const totalGameModeScreens = 9;
+        
+        function showGameModeScreen(screenNumber) {
+            // Ocultar todas las pantallas
+            for (let i = 1; i <= totalGameModeScreens; i++) {
+                const screen = document.getElementById(`game-mode-screen-${i}`);
+                if (screen) screen.style.display = 'none';
+            }
+            
+            // Mostrar la pantalla actual
+            const currentScreen = document.getElementById(`game-mode-screen-${screenNumber}`);
+            if (currentScreen) currentScreen.style.display = 'block';
+            
+            // Actualizar botones de navegación
+            updateGameModeNavigation(screenNumber);
+        }
+        
+        function updateGameModeNavigation(screenNumber) {
+            const prevBtn = document.getElementById('game-modes-prev-btn');
+            const nextBtn = document.getElementById('game-modes-next-btn');
+            const counter = document.getElementById('game-modes-counter');
+            
+            if (prevBtn) prevBtn.style.display = screenNumber === 1 ? 'none' : 'inline-block';
+            if (nextBtn) nextBtn.style.display = screenNumber === totalGameModeScreens ? 'none' : 'inline-block';
+            if (counter) counter.textContent = `${screenNumber} / ${totalGameModeScreens}`;
+        }
+        
+        function previousGameModeScreen() {
+            if (currentGameModeScreen > 1) {
+                currentGameModeScreen--;
+                showGameModeScreen(currentGameModeScreen);
+            }
+        }
+        
+        function nextGameModeScreen() {
+            if (currentGameModeScreen < totalGameModeScreens) {
+                currentGameModeScreen++;
+                showGameModeScreen(currentGameModeScreen);
+            }
         }
 
         function openRoleLevelsModal() {
             showModal('role-levels-modal');
+            currentRoleLevelScreen = 1;
+            showRoleLevelScreen(1);
+        }
+        
+        let currentRoleLevelScreen = 1;
+        const totalRoleLevelScreens = 15;
+        
+        function showRoleLevelScreen(screenNumber) {
+            // Ocultar todas las pantallas
+            for (let i = 1; i <= totalRoleLevelScreens; i++) {
+                const screen = document.getElementById(`role-level-screen-${i}`);
+                if (screen) screen.style.display = 'none';
+            }
+            
+            // Mostrar la pantalla actual
+            const currentScreen = document.getElementById(`role-level-screen-${screenNumber}`);
+            if (currentScreen) currentScreen.style.display = 'block';
+            
+            // Actualizar botones de navegación
+            updateRoleLevelNavigation(screenNumber);
+        }
+        
+        function updateRoleLevelNavigation(screenNumber) {
+            const prevBtn = document.getElementById('role-levels-prev-btn');
+            const nextBtn = document.getElementById('role-levels-next-btn');
+            const counter = document.getElementById('role-levels-counter');
+            
+            if (prevBtn) prevBtn.style.display = screenNumber === 1 ? 'none' : 'inline-block';
+            if (nextBtn) nextBtn.style.display = screenNumber === totalRoleLevelScreens ? 'none' : 'inline-block';
+            if (counter) counter.textContent = `${screenNumber} / ${totalRoleLevelScreens}`;
+        }
+        
+        function previousRoleLevelScreen() {
+            if (currentRoleLevelScreen > 1) {
+                currentRoleLevelScreen--;
+                showRoleLevelScreen(currentRoleLevelScreen);
+            }
+        }
+        
+        function nextRoleLevelScreen() {
+            if (currentRoleLevelScreen < totalRoleLevelScreens) {
+                currentRoleLevelScreen++;
+                showRoleLevelScreen(currentRoleLevelScreen);
+            }
         }
 
         function openTopicDevelopmentModal() {
@@ -2744,134 +2832,219 @@ Total elementos eliminados: ${result.total_deleted}`);
 
     <!-- Modal de Modalidades de Juego -->
     <div id="game-modes-modal" class="modal" onclick="hideModal('game-modes-modal')">
-        <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+        <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 600px; max-height: 80vh;">
             <div class="modal-header">
                 <h2 style="color: #E0E1DD; margin: 0; font-size: 1.5rem;">🎮 Modalidades de Juego</h2>
                 <span class="close" onclick="hideModal('game-modes-modal')">&times;</span>
             </div>
-            <div class="modal-body" style="padding: 1.5rem; line-height: 1.6;">
-                <!-- Sección Entrenamiento -->
-                <div style="margin-bottom: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #2E5266, #415A77); border-radius: 12px; border-left: 4px solid #FFB347;">
-                    <h3 style="color: #FFB347; margin: 0 0 1rem 0; font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem;">
-                        🎓 ENTRENAMIENTO - Domina a tu ritmo
-                    </h3>
-                    <p style="color: #E0E1DD; font-style: italic; margin-bottom: 1.5rem; font-size: 1rem;">"El conocimiento es poder, pero la práctica lo convierte en superpoder"</p>
-                    
-                    <!-- Modo Clásico -->
-                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #4CAF50; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🧘‍♂️ Modo Clásico</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡El zen del estudio! Responde a tu ritmo con feedback instantáneo. Perfecto para aprender sin presión y consolidar conocimientos de forma relajada.</p>
-                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
-                            <li>Sin límite de tiempo</li>
-                            <li>Feedback inmediato en cada respuesta</li>
-                            <li>Ideal para estudio tranquilo</li>
-                            <li>Perfecto para principiantes</li>
-                        </ul>
-                    </div>
-                    
-                    <!-- Modo Vidas -->
-                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #E91E63; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">💗 Modo Vidas</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡Como un videojuego clásico! Empiezas con 5 vidas y cada error te cuesta una. Pero no te preocupes: ¡cada racha de 10 aciertos te devuelve una vida!</p>
-                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
-                            <li>5 vidas iniciales</li>
-                            <li>Recupera 1 vida cada 10 aciertos</li>
-                            <li>Tensión equilibrada</li>
-                            <li>Fomenta la concentración</li>
-                        </ul>
-                    </div>
-                    
-                    <!-- Modo Contrarreloj -->
-                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #FF5722; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">⏰ Modo Contrarreloj</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡La adrenalina pura del conocimiento! Responde el máximo número de preguntas antes de que se agote el tiempo. ¿Cuál será tu mejor marca?</p>
-                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
-                            <li>Tiempo límite configurable</li>
-                            <li>Máxima velocidad mental</li>
-                            <li>Desafío contra el cronómetro</li>
-                            <li>Mejora tus reflejos</li>
-                        </ul>
-                    </div>
-                    
-                    <!-- Por Niveles -->
-                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #9C27B0; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🏔️ Por Niveles</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡Escala la montaña del conocimiento! Cada nivel tiene mayor dificultad y necesitas un mínimo de aciertos para avanzar. ¿Llegarás a la cima?</p>
-                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
-                            <li>Dificultad progresiva</li>
-                            <li>Requisitos de avance</li>
-                            <li>Sensación de progreso</li>
-                            <li>Desbloquea nuevos desafíos</li>
-                        </ul>
-                    </div>
-                    
-                    <!-- Racha de Aciertos -->
-                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #FF9800; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🔥 Racha de Aciertos</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡Enciende tu racha y que no se apague! Tu objetivo es conseguir el mayor número de respuestas correctas consecutivas. Un solo error y... ¡vuelta a empezar!</p>
-                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
-                            <li>Aciertos consecutivos</li>
-                            <li>Un error reinicia la racha</li>
-                            <li>Máxima concentración</li>
-                            <li>Superación personal</li>
-                        </ul>
-                    </div>
-                    
-                    <!-- Examen Simulado -->
-                    <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #607D8B; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">📋 Examen Simulado</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡La simulación más real! Preguntas fijas, tiempo límite y sin feedback hasta el final. Incluye penalización por fallos para máximo realismo.</p>
-                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
-                            <li>Número fijo de preguntas</li>
-                            <li>Sin feedback hasta el final</li>
-                            <li>Penalización opcional</li>
-                            <li>Máximo realismo de examen</li>
-                        </ul>
+            <div class="modal-body" style="padding: 1.5rem; line-height: 1.6; min-height: 400px;">
+                
+                <!-- Pantalla 1: Introducción -->
+                <div id="game-mode-screen-1" style="display: block; text-align: center;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px;">
+                        <h3 style="color: #FFB347; margin: 0 0 1rem 0; font-size: 1.5rem;">🎮 Modalidades de Juego</h3>
+                        <p style="color: #E0E1DD; font-size: 1.1rem; margin-bottom: 1.5rem;">"Elige tu camino hacia el conocimiento"</p>
+                        <div style="display: flex; justify-content: center; gap: 2rem; margin: 2rem 0;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎓</div>
+                                <p style="color: #FFB347; font-weight: bold; margin: 0;">ENTRENAMIENTO</p>
+                                <p style="color: #C7C8C4; font-size: 0.9rem; margin: 0;">6 Modalidades</p>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 3rem; margin-bottom: 0.5rem;">⚔️</div>
+                                <p style="color: #FFD700; font-weight: bold; margin: 0;">COMPETICIÓN</p>
+                                <p style="color: #C7C8C4; font-size: 0.9rem; margin: 0;">3 Modalidades</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <!-- Sección Competición -->
-                <div style="padding: 1.5rem; background: linear-gradient(135deg, #8B0000, #DC143C); border-radius: 12px; border-left: 4px solid #FFD700;">
-                    <h3 style="color: #FFD700; margin: 0 0 1rem 0; font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem;">
-                        ⚔️ COMPETICIÓN - ¡Demuestra quién manda!
-                    </h3>
-                    <p style="color: #E0E1DD; font-style: italic; margin-bottom: 1.5rem; font-size: 1rem;">"En la arena del conocimiento, solo los más preparados alcanzan la gloria"</p>
-                    
-                    <!-- Maratón -->
-                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #2196F3; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🏃‍♂️ Maratón</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡La resistencia definitiva! Completa TODAS las preguntas del bloque. Los aciertos te dan tiempo extra, los fallos te lo quitan. ¿Tendrás la resistencia mental para llegar al final?</p>
-                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
-                            <li>Todas las preguntas del bloque</li>
-                            <li>Aciertos suman tiempo</li>
-                            <li>Fallos restan tiempo</li>
-                            <li>Prueba de resistencia mental</li>
-                        </ul>
+
+                <!-- Pantalla 2: Sección Entrenamiento -->
+                <div id="game-mode-screen-2" style="display: none; text-align: center;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #2E5266, #415A77); border-radius: 12px; border-left: 4px solid #FFB347;">
+                        <h3 style="color: #FFB347; margin: 0 0 1rem 0; font-size: 1.3rem;">🎓 ENTRENAMIENTO</h3>
+                        <p style="color: #E0E1DD; font-style: italic; margin-bottom: 1.5rem; font-size: 1.1rem;">"Domina a tu ritmo"</p>
+                        <p style="color: #E0E1DD; font-style: italic; margin-bottom: 2rem;">"El conocimiento es poder, pero la práctica lo convierte en superpoder"</p>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1.5rem;">
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🧘‍♂️</div>
+                                <p style="color: #4CAF50; font-weight: bold; margin: 0;">Clásico</p>
+                            </div>
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">💗</div>
+                                <p style="color: #E91E63; font-weight: bold; margin: 0;">Vidas</p>
+                            </div>
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">⏰</div>
+                                <p style="color: #FF5722; font-weight: bold; margin: 0;">Contrarreloj</p>
+                            </div>
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏔️</div>
+                                <p style="color: #9C27B0; font-weight: bold; margin: 0;">Por Niveles</p>
+                            </div>
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔥</div>
+                                <p style="color: #FF9800; font-weight: bold; margin: 0;">Racha</p>
+                            </div>
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">📋</div>
+                                <p style="color: #607D8B; font-weight: bold; margin: 0;">Examen</p>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <!-- Duelo -->
-                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #F44336; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">⚔️ Duelo</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡Mano a mano, cerebro a cerebro! Dos jugadores se enfrentan por turnos. Ganas puntos por acierto y velocidad. ¡El más rápido y certero se lleva la victoria!</p>
-                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
-                            <li>1 vs 1 por turnos</li>
-                            <li>Puntos por acierto y rapidez</li>
-                            <li>Tensión máxima</li>
-                            <li>Sistema de retos</li>
-                        </ul>
+                </div>
+
+                <!-- Pantalla 3: Modo Clásico -->
+                <div id="game-mode-screen-3" style="display: none;">
+                    <div style="padding: 2rem; background: rgba(76, 175, 80, 0.1); border-radius: 12px; border-left: 4px solid #4CAF50;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <div style="font-size: 4rem; margin-bottom: 0.5rem;">🧘‍♂️</div>
+                            <h3 style="color: #4CAF50; margin: 0; font-size: 1.5rem;">Modo Clásico</h3>
+                        </div>
+                        <p style="color: #E0E1DD; font-weight: 500; text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem;">¡El zen del estudio! Responde a tu ritmo con feedback instantáneo. Perfecto para aprender sin presión y consolidar conocimientos de forma relajada.</p>
+                        <div style="background: rgba(224, 225, 221, 0.1); padding: 1.5rem; border-radius: 8px;">
+                            <h4 style="color: #4CAF50; margin: 0 0 1rem 0;">Características:</h4>
+                            <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; list-style-type: none;">
+                                <li style="margin-bottom: 0.5rem;">✓ Sin límite de tiempo</li>
+                                <li style="margin-bottom: 0.5rem;">✓ Feedback inmediato en cada respuesta</li>
+                                <li style="margin-bottom: 0.5rem;">✓ Ideal para estudio tranquilo</li>
+                                <li>✓ Perfecto para principiantes</li>
+                            </ul>
+                        </div>
                     </div>
-                    
-                    <!-- Trivial -->
-                    <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px;">
-                        <h4 style="color: #795548; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🧩 Trivial</h4>
-                        <p style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-weight: 500;">¡El clásico reinventado! Consigue "fichas" (quesitos) de diferentes temas para completar tu medallón. El primero en conseguir todas las fichas... ¡se corona campeón!</p>
-                        <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem;">
-                            <li>Fichas por tema</li>
-                            <li>Estrategia de temas</li>
-                            <li>Competición épica</li>
-                            <li>Victoria por completar medallón</li>
-                        </ul>
+                </div>
+
+                <!-- Pantalla 4: Modo Vidas -->
+                <div id="game-mode-screen-4" style="display: none;">
+                    <div style="padding: 2rem; background: rgba(233, 30, 99, 0.1); border-radius: 12px; border-left: 4px solid #E91E63;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <div style="font-size: 4rem; margin-bottom: 0.5rem;">💗</div>
+                            <h3 style="color: #E91E63; margin: 0; font-size: 1.5rem;">Modo Vidas</h3>
+                        </div>
+                        <p style="color: #E0E1DD; font-weight: 500; text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem;">¡Como un videojuego clásico! Empiezas con 5 vidas y cada error te cuesta una. Pero no te preocupes: ¡cada racha de 10 aciertos te devuelve una vida!</p>
+                        <div style="background: rgba(224, 225, 221, 0.1); padding: 1.5rem; border-radius: 8px;">
+                            <h4 style="color: #E91E63; margin: 0 0 1rem 0;">Características:</h4>
+                            <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; list-style-type: none;">
+                                <li style="margin-bottom: 0.5rem;">✓ 5 vidas iniciales</li>
+                                <li style="margin-bottom: 0.5rem;">✓ Recupera 1 vida cada 10 aciertos</li>
+                                <li style="margin-bottom: 0.5rem;">✓ Tensión equilibrada</li>
+                                <li>✓ Fomenta la concentración</li>
+                            </ul>
+                        </div>
                     </div>
+                </div>
+
+                <!-- Pantalla 5: Modo Contrarreloj -->
+                <div id="game-mode-screen-5" style="display: none;">
+                    <div style="padding: 2rem; background: rgba(255, 87, 34, 0.1); border-radius: 12px; border-left: 4px solid #FF5722;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <div style="font-size: 4rem; margin-bottom: 0.5rem;">⏰</div>
+                            <h3 style="color: #FF5722; margin: 0; font-size: 1.5rem;">Modo Contrarreloj</h3>
+                        </div>
+                        <p style="color: #E0E1DD; font-weight: 500; text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem;">¡La adrenalina pura del conocimiento! Responde el máximo número de preguntas antes de que se agote el tiempo. ¿Cuál será tu mejor marca?</p>
+                        <div style="background: rgba(224, 225, 221, 0.1); padding: 1.5rem; border-radius: 8px;">
+                            <h4 style="color: #FF5722; margin: 0 0 1rem 0;">Características:</h4>
+                            <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; list-style-type: none;">
+                                <li style="margin-bottom: 0.5rem;">✓ Tiempo límite configurable</li>
+                                <li style="margin-bottom: 0.5rem;">✓ Máxima velocidad mental</li>
+                                <li style="margin-bottom: 0.5rem;">✓ Desafío contra el cronómetro</li>
+                                <li>✓ Mejora tus reflejos</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 6: Modo Por Niveles -->
+                <div id="game-mode-screen-6" style="display: none;">
+                    <div style="padding: 2rem; background: rgba(156, 39, 176, 0.1); border-radius: 12px; border-left: 4px solid #9C27B0;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <div style="font-size: 4rem; margin-bottom: 0.5rem;">🏔️</div>
+                            <h3 style="color: #9C27B0; margin: 0; font-size: 1.5rem;">Por Niveles</h3>
+                        </div>
+                        <p style="color: #E0E1DD; font-weight: 500; text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem;">¡Escala la montaña del conocimiento! Cada nivel tiene mayor dificultad y necesitas un mínimo de aciertos para avanzar. ¿Llegarás a la cima?</p>
+                        <div style="background: rgba(224, 225, 221, 0.1); padding: 1.5rem; border-radius: 8px;">
+                            <h4 style="color: #9C27B0; margin: 0 0 1rem 0;">Características:</h4>
+                            <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; list-style-type: none;">
+                                <li style="margin-bottom: 0.5rem;">✓ Dificultad progresiva</li>
+                                <li style="margin-bottom: 0.5rem;">✓ Requisitos de avance</li>
+                                <li style="margin-bottom: 0.5rem;">✓ Sensación de progreso</li>
+                                <li>✓ Desbloquea nuevos desafíos</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 7: Modo Racha de Aciertos -->
+                <div id="game-mode-screen-7" style="display: none;">
+                    <div style="padding: 2rem; background: rgba(255, 152, 0, 0.1); border-radius: 12px; border-left: 4px solid #FF9800;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <div style="font-size: 4rem; margin-bottom: 0.5rem;">🔥</div>
+                            <h3 style="color: #FF9800; margin: 0; font-size: 1.5rem;">Racha de Aciertos</h3>
+                        </div>
+                        <p style="color: #E0E1DD; font-weight: 500; text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem;">¡Enciende tu racha y que no se apague! Tu objetivo es conseguir el mayor número de respuestas correctas consecutivas. Un solo error y... ¡vuelta a empezar!</p>
+                        <div style="background: rgba(224, 225, 221, 0.1); padding: 1.5rem; border-radius: 8px;">
+                            <h4 style="color: #FF9800; margin: 0 0 1rem 0;">Características:</h4>
+                            <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; list-style-type: none;">
+                                <li style="margin-bottom: 0.5rem;">✓ Aciertos consecutivos</li>
+                                <li style="margin-bottom: 0.5rem;">✓ Un error reinicia la racha</li>
+                                <li style="margin-bottom: 0.5rem;">✓ Máxima concentración</li>
+                                <li>✓ Superación personal</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 8: Modo Examen Simulado -->
+                <div id="game-mode-screen-8" style="display: none;">
+                    <div style="padding: 2rem; background: rgba(96, 125, 139, 0.1); border-radius: 12px; border-left: 4px solid #607D8B;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <div style="font-size: 4rem; margin-bottom: 0.5rem;">📋</div>
+                            <h3 style="color: #607D8B; margin: 0; font-size: 1.5rem;">Examen Simulado</h3>
+                        </div>
+                        <p style="color: #E0E1DD; font-weight: 500; text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem;">¡La simulación más real! Preguntas fijas, tiempo límite y sin feedback hasta el final. Incluye penalización por fallos para máximo realismo.</p>
+                        <div style="background: rgba(224, 225, 221, 0.1); padding: 1.5rem; border-radius: 8px;">
+                            <h4 style="color: #607D8B; margin: 0 0 1rem 0;">Características:</h4>
+                            <ul style="color: #C7C8C4; margin: 0; padding-left: 1.5rem; list-style-type: none;">
+                                <li style="margin-bottom: 0.5rem;">✓ Número fijo de preguntas</li>
+                                <li style="margin-bottom: 0.5rem;">✓ Sin feedback hasta el final</li>
+                                <li style="margin-bottom: 0.5rem;">✓ Penalización opcional</li>
+                                <li>✓ Máximo realismo de examen</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pantalla 9: Sección Competición -->
+                <div id="game-mode-screen-9" style="display: none; text-align: center;">
+                    <div style="padding: 2rem; background: linear-gradient(135deg, #8B0000, #DC143C); border-radius: 12px; border-left: 4px solid #FFD700;">
+                        <h3 style="color: #FFD700; margin: 0 0 1rem 0; font-size: 1.3rem;">⚔️ COMPETICIÓN</h3>
+                        <p style="color: #E0E1DD; font-style: italic; margin-bottom: 1rem; font-size: 1.1rem;">"¡Demuestra quién manda!"</p>
+                        <p style="color: #E0E1DD; font-style: italic; margin-bottom: 2rem;">"En la arena del conocimiento, solo los más preparados alcanzan la gloria"</p>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem;">
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏃‍♂️</div>
+                                <p style="color: #2196F3; font-weight: bold; margin: 0;">Maratón</p>
+                                <p style="color: #C7C8C4; font-size: 0.8rem; margin: 0.5rem 0 0 0;">Resistencia</p>
+                            </div>
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚔️</div>
+                                <p style="color: #F44336; font-weight: bold; margin: 0;">Duelo</p>
+                                <p style="color: #C7C8C4; font-size: 0.8rem; margin: 0.5rem 0 0 0;">1 vs 1</p>
+                            </div>
+                            <div style="padding: 1rem; background: rgba(224, 225, 221, 0.1); border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🧩</div>
+                                <p style="color: #795548; font-weight: bold; margin: 0;">Trivial</p>
+                                <p style="color: #C7C8C4; font-size: 0.8rem; margin: 0.5rem 0 0 0;">Estrategia</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navegación -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #415A77;">
+                    <button id="game-modes-prev-btn" onclick="previousGameModeScreen()" style="padding: 8px 16px; background: #415A77; color: #E0E1DD; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; display: none;">← Anterior</button>
+                    <span id="game-modes-counter" style="color: #778DA9; font-weight: 500;">1 / 9</span>
+                    <button id="game-modes-next-btn" onclick="nextGameModeScreen()" style="padding: 8px 16px; background: #3B82F6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Siguiente →</button>
                 </div>
             </div>
         </div>

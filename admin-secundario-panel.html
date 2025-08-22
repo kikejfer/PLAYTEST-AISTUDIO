@@ -1786,10 +1786,86 @@
 
         function openGameModesModal() {
             showModal('game-modes-modal');
+            currentGameModeScreen = 1;
+            showGameModeScreen(1);
+        }
+        
+        let currentGameModeScreen = 1;
+        const totalGameModeScreens = 9;
+        
+        function showGameModeScreen(screenNumber) {
+            for (let i = 1; i <= totalGameModeScreens; i++) {
+                const screen = document.getElementById(`game-mode-screen-${i}`);
+                if (screen) screen.style.display = 'none';
+            }
+            const currentScreen = document.getElementById(`game-mode-screen-${screenNumber}`);
+            if (currentScreen) currentScreen.style.display = 'block';
+            updateGameModeNavigation(screenNumber);
+        }
+        
+        function updateGameModeNavigation(screenNumber) {
+            const prevBtn = document.getElementById('game-modes-prev-btn');
+            const nextBtn = document.getElementById('game-modes-next-btn');
+            const counter = document.getElementById('game-modes-counter');
+            if (prevBtn) prevBtn.style.display = screenNumber === 1 ? 'none' : 'inline-block';
+            if (nextBtn) nextBtn.style.display = screenNumber === totalGameModeScreens ? 'none' : 'inline-block';
+            if (counter) counter.textContent = `${screenNumber} / ${totalGameModeScreens}`;
+        }
+        
+        function previousGameModeScreen() {
+            if (currentGameModeScreen > 1) {
+                currentGameModeScreen--;
+                showGameModeScreen(currentGameModeScreen);
+            }
+        }
+        
+        function nextGameModeScreen() {
+            if (currentGameModeScreen < totalGameModeScreens) {
+                currentGameModeScreen++;
+                showGameModeScreen(currentGameModeScreen);
+            }
         }
 
         function openRoleLevelsModal() {
             showModal('role-levels-modal');
+            currentRoleLevelScreen = 1;
+            showRoleLevelScreen(1);
+        }
+        
+        let currentRoleLevelScreen = 1;
+        const totalRoleLevelScreens = 15;
+        
+        function showRoleLevelScreen(screenNumber) {
+            for (let i = 1; i <= totalRoleLevelScreens; i++) {
+                const screen = document.getElementById(`role-level-screen-${i}`);
+                if (screen) screen.style.display = 'none';
+            }
+            const currentScreen = document.getElementById(`role-level-screen-${screenNumber}`);
+            if (currentScreen) currentScreen.style.display = 'block';
+            updateRoleLevelNavigation(screenNumber);
+        }
+        
+        function updateRoleLevelNavigation(screenNumber) {
+            const prevBtn = document.getElementById('role-levels-prev-btn');
+            const nextBtn = document.getElementById('role-levels-next-btn');
+            const counter = document.getElementById('role-levels-counter');
+            if (prevBtn) prevBtn.style.display = screenNumber === 1 ? 'none' : 'inline-block';
+            if (nextBtn) nextBtn.style.display = screenNumber === totalRoleLevelScreens ? 'none' : 'inline-block';
+            if (counter) counter.textContent = `${screenNumber} / ${totalRoleLevelScreens}`;
+        }
+        
+        function previousRoleLevelScreen() {
+            if (currentRoleLevelScreen > 1) {
+                currentRoleLevelScreen--;
+                showRoleLevelScreen(currentRoleLevelScreen);
+            }
+        }
+        
+        function nextRoleLevelScreen() {
+            if (currentRoleLevelScreen < totalRoleLevelScreens) {
+                currentRoleLevelScreen++;
+                showRoleLevelScreen(currentRoleLevelScreen);
+            }
         }
 
         function openTopicDevelopmentModal() {
