@@ -1,3 +1,191 @@
+<!-- Modal de Introducción -->
+<div id="introduction-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 95%; max-width: 900px; max-height: 85vh; border: 1px solid #415A77; overflow-y: auto;" onclick="event.stopPropagation();">
+        <div style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h3 style="color: #E0E1DD; font-size: 24px; font-weight: bold; margin: 0;">🎮 Introducción a LumiQuiz</h3>
+                <button onclick="closeModal('introduction-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
+            </div>
+        <div class="modal-body" style="padding: 1.5rem; line-height: 1.6; min-height: 400px;">
+            
+            <!-- Pantalla 1: Bienvenida -->
+            <div id="introduction-screen-1" style="display: block; text-align: center;">
+                <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px;">
+                    <img src="./Imagenes/Saludando.png" alt="Lumi Saludando" style="max-width: 200px; height: auto; margin-bottom: 1rem;">
+                    <h3 style="color: #FFB347; margin: 0 0 1rem 0; font-size: 2rem;">¡HOLA! SOY LUMI, TU GUÍA EN LUMIQUIZ</h3>
+                    <p style="color: #E0E1DD; font-size: 1.2rem; margin-bottom: 2rem;">¿Cansado de estudiar de forma aburrida y poco efectiva?</p>
+                    <div style="text-align: left; max-width: 500px; margin: 0 auto;">
+                        <div style="color: #E0E1DD; font-size: 1rem; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="color: #FFD700;">⭐</span> 9 modos diferentes de entrenamiento y competición
+                        </div>
+                        <div style="color: #E0E1DD; font-size: 1rem; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="color: #FFD700;">⭐</span> Duelos y torneos en tiempo real
+                        </div>
+                        <div style="color: #E0E1DD; font-size: 1rem; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="color: #FFD700;">⭐</span> Premios reales mientras aprendes
+                        </div>
+                        <div style="color: #E0E1DD; font-size: 1rem; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="color: #FFD700;">⭐</span> Creación de contenido y monetización
+                        </div>
+                        <div style="color: #E0E1DD; font-size: 1rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="color: #FFD700;">⭐</span> Progreso con análisis avanzados
+                        </div>
+                    </div>
+                    <p style="color: #3B82F6; font-size: 1.3rem; font-weight: bold; margin: 0;">¡Prepárate para que estudiar sea tu nueva pasión!</p>
+                </div>
+            </div>
+
+            <!-- Pantalla 2: Elige tu camino -->
+            <div id="introduction-screen-2" style="display: none; text-align: center;">
+                <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px;">
+                    <h3 style="color: #3B82F6; margin: 0 0 1.5rem 0; font-size: 2rem;">ELIGE TU CAMINO EN LUMIQUIZ</h3>
+                    <img src="./Imagenes/Pensativo.png" alt="Lumi Pensativo" style="max-width: 150px; height: auto; margin-bottom: 2rem;">
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
+                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #3B82F6;">
+                            <h4 style="color: #3B82F6; margin: 0 0 0.5rem 0; font-size: 1.2rem;">📚 Estudiante</h4>
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem;">Aprende, compite y sube de nivel.</p>
+                        </div>
+                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #10B981;">
+                            <h4 style="color: #10B981; margin: 0 0 0.5rem 0; font-size: 1.2rem;">🧑‍💻 Creador de Contenido</h4>
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem;">Crea bloques, organiza torneos y promociona tu contenido para generar interés.</p>
+                        </div>
+                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #EF4444;">
+                            <h4 style="color: #EF4444; margin: 0 0 0.5rem 0; font-size: 1.2rem;">👨‍🏫 Profesor</h4>
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem;">Gestiona clases, diseña cronogramas y maximiza el rendimiento y el progreso de tus alumnos.</p>
+                        </div>
+                    </div>
+                    
+                    <p style="color: #FFB347; font-size: 1.1rem; margin: 0; font-weight: 500;">Cada rol tiene niveles, beneficios exclusivos y formas únicas de ganar Luminarias.</p>
+                </div>
+            </div>
+
+            <!-- Pantalla 3: Luminarias -->
+            <div id="introduction-screen-3" style="display: none; text-align: center;">
+                <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px;">
+                    <h3 style="color: #FFD700; margin: 0 0 1.5rem 0; font-size: 2rem;">LUMINARIAS: TU MONEDA DEL CONOCIMIENTO</h3>
+                    <img src="./Imagenes/Luminarias.png" alt="Luminarias" style="max-width: 200px; height: auto; margin-bottom: 1.5rem;">
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 2rem 0;">
+                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border: 2px solid #10B981;">
+                            <h4 style="color: #10B981; margin: 0 0 1rem 0; font-size: 1.3rem;">GÁNALAS</h4>
+                            <div style="text-align: left;">
+                                <p style="color: #E0E1DD; margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">📚 Estudiando</p>
+                                <p style="color: #E0E1DD; margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🎯 Compitiendo</p>
+                                <p style="color: #E0E1DD; margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🧑‍🤝‍🧑 Participando</p>
+                                <p style="color: #E0E1DD; margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🎁 Bonificaciones</p>
+                            </div>
+                        </div>
+                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border: 2px solid #3B82F6;">
+                            <h4 style="color: #3B82F6; margin: 0 0 1rem 0; font-size: 1.3rem;">ÚSALAS EN</h4>
+                            <div style="text-align: left;">
+                                <p style="color: #E0E1DD; margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🎨 Personalización de avatares y temas</p>
+                                <p style="color: #E0E1DD; margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🔍 Pistas, vidas y multiplicadores</p>
+                                <p style="color: #E0E1DD; margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">📜 Contenido premium</p>
+                                <p style="color: #E0E1DD; margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">💸 Descuentos reales</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #FFD700; color: #1B263B; padding: 1rem; border-radius: 8px; font-weight: bold; font-size: 1.2rem;">
+                        ➜ ¡Empiezas con 200 Luminarias de regalo!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pantalla 4: 9 Modos de Juego -->
+            <div id="introduction-screen-4" style="display: none; text-align: center;">
+                <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px;">
+                    <h3 style="color: #3B82F6; margin: 0 0 2rem 0; font-size: 2rem;">9 MODOS PARA APRENDER JUGANDO</h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 2rem 0;">
+                        <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border: 1px solid #415A77;">
+                            <img src="./Imagenes/Clasico.png" alt="Clásico" style="max-width: 80px; height: auto; margin-bottom: 0.5rem;">
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.9rem; font-weight: 500;">Clásico</p>
+                        </div>
+                        <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border: 1px solid #415A77;">
+                            <img src="./Imagenes/Contrarreloj.png" alt="Contrarreloj" style="max-width: 80px; height: auto; margin-bottom: 0.5rem;">
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.9rem; font-weight: 500;">Contrarreloj</p>
+                        </div>
+                        <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border: 1px solid #415A77;">
+                            <img src="./Imagenes/Jugando.png" alt="Jugando" style="max-width: 80px; height: auto; margin-bottom: 0.5rem;">
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.9rem; font-weight: 500;">Jugando</p>
+                        </div>
+                        <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border: 1px solid #415A77;">
+                            <img src="./Imagenes/Duelo.png" alt="Duelo" style="max-width: 80px; height: auto; margin-bottom: 0.5rem;">
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.9rem; font-weight: 500;">Duelo</p>
+                        </div>
+                        <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border: 1px solid #415A77;">
+                            <img src="./Imagenes/Trivial.png" alt="Trivial" style="max-width: 80px; height: auto; margin-bottom: 0.5rem;">
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.9rem; font-weight: 500;">Trivial</p>
+                        </div>
+                        <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border: 1px solid #415A77;">
+                            <img src="./Imagenes/Niveles.png" alt="Niveles" style="max-width: 80px; height: auto; margin-bottom: 0.5rem;">
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.9rem; font-weight: 500;">Niveles</p>
+                        </div>
+                        <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border: 1px solid #415A77;">
+                            <img src="./Imagenes/Racha.png" alt="Racha" style="max-width: 80px; height: auto; margin-bottom: 0.5rem;">
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.9rem; font-weight: 500;">Racha</p>
+                        </div>
+                        <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border: 1px solid #415A77;">
+                            <img src="./Imagenes/Examen.png" alt="Examen" style="max-width: 80px; height: auto; margin-bottom: 0.5rem;">
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.9rem; font-weight: 500;">Examen</p>
+                        </div>
+                        <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border: 1px solid #415A77;">
+                            <img src="./Imagenes/Maraton.png" alt="Maratón" style="max-width: 80px; height: auto; margin-bottom: 0.5rem;">
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.9rem; font-weight: 500;">Maratón</p>
+                        </div>
+                    </div>
+                    
+                    <p style="color: #FFB347; font-size: 1.1rem; margin: 0; font-weight: 500;">Además: seguimiento de progreso, rankings y torneos.</p>
+                </div>
+            </div>
+
+            <!-- Pantalla 5: Comienza tu aventura -->
+            <div id="introduction-screen-5" style="display: none; text-align: center;">
+                <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px;">
+                    <h3 style="color: #3B82F6; margin: 0 0 2rem 0; font-size: 2rem;">¡Comienza tu aventura en LumiQuiz!</h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
+                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #3B82F6;">
+                            <h4 style="color: #3B82F6; margin: 0 0 0.5rem 0; font-size: 1.2rem;">👩‍🎓 Estudiante</h4>
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem;">🎲 Explora bloques, juega tu primera partida y revisa tu progreso.</p>
+                        </div>
+                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #10B981;">
+                            <h4 style="color: #10B981; margin: 0 0 0.5rem 0; font-size: 1.2rem;">🧑‍💻 Creador</h4>
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem;">🧱 Crea tu primer bloque y 🏆 organiza un torneo.</p>
+                        </div>
+                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #EF4444;">
+                            <h4 style="color: #EF4444; margin: 0 0 0.5rem 0; font-size: 1.2rem;">👨‍🏫 Profesor</h4>
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem;">📚 Crea tu primera clase y asigna un reto.</p>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border: 2px solid #FFB347; margin: 2rem 0;">
+                        <img src="./Imagenes/Celebrando.png" alt="Lumi Celebrando" style="max-width: 100px; height: auto; margin-bottom: 1rem;">
+                        <h4 style="color: #FFB347; margin: 0 0 0.5rem 0; font-size: 1.2rem;">🆘 Soporte siempre disponible</h4>
+                        <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem;">❓ Chat, guías y tutoriales conmigo 😉</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- Controles de navegación -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-top: 1px solid #415A77; background: #1B263B;">
+            <button id="prev-introduction-btn" onclick="previousIntroductionScreen()" style="padding: 0.75rem 1.5rem; background: #415A77; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s; display: none;" onmouseover="this.style.background='#2E4258'" onmouseout="this.style.background='#415A77'">◀ Anterior</button>
+            <div style="display: flex; gap: 8px;">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: #3B82F6;" id="intro-dot-1"></div>
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: #415A77;" id="intro-dot-2"></div>
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: #415A77;" id="intro-dot-3"></div>
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: #415A77;" id="intro-dot-4"></div>
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: #415A77;" id="intro-dot-5"></div>
+            </div>
+            <button id="next-introduction-btn" onclick="nextIntroductionScreen()" style="padding: 0.75rem 1.5rem; background: #3B82F6; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">Siguiente ▶</button>
+        </div>
+    </div>
+</div>
+
 <!-- Modal de Niveles por Roles -->
 <div id="role-levels-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 95%; max-width: 900px; max-height: 85vh; border: 1px solid #415A77; overflow-y: auto;" onclick="event.stopPropagation();">

@@ -1275,18 +1275,40 @@
                     const userData = JSON.parse(jsonPayload);
                     currentUser = userData;
                     
-                    document.getElementById('user-name').textContent = userData.nickname || userData.username || userData.email || 'Creador';
-                    document.getElementById('user-avatar').textContent = (userData.nickname || userData.username || userData.email || 'C')[0].toUpperCase();
+                    // Update UI (verificar que los elementos existan)
+                    const userNameElement = document.getElementById('user-name');
+                    const userAvatarElement = document.getElementById('user-avatar');
+                    
+                    if (userNameElement) {
+                        userNameElement.textContent = userData.nickname || userData.username || userData.email || 'Creador';
+                    }
+                    if (userAvatarElement) {
+                        userAvatarElement.textContent = (userData.nickname || userData.username || userData.email || 'C')[0].toUpperCase();
+                    }
                     
                 } catch (tokenError) {
-                    document.getElementById('user-name').textContent = 'Creador de Contenido';
-                    document.getElementById('user-avatar').textContent = 'C';
+                    const userNameElement = document.getElementById('user-name');
+                    const userAvatarElement = document.getElementById('user-avatar');
+                    
+                    if (userNameElement) {
+                        userNameElement.textContent = 'Creador de Contenido';
+                    }
+                    if (userAvatarElement) {
+                        userAvatarElement.textContent = 'C';
+                    }
                 }
                 
             } catch (error) {
                 console.error('Error loading user data:', error);
-                document.getElementById('user-name').textContent = 'Creador de Contenido';
-                document.getElementById('user-avatar').textContent = 'C';
+                const userNameElement = document.getElementById('user-name');
+                const userAvatarElement = document.getElementById('user-avatar');
+                
+                if (userNameElement) {
+                    userNameElement.textContent = 'Creador de Contenido';
+                }
+                if (userAvatarElement) {
+                    userAvatarElement.textContent = 'C';
+                }
             }
         }
 

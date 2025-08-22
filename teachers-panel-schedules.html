@@ -1645,21 +1645,53 @@
                     currentUser = userData;
                     
                     const userName = userData.nickname || userData.username || userData.email || 'Profesor';
-                    document.getElementById('user-name').textContent = userName;
-                    document.getElementById('dropdown-user-name').textContent = userName;
-                    document.getElementById('user-avatar').textContent = userName[0].toUpperCase();
+                    
+                    // Update UI (verificar que los elementos existan)
+                    const userNameElement = document.getElementById('user-name');
+                    const dropdownUserNameElement = document.getElementById('dropdown-user-name');
+                    const userAvatarElement = document.getElementById('user-avatar');
+                    
+                    if (userNameElement) {
+                        userNameElement.textContent = userName;
+                    }
+                    if (dropdownUserNameElement) {
+                        dropdownUserNameElement.textContent = userName;
+                    }
+                    if (userAvatarElement) {
+                        userAvatarElement.textContent = userName[0].toUpperCase();
+                    }
                     
                 } catch (tokenError) {
-                    document.getElementById('user-name').textContent = 'Profesor';
-                    document.getElementById('dropdown-user-name').textContent = 'Profesor';
-                    document.getElementById('user-avatar').textContent = 'L';
+                    const userNameElement = document.getElementById('user-name');
+                    const dropdownUserNameElement = document.getElementById('dropdown-user-name');
+                    const userAvatarElement = document.getElementById('user-avatar');
+                    
+                    if (userNameElement) {
+                        userNameElement.textContent = 'Profesor';
+                    }
+                    if (dropdownUserNameElement) {
+                        dropdownUserNameElement.textContent = 'Profesor';
+                    }
+                    if (userAvatarElement) {
+                        userAvatarElement.textContent = 'L';
+                    }
                 }
                 
             } catch (error) {
                 console.error('Error loading user data:', error);
-                document.getElementById('user-name').textContent = 'Profesor';
-                document.getElementById('dropdown-user-name').textContent = 'Profesor';
-                document.getElementById('user-avatar').textContent = 'L';
+                const userNameElement = document.getElementById('user-name');
+                const dropdownUserNameElement = document.getElementById('dropdown-user-name');
+                const userAvatarElement = document.getElementById('user-avatar');
+                
+                if (userNameElement) {
+                    userNameElement.textContent = 'Profesor';
+                }
+                if (dropdownUserNameElement) {
+                    dropdownUserNameElement.textContent = 'Profesor';
+                }
+                if (userAvatarElement) {
+                    userAvatarElement.textContent = 'L';
+                }
             }
         }
 

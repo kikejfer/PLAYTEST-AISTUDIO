@@ -87,12 +87,9 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
         updateUserData(userInfo);
         
         // Inicializar selector de roles si el usuario tiene múltiples roles
-        console.log('🔍 DEBUG: userInfo.roles:', userInfo.roles, 'length:', userInfo.roles.length);
         if (userInfo.roles.length > 1) {
-            console.log('🔍 DEBUG: Inicializando selector de roles');
             initializeRoleSelector(userInfo.roles, userInfo.activeRole);
         } else {
-            console.log('🔍 DEBUG: Usuario tiene solo un rol, ocultando selector');
             // Ocultar selector si solo tiene un rol
             const roleSelectorContainer = document.getElementById('role-selector-container');
             if (roleSelectorContainer) {
@@ -368,16 +365,11 @@ function getUserRolesFromSystem(profile, session) {
 function getTokenRoles() {
     try {
         const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-        if (!token) {
-            console.log('🔍 DEBUG: No hay token disponible');
-            return [];
-        }
+        if (!token) return [];
         
         // Decodificar JWT (solo la parte del payload)
         const payload = JSON.parse(atob(token.split('.')[1]));
-        const roles = payload.roles || [];
-        console.log('🔍 DEBUG: Roles del token:', roles);
-        return roles;
+        return payload.roles || [];
     } catch (error) {
         console.warn('⚠️ Error decodificando token JWT:', error);
         return [];
@@ -589,6 +581,11 @@ function initializeHeaderFunctions() {
     };
     
     // Funciones para abrir modales (se conectan con modals-component.html)
+    window.openIntroductionModal = function() {
+        alert('Modal de Introducción - Por implementar');
+        closeUserDropdown();
+    };
+    
     window.openGameModesModal = function() {
         openModal('game-modes-modal');
         closeUserDropdown();

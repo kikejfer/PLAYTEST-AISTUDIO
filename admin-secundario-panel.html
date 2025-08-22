@@ -634,10 +634,17 @@
                     const userData = JSON.parse(jsonPayload);
                     currentUser = userData;
                     
-                    // Update UI - show nickname or email
+                    // Update UI - show nickname or email (verificar que los elementos existan)
                     const displayName = userData.nickname || userData.username || userData.email || 'Administrador Secundario';
-                    document.getElementById('user-name').textContent = displayName;
-                    document.getElementById('user-avatar').textContent = displayName[0].toUpperCase();
+                    const userNameElement = document.getElementById('user-name');
+                    const userAvatarElement = document.getElementById('user-avatar');
+                    
+                    if (userNameElement) {
+                        userNameElement.textContent = displayName;
+                    }
+                    if (userAvatarElement) {
+                        userAvatarElement.textContent = displayName[0].toUpperCase();
+                    }
                     
                     // Update role display
                     const roleElement = document.getElementById('user-role');
@@ -647,14 +654,28 @@
                     
                 } catch (tokenError) {
                     // If token decode fails, use fallback
-                    document.getElementById('user-name').textContent = 'Administrador';
-                    document.getElementById('user-avatar').textContent = 'A';
+                    const userNameElement = document.getElementById('user-name');
+                    const userAvatarElement = document.getElementById('user-avatar');
+                    
+                    if (userNameElement) {
+                        userNameElement.textContent = 'Administrador';
+                    }
+                    if (userAvatarElement) {
+                        userAvatarElement.textContent = 'A';
+                    }
                 }
                 
             } catch (error) {
                 console.error('Error loading user data:', error);
-                document.getElementById('user-name').textContent = 'Administrador';
-                document.getElementById('user-avatar').textContent = 'A';
+                const userNameElement = document.getElementById('user-name');
+                const userAvatarElement = document.getElementById('user-avatar');
+                
+                if (userNameElement) {
+                    userNameElement.textContent = 'Administrador';
+                }
+                if (userAvatarElement) {
+                    userAvatarElement.textContent = 'A';
+                }
             }
         }
 
