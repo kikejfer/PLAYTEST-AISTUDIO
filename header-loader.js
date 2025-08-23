@@ -858,6 +858,138 @@ function updateIntroductionNavigation(screenIndex) {
     }
 }
 
+// Funciones de navegación para modal de Desarrollo de Temarios
+window.nextTopicScreen = function() {
+    const screens = ['topic-screen-1', 'topic-screen-2', 'topic-screen-3', 'topic-screen-4', 'topic-screen-5', 'topic-screen-6'];
+    let currentScreen = 0;
+    
+    // Encontrar pantalla actual
+    for (let i = 0; i < screens.length; i++) {
+        const screen = document.getElementById(screens[i]);
+        if (screen && screen.style.display !== 'none') {
+            currentScreen = i;
+            break;
+        }
+    }
+    
+    // Ir a siguiente pantalla
+    if (currentScreen < screens.length - 1) {
+        document.getElementById(screens[currentScreen]).style.display = 'none';
+        document.getElementById(screens[currentScreen + 1]).style.display = 'block';
+        
+        // Actualizar botones y indicadores
+        updateTopicNavigation(currentScreen + 1);
+    }
+};
+
+window.previousTopicScreen = function() {
+    const screens = ['topic-screen-1', 'topic-screen-2', 'topic-screen-3', 'topic-screen-4', 'topic-screen-5', 'topic-screen-6'];
+    let currentScreen = 0;
+    
+    // Encontrar pantalla actual
+    for (let i = 0; i < screens.length; i++) {
+        const screen = document.getElementById(screens[i]);
+        if (screen && screen.style.display !== 'none') {
+            currentScreen = i;
+            break;
+        }
+    }
+    
+    // Ir a pantalla anterior
+    if (currentScreen > 0) {
+        document.getElementById(screens[currentScreen]).style.display = 'none';
+        document.getElementById(screens[currentScreen - 1]).style.display = 'block';
+        
+        // Actualizar botones e indicadores
+        updateTopicNavigation(currentScreen - 1);
+    }
+};
+
+// Función auxiliar para actualizar navegación del modal de desarrollo de temarios
+function updateTopicNavigation(screenIndex) {
+    const totalScreens = 6;
+    
+    // Actualizar botones
+    const prevBtn = document.getElementById('topic-prev-btn');
+    const nextBtn = document.getElementById('topic-next-btn');
+    if (prevBtn) prevBtn.style.display = screenIndex > 0 ? 'inline-block' : 'none';
+    if (nextBtn) nextBtn.style.display = screenIndex < totalScreens - 1 ? 'inline-block' : 'none';
+    
+    // Actualizar indicadores (dots)
+    for (let i = 1; i <= totalScreens; i++) {
+        const dot = document.getElementById(`topic-dot-${i}`);
+        if (dot) {
+            dot.style.background = i === screenIndex + 1 ? '#3B82F6' : '#415A77';
+        }
+    }
+}
+
+// Funciones de navegación para modal de Luminarias
+window.nextLuminariasScreen = function() {
+    const screens = ['luminarias-screen-1', 'luminarias-screen-2', 'luminarias-screen-3', 'luminarias-screen-4', 'luminarias-screen-5', 'luminarias-screen-6'];
+    let currentScreen = 0;
+    
+    // Encontrar pantalla actual
+    for (let i = 0; i < screens.length; i++) {
+        const screen = document.getElementById(screens[i]);
+        if (screen && screen.style.display !== 'none') {
+            currentScreen = i;
+            break;
+        }
+    }
+    
+    // Ir a siguiente pantalla
+    if (currentScreen < screens.length - 1) {
+        document.getElementById(screens[currentScreen]).style.display = 'none';
+        document.getElementById(screens[currentScreen + 1]).style.display = 'block';
+        
+        // Actualizar botones y indicadores
+        updateLuminariasNavigation(currentScreen + 1);
+    }
+};
+
+window.previousLuminariasScreen = function() {
+    const screens = ['luminarias-screen-1', 'luminarias-screen-2', 'luminarias-screen-3', 'luminarias-screen-4', 'luminarias-screen-5', 'luminarias-screen-6'];
+    let currentScreen = 0;
+    
+    // Encontrar pantalla actual
+    for (let i = 0; i < screens.length; i++) {
+        const screen = document.getElementById(screens[i]);
+        if (screen && screen.style.display !== 'none') {
+            currentScreen = i;
+            break;
+        }
+    }
+    
+    // Ir a pantalla anterior
+    if (currentScreen > 0) {
+        document.getElementById(screens[currentScreen]).style.display = 'none';
+        document.getElementById(screens[currentScreen - 1]).style.display = 'block';
+        
+        // Actualizar botones e indicadores
+        updateLuminariasNavigation(currentScreen - 1);
+    }
+};
+
+// Función auxiliar para actualizar navegación del modal de luminarias
+function updateLuminariasNavigation(screenIndex) {
+    const totalScreens = 6;
+    
+    // Actualizar botones
+    const prevBtn = document.getElementById('luminarias-prev-btn');
+    const nextBtn = document.getElementById('luminarias-next-btn');
+    if (prevBtn) prevBtn.style.display = screenIndex > 0 ? 'inline-block' : 'none';
+    if (nextBtn) nextBtn.style.display = screenIndex < totalScreens - 1 ? 'inline-block' : 'none';
+    
+    // Actualizar indicadores (dots)
+    for (let i = 1; i <= totalScreens; i++) {
+        const dot = document.getElementById(`luminarias-dot-${i}`);
+        if (dot) {
+            dot.style.background = i === screenIndex + 1 ? '#FFD700' : '#415A77';
+        }
+    }
+}
+
 // Exportar funciones para uso manual
 window.loadHeader = loadHeader;
 window.updateUserData = updateUserData;
