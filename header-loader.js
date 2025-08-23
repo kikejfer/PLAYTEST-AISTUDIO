@@ -689,13 +689,37 @@ window.openModal = function(modalId) {
                 visibility: visible !important;
                 opacity: 1 !important;
                 position: relative !important;
+                height: auto !important;
+                flex-shrink: 0 !important;
             `;
+            
+            // Forzar recalculo de layout
+            modalContent.offsetHeight;
+            
+            // Verificar contenido interno y aplicar estilos a los hijos también
+            const modalBody = modalContent.querySelector('.modal-body');
+            if (modalBody) {
+                modalBody.style.cssText += `
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                    min-height: 300px !important;
+                `;
+                console.log(`🔍 DEBUG: Modal body encontrado y configurado para ${modalId}`);
+            }
+            
             console.log(`🔍 DEBUG: Estilos aplicados al contenedor interno de ${modalId}`);
             console.log(`🔍 DEBUG: Dimensiones del contenedor:`, {
                 width: modalContent.offsetWidth,
                 height: modalContent.offsetHeight,
+                clientWidth: modalContent.clientWidth,
+                scrollWidth: modalContent.scrollWidth,
                 display: modalContent.style.display,
-                visibility: modalContent.style.visibility
+                visibility: modalContent.style.visibility,
+                computedWidth: window.getComputedStyle(modalContent).width,
+                computedHeight: window.getComputedStyle(modalContent).height,
+                children: modalContent.children.length,
+                innerHTML: modalContent.innerHTML.length > 0
             });
         } else {
             console.error(`❌ DEBUG: No se encontró contenedor interno para modal ${modalId}`);
