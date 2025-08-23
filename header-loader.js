@@ -662,14 +662,36 @@ window.openModal = function(modalId) {
             position: fixed !important;
             top: 0 !important;
             left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            min-width: 100vw !important;
+            min-height: 100vh !important;
             z-index: 10000 !important;
             background: rgba(0,0,0,0.6) !important;
             backdrop-filter: blur(4px) !important;
             visibility: visible !important;
             opacity: 1 !important;
         `;
+        
+        // Asegurar que el contenedor interno también tenga dimensiones
+        const modalContent = modal.querySelector('div[style*="background"]');
+        if (modalContent) {
+            modalContent.style.cssText = `
+                background: #1B263B !important;
+                border-radius: 12px !important;
+                width: 95% !important;
+                max-width: 900px !important;
+                min-width: 300px !important;
+                max-height: 85vh !important;
+                min-height: 400px !important;
+                border: 1px solid #415A77 !important;
+                overflow-y: auto !important;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important;
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            `;
+        }
         
         // También asegurar que no esté oculto por clases CSS
         modal.classList.remove('hidden');

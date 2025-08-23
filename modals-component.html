@@ -1,67 +1,65 @@
 <!-- Modal de Introducción -->
 <div id="introduction-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 95%; max-width: 900px; max-height: 85vh; border: 1px solid #415A77; overflow-y: auto;" onclick="event.stopPropagation();">
-        <div style="padding: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                <h3 style="color: #E0E1DD; font-size: 24px; font-weight: bold; margin: 0;">🎮 Introducción a LumiQuiz</h3>
-                <button onclick="closeModal('introduction-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
-            </div>
+        <div style="padding: 24px; position: relative;">
+            <button onclick="closeModal('introduction-modal')" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s; z-index: 10;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
         <div class="modal-body" style="padding: 1.5rem; line-height: 1.6; min-height: 400px;">
             
-            <!-- Pantalla 1: Bienvenida - Composición visual -->
+            <!-- Pantalla 1: Bienvenida - Responsive Layout -->
             <div id="introduction-screen-1" style="display: block;">
-                <div style="position: relative; min-height: 500px; background: linear-gradient(135deg, #1B263B, #0D4A6B, #2E5266); border-radius: 12px; overflow: hidden;">
-                    <!-- Título superior -->
-                    <div style="position: absolute; top: 30px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 3;">
-                        <h2 style="color: #FFB347; font-size: 2.2rem; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); margin: 0; letter-spacing: 1px;">¡HOLA! SOY LUMI, TU GUÍA EN LUMIQUIZ</h2>
-                    </div>
+                <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #0D4A6B, #2E5266); border-radius: 12px; text-align: center;">
+                    <!-- Título -->
+                    <h2 style="color: #FFB347; font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); margin: 0 0 2rem 0; letter-spacing: 1px;">¡HOLA! SOY LUMI, TU GUÍA EN LUMIQUIZ</h2>
                     
-                    <!-- Personaje Lumi centro-izquierda -->
-                    <div style="position: absolute; left: 80px; top: 120px; z-index: 2;">
-                        <img src="./Imagenes/Saludando.png" alt="Lumi Saludando" style="width: 280px; height: auto; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));">
-                    </div>
-                    
-                    <!-- Pregunta debajo del título -->
-                    <div style="position: absolute; top: 90px; right: 60px; width: 300px; text-align: center; background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 15px; border: 2px solid #3B82F6;">
-                        <p style="color: #E0E1DD; font-size: 1.3rem; font-weight: 500; margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">¿Cansado de estudiar de forma aburrida y poco efectiva?</p>
-                    </div>
-                    
-                    <!-- Lista con estrellas - lado derecho -->
-                    <div style="position: absolute; right: 40px; top: 180px; width: 320px;">
-                        <div style="background: rgba(13, 27, 42, 0.8); padding: 20px; border-radius: 12px; border-left: 5px solid #FFD700; backdrop-filter: blur(5px);">
-                            <div style="color: #E0E1DD; font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
-                                <span style="color: #FFD700; font-size: 1.4rem; text-shadow: 0 0 10px #FFD700;">⭐</span> 
-                                <span style="font-weight: 500;">9 modos diferentes de entrenamiento y competición</span>
+                    <!-- Contenido en columnas responsive -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; align-items: center; margin: 2rem 0;">
+                        <!-- Columna izquierda: Personaje y pregunta -->
+                        <div style="text-align: center;">
+                            <img src="./Imagenes/Saludando.png" alt="Lumi Saludando" style="max-width: 250px; width: 100%; height: auto; margin-bottom: 1rem; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));">
+                            <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 15px; border: 2px solid #3B82F6; margin-top: 1rem;">
+                                <p style="color: #E0E1DD; font-size: clamp(1rem, 2.5vw, 1.3rem); font-weight: 500; margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">¿Cansado de estudiar de forma aburrida y poco efectiva?</p>
                             </div>
-                            <div style="color: #E0E1DD; font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
-                                <span style="color: #FFD700; font-size: 1.4rem; text-shadow: 0 0 10px #FFD700;">⭐</span> 
-                                <span style="font-weight: 500;">Duelos y torneos en tiempo real</span>
-                            </div>
-                            <div style="color: #E0E1DD; font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
-                                <span style="color: #FFD700; font-size: 1.4rem; text-shadow: 0 0 10px #FFD700;">⭐</span> 
-                                <span style="font-weight: 500;">Premios reales mientras aprendes</span>
-                            </div>
-                            <div style="color: #E0E1DD; font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
-                                <span style="color: #FFD700; font-size: 1.4rem; text-shadow: 0 0 10px #FFD700;">⭐</span> 
-                                <span style="font-weight: 500;">Creación de contenido y monetización</span>
-                            </div>
-                            <div style="color: #E0E1DD; font-size: 1.1rem; margin-bottom: 0; display: flex; align-items: center; gap: 12px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
-                                <span style="color: #FFD700; font-size: 1.4rem; text-shadow: 0 0 10px #FFD700;">⭐</span> 
-                                <span style="font-weight: 500;">Progreso con análisis avanzados</span>
+                        </div>
+                        
+                        <!-- Columna derecha: Lista de características -->
+                        <div style="text-align: left; max-width: 400px; margin: 0 auto;">
+                            <div style="background: rgba(13, 27, 42, 0.8); padding: 20px; border-radius: 12px; border-left: 5px solid #FFD700;">
+                                <div style="color: #E0E1DD; font-size: clamp(0.9rem, 2vw, 1.1rem); margin-bottom: 12px; display: flex; align-items: flex-start; gap: 12px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                    <span style="color: #FFD700; font-size: 1.4rem; text-shadow: 0 0 10px #FFD700; flex-shrink: 0;">⭐</span> 
+                                    <span style="font-weight: 500;">9 modos diferentes de entrenamiento y competición</span>
+                                </div>
+                                <div style="color: #E0E1DD; font-size: clamp(0.9rem, 2vw, 1.1rem); margin-bottom: 12px; display: flex; align-items: flex-start; gap: 12px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                    <span style="color: #FFD700; font-size: 1.4rem; text-shadow: 0 0 10px #FFD700; flex-shrink: 0;">⭐</span> 
+                                    <span style="font-weight: 500;">Duelos y torneos en tiempo real</span>
+                                </div>
+                                <div style="color: #E0E1DD; font-size: clamp(0.9rem, 2vw, 1.1rem); margin-bottom: 12px; display: flex; align-items: flex-start; gap: 12px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                    <span style="color: #FFD700; font-size: 1.4rem; text-shadow: 0 0 10px #FFD700; flex-shrink: 0;">⭐</span> 
+                                    <span style="font-weight: 500;">Premios reales mientras aprendes</span>
+                                </div>
+                                <div style="color: #E0E1DD; font-size: clamp(0.9rem, 2vw, 1.1rem); margin-bottom: 12px; display: flex; align-items: flex-start; gap: 12px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                    <span style="color: #FFD700; font-size: 1.4rem; text-shadow: 0 0 10px #FFD700; flex-shrink: 0;">⭐</span> 
+                                    <span style="font-weight: 500;">Creación de contenido y monetización</span>
+                                </div>
+                                <div style="color: #E0E1DD; font-size: clamp(0.9rem, 2vw, 1.1rem); margin-bottom: 0; display: flex; align-items: flex-start; gap: 12px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                    <span style="color: #FFD700; font-size: 1.4rem; text-shadow: 0 0 10px #FFD700; flex-shrink: 0;">⭐</span> 
+                                    <span style="font-weight: 500;">Progreso con análisis avanzados</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Texto motivacional inferior -->
-                    <div style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); text-align: center; background: rgba(59, 130, 246, 0.15); padding: 20px 40px; border-radius: 25px; border: 3px solid #3B82F6;">
-                        <h3 style="color: #3B82F6; font-size: 1.6rem; font-weight: bold; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); letter-spacing: 0.5px;">¡Prepárate para que estudiar sea tu nueva pasión!</h3>
+                    <!-- Texto motivacional -->
+                    <div style="background: rgba(59, 130, 246, 0.15); padding: 20px; border-radius: 25px; border: 3px solid #3B82F6; margin-top: 2rem;">
+                        <h3 style="color: #3B82F6; font-size: clamp(1.2rem, 3vw, 1.6rem); font-weight: bold; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); letter-spacing: 0.5px;">¡Prepárate para que estudiar sea tu nueva pasión!</h3>
                     </div>
                     
                     <!-- Elementos decorativos -->
-                    <div style="position: absolute; top: 20px; left: 20px; color: #FFD700; font-size: 2rem; opacity: 0.7; animation: pulse 2s infinite;">✨</div>
-                    <div style="position: absolute; top: 60px; right: 20px; color: #3B82F6; font-size: 1.5rem; opacity: 0.6;">🎓</div>
-                    <div style="position: absolute; bottom: 20px; left: 30px; color: #10B981; font-size: 1.8rem; opacity: 0.7;">🏆</div>
-                    <div style="position: absolute; bottom: 60px; right: 30px; color: #F59E0B; font-size: 1.5rem; opacity: 0.6;">🎯</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; font-size: 1.5rem; opacity: 0.6;">
+                        <span style="color: #FFD700;">✨</span>
+                        <span style="color: #3B82F6;">🎓</span>
+                        <span style="color: #10B981;">🏆</span>
+                        <span style="color: #F59E0B;">🎯</span>
+                    </div>
                 </div>
             </div>
 
@@ -441,11 +439,8 @@
 <!-- Modal de Modalidades de Juego -->
 <div id="game-modes-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 95%; max-width: 900px; max-height: 85vh; border: 1px solid #415A77; overflow-y: auto;" onclick="event.stopPropagation();">
-        <div style="padding: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                <h3 style="color: #E0E1DD; font-size: 24px; font-weight: bold; margin: 0;">🎮 Modalidades de Juego</h3>
-                <button onclick="closeModal('game-modes-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
-            </div>
+        <div style="padding: 24px; position: relative;">
+            <button onclick="closeModal('game-modes-modal')" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s; z-index: 10;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
         <div class="modal-body" style="padding: 1.5rem; line-height: 1.6; min-height: 400px;">
             
             <!-- Pantalla 1: Introducción -->
@@ -516,9 +511,8 @@
 <!-- Modal Niveles por Roles -->
 <div id="role-levels-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: #1B263B; border-radius: 12px; max-width: 900px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; border: 1px solid #415A77;">
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #415A77;">
-            <h2 style="color: #3B82F6; margin: 0; font-size: 1.5rem;">🎭 Niveles por Roles</h2>
-            <button onclick="closeModal('role-levels-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px;">&times;</button>
+        <div style="position: relative; padding: 1rem 1.5rem; border-bottom: 1px solid #415A77;">
+            <button onclick="closeModal('role-levels-modal')" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; z-index: 10;">&times;</button>
         </div>
         <div style="padding: 1.5rem;">
             <div style="text-align: center; margin-bottom: 2rem;">
@@ -582,9 +576,8 @@
 <!-- Modal Desarrollo de Temarios -->
 <div id="topic-development-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: #1B263B; border-radius: 12px; max-width: 800px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; border: 1px solid #415A77;">
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #415A77;">
-            <h2 style="color: #10B981; margin: 0; font-size: 1.5rem;">📋 Desarrollo de Temarios</h2>
-            <button onclick="closeModal('topic-development-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px;">&times;</button>
+        <div style="position: relative; padding: 1rem 1.5rem; border-bottom: 1px solid #415A77;">
+            <button onclick="closeModal('topic-development-modal')" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; z-index: 10;">&times;</button>
         </div>
         <div style="padding: 1.5rem;">
             <div style="text-align: center; margin-bottom: 2rem;">
@@ -641,9 +634,8 @@
 <!-- Modal Luminarias -->
 <div id="luminarias-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: #1B263B; border-radius: 12px; max-width: 900px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; border: 1px solid #415A77;">
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #415A77;">
-            <h2 style="color: #FFD700; margin: 0; font-size: 1.5rem;">💰 Sistema de Luminarias</h2>
-            <button onclick="closeModal('luminarias-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px;">&times;</button>
+        <div style="position: relative; padding: 1rem 1.5rem; border-bottom: 1px solid #415A77;">
+            <button onclick="closeModal('luminarias-modal')" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; z-index: 10;">&times;</button>
         </div>
         <div style="padding: 1.5rem;">
             <div style="text-align: center; margin-bottom: 2rem;">
