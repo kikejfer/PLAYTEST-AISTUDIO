@@ -215,7 +215,7 @@
                             <p style="color: #E0E1DD; margin: 0; font-size: 0.9rem; font-weight: 500;">Duelo</p>
                         </div>
                         <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border: 1px solid #415A77;">
-                            <img src="./Imagenes/Trivial.png" alt="Trivial" style="max-width: 80px; height: auto; margin-bottom: 0.5rem;">
+                            <img src="./Imagenes/Trivia.png" alt="Trivial" style="max-width: 80px; height: auto; margin-bottom: 0.5rem;">
                             <p style="color: #E0E1DD; margin: 0; font-size: 0.9rem; font-weight: 500;">Trivial</p>
                         </div>
                         <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border: 1px solid #415A77;">
@@ -716,46 +716,3 @@
         </div>
     </div>
 </div>
-
-<script>
-// Funciones globales para manejar modales
-window.openModal = function(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = 'flex';
-        // Asegurar que el modal esté al frente
-        modal.style.zIndex = '10000';
-        console.log(`🎯 Modal abierto: ${modalId}`);
-    } else {
-        console.error(`❌ Modal no encontrado: ${modalId}`);
-    }
-};
-
-window.closeModal = function(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = 'none';
-        console.log(`🔒 Modal cerrado: ${modalId}`);
-    }
-};
-
-// Cerrar modal al hacer clic fuera del contenido
-window.addEventListener('click', function(event) {
-    if (event.target.classList.contains('modal') || event.target.classList.contains('modal-backdrop')) {
-        const modalId = event.target.id;
-        if (modalId) {
-            closeModal(modalId);
-        }
-    }
-});
-
-// Cerrar modal con tecla Escape
-window.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        const openModals = document.querySelectorAll('[id$="-modal"][style*="flex"], [id$="-modal"][style*="block"]');
-        openModals.forEach(modal => {
-            closeModal(modal.id);
-        });
-    }
-});
-</script>

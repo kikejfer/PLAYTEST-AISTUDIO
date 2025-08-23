@@ -641,6 +641,52 @@ function initializeHeaderFunctions() {
     });
 }
 
+// Funciones globales para manejar modales
+window.openModal = function(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'flex';
+        // Asegurar que el modal esté al frente
+        modal.style.zIndex = '10000';
+        console.log(`🎯 Modal abierto: ${modalId}`);
+    } else {
+        console.error(`❌ Modal no encontrado: ${modalId}`);
+    }
+};
+
+window.closeModal = function(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+        console.log(`🔒 Modal cerrado: ${modalId}`);
+    }
+};
+
+// Configurar eventos globales para modales (solo una vez)
+if (!window.modalEventsConfigured) {
+    // Cerrar modal al hacer clic fuera del contenido
+    window.addEventListener('click', function(event) {
+        if (event.target.classList.contains('modal') || event.target.classList.contains('modal-backdrop') || event.target.id.endsWith('-modal')) {
+            const modalId = event.target.id;
+            if (modalId && modalId.endsWith('-modal')) {
+                closeModal(modalId);
+            }
+        }
+    });
+
+    // Cerrar modal con tecla Escape
+    window.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const openModals = document.querySelectorAll('[id$="-modal"][style*="flex"], [id$="-modal"][style*="block"]');
+            openModals.forEach(modal => {
+                closeModal(modal.id);
+            });
+        }
+    });
+    
+    window.modalEventsConfigured = true;
+}
+
 // Funciones de navegación para modal de Introducción
 window.nextIntroductionScreen = function() {
     const screens = ['introduction-screen-1', 'introduction-screen-2', 'introduction-screen-3', 'introduction-screen-4', 'introduction-screen-5'];
