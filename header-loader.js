@@ -649,77 +649,49 @@ window.openModal = function(modalId) {
     const modal = document.getElementById(modalId);
     console.log(`🔍 DEBUG: Modal encontrado:`, modal);
     if (modal) {
-        // Configurar estilos para mostrar el modal con enfoque más robusto
-        modal.style.setProperty('display', 'block', 'important');
-        modal.style.setProperty('position', 'fixed', 'important');
-        modal.style.setProperty('top', '0', 'important');
-        modal.style.setProperty('left', '0', 'important');
-        modal.style.setProperty('width', '100vw', 'important');
-        modal.style.setProperty('height', '100vh', 'important');
-        modal.style.setProperty('z-index', '10000', 'important');
-        modal.style.setProperty('background', 'rgba(0,0,0,0.6)', 'important');
-        modal.style.setProperty('backdrop-filter', 'blur(4px)', 'important');
-        modal.style.setProperty('visibility', 'visible', 'important');
-        modal.style.setProperty('opacity', '1', 'important');
-        
-        // Usar setTimeout para permitir que el DOM se actualice
-        setTimeout(() => {
-            modal.style.setProperty('display', 'flex', 'important');
-            modal.style.setProperty('align-items', 'center', 'important');
-            modal.style.setProperty('justify-content', 'center', 'important');
-        }, 50);
-        
-        // Usar setTimeout para aplicar estilos al contenedor interno después de que el modal sea visible
-        setTimeout(() => {
-            const modalContent = modal.children[0];
-            console.log(`🔍 DEBUG: Contenedor interno encontrado (delayed):`, modalContent);
-            if (modalContent) {
-                // Aplicar estilos individualmente para mayor control
-                modalContent.style.setProperty('background', '#1B263B', 'important');
-                modalContent.style.setProperty('border-radius', '12px', 'important');
-                modalContent.style.setProperty('width', '95%', 'important');
-                modalContent.style.setProperty('max-width', '900px', 'important');
-                modalContent.style.setProperty('min-width', '350px', 'important');
-                modalContent.style.setProperty('max-height', '85vh', 'important');
-                modalContent.style.setProperty('min-height', '400px', 'important');
-                modalContent.style.setProperty('border', '1px solid #415A77', 'important');
-                modalContent.style.setProperty('overflow-y', 'auto', 'important');
-                modalContent.style.setProperty('box-shadow', '0 20px 40px rgba(0,0,0,0.3)', 'important');
-                modalContent.style.setProperty('display', 'block', 'important');
-                modalContent.style.setProperty('visibility', 'visible', 'important');
-                modalContent.style.setProperty('opacity', '1', 'important');
-                modalContent.style.setProperty('position', 'relative', 'important');
-                modalContent.style.setProperty('margin', '0 auto', 'important');
-                
-                setTimeout(() => {
-                    console.log(`🔍 DEBUG: Dimensiones finales del contenedor interno:`, {
-                        width: modalContent.offsetWidth,
-                        height: modalContent.offsetHeight,
-                        clientWidth: modalContent.clientWidth,
-                        scrollWidth: modalContent.scrollWidth,
-                        computedWidth: window.getComputedStyle(modalContent).width,
-                        computedHeight: window.getComputedStyle(modalContent).height
-                    });
-                }, 100);
-            } else {
-                console.error(`❌ DEBUG: No se encontró contenedor interno para modal ${modalId}`);
-            }
-        }, 100);
-        
-        // También asegurar que no esté oculto por clases CSS
+        // Limpiar estilos previos y clases
+        modal.removeAttribute('style');
         modal.classList.remove('hidden');
-        modal.removeAttribute('hidden');
         
-        // DEBUG: Verificar estado final del modal
-        console.log(`🔍 DEBUG: Estado final del modal ${modalId}:`, {
-            display: modal.style.display,
-            visibility: modal.style.visibility,
-            opacity: modal.style.opacity,
-            zIndex: modal.style.zIndex,
-            width: modal.offsetWidth,
-            height: modal.offsetHeight,
-            computedStyle: window.getComputedStyle(modal).display
-        });
+        // Aplicar estilos de una vez usando cssText para máxima compatibilidad
+        modal.style.cssText = `
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 10000 !important;
+            background: rgba(0,0,0,0.6) !important;
+            backdrop-filter: blur(4px) !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        `;
+        
+        // Configurar contenedor interno inmediatamente
+        const modalContent = modal.children[0];
+        if (modalContent) {
+            modalContent.style.cssText = `
+                background: #1B263B !important;
+                border-radius: 12px !important;
+                width: 95% !important;
+                max-width: 900px !important;
+                min-width: 350px !important;
+                max-height: 85vh !important;
+                min-height: 400px !important;
+                border: 1px solid #415A77 !important;
+                overflow-y: auto !important;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important;
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: relative !important;
+            `;
+        }
+        
+        console.log(`✅ DEBUG: Modal ${modalId} configurado correctamente`);
     } else {
         console.error(`❌ DEBUG: Modal ${modalId} no encontrado en el DOM`);
     }
