@@ -582,7 +582,7 @@ function initializeHeaderFunctions() {
     
     // Funciones para abrir modales (se conectan con modals-component.html)
     window.openIntroductionModal = function() {
-        alert('Modal de Introducción - Por implementar');
+        openModal('introduction-modal');
         closeUserDropdown();
     };
     
@@ -639,6 +639,72 @@ function initializeHeaderFunctions() {
             closeRoleSelector();
         }
     });
+}
+
+// Funciones de navegación para modal de Introducción
+window.nextIntroductionScreen = function() {
+    const screens = ['introduction-screen-1', 'introduction-screen-2', 'introduction-screen-3', 'introduction-screen-4', 'introduction-screen-5'];
+    let currentScreen = 0;
+    
+    // Encontrar pantalla actual
+    for (let i = 0; i < screens.length; i++) {
+        const screen = document.getElementById(screens[i]);
+        if (screen && screen.style.display !== 'none') {
+            currentScreen = i;
+            break;
+        }
+    }
+    
+    // Ir a siguiente pantalla
+    if (currentScreen < screens.length - 1) {
+        document.getElementById(screens[currentScreen]).style.display = 'none';
+        document.getElementById(screens[currentScreen + 1]).style.display = 'block';
+        
+        // Actualizar botones y indicadores
+        updateIntroductionNavigation(currentScreen + 1);
+    }
+};
+
+window.previousIntroductionScreen = function() {
+    const screens = ['introduction-screen-1', 'introduction-screen-2', 'introduction-screen-3', 'introduction-screen-4', 'introduction-screen-5'];
+    let currentScreen = 0;
+    
+    // Encontrar pantalla actual
+    for (let i = 0; i < screens.length; i++) {
+        const screen = document.getElementById(screens[i]);
+        if (screen && screen.style.display !== 'none') {
+            currentScreen = i;
+            break;
+        }
+    }
+    
+    // Ir a pantalla anterior
+    if (currentScreen > 0) {
+        document.getElementById(screens[currentScreen]).style.display = 'none';
+        document.getElementById(screens[currentScreen - 1]).style.display = 'block';
+        
+        // Actualizar botones e indicadores
+        updateIntroductionNavigation(currentScreen - 1);
+    }
+};
+
+// Función auxiliar para actualizar navegación del modal de introducción
+function updateIntroductionNavigation(screenIndex) {
+    const totalScreens = 5;
+    
+    // Actualizar botones
+    const prevBtn = document.getElementById('prev-introduction-btn');
+    const nextBtn = document.getElementById('next-introduction-btn');
+    if (prevBtn) prevBtn.style.display = screenIndex > 0 ? 'inline-block' : 'none';
+    if (nextBtn) nextBtn.style.display = screenIndex < totalScreens - 1 ? 'inline-block' : 'none';
+    
+    // Actualizar indicadores (dots)
+    for (let i = 1; i <= totalScreens; i++) {
+        const dot = document.getElementById(`intro-dot-${i}`);
+        if (dot) {
+            dot.style.background = i === screenIndex + 1 ? '#3B82F6' : '#415A77';
+        }
+    }
 }
 
 // Exportar funciones para uso manual

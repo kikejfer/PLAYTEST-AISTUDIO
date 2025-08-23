@@ -8,88 +8,187 @@
             </div>
         <div class="modal-body" style="padding: 1.5rem; line-height: 1.6; min-height: 400px;">
             
-            <!-- Pantalla 1: Bienvenida -->
-            <div id="introduction-screen-1" style="display: block; text-align: center;">
-                <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px;">
-                    <img src="./Imagenes/Saludando.png" alt="Lumi Saludando" style="max-width: 200px; height: auto; margin-bottom: 1rem;">
-                    <h3 style="color: #FFB347; margin: 0 0 1rem 0; font-size: 2rem;">¡HOLA! SOY LUMI, TU GUÍA EN LUMIQUIZ</h3>
-                    <p style="color: #E0E1DD; font-size: 1.2rem; margin-bottom: 2rem;">¿Cansado de estudiar de forma aburrida y poco efectiva?</p>
-                    <div style="text-align: left; max-width: 500px; margin: 0 auto;">
-                        <div style="color: #E0E1DD; font-size: 1rem; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="color: #FFD700;">⭐</span> 9 modos diferentes de entrenamiento y competición
-                        </div>
-                        <div style="color: #E0E1DD; font-size: 1rem; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="color: #FFD700;">⭐</span> Duelos y torneos en tiempo real
-                        </div>
-                        <div style="color: #E0E1DD; font-size: 1rem; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="color: #FFD700;">⭐</span> Premios reales mientras aprendes
-                        </div>
-                        <div style="color: #E0E1DD; font-size: 1rem; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="color: #FFD700;">⭐</span> Creación de contenido y monetización
-                        </div>
-                        <div style="color: #E0E1DD; font-size: 1rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="color: #FFD700;">⭐</span> Progreso con análisis avanzados
-                        </div>
-                    </div>
-                    <p style="color: #3B82F6; font-size: 1.3rem; font-weight: bold; margin: 0;">¡Prepárate para que estudiar sea tu nueva pasión!</p>
-                </div>
-            </div>
-
-            <!-- Pantalla 2: Elige tu camino -->
-            <div id="introduction-screen-2" style="display: none; text-align: center;">
-                <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px;">
-                    <h3 style="color: #3B82F6; margin: 0 0 1.5rem 0; font-size: 2rem;">ELIGE TU CAMINO EN LUMIQUIZ</h3>
-                    <img src="./Imagenes/Pensativo.png" alt="Lumi Pensativo" style="max-width: 150px; height: auto; margin-bottom: 2rem;">
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
-                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #3B82F6;">
-                            <h4 style="color: #3B82F6; margin: 0 0 0.5rem 0; font-size: 1.2rem;">📚 Estudiante</h4>
-                            <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem;">Aprende, compite y sube de nivel.</p>
-                        </div>
-                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #10B981;">
-                            <h4 style="color: #10B981; margin: 0 0 0.5rem 0; font-size: 1.2rem;">🧑‍💻 Creador de Contenido</h4>
-                            <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem;">Crea bloques, organiza torneos y promociona tu contenido para generar interés.</p>
-                        </div>
-                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #EF4444;">
-                            <h4 style="color: #EF4444; margin: 0 0 0.5rem 0; font-size: 1.2rem;">👨‍🏫 Profesor</h4>
-                            <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem;">Gestiona clases, diseña cronogramas y maximiza el rendimiento y el progreso de tus alumnos.</p>
-                        </div>
+            <!-- Pantalla 1: Bienvenida - Composición visual -->
+            <div id="introduction-screen-1" style="display: block;">
+                <div style="position: relative; min-height: 500px; background: linear-gradient(135deg, #1B263B, #0D4A6B, #2E5266); border-radius: 12px; overflow: hidden;">
+                    <!-- Título superior -->
+                    <div style="position: absolute; top: 30px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 3;">
+                        <h2 style="color: #FFB347; font-size: 2.2rem; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); margin: 0; letter-spacing: 1px;">¡HOLA! SOY LUMI, TU GUÍA EN LUMIQUIZ</h2>
                     </div>
                     
-                    <p style="color: #FFB347; font-size: 1.1rem; margin: 0; font-weight: 500;">Cada rol tiene niveles, beneficios exclusivos y formas únicas de ganar Luminarias.</p>
-                </div>
-            </div>
-
-            <!-- Pantalla 3: Luminarias -->
-            <div id="introduction-screen-3" style="display: none; text-align: center;">
-                <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px;">
-                    <h3 style="color: #FFD700; margin: 0 0 1.5rem 0; font-size: 2rem;">LUMINARIAS: TU MONEDA DEL CONOCIMIENTO</h3>
-                    <img src="./Imagenes/Luminarias.png" alt="Luminarias" style="max-width: 200px; height: auto; margin-bottom: 1.5rem;">
+                    <!-- Personaje Lumi centro-izquierda -->
+                    <div style="position: absolute; left: 80px; top: 120px; z-index: 2;">
+                        <img src="./Imagenes/Saludando.png" alt="Lumi Saludando" style="width: 280px; height: auto; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));">
+                    </div>
                     
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 2rem 0;">
-                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border: 2px solid #10B981;">
-                            <h4 style="color: #10B981; margin: 0 0 1rem 0; font-size: 1.3rem;">GÁNALAS</h4>
-                            <div style="text-align: left;">
-                                <p style="color: #E0E1DD; margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">📚 Estudiando</p>
-                                <p style="color: #E0E1DD; margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🎯 Compitiendo</p>
-                                <p style="color: #E0E1DD; margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🧑‍🤝‍🧑 Participando</p>
-                                <p style="color: #E0E1DD; margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🎁 Bonificaciones</p>
+                    <!-- Pregunta debajo del título -->
+                    <div style="position: absolute; top: 90px; right: 60px; width: 300px; text-align: center; background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 15px; border: 2px solid #3B82F6;">
+                        <p style="color: #E0E1DD; font-size: 1.3rem; font-weight: 500; margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">¿Cansado de estudiar de forma aburrida y poco efectiva?</p>
+                    </div>
+                    
+                    <!-- Lista con estrellas - lado derecho -->
+                    <div style="position: absolute; right: 40px; top: 180px; width: 320px;">
+                        <div style="background: rgba(13, 27, 42, 0.8); padding: 20px; border-radius: 12px; border-left: 5px solid #FFD700; backdrop-filter: blur(5px);">
+                            <div style="color: #E0E1DD; font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                <span style="color: #FFD700; font-size: 1.4rem; text-shadow: 0 0 10px #FFD700;">⭐</span> 
+                                <span style="font-weight: 500;">9 modos diferentes de entrenamiento y competición</span>
                             </div>
-                        </div>
-                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border: 2px solid #3B82F6;">
-                            <h4 style="color: #3B82F6; margin: 0 0 1rem 0; font-size: 1.3rem;">ÚSALAS EN</h4>
-                            <div style="text-align: left;">
-                                <p style="color: #E0E1DD; margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🎨 Personalización de avatares y temas</p>
-                                <p style="color: #E0E1DD; margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">🔍 Pistas, vidas y multiplicadores</p>
-                                <p style="color: #E0E1DD; margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">📜 Contenido premium</p>
-                                <p style="color: #E0E1DD; margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">💸 Descuentos reales</p>
+                            <div style="color: #E0E1DD; font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                <span style="color: #FFD700; font-size: 1.4rem; text-shadow: 0 0 10px #FFD700;">⭐</span> 
+                                <span style="font-weight: 500;">Duelos y torneos en tiempo real</span>
+                            </div>
+                            <div style="color: #E0E1DD; font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                <span style="color: #FFD700; font-size: 1.4rem; text-shadow: 0 0 10px #FFD700;">⭐</span> 
+                                <span style="font-weight: 500;">Premios reales mientras aprendes</span>
+                            </div>
+                            <div style="color: #E0E1DD; font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                <span style="color: #FFD700; font-size: 1.4rem; text-shadow: 0 0 10px #FFD700;">⭐</span> 
+                                <span style="font-weight: 500;">Creación de contenido y monetización</span>
+                            </div>
+                            <div style="color: #E0E1DD; font-size: 1.1rem; margin-bottom: 0; display: flex; align-items: center; gap: 12px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                <span style="color: #FFD700; font-size: 1.4rem; text-shadow: 0 0 10px #FFD700;">⭐</span> 
+                                <span style="font-weight: 500;">Progreso con análisis avanzados</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div style="background: #FFD700; color: #1B263B; padding: 1rem; border-radius: 8px; font-weight: bold; font-size: 1.2rem;">
-                        ➜ ¡Empiezas con 200 Luminarias de regalo!
+                    <!-- Texto motivacional inferior -->
+                    <div style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); text-align: center; background: rgba(59, 130, 246, 0.15); padding: 20px 40px; border-radius: 25px; border: 3px solid #3B82F6;">
+                        <h3 style="color: #3B82F6; font-size: 1.6rem; font-weight: bold; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); letter-spacing: 0.5px;">¡Prepárate para que estudiar sea tu nueva pasión!</h3>
                     </div>
+                    
+                    <!-- Elementos decorativos -->
+                    <div style="position: absolute; top: 20px; left: 20px; color: #FFD700; font-size: 2rem; opacity: 0.7; animation: pulse 2s infinite;">✨</div>
+                    <div style="position: absolute; top: 60px; right: 20px; color: #3B82F6; font-size: 1.5rem; opacity: 0.6;">🎓</div>
+                    <div style="position: absolute; bottom: 20px; left: 30px; color: #10B981; font-size: 1.8rem; opacity: 0.7;">🏆</div>
+                    <div style="position: absolute; bottom: 60px; right: 30px; color: #F59E0B; font-size: 1.5rem; opacity: 0.6;">🎯</div>
+                </div>
+            </div>
+
+            <!-- Pantalla 2: Elige tu camino - Composición visual -->
+            <div id="introduction-screen-2" style="display: none;">
+                <div style="position: relative; min-height: 500px; background: linear-gradient(135deg, #2E5266, #1B263B, #0D4A6B); border-radius: 12px; overflow: hidden;">
+                    <!-- Título superior -->
+                    <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 3;">
+                        <h2 style="color: #3B82F6; font-size: 2.4rem; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); margin: 0; letter-spacing: 0.8px;">ELIGE TU CAMINO EN LUMIQUIZ</h2>
+                    </div>
+                    
+                    <!-- Personaje Lumi pensativo en el centro -->
+                    <div style="position: absolute; left: 50%; top: 80px; transform: translateX(-50%); z-index: 2;">
+                        <img src="./Imagenes/Pensativo.png" alt="Lumi Pensativo" style="width: 200px; height: auto; filter: drop-shadow(0 8px 20px rgba(0,0,0,0.4));">
+                    </div>
+                    
+                    <!-- Rol Estudiante - Superior Izquierda -->
+                    <div style="position: absolute; left: 40px; top: 120px; width: 220px;">
+                        <div style="background: rgba(59, 130, 246, 0.15); padding: 18px; border-radius: 15px; border: 3px solid #3B82F6; backdrop-filter: blur(8px);">
+                            <div style="text-align: center; margin-bottom: 10px;">
+                                <div style="font-size: 2.5rem; margin-bottom: 8px;">📚</div>
+                                <div style="font-size: 1.5rem; margin-bottom: 8px;">🏆</div>
+                                <div style="font-size: 1.2rem;">📈</div>
+                            </div>
+                            <h4 style="color: #3B82F6; margin: 0 0 8px 0; font-size: 1.4rem; text-align: center; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">Estudiante</h4>
+                            <p style="color: #E0E1DD; margin: 0; font-size: 1rem; text-align: center; line-height: 1.4; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Aprende, compite y sube de nivel.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Rol Creador - Superior Derecha -->
+                    <div style="position: absolute; right: 40px; top: 120px; width: 220px;">
+                        <div style="background: rgba(16, 185, 129, 0.15); padding: 18px; border-radius: 15px; border: 3px solid #10B981; backdrop-filter: blur(8px);">
+                            <div style="text-align: center; margin-bottom: 10px;">
+                                <div style="font-size: 2.5rem; margin-bottom: 8px;">✍️</div>
+                                <div style="font-size: 1.5rem; margin-bottom: 8px;">📢</div>
+                                <div style="font-size: 1.2rem;">🧱</div>
+                            </div>
+                            <h4 style="color: #10B981; margin: 0 0 8px 0; font-size: 1.4rem; text-align: center; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">Creador de Contenido</h4>
+                            <p style="color: #E0E1DD; margin: 0; font-size: 1rem; text-align: center; line-height: 1.4; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Crea bloques, organiza torneos y promociona tu contenido para generar interés.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Rol Profesor - Inferior Centro -->
+                    <div style="position: absolute; left: 50%; bottom: 80px; transform: translateX(-50%); width: 280px;">
+                        <div style="background: rgba(239, 68, 68, 0.15); padding: 18px; border-radius: 15px; border: 3px solid #EF4444; backdrop-filter: blur(8px);">
+                            <div style="text-align: center; margin-bottom: 10px;">
+                                <div style="font-size: 2.5rem; margin-bottom: 8px;">📚</div>
+                                <div style="font-size: 1.5rem; margin-bottom: 8px;">📅</div>
+                                <div style="font-size: 1.2rem;">📊</div>
+                            </div>
+                            <h4 style="color: #EF4444; margin: 0 0 8px 0; font-size: 1.4rem; text-align: center; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">Profesor</h4>
+                            <p style="color: #E0E1DD; margin: 0; font-size: 1rem; text-align: center; line-height: 1.4; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Gestiona clases, diseña cronogramas y maximiza el rendimiento y el progreso de tus alumnos.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Nota final -->
+                    <div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); text-align: center; background: rgba(255, 179, 71, 0.2); padding: 12px 25px; border-radius: 20px; border: 2px solid #FFB347;">
+                        <p style="color: #FFB347; font-size: 1.1rem; margin: 0; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">Cada rol tiene niveles, beneficios exclusivos y formas únicas de ganar Luminarias.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pantalla 3: Luminarias - Composición visual -->
+            <div id="introduction-screen-3" style="display: none;">
+                <div style="position: relative; min-height: 500px; background: linear-gradient(135deg, #1B263B, #FFD700, #F59E0B, #1B263B); border-radius: 12px; overflow: hidden;">
+                    <!-- Título superior -->
+                    <div style="position: absolute; top: 15px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 3;">
+                        <h2 style="color: #FFD700; font-size: 2.2rem; font-weight: bold; text-shadow: 3px 3px 6px rgba(0,0,0,0.8); margin: 0; letter-spacing: 0.5px;">LUMINARIAS: TU MONEDA DEL CONOCIMIENTO</h2>
+                    </div>
+                    
+                    <!-- Personaje con cofre centro-superior -->
+                    <div style="position: absolute; left: 50%; top: 70px; transform: translateX(-50%); z-index: 2;">
+                        <img src="./Imagenes/Luminarias.png" alt="Lumi con Luminarias" style="width: 250px; height: auto; filter: drop-shadow(0 8px 25px rgba(0,0,0,0.5));">
+                    </div>
+                    
+                    <!-- Sección GÁNALAS - Izquierda -->
+                    <div style="position: absolute; left: 30px; top: 180px; width: 280px;">
+                        <div style="background: rgba(16, 185, 129, 0.2); padding: 20px; border-radius: 15px; border: 3px solid #10B981; backdrop-filter: blur(10px);">
+                            <h3 style="color: #10B981; margin: 0 0 15px 0; font-size: 1.8rem; text-align: center; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">GÁNALAS</h3>
+                            <div style="text-align: left;">
+                                <div style="color: #E0E1DD; margin: 12px 0; display: flex; align-items: center; gap: 12px; font-size: 1.1rem; font-weight: 500; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                    <span style="font-size: 1.8rem;">📚</span> Estudiando
+                                </div>
+                                <div style="color: #E0E1DD; margin: 12px 0; display: flex; align-items: center; gap: 12px; font-size: 1.1rem; font-weight: 500; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                    <span style="font-size: 1.8rem;">🎯</span> Compitiendo
+                                </div>
+                                <div style="color: #E0E1DD; margin: 12px 0; display: flex; align-items: center; gap: 12px; font-size: 1.1rem; font-weight: 500; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                    <span style="font-size: 1.8rem;">🧑‍🤝‍🧑</span> Participando
+                                </div>
+                                <div style="color: #E0E1DD; margin: 12px 0; display: flex; align-items: center; gap: 12px; font-size: 1.1rem; font-weight: 500; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                    <span style="font-size: 1.8rem;">🎁</span> Bonificaciones
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sección ÚSALAS EN - Derecha -->
+                    <div style="position: absolute; right: 30px; top: 180px; width: 280px;">
+                        <div style="background: rgba(59, 130, 246, 0.2); padding: 20px; border-radius: 15px; border: 3px solid #3B82F6; backdrop-filter: blur(10px);">
+                            <h3 style="color: #3B82F6; margin: 0 0 15px 0; font-size: 1.8rem; text-align: center; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">ÚSALAS EN</h3>
+                            <div style="text-align: left;">
+                                <div style="color: #E0E1DD; margin: 12px 0; display: flex; align-items: center; gap: 12px; font-size: 1.1rem; font-weight: 500; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                    <span style="font-size: 1.8rem;">🎨</span> Personalización de avatares y temas
+                                </div>
+                                <div style="color: #E0E1DD; margin: 12px 0; display: flex; align-items: center; gap: 12px; font-size: 1.1rem; font-weight: 500; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                    <span style="font-size: 1.8rem;">🔍</span> Pistas, vidas y multiplicadores
+                                </div>
+                                <div style="color: #E0E1DD; margin: 12px 0; display: flex; align-items: center; gap: 12px; font-size: 1.1rem; font-weight: 500; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                    <span style="font-size: 1.8rem;">📜</span> Contenido premium
+                                </div>
+                                <div style="color: #E0E1DD; margin: 12px 0; display: flex; align-items: center; gap: 12px; font-size: 1.1rem; font-weight: 500; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">
+                                    <span style="font-size: 1.8rem;">💸</span> Descuentos reales
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Regalo inferior -->
+                    <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); text-align: center; background: #FFD700; color: #1B263B; padding: 15px 40px; border-radius: 25px; border: 4px solid #F59E0B; box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);">
+                        <h3 style="font-size: 1.5rem; font-weight: bold; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">➜ ¡Empiezas con 200 Luminarias de regalo!</h3>
+                    </div>
+                    
+                    <!-- Elementos decorativos de monedas flotantes -->
+                    <div style="position: absolute; top: 50px; left: 100px; color: #FFD700; font-size: 2rem; opacity: 0.8; animation: float 3s ease-in-out infinite;">💰</div>
+                    <div style="position: absolute; top: 100px; right: 80px; color: #FFD700; font-size: 1.8rem; opacity: 0.7; animation: float 4s ease-in-out infinite reverse;">⭐</div>
+                    <div style="position: absolute; bottom: 120px; left: 60px; color: #F59E0B; font-size: 1.5rem; opacity: 0.6;">💎</div>
+                    <div style="position: absolute; bottom: 140px; right: 100px; color: #FFD700; font-size: 1.8rem; opacity: 0.8;">🏆</div>
                 </div>
             </div>
 
