@@ -585,11 +585,13 @@ function initializeHeaderFunctions() {
     };
     
     window.openGameModesModal = function() {
+        console.log('🎮 DEBUG: openGameModesModal llamado');
         openModal('game-modes-modal');
         closeUserDropdown();
     };
     
     window.openRoleLevelsModal = function() {
+        console.log('🎭 DEBUG: openRoleLevelsModal llamado');
         openModal('role-levels-modal');
         closeUserDropdown();
     };
@@ -606,11 +608,13 @@ function initializeHeaderFunctions() {
     };
     
     window.openTopicDevelopmentModal = function() {
+        console.log('📚 DEBUG: openTopicDevelopmentModal llamado');
         openModal('topic-development-modal');
         closeUserDropdown();
     };
     
     window.openLuminariasModal = function() {
+        console.log('✨ DEBUG: openLuminariasModal llamado');
         openModal('luminarias-modal');
         closeUserDropdown();
     };
@@ -641,7 +645,9 @@ function initializeHeaderFunctions() {
 
 // Funciones globales para manejar modales
 window.openModal = function(modalId) {
+    console.log(`🔍 DEBUG: Intentando abrir modal: ${modalId}`);
     const modal = document.getElementById(modalId);
+    console.log(`🔍 DEBUG: Modal encontrado:`, modal);
     if (modal) {
         // Configurar estilos para mostrar el modal
         modal.style.cssText = `
@@ -684,6 +690,19 @@ window.openModal = function(modalId) {
         // También asegurar que no esté oculto por clases CSS
         modal.classList.remove('hidden');
         modal.removeAttribute('hidden');
+        
+        // DEBUG: Verificar estado final del modal
+        console.log(`🔍 DEBUG: Estado final del modal ${modalId}:`, {
+            display: modal.style.display,
+            visibility: modal.style.visibility,
+            opacity: modal.style.opacity,
+            zIndex: modal.style.zIndex,
+            width: modal.offsetWidth,
+            height: modal.offsetHeight,
+            computedStyle: window.getComputedStyle(modal).display
+        });
+    } else {
+        console.error(`❌ DEBUG: Modal ${modalId} no encontrado en el DOM`);
     }
 };
 
