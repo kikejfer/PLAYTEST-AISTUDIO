@@ -672,6 +672,7 @@ window.openModal = function(modalId) {
         
         // Configurar contenedor interno inmediatamente
         const modalContent = modal.children[0];
+        console.log(`🔍 DEBUG: Contenedor interno para ${modalId}:`, modalContent);
         if (modalContent) {
             modalContent.style.cssText = `
                 background: #1B263B !important;
@@ -689,11 +690,85 @@ window.openModal = function(modalId) {
                 opacity: 1 !important;
                 position: relative !important;
             `;
+            console.log(`🔍 DEBUG: Estilos aplicados al contenedor interno de ${modalId}`);
+            console.log(`🔍 DEBUG: Dimensiones del contenedor:`, {
+                width: modalContent.offsetWidth,
+                height: modalContent.offsetHeight,
+                display: modalContent.style.display,
+                visibility: modalContent.style.visibility
+            });
+        } else {
+            console.error(`❌ DEBUG: No se encontró contenedor interno para modal ${modalId}`);
         }
         
         console.log(`✅ DEBUG: Modal ${modalId} configurado correctamente`);
+        
+        // Debug adicional después de un momento para ver si algo cambia
+        setTimeout(() => {
+            console.log(`🔍 DEBUG: Estado del modal ${modalId} después de 1 segundo:`, {
+                display: modal.style.display,
+                visibility: modal.style.visibility,
+                zIndex: modal.style.zIndex,
+                modalVisible: modal.offsetWidth > 0 && modal.offsetHeight > 0,
+                contentVisible: modalContent ? (modalContent.offsetWidth > 0 && modalContent.offsetHeight > 0) : false
+            });
+        }, 1000);
     } else {
         console.error(`❌ DEBUG: Modal ${modalId} no encontrado en el DOM`);
+    }
+};
+
+// Función de respaldo más agresiva para casos problemáticos
+window.forceOpenModal = function(modalId) {
+    console.log(`🚀 DEBUG: Forzando apertura del modal: ${modalId}`);
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        // Remover cualquier evento que pueda estar interfiriendo
+        modal.style.removeProperty('display');
+        modal.removeAttribute('hidden');
+        modal.classList.remove('hidden');
+        
+        // Aplicar estilos con máxima prioridad
+        const modalStyle = `
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            position: fixed !important;
+            top: 0px !important;
+            left: 0px !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 99999 !important;
+            background: rgba(0,0,0,0.7) !important;
+            backdrop-filter: blur(4px) !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        `;
+        
+        modal.setAttribute('style', modalStyle);
+        
+        const modalContent = modal.children[0];
+        if (modalContent) {
+            const contentStyle = `
+                background: #1B263B !important;
+                border-radius: 12px !important;
+                width: 95% !important;
+                max-width: 900px !important;
+                min-width: 350px !important;
+                max-height: 85vh !important;
+                min-height: 400px !important;
+                border: 1px solid #415A77 !important;
+                overflow-y: auto !important;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.5) !important;
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: relative !important;
+            `;
+            modalContent.setAttribute('style', contentStyle);
+        }
+        
+        console.log(`🚀 DEBUG: Modal ${modalId} forzado a mostrar`);
     }
 };
 
