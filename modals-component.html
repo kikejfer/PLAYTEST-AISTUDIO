@@ -80,10 +80,10 @@
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
                         <!-- Rol Estudiante -->
                         <div style="background: rgba(59, 130, 246, 0.15); padding: 18px; border-radius: 15px; border: 3px solid #3B82F6; backdrop-filter: blur(8px);">
-                            <div style="text-align: center; margin-bottom: 10px;">
-                                <div style="font-size: 2.5rem; margin-bottom: 8px;">📚</div>
-                                <div style="font-size: 1.5rem; margin-bottom: 8px;">🏆</div>
-                                <div style="font-size: 1.2rem;">📈</div>
+                            <div style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-bottom: 10px;">
+                                <span style="font-size: 2rem;">📚</span>
+                                <span style="font-size: 2rem;">🏆</span>
+                                <span style="font-size: 2rem;">📈</span>
                             </div>
                             <h4 style="color: #3B82F6; margin: 0 0 8px 0; font-size: 1.4rem; text-align: center; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">Estudiante</h4>
                             <p style="color: #E0E1DD; margin: 0; font-size: 1rem; text-align: center; line-height: 1.4; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Aprende, compite y sube de nivel.</p>
@@ -91,10 +91,10 @@
                         
                         <!-- Rol Creador -->
                         <div style="background: rgba(16, 185, 129, 0.15); padding: 18px; border-radius: 15px; border: 3px solid #10B981; backdrop-filter: blur(8px);">
-                            <div style="text-align: center; margin-bottom: 10px;">
-                                <div style="font-size: 2.5rem; margin-bottom: 8px;">✍️</div>
-                                <div style="font-size: 1.5rem; margin-bottom: 8px;">📢</div>
-                                <div style="font-size: 1.2rem;">🧱</div>
+                            <div style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-bottom: 10px;">
+                                <span style="font-size: 2rem;">✍️</span>
+                                <span style="font-size: 2rem;">📢</span>
+                                <span style="font-size: 2rem;">🧱</span>
                             </div>
                             <h4 style="color: #10B981; margin: 0 0 8px 0; font-size: 1.4rem; text-align: center; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">Creador de Contenido</h4>
                             <p style="color: #E0E1DD; margin: 0; font-size: 1rem; text-align: center; line-height: 1.4; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Crea bloques, organiza torneos y promociona tu contenido.</p>
@@ -102,10 +102,10 @@
                         
                         <!-- Rol Profesor -->
                         <div style="background: rgba(239, 68, 68, 0.15); padding: 18px; border-radius: 15px; border: 3px solid #EF4444; backdrop-filter: blur(8px);">
-                            <div style="text-align: center; margin-bottom: 10px;">
-                                <div style="font-size: 2.5rem; margin-bottom: 8px;">📚</div>
-                                <div style="font-size: 1.5rem; margin-bottom: 8px;">📅</div>
-                                <div style="font-size: 1.2rem;">📊</div>
+                            <div style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-bottom: 10px;">
+                                <span style="font-size: 2rem;">📚</span>
+                                <span style="font-size: 2rem;">📅</span>
+                                <span style="font-size: 2rem;">📊</span>
                             </div>
                             <h4 style="color: #EF4444; margin: 0 0 8px 0; font-size: 1.4rem; text-align: center; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">Profesor</h4>
                             <p style="color: #E0E1DD; margin: 0; font-size: 1rem; text-align: center; line-height: 1.4; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Gestiona clases, diseña cronogramas y maximiza el progreso de tus alumnos.</p>
@@ -185,7 +185,8 @@
                 <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px;">
                     <h3 style="color: #3B82F6; margin: 0 0 2rem 0; font-size: 2rem;">9 MODOS PARA APRENDER JUGANDO</h3>
                     
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin: 2rem 0; justify-items: center;">
+                    <!-- Fila 1: 4 imágenes -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 1rem 0; justify-items: center;">
                         <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border: 1px solid #415A77; text-align: center; width: 100%; max-width: 120px;">
                             <img src="./Imagenes/Clasico.png" alt="Clásico" style="width: 60px; height: auto; margin: 0 auto 0.5rem;">
                             <p style="color: #E0E1DD; margin: 0; font-size: 0.85rem; font-weight: 500;">Clásico</p>
@@ -202,6 +203,10 @@
                             <img src="./Imagenes/Duelo.png" alt="Duelo" style="width: 60px; height: auto; margin: 0 auto 0.5rem;">
                             <p style="color: #E0E1DD; margin: 0; font-size: 0.85rem; font-weight: 500;">Duelo</p>
                         </div>
+                    </div>
+                    
+                    <!-- Fila 2: 5 imágenes -->
+                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin: 1rem 0; justify-items: center;">
                         <div style="background: #0D1B2A; padding: 1rem; border-radius: 8px; border: 1px solid #415A77; text-align: center; width: 100%; max-width: 120px;">
                             <img src="./Imagenes/Trivia.png" alt="Trivial" style="width: 60px; height: auto; margin: 0 auto 0.5rem;">
                             <p style="color: #E0E1DD; margin: 0; font-size: 0.85rem; font-weight: 500;">Trivial</p>
@@ -233,18 +238,23 @@
                 <div style="padding: 2rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px;">
                     <h3 style="color: #3B82F6; margin: 0 0 2rem 0; font-size: 2rem;">¡Comienza tu aventura en LumiQuiz!</h3>
                     
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
-                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #3B82F6;">
-                            <h4 style="color: #3B82F6; margin: 0 0 0.5rem 0; font-size: 1.2rem;">👩‍🎓 Estudiante</h4>
-                            <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem;">🎲 Explora bloques, juega tu primera partida y revisa tu progreso.</p>
+                    <!-- Fila 1: Estudiante (centrado) -->
+                    <div style="display: flex; justify-content: center; margin: 2rem 0;">
+                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #3B82F6; max-width: 300px; width: 100%;">
+                            <h4 style="color: #3B82F6; margin: 0 0 0.5rem 0; font-size: 1.2rem; text-align: center;">👩‍🎓 Estudiante</h4>
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem; text-align: center;">🎲 Explora bloques, juega tu primera partida y revisa tu progreso.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Fila 2: Profesor y Creador -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0; max-width: 700px; margin-left: auto; margin-right: auto;">
+                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #EF4444;">
+                            <h4 style="color: #EF4444; margin: 0 0 0.5rem 0; font-size: 1.2rem; text-align: center;">👨‍🏫 Profesor</h4>
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem; text-align: center;">📚 Crea tu primera clase y asigna un reto.</p>
                         </div>
                         <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #10B981;">
-                            <h4 style="color: #10B981; margin: 0 0 0.5rem 0; font-size: 1.2rem;">🧑‍💻 Creador</h4>
-                            <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem;">🧱 Crea tu primer bloque y 🏆 organiza un torneo.</p>
-                        </div>
-                        <div style="background: #0D1B2A; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #EF4444;">
-                            <h4 style="color: #EF4444; margin: 0 0 0.5rem 0; font-size: 1.2rem;">👨‍🏫 Profesor</h4>
-                            <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem;">📚 Crea tu primera clase y asigna un reto.</p>
+                            <h4 style="color: #10B981; margin: 0 0 0.5rem 0; font-size: 1.2rem; text-align: center;">🧑‍💻 Creador</h4>
+                            <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem; text-align: center;">🧱 Crea tu primer bloque y 🏆 organiza un torneo.</p>
                         </div>
                     </div>
                     
@@ -419,13 +429,173 @@
                 </div>
             </div>
 
+            <!-- Pantalla 8: Creador Nivel 1 -->
+            <div id="role-level-screen-8" style="display: none;">
+                <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #8B5CF6;">
+                    <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                        <img src="./Imagenes/Creador-N1-Escribiente.png" alt="Escribiente" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #8B5CF6;">
+                        <div>
+                            <h3 style="color: #8B5CF6; margin: 0 0 0.5rem 0; font-size: 1.8rem;">📝 Nivel 1: Escribiente</h3>
+                        </div>
+                    </div>
+                    <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                        <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #8B5CF6;">Elemento:</strong> 📝 Una pluma de escribir.</p>
+                        <p style="margin: 0; color: #E0E1DD;"><strong style="color: #8B5CF6;">Símbolo:</strong> Representa el inicio en la creación de contenido. La pluma simboliza el arte de redactar las primeras preguntas y respuestas.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pantalla 9: Creador Nivel 2 -->
+            <div id="role-level-screen-9" style="display: none;">
+                <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #8B5CF6;">
+                    <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                        <img src="./Imagenes/Creador-N2-Artesano.png" alt="Artesano" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #8B5CF6;">
+                        <div>
+                            <h3 style="color: #8B5CF6; margin: 0 0 0.5rem 0; font-size: 1.8rem;">🔨 Nivel 2: Artesano</h3>
+                        </div>
+                    </div>
+                    <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                        <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #8B5CF6;">Elemento:</strong> 🔨 Un martillo de artesano.</p>
+                        <p style="margin: 0; color: #E0E1DD;"><strong style="color: #8B5CF6;">Símbolo:</strong> Representa la habilidad para moldear y perfeccionar el contenido educativo con destreza y precisión.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pantalla 10: Creador Nivel 3 -->
+            <div id="role-level-screen-10" style="display: none;">
+                <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #8B5CF6;">
+                    <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                        <img src="./Imagenes/Creador-N3-Arquitecto.png" alt="Arquitecto" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #8B5CF6;">
+                        <div>
+                            <h3 style="color: #8B5CF6; margin: 0 0 0.5rem 0; font-size: 1.8rem;">🏗️ Nivel 3: Arquitecto</h3>
+                        </div>
+                    </div>
+                    <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                        <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #8B5CF6;">Elemento:</strong> 🏗️ Un plano arquitectónico.</p>
+                        <p style="margin: 0; color: #E0E1DD;"><strong style="color: #8B5CF6;">Símbolo:</strong> Representa la capacidad de diseñar estructuras complejas de aprendizaje, planificando experiencias educativas completas.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pantalla 11: Creador Nivel 4 -->
+            <div id="role-level-screen-11" style="display: none;">
+                <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #8B5CF6;">
+                    <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                        <img src="./Imagenes/Creador-N4-Innovador.png" alt="Innovador" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #8B5CF6;">
+                        <div>
+                            <h3 style="color: #8B5CF6; margin: 0 0 0.5rem 0; font-size: 1.8rem;">💡 Nivel 4: Innovador</h3>
+                        </div>
+                    </div>
+                    <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                        <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #8B5CF6;">Elemento:</strong> 💡 Una bombilla brillante.</p>
+                        <p style="margin: 0; color: #E0E1DD;"><strong style="color: #8B5CF6;">Símbolo:</strong> Representa la creatividad y la capacidad de revolucionar el contenido educativo con ideas únicas e innovadoras.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pantalla 12: Creador Nivel 5 -->
+            <div id="role-level-screen-12" style="display: none;">
+                <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #8B5CF6;">
+                    <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                        <img src="./Imagenes/Creador-N5-Visionario.png" alt="Visionario" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #8B5CF6;">
+                        <div>
+                            <h3 style="color: #8B5CF6; margin: 0 0 0.5rem 0; font-size: 1.8rem;">🔮 Nivel 5: Visionario</h3>
+                        </div>
+                    </div>
+                    <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                        <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #8B5CF6;">Elemento:</strong> 🔮 Una esfera de cristal.</p>
+                        <p style="margin: 0; color: #E0E1DD;"><strong style="color: #8B5CF6;">Símbolo:</strong> Representa la cima de la creatividad. El visionario puede ver el futuro de la educación y crear contenido que trasciende el tiempo.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pantalla 13: Profesor Nivel 1 -->
+            <div id="role-level-screen-13" style="display: none;">
+                <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #F59E0B;">
+                    <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                        <img src="./Imagenes/Profesor-N1-Tutor.png" alt="Tutor" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #F59E0B;">
+                        <div>
+                            <h3 style="color: #F59E0B; margin: 0 0 0.5rem 0; font-size: 1.8rem;">📚 Nivel 1: Tutor</h3>
+                        </div>
+                    </div>
+                    <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                        <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #F59E0B;">Elemento:</strong> 📚 Un libro abierto.</p>
+                        <p style="margin: 0; color: #E0E1DD;"><strong style="color: #F59E0B;">Símbolo:</strong> Representa el inicio en la enseñanza. El libro simboliza el conocimiento compartido y la guía hacia el aprendizaje.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pantalla 14: Profesor Nivel 2 -->
+            <div id="role-level-screen-14" style="display: none;">
+                <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #F59E0B;">
+                    <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                        <img src="./Imagenes/Profesor-N2-Instructor.png" alt="Instructor" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #F59E0B;">
+                        <div>
+                            <h3 style="color: #F59E0B; margin: 0 0 0.5rem 0; font-size: 1.8rem;">🎯 Nivel 2: Instructor</h3>
+                        </div>
+                    </div>
+                    <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                        <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #F59E0B;">Elemento:</strong> 🎯 Un objetivo con flecha.</p>
+                        <p style="margin: 0; color: #E0E1DD;"><strong style="color: #F59E0B;">Símbolo:</strong> Representa la precisión en la enseñanza, la capacidad de dirigir el aprendizaje hacia objetivos claros.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pantalla 15: Profesor Nivel 3 -->
+            <div id="role-level-screen-15" style="display: none;">
+                <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #F59E0B;">
+                    <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                        <img src="./Imagenes/Profesor-N3-Catedratico.png" alt="Catedrático" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #F59E0B;">
+                        <div>
+                            <h3 style="color: #F59E0B; margin: 0 0 0.5rem 0; font-size: 1.8rem;">🏛️ Nivel 3: Catedrático</h3>
+                        </div>
+                    </div>
+                    <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                        <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #F59E0B;">Elemento:</strong> 🏛️ Una columna clásica.</p>
+                        <p style="margin: 0; color: #E0E1DD;"><strong style="color: #F59E0B;">Símbolo:</strong> Representa la solidez académica y la autoridad en el conocimiento, como los pilares de la sabiduría clásica.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pantalla 16: Profesor Nivel 4 -->
+            <div id="role-level-screen-16" style="display: none;">
+                <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #F59E0B;">
+                    <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                        <img src="./Imagenes/Profesor-N4-Mentor.png" alt="Mentor" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #F59E0B;">
+                        <div>
+                            <h3 style="color: #F59E0B; margin: 0 0 0.5rem 0; font-size: 1.8rem;">🌟 Nivel 4: Mentor</h3>
+                        </div>
+                    </div>
+                    <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                        <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #F59E0B;">Elemento:</strong> 🌟 Una estrella guía.</p>
+                        <p style="margin: 0; color: #E0E1DD;"><strong style="color: #F59E0B;">Símbolo:</strong> Representa la sabiduría para guiar a otros hacia su máximo potencial, siendo la luz que ilumina el camino del aprendizaje.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pantalla 17: Profesor Nivel 5 -->
+            <div id="role-level-screen-17" style="display: none;">
+                <div style="padding: 2rem; background: linear-gradient(135deg, #0D1B2A, #1B263B); border-radius: 12px; border-left: 4px solid #F59E0B;">
+                    <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                        <img src="./Imagenes/Profesor-N5-Gran Maestro.png" alt="Gran Maestro" style="width: 120px; height: 120px; border-radius: 12px; border: 2px solid #F59E0B;">
+                        <div>
+                            <h3 style="color: #F59E0B; margin: 0 0 0.5rem 0; font-size: 1.8rem;">👑 Nivel 5: Gran Maestro</h3>
+                        </div>
+                    </div>
+                    <div style="background: #1B263B; padding: 1.5rem; border-radius: 8px;">
+                        <p style="margin: 0 0 1rem 0; color: #E0E1DD;"><strong style="color: #F59E0B;">Elemento:</strong> 👑 Una corona dorada.</p>
+                        <p style="margin: 0; color: #E0E1DD;"><strong style="color: #F59E0B;">Símbolo:</strong> Representa la máxima autoridad educativa. La corona simboliza el dominio completo de la enseñanza y el estatus de maestro de maestros.</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Navegación lateral -->
             <button id="prev-role-level-btn" onclick="previousRoleLevelScreen()" style="position: fixed; left: 20px; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; background: rgba(65, 90, 119, 0.8); color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 20px; display: none; z-index: 10001; transition: all 0.3s;" onmouseover="this.style.background='rgba(46, 66, 88, 0.9)'" onmouseout="this.style.background='rgba(65, 90, 119, 0.8)'">◀</button>
             <button id="next-role-level-btn" onclick="nextRoleLevelScreen()" style="position: fixed; right: 20px; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; background: rgba(59, 130, 246, 0.8); color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 20px; z-index: 10001; transition: all 0.3s;" onmouseover="this.style.background='rgba(37, 99, 235, 0.9)'" onmouseout="this.style.background='rgba(59, 130, 246, 0.8)'">▶</button>
             
             <!-- Contador centrado -->
             <div style="display: flex; justify-content: center; align-items: center; margin-top: 1.5rem; padding: 0 1.5rem;">
-                <span id="role-level-counter" style="color: #778DA9; font-weight: 500;">1 / 19</span>
+                <span id="role-level-counter" style="color: #778DA9; font-weight: 500;">1 / 17</span>
             </div>
             </div>
         </div>
@@ -504,8 +674,6 @@
         </div>
     </div>
 </div>
-
-<!-- Modal Niveles por Roles -->
 
 <!-- Modal Desarrollo de Temarios -->
 <div id="topic-development-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
