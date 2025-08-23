@@ -138,15 +138,6 @@ async function loadModals() {
         
         modalsContainer.innerHTML = modalsHTML;
         
-        console.log('✅ Modales cargados exitosamente');
-        
-        // Verificar que los modales específicos existan
-        const modalIds = ['introduction-modal', 'game-modes-modal', 'role-levels-modal', 'topic-development-modal', 'luminarias-modal'];
-        modalIds.forEach(id => {
-            const modal = document.getElementById(id);
-            console.log(`🔍 Modal ${id}:`, modal ? '✅ Encontrado' : '❌ No encontrado');
-        });
-        
     } catch (error) {
         console.error('Error al cargar los modales:', error);
     }
@@ -650,11 +641,9 @@ function initializeHeaderFunctions() {
 
 // Funciones globales para manejar modales
 window.openModal = function(modalId) {
-    console.log(`🎯 Intentando abrir modal: ${modalId}`);
-    
     const modal = document.getElementById(modalId);
     if (modal) {
-        // Configurar estilos para mostrar el modal con !important usando cssText
+        // Configurar estilos para mostrar el modal
         modal.style.cssText = `
             display: flex !important;
             align-items: center !important;
@@ -664,8 +653,6 @@ window.openModal = function(modalId) {
             left: 0 !important;
             width: 100vw !important;
             height: 100vh !important;
-            min-width: 100vw !important;
-            min-height: 100vh !important;
             z-index: 10000 !important;
             background: rgba(0,0,0,0.6) !important;
             backdrop-filter: blur(4px) !important;
@@ -673,15 +660,15 @@ window.openModal = function(modalId) {
             opacity: 1 !important;
         `;
         
-        // Asegurar que el contenedor interno también tenga dimensiones
-        const modalContent = modal.querySelector('div[style*="background"]');
+        // Asegurar que el contenedor interno tenga dimensiones correctas
+        const modalContent = modal.children[0];
         if (modalContent) {
             modalContent.style.cssText = `
                 background: #1B263B !important;
                 border-radius: 12px !important;
                 width: 95% !important;
                 max-width: 900px !important;
-                min-width: 300px !important;
+                min-width: 350px !important;
                 max-height: 85vh !important;
                 min-height: 400px !important;
                 border: 1px solid #415A77 !important;
@@ -690,80 +677,20 @@ window.openModal = function(modalId) {
                 display: block !important;
                 visibility: visible !important;
                 opacity: 1 !important;
+                position: relative !important;
             `;
         }
         
         // También asegurar que no esté oculto por clases CSS
         modal.classList.remove('hidden');
         modal.removeAttribute('hidden');
-        
-        console.log(`✅ Modal abierto exitosamente: ${modalId}`);
-        console.log('📊 Estilos aplicados:', {
-            display: modal.style.display,
-            zIndex: modal.style.zIndex,
-            position: modal.style.position,
-            visibility: modal.style.visibility,
-            opacity: modal.style.opacity
-        });
-        
-        // Verificar si el modal es realmente visible
-        const rect = modal.getBoundingClientRect();
-        console.log('📐 Dimensiones del modal:', {
-            width: rect.width,
-            height: rect.height,
-            top: rect.top,
-            left: rect.left,
-            visible: rect.width > 0 && rect.height > 0
-        });
-        
-        // Debug específico para modal de modalidades de juego
-        if (modalId === 'game-modes-modal') {
-            const modalBody = modal.querySelector('.modal-body');
-            const screen1 = modal.querySelector('#game-mode-screen-1');
-            console.log('🔍 Debug Modalidades de Juego:', {
-                modalBodyExists: !!modalBody,
-                screen1Exists: !!screen1,
-                screen1Display: screen1 ? screen1.style.display : 'no existe',
-                modalInnerHTML: modal.innerHTML.length
-            });
-            
-            // Forzar estilos en elementos internos
-            if (modalBody) {
-                modalBody.style.cssText = `
-                    padding: 1.5rem !important;
-                    line-height: 1.6 !important;
-                    min-height: 400px !important;
-                    display: block !important;
-                    visibility: visible !important;
-                `;
-            }
-            
-            if (screen1) {
-                screen1.style.cssText = `
-                    display: block !important;
-                    text-align: center !important;
-                    visibility: visible !important;
-                `;
-            }
-        }
-        
-    } else {
-        console.error(`❌ Modal no encontrado: ${modalId}`);
-        console.log('🔍 Modales disponibles en el DOM:');
-        const allModals = document.querySelectorAll('[id$="-modal"]');
-        allModals.forEach(m => console.log(`  - ${m.id}`));
     }
 };
 
 window.closeModal = function(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        modal.style.cssText = `
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-        `;
-        console.log(`🔒 Modal cerrado: ${modalId}`);
+        modal.style.display = 'none';
     }
 };
 
