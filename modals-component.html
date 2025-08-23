@@ -512,3 +512,250 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Niveles por Roles -->
+<div id="role-levels-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #1B263B; border-radius: 12px; max-width: 900px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; border: 1px solid #415A77;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #415A77;">
+            <h2 style="color: #3B82F6; margin: 0; font-size: 1.5rem;">🎭 Niveles por Roles</h2>
+            <button onclick="closeModal('role-levels-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px;">&times;</button>
+        </div>
+        <div style="padding: 1.5rem;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <p style="color: #E0E1DD; font-size: 1.1rem;">Cada rol tiene su propio sistema de progreso con beneficios únicos</p>
+            </div>
+            
+            <!-- Roles Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                
+                <!-- Estudiante -->
+                <div style="background: linear-gradient(135deg, #1E3A8A, #3B82F6); padding: 1.5rem; border-radius: 12px; text-align: center;">
+                    <h3 style="color: #E0E1DD; margin: 0 0 1rem 0; font-size: 1.3rem;">📚 Estudiante</h3>
+                    <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <p style="color: #E0E1DD; font-size: 0.9rem; margin: 0;">Niveles 1-50</p>
+                        <p style="color: #FFD700; font-weight: bold; margin: 0.5rem 0 0 0;">+Puntos por respuestas correctas</p>
+                    </div>
+                    <div style="font-size: 0.85rem; color: #C7D2FE; line-height: 1.4;">
+                        • Acceso a modos de entrenamiento<br>
+                        • Participación en torneos<br>
+                        • Luminarias por progreso
+                    </div>
+                </div>
+
+                <!-- Creador -->
+                <div style="background: linear-gradient(135deg, #047857, #10B981); padding: 1.5rem; border-radius: 12px; text-align: center;">
+                    <h3 style="color: #E0E1DD; margin: 0 0 1rem 0; font-size: 1.3rem;">✍️ Creador</h3>
+                    <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <p style="color: #E0E1DD; font-size: 0.9rem; margin: 0;">Niveles 1-75</p>
+                        <p style="color: #FFD700; font-weight: bold; margin: 0.5rem 0 0 0;">+Puntos por contenido creado</p>
+                    </div>
+                    <div style="font-size: 0.85rem; color: #A7F3D0; line-height: 1.4;">
+                        • Creación de bloques de preguntas<br>
+                        • Organización de torneos<br>
+                        • Monetización de contenido
+                    </div>
+                </div>
+
+                <!-- Profesor -->
+                <div style="background: linear-gradient(135deg, #B91C1C, #EF4444); padding: 1.5rem; border-radius: 12px; text-align: center;">
+                    <h3 style="color: #E0E1DD; margin: 0 0 1rem 0; font-size: 1.3rem;">👨‍🏫 Profesor</h3>
+                    <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <p style="color: #E0E1DD; font-size: 0.9rem; margin: 0;">Niveles 1-100</p>
+                        <p style="color: #FFD700; font-weight: bold; margin: 0.5rem 0 0 0;">+Puntos por gestión de clases</p>
+                    </div>
+                    <div style="font-size: 0.85rem; color: #FCA5A5; line-height: 1.4;">
+                        • Gestión de estudiantes<br>
+                        • Cronogramas personalizados<br>
+                        • Análisis de rendimiento
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: rgba(59, 130, 246, 0.1); padding: 1.5rem; border-radius: 12px; margin-top: 2rem; text-align: center; border: 2px solid #3B82F6;">
+                <h4 style="color: #3B82F6; margin: 0 0 0.5rem 0;">🏆 Beneficios por Nivel</h4>
+                <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem;">Cada nivel desbloqueado te otorga más Luminarias, acceso a contenido premium y funciones exclusivas</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Desarrollo de Temarios -->
+<div id="topic-development-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #1B263B; border-radius: 12px; max-width: 800px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; border: 1px solid #415A77;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #415A77;">
+            <h2 style="color: #10B981; margin: 0; font-size: 1.5rem;">📋 Desarrollo de Temarios</h2>
+            <button onclick="closeModal('topic-development-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px;">&times;</button>
+        </div>
+        <div style="padding: 1.5rem;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <img src="./Imagenes/Pensativo.png" alt="Lumi Pensativo" style="width: 150px; height: auto; margin-bottom: 1rem;">
+                <p style="color: #E0E1DD; font-size: 1.1rem;">Crea y organiza contenido educativo de manera efectiva</p>
+            </div>
+
+            <div style="display: grid; gap: 1.5rem;">
+                <!-- Paso 1 -->
+                <div style="display: flex; gap: 1rem; padding: 1.5rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px; border-left: 4px solid #10B981;">
+                    <div style="flex-shrink: 0; width: 50px; height: 50px; background: #10B981; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">1</div>
+                    <div>
+                        <h4 style="color: #10B981; margin: 0 0 0.5rem 0; font-size: 1.2rem;">📝 Definir Objetivos</h4>
+                        <p style="color: #E0E1DD; margin: 0; line-height: 1.5;">Establece qué conocimientos o habilidades quieres que los estudiantes adquieran al completar el temario.</p>
+                    </div>
+                </div>
+
+                <!-- Paso 2 -->
+                <div style="display: flex; gap: 1rem; padding: 1.5rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px; border-left: 4px solid #3B82F6;">
+                    <div style="flex-shrink: 0; width: 50px; height: 50px; background: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">2</div>
+                    <div>
+                        <h4 style="color: #3B82F6; margin: 0 0 0.5rem 0; font-size: 1.2rem;">🗂️ Estructurar Contenido</h4>
+                        <p style="color: #E0E1DD; margin: 0; line-height: 1.5;">Organiza el temario en bloques lógicos, desde conceptos básicos hasta avanzados, creando una progresión natural.</p>
+                    </div>
+                </div>
+
+                <!-- Paso 3 -->
+                <div style="display: flex; gap: 1rem; padding: 1.5rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px; border-left: 4px solid #F59E0B;">
+                    <div style="flex-shrink: 0; width: 50px; height: 50px; background: #F59E0B; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">3</div>
+                    <div>
+                        <h4 style="color: #F59E0B; margin: 0 0 0.5rem 0; font-size: 1.2rem;">❓ Crear Preguntas</h4>
+                        <p style="color: #E0E1DD; margin: 0; line-height: 1.5;">Diseña preguntas variadas que evalúen comprensión, aplicación y análisis crítico del contenido.</p>
+                    </div>
+                </div>
+
+                <!-- Paso 4 -->
+                <div style="display: flex; gap: 1rem; padding: 1.5rem; background: linear-gradient(135deg, #1B263B, #2E5266); border-radius: 12px; border-left: 4px solid #EF4444;">
+                    <div style="flex-shrink: 0; width: 50px; height: 50px; background: #EF4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">4</div>
+                    <div>
+                        <h4 style="color: #EF4444; margin: 0 0 0.5rem 0; font-size: 1.2rem;">🎯 Ajustar Dificultad</h4>
+                        <p style="color: #E0E1DD; margin: 0; line-height: 1.5;">Balancea la dificultad para mantener el desafío apropiado y la motivación constante.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: rgba(16, 185, 129, 0.1); padding: 1.5rem; border-radius: 12px; margin-top: 2rem; text-align: center; border: 2px solid #10B981;">
+                <h4 style="color: #10B981; margin: 0 0 0.5rem 0;">✨ Consejo Pro</h4>
+                <p style="color: #E0E1DD; margin: 0; font-size: 0.95rem;">Utiliza las estadísticas de LumiQuiz para identificar qué temas necesitan más refuerzo y ajusta tu temario en consecuencia</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Luminarias -->
+<div id="luminarias-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #1B263B; border-radius: 12px; max-width: 900px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; border: 1px solid #415A77;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #415A77;">
+            <h2 style="color: #FFD700; margin: 0; font-size: 1.5rem;">💰 Sistema de Luminarias</h2>
+            <button onclick="closeModal('luminarias-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px;">&times;</button>
+        </div>
+        <div style="padding: 1.5rem;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <img src="./Imagenes/Luminarias.png" alt="Lumi con Luminarias" style="width: 200px; height: auto; margin-bottom: 1rem;">
+                <p style="color: #E0E1DD; font-size: 1.1rem;">Tu moneda del conocimiento que refleja tu progreso y dedicación</p>
+            </div>
+
+            <!-- Formas de Ganar -->
+            <div style="background: linear-gradient(135deg, #1B263B, #2E5266); padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
+                <h3 style="color: #10B981; text-align: center; margin: 0 0 1.5rem 0; font-size: 1.4rem;">🎯 Cómo Ganar Luminarias</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div style="text-align: center; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📚</div>
+                        <h4 style="color: #10B981; margin: 0 0 0.5rem 0;">Estudiar</h4>
+                        <p style="color: #E0E1DD; font-size: 0.9rem; margin: 0;">+10 por sesión de estudio completada</p>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 8px;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏆</div>
+                        <h4 style="color: #3B82F6; margin: 0 0 0.5rem 0;">Competir</h4>
+                        <p style="color: #E0E1DD; font-size: 0.9rem; margin: 0;">+25 por torneo ganado</p>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(245, 158, 11, 0.1); border-radius: 8px;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">⭐</div>
+                        <h4 style="color: #F59E0B; margin: 0 0 0.5rem 0;">Crear</h4>
+                        <p style="color: #E0E1DD; font-size: 0.9rem; margin: 0;">+15 por bloque de preguntas aprobado</p>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(239, 68, 68, 0.1); border-radius: 8px;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎁</div>
+                        <h4 style="color: #EF4444; margin: 0 0 0.5rem 0;">Bonos</h4>
+                        <p style="color: #E0E1DD; font-size: 0.9rem; margin: 0;">Eventos especiales y logros</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formas de Usar -->
+            <div style="background: linear-gradient(135deg, #2E5266, #1B263B); padding: 2rem; border-radius: 12px;">
+                <h3 style="color: #3B82F6; text-align: center; margin: 0 0 1.5rem 0; font-size: 1.4rem;">🛒 Cómo Usar Luminarias</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                    <div style="padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 8px; border-left: 4px solid #3B82F6;">
+                        <h4 style="color: #3B82F6; margin: 0 0 0.5rem 0; font-size: 1.1rem;">🎨 Personalización</h4>
+                        <ul style="color: #E0E1DD; font-size: 0.9rem; margin: 0; padding-left: 1rem;">
+                            <li>Avatares únicos (50 L)</li>
+                            <li>Temas personalizados (30 L)</li>
+                            <li>Marcos especiales (25 L)</li>
+                        </ul>
+                    </div>
+                    <div style="padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 8px; border-left: 4px solid #10B981;">
+                        <h4 style="color: #10B981; margin: 0 0 0.5rem 0; font-size: 1.1rem;">🔍 Ayudas de Juego</h4>
+                        <ul style="color: #E0E1DD; font-size: 0.9rem; margin: 0; padding-left: 1rem;">
+                            <li>Pistas adicionales (5 L)</li>
+                            <li>Vidas extra (10 L)</li>
+                            <li>Multiplicadores (20 L)</li>
+                        </ul>
+                    </div>
+                    <div style="padding: 1rem; background: rgba(245, 158, 11, 0.1); border-radius: 8px; border-left: 4px solid #F59E0B;">
+                        <h4 style="color: #F59E0B; margin: 0 0 0.5rem 0; font-size: 1.1rem;">📜 Contenido Premium</h4>
+                        <ul style="color: #E0E1DD; font-size: 0.9rem; margin: 0; padding-left: 1rem;">
+                            <li>Bloques exclusivos (100 L)</li>
+                            <li>Torneos VIP (150 L)</li>
+                            <li>Análisis avanzados (75 L)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: #FFD700; color: #1B263B; padding: 1.5rem; border-radius: 12px; margin-top: 2rem; text-align: center;">
+                <h4 style="margin: 0 0 0.5rem 0; font-size: 1.3rem;">🎊 ¡Regalo de Bienvenida!</h4>
+                <p style="margin: 0; font-weight: bold; font-size: 1.1rem;">Empiezas con 200 Luminarias completamente gratis</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Funciones globales para manejar modales
+window.openModal = function(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'flex';
+        // Asegurar que el modal esté al frente
+        modal.style.zIndex = '10000';
+        console.log(`🎯 Modal abierto: ${modalId}`);
+    } else {
+        console.error(`❌ Modal no encontrado: ${modalId}`);
+    }
+};
+
+window.closeModal = function(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+        console.log(`🔒 Modal cerrado: ${modalId}`);
+    }
+};
+
+// Cerrar modal al hacer clic fuera del contenido
+window.addEventListener('click', function(event) {
+    if (event.target.classList.contains('modal') || event.target.classList.contains('modal-backdrop')) {
+        const modalId = event.target.id;
+        if (modalId) {
+            closeModal(modalId);
+        }
+    }
+});
+
+// Cerrar modal con tecla Escape
+window.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const openModals = document.querySelectorAll('[id$="-modal"][style*="flex"], [id$="-modal"][style*="block"]');
+        openModals.forEach(modal => {
+            closeModal(modal.id);
+        });
+    }
+});
+</script>

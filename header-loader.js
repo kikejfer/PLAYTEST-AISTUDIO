@@ -608,12 +608,12 @@ function initializeHeaderFunctions() {
     };
     
     window.openTopicDevelopmentModal = function() {
-        alert('Modal de Desarrollo de Temarios - Por implementar');
+        openModal('topic-development-modal');
         closeUserDropdown();
     };
     
     window.openLuminariasModal = function() {
-        alert('Modal de Luminarias - Por implementar');
+        openModal('luminarias-modal');
         closeUserDropdown();
     };
     
