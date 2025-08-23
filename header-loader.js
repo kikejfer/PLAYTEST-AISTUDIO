@@ -957,7 +957,7 @@ function updateLuminariasNavigation(screenIndex) {
 
 // Funciones de navegación para modal de Niveles por Roles
 window.nextRoleLevelScreen = function() {
-    const screens = ['role-level-screen-1', 'role-level-screen-2', 'role-level-screen-3', 'role-level-screen-4', 'role-level-screen-5', 'role-level-screen-6', 'role-level-screen-7', 'role-level-screen-8', 'role-level-screen-9', 'role-level-screen-10', 'role-level-screen-11', 'role-level-screen-12', 'role-level-screen-13', 'role-level-screen-14', 'role-level-screen-15', 'role-level-screen-16', 'role-level-screen-17'];
+    const screens = ['role-level-screen-1', 'role-level-screen-2', 'role-level-screen-3', 'role-level-screen-4', 'role-level-screen-5', 'role-level-screen-6', 'role-level-screen-7', 'role-level-screen-8', 'role-level-screen-9', 'role-level-screen-10', 'role-level-screen-11', 'role-level-screen-12', 'role-level-screen-13', 'role-level-screen-14', 'role-level-screen-15', 'role-level-screen-16', 'role-level-screen-17', 'role-level-screen-18', 'role-level-screen-19'];
     let currentScreen = 0;
     
     // Encontrar pantalla actual
@@ -980,7 +980,7 @@ window.nextRoleLevelScreen = function() {
 };
 
 window.previousRoleLevelScreen = function() {
-    const screens = ['role-level-screen-1', 'role-level-screen-2', 'role-level-screen-3', 'role-level-screen-4', 'role-level-screen-5', 'role-level-screen-6', 'role-level-screen-7', 'role-level-screen-8', 'role-level-screen-9', 'role-level-screen-10', 'role-level-screen-11', 'role-level-screen-12', 'role-level-screen-13', 'role-level-screen-14', 'role-level-screen-15', 'role-level-screen-16', 'role-level-screen-17'];
+    const screens = ['role-level-screen-1', 'role-level-screen-2', 'role-level-screen-3', 'role-level-screen-4', 'role-level-screen-5', 'role-level-screen-6', 'role-level-screen-7', 'role-level-screen-8', 'role-level-screen-9', 'role-level-screen-10', 'role-level-screen-11', 'role-level-screen-12', 'role-level-screen-13', 'role-level-screen-14', 'role-level-screen-15', 'role-level-screen-16', 'role-level-screen-17', 'role-level-screen-18', 'role-level-screen-19'];
     let currentScreen = 0;
     
     // Encontrar pantalla actual
@@ -1004,7 +1004,7 @@ window.previousRoleLevelScreen = function() {
 
 // Función auxiliar para actualizar navegación del modal de niveles por roles
 function updateRoleLevelNavigation(screenIndex) {
-    const totalScreens = 17;
+    const totalScreens = 19;
     
     // Actualizar botones
     const prevBtn = document.getElementById('prev-role-level-btn');
