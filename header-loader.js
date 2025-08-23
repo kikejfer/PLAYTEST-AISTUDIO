@@ -654,25 +654,46 @@ window.openModal = function(modalId) {
     
     const modal = document.getElementById(modalId);
     if (modal) {
-        // Configurar estilos para mostrar el modal
-        modal.style.display = 'flex';
-        modal.style.alignItems = 'center';
-        modal.style.justifyContent = 'center';
-        modal.style.position = 'fixed';
-        modal.style.top = '0';
-        modal.style.left = '0';
-        modal.style.width = '100%';
-        modal.style.height = '100%';
-        modal.style.zIndex = '10000';
-        modal.style.background = 'rgba(0,0,0,0.6)';
-        modal.style.backdropFilter = 'blur(4px)';
+        // Configurar estilos para mostrar el modal con !important usando cssText
+        modal.style.cssText = `
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 10000 !important;
+            background: rgba(0,0,0,0.6) !important;
+            backdrop-filter: blur(4px) !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        `;
+        
+        // También asegurar que no esté oculto por clases CSS
+        modal.classList.remove('hidden');
+        modal.removeAttribute('hidden');
         
         console.log(`✅ Modal abierto exitosamente: ${modalId}`);
         console.log('📊 Estilos aplicados:', {
             display: modal.style.display,
             zIndex: modal.style.zIndex,
-            position: modal.style.position
+            position: modal.style.position,
+            visibility: modal.style.visibility,
+            opacity: modal.style.opacity
         });
+        
+        // Verificar si el modal es realmente visible
+        const rect = modal.getBoundingClientRect();
+        console.log('📐 Dimensiones del modal:', {
+            width: rect.width,
+            height: rect.height,
+            top: rect.top,
+            left: rect.left,
+            visible: rect.width > 0 && rect.height > 0
+        });
+        
     } else {
         console.error(`❌ Modal no encontrado: ${modalId}`);
         console.log('🔍 Modales disponibles en el DOM:');
@@ -684,7 +705,11 @@ window.openModal = function(modalId) {
 window.closeModal = function(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        modal.style.display = 'none';
+        modal.style.cssText = `
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        `;
         console.log(`🔒 Modal cerrado: ${modalId}`);
     }
 };
