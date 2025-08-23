@@ -670,41 +670,56 @@ window.openModal = function(modalId) {
             opacity: 1 !important;
         `;
         
-        // Configurar contenedor interno inmediatamente
+        // Configurar contenedor interno inmediatamente con máxima agresividad
         const modalContent = modal.children[0];
         console.log(`🔍 DEBUG: Contenedor interno para ${modalId}:`, modalContent);
         if (modalContent) {
-            modalContent.style.cssText = `
+            // Método 1: setAttribute (máxima prioridad)
+            modalContent.setAttribute('style', `
                 background: #1B263B !important;
                 border-radius: 12px !important;
-                width: 95% !important;
-                max-width: 900px !important;
-                min-width: 350px !important;
-                max-height: 85vh !important;
-                min-height: 400px !important;
-                border: 1px solid #415A77 !important;
+                width: 800px !important;
+                height: 600px !important;
+                min-width: 800px !important;
+                min-height: 600px !important;
+                max-width: none !important;
+                max-height: none !important;
+                border: 3px solid #FFD700 !important;
                 overflow-y: auto !important;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.5) !important;
                 display: block !important;
                 visibility: visible !important;
                 opacity: 1 !important;
                 position: relative !important;
-                height: auto !important;
                 flex-shrink: 0 !important;
-            `;
+                z-index: 10001 !important;
+            `);
             
-            // Forzar recalculo de layout
+            // Método 2: Forzar propiedades individuales
+            modalContent.style.setProperty('width', '800px', 'important');
+            modalContent.style.setProperty('height', '600px', 'important');
+            modalContent.style.setProperty('min-width', '800px', 'important');
+            modalContent.style.setProperty('min-height', '600px', 'important');
+            modalContent.style.setProperty('display', 'block', 'important');
+            modalContent.style.setProperty('background', '#1B263B', 'important');
+            modalContent.style.setProperty('border', '3px solid #FFD700', 'important');
+            
+            // Forzar recalculo de layout múltiples veces
             modalContent.offsetHeight;
+            modalContent.getBoundingClientRect();
             
-            // Verificar contenido interno y aplicar estilos a los hijos también
+            // Verificar contenido interno y forzar dimensiones también
             const modalBody = modalContent.querySelector('.modal-body');
             if (modalBody) {
-                modalBody.style.cssText += `
+                modalBody.setAttribute('style', `
                     display: block !important;
                     visibility: visible !important;
                     opacity: 1 !important;
-                    min-height: 300px !important;
-                `;
+                    min-height: 500px !important;
+                    height: 500px !important;
+                    width: 100% !important;
+                    background: rgba(255,0,0,0.1) !important;
+                `);
                 console.log(`🔍 DEBUG: Modal body encontrado y configurado para ${modalId}`);
             }
             
