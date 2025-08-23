@@ -694,6 +694,37 @@ window.openModal = function(modalId) {
             visible: rect.width > 0 && rect.height > 0
         });
         
+        // Debug específico para modal de modalidades de juego
+        if (modalId === 'game-modes-modal') {
+            const modalBody = modal.querySelector('.modal-body');
+            const screen1 = modal.querySelector('#game-mode-screen-1');
+            console.log('🔍 Debug Modalidades de Juego:', {
+                modalBodyExists: !!modalBody,
+                screen1Exists: !!screen1,
+                screen1Display: screen1 ? screen1.style.display : 'no existe',
+                modalInnerHTML: modal.innerHTML.length
+            });
+            
+            // Forzar estilos en elementos internos
+            if (modalBody) {
+                modalBody.style.cssText = `
+                    padding: 1.5rem !important;
+                    line-height: 1.6 !important;
+                    min-height: 400px !important;
+                    display: block !important;
+                    visibility: visible !important;
+                `;
+            }
+            
+            if (screen1) {
+                screen1.style.cssText = `
+                    display: block !important;
+                    text-align: center !important;
+                    visibility: visible !important;
+                `;
+            }
+        }
+        
     } else {
         console.error(`❌ Modal no encontrado: ${modalId}`);
         console.log('🔍 Modales disponibles en el DOM:');
