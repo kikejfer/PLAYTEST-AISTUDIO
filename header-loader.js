@@ -138,7 +138,14 @@ async function loadModals() {
         
         modalsContainer.innerHTML = modalsHTML;
         
-        console.log('Modales cargados exitosamente');
+        console.log('✅ Modales cargados exitosamente');
+        
+        // Verificar que los modales específicos existan
+        const modalIds = ['introduction-modal', 'game-modes-modal', 'role-levels-modal', 'topic-development-modal', 'luminarias-modal'];
+        modalIds.forEach(id => {
+            const modal = document.getElementById(id);
+            console.log(`🔍 Modal ${id}:`, modal ? '✅ Encontrado' : '❌ No encontrado');
+        });
         
     } catch (error) {
         console.error('Error al cargar los modales:', error);
@@ -643,14 +650,34 @@ function initializeHeaderFunctions() {
 
 // Funciones globales para manejar modales
 window.openModal = function(modalId) {
+    console.log(`🎯 Intentando abrir modal: ${modalId}`);
+    
     const modal = document.getElementById(modalId);
     if (modal) {
+        // Configurar estilos para mostrar el modal
         modal.style.display = 'flex';
-        // Asegurar que el modal esté al frente
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100%';
+        modal.style.height = '100%';
         modal.style.zIndex = '10000';
-        console.log(`🎯 Modal abierto: ${modalId}`);
+        modal.style.background = 'rgba(0,0,0,0.6)';
+        modal.style.backdropFilter = 'blur(4px)';
+        
+        console.log(`✅ Modal abierto exitosamente: ${modalId}`);
+        console.log('📊 Estilos aplicados:', {
+            display: modal.style.display,
+            zIndex: modal.style.zIndex,
+            position: modal.style.position
+        });
     } else {
         console.error(`❌ Modal no encontrado: ${modalId}`);
+        console.log('🔍 Modales disponibles en el DOM:');
+        const allModals = document.querySelectorAll('[id$="-modal"]');
+        allModals.forEach(m => console.log(`  - ${m.id}`));
     }
 };
 
