@@ -645,9 +645,38 @@ function initializeHeaderFunctions() {
 
 // Funciones globales para manejar modales
 window.openModal = function(modalId) {
+    console.log(`🔍 DEBUG: Intentando abrir modal: ${modalId}`);
     const modal = document.getElementById(modalId);
+    console.log(`🔍 DEBUG: Modal encontrado:`, modal);
+    
     if (modal) {
+        console.log(`🔍 DEBUG: Modal ${modalId} - Estado antes:`, {
+            display: modal.style.display,
+            visibility: modal.style.visibility,
+            zIndex: modal.style.zIndex,
+            width: modal.offsetWidth,
+            height: modal.offsetHeight
+        });
+        
         modal.style.display = 'flex';
+        
+        console.log(`🔍 DEBUG: Modal ${modalId} - Estado después:`, {
+            display: modal.style.display,
+            visibility: modal.style.visibility,
+            zIndex: modal.style.zIndex,
+            width: modal.offsetWidth,
+            height: modal.offsetHeight
+        });
+        
+        // Verificar si el modal es realmente visible
+        const isVisible = modal.offsetWidth > 0 && modal.offsetHeight > 0;
+        console.log(`🔍 DEBUG: Modal ${modalId} - ¿Es visible?:`, isVisible);
+        
+        if (!isVisible) {
+            console.log(`❌ DEBUG: Modal ${modalId} no es visible después de display: flex`);
+        }
+    } else {
+        console.error(`❌ DEBUG: Modal ${modalId} no encontrado en el DOM`);
     }
 };
 
