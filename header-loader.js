@@ -660,6 +660,14 @@ window.openModal = function(modalId) {
         
         modal.style.display = 'flex';
         
+        // Forzar recálculo del layout (solución al problema de dimensiones 0x0)
+        modal.offsetHeight;
+        
+        // Forzar recálculo también en elementos hijos si existen
+        if (modal.children.length > 0) {
+            modal.children[0].offsetHeight;
+        }
+        
         console.log(`🔍 DEBUG: Modal ${modalId} - Estado después:`, {
             display: modal.style.display,
             visibility: modal.style.visibility,
