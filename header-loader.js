@@ -674,6 +674,18 @@ window.openModal = function(modalId) {
         
         if (!isVisible) {
             console.log(`❌ DEBUG: Modal ${modalId} no es visible después de display: flex`);
+            console.log(`🔍 DEBUG: Contenido interno:`, modal.children.length, 'elementos');
+            
+            if (modal.children.length > 0) {
+                const firstChild = modal.children[0];
+                console.log(`🔍 DEBUG: Primer hijo:`, {
+                    tagName: firstChild.tagName,
+                    width: firstChild.offsetWidth,
+                    height: firstChild.offsetHeight,
+                    display: firstChild.style.display,
+                    hasContent: firstChild.innerHTML.length > 0
+                });
+            }
         }
     } else {
         console.error(`❌ DEBUG: Modal ${modalId} no encontrado en el DOM`);
