@@ -1,0 +1,36 @@
+    <!-- Scripts específicos del panel de jugadores -->
+    <script>
+        // Datos del jugador (normalmente vendrían de una API)
+        const playerData = {
+            level: 5,
+            xp: 850,
+            xpToNext: 1300,
+            gamesPlayed: 127,
+            winRate: 78,
+            bestStreak: 23,
+            luminarias: 2340,
+            activeBlocks: 8,
+            completedBlocks: 15
+        };
+
+        // Actualizar estadísticas en la interfaz
+        function updatePlayerStats() {
+            document.getElementById('player-level').textContent = playerData.level;
+            document.getElementById('games-played').textContent = playerData.gamesPlayed;
+            document.getElementById('win-rate').textContent = playerData.winRate + '%';
+            document.getElementById('best-streak').textContent = playerData.bestStreak;
+            document.getElementById('player-luminarias').textContent = playerData.luminarias.toLocaleString();
+            document.getElementById('active-blocks').textContent = playerData.activeBlocks;
+            document.getElementById('completed-blocks').textContent = playerData.completedBlocks;
+        }
+
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            updatePlayerStats();
+        });
+    </script>
+
+    <!-- Modales incluidos desde el sistema común -->
+    <!-- Los modales se cargan dinámicamente con el header-component -->
+</body>
+</html>

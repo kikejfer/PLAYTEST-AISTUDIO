@@ -12,554 +12,407 @@
     <script src="header-loader.js"></script>
     <script src="api-data-service.js"></script>
     
+    <!-- CDN de React y Babel para compatibilidad con el código de index.html -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Anular header original de index.html */
+        .original-header,
+        .index-header,
+        header.bg-brand-secondary {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            overflow: hidden !important;
         }
 
+        /* Estilos adicionales para el panel */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #0D1B2A;
             min-height: 100vh;
             color: #E0E1DD;
+            padding-top: 80px; /* Espacio para header unificado */
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
         }
 
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .card {
-            background: #1B263B;
-            border-radius: 12px;
-            padding: 24px;
-            border: 1px solid #415A77;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .card-icon {
-            font-size: 2rem;
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(59, 130, 246, 0.2);
-            border-radius: 12px;
-        }
-
-        .card-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #E0E1DD;
-        }
-
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #3B82F6;
-            margin-bottom: 8px;
-        }
-
-        .stat-label {
-            color: #778DA9;
-            font-size: 0.9rem;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #415A77;
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 12px 0;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3B82F6, #10B981);
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-
-        .action-button {
-            background: #3B82F6;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            width: 100%;
-            margin-top: 16px;
-        }
-
-        .action-button:hover {
-            background: #2563EB;
-            transform: translateY(-1px);
-        }
-
-        .action-button.secondary {
-            background: #10B981;
-        }
-
-        .action-button.secondary:hover {
-            background: #059669;
-        }
-
-        .recent-activity {
-            background: #1B263B;
-            border-radius: 12px;
-            padding: 24px;
-            border: 1px solid #415A77;
-            margin-top: 20px;
-        }
-
-        .activity-item {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 16px 0;
-            border-bottom: 1px solid #415A77;
-        }
-
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-
-        .activity-icon {
-            font-size: 1.5rem;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(16, 185, 129, 0.2);
-            border-radius: 50%;
-        }
-
-        .activity-content {
-            flex: 1;
-        }
-
-        .activity-title {
-            font-weight: 600;
-            color: #E0E1DD;
-            margin-bottom: 4px;
-        }
-
-        .activity-time {
-            color: #778DA9;
-            font-size: 0.85rem;
-        }
-
-        .level-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .achievements-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 16px;
-            margin-top: 16px;
-        }
-
-        .achievement-badge {
-            text-align: center;
-            padding: 16px;
-            background: rgba(59, 130, 246, 0.1);
-            border-radius: 12px;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-
-        .achievement-icon {
-            font-size: 2rem;
-            margin-bottom: 8px;
-        }
-
-        .achievement-name {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #E0E1DD;
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .container {
-                padding: 15px;
-            }
+        /* Variables CSS para compatibilidad con Tailwind */
+        :root {
+            --brand-primary: #0D1B2A;
+            --brand-secondary: #1B263B;
+            --brand-tertiary: #415A77;
+            --brand-accent: #778DA9;
+            --brand-light: #E0E1DD;
+            --brand-cta: #3B82F6;
+            --brand-cta-hover: #2563EB;
+            --brand-success: #10B981;
+            --brand-danger: #EF4444;
         }
     </style>
 </head>
 <body>
-    <!-- Contenedor del header que se carga dinámicamente -->
+    <!-- Contenedor del header unificado -->
     <div id="header-container"></div>
 
-    <div class="container">
-        <!-- Panel de estadísticas personales -->
-        <div class="dashboard-grid">
-            <!-- Progreso del jugador -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">🎯</div>
-                    <div class="card-title">Mi Progreso</div>
-                </div>
-                <div class="stat-value" id="player-level">5</div>
-                <div class="stat-label">Nivel Actual</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 65%"></div>
-                </div>
-                <div style="color: #778DA9; font-size: 0.85rem;">850 / 1300 XP para siguiente nivel</div>
-                <div class="level-badge">
-                    <span>🌍</span>
-                    <span>Sabio</span>
-                </div>
-            </div>
+    <!-- Contenido principal del panel de jugadores -->
+    <div id="player-dashboard-root"></div>
 
-            <!-- Estadísticas de juego -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">📊</div>
-                    <div class="card-title">Estadísticas</div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <div style="text-align: center;">
-                        <div class="stat-value" style="font-size: 1.8rem; color: #10B981;" id="games-played">127</div>
-                        <div class="stat-label">Partidas Jugadas</div>
-                    </div>
-                    <div style="text-align: center;">
-                        <div class="stat-value" style="font-size: 1.8rem; color: #F59E0B;" id="win-rate">78%</div>
-                        <div class="stat-label">Tasa de Aciertos</div>
-                    </div>
-                </div>
-                <div style="margin-top: 16px; text-align: center;">
-                    <div class="stat-value" style="font-size: 1.8rem; color: #EF4444;" id="best-streak">23</div>
-                    <div class="stat-label">Mejor Racha</div>
-                </div>
-            </div>
+    <!-- Script principal del panel -->
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useMemo, useContext, createContext } = React;
 
-            <!-- Luminarias -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">💰</div>
-                    <div class="card-title">Mis Luminarias</div>
-                </div>
-                <div class="stat-value" id="player-luminarias">2,340</div>
-                <div class="stat-label">Luminarias Totales</div>
-                <button class="action-button secondary" onclick="window.open('luminarias-store.html', '_blank')">
-                    🛒 Ir a la Tienda
-                </button>
-            </div>
-        </div>
+        // Context para el usuario actual
+        const UserContext = createContext();
+        const useUser = () => useContext(UserContext);
 
-        <!-- Acciones rápidas -->
-        <div class="dashboard-grid">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">🎮</div>
-                    <div class="card-title">Jugar Ahora</div>
-                </div>
-                <p style="color: #778DA9; margin-bottom: 16px;">Elige tu modalidad de juego favorita</p>
-                <button class="action-button" onclick="window.open('all-blocks.html', '_blank')">
-                    🎯 Modo Clásico
-                </button>
-                <button class="action-button secondary" onclick="openGameModesModal()">
-                    ⚔️ Ver Todas las Modalidades
-                </button>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">📚</div>
-                    <div class="card-title">Mis Bloques</div>
-                </div>
-                <p style="color: #778DA9; margin-bottom: 16px;">Gestiona tus bloques de estudio</p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-                    <div style="text-align: center; padding: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
-                        <div style="font-weight: bold; color: #10B981;" id="active-blocks">8</div>
-                        <div style="font-size: 0.8rem; color: #778DA9;">Activos</div>
-                    </div>
-                    <div style="text-align: center; padding: 12px; background: rgba(59, 130, 246, 0.1); border-radius: 8px;">
-                        <div style="font-weight: bold; color: #3B82F6;" id="completed-blocks">15</div>
-                        <div style="font-size: 0.8rem; color: #778DA9;">Completados</div>
-                    </div>
-                </div>
-                <button class="action-button" onclick="window.open('all-blocks.html', '_blank')">
-                    📖 Ver Mis Bloques
-                </button>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">🏆</div>
-                    <div class="card-title">Logros</div>
-                </div>
-                <p style="color: #778DA9; margin-bottom: 16px;">Tus logros desbloqueados</p>
-                <div class="achievements-grid">
-                    <div class="achievement-badge">
-                        <div class="achievement-icon">🎯</div>
-                        <div class="achievement-name">Primera Victoria</div>
-                    </div>
-                    <div class="achievement-badge">
-                        <div class="achievement-icon">🔥</div>
-                        <div class="achievement-name">Racha de 10</div>
-                    </div>
-                    <div class="achievement-badge">
-                        <div class="achievement-icon">⚡</div>
-                        <div class="achievement-name">Velocista</div>
-                    </div>
-                    <div class="achievement-badge">
-                        <div class="achievement-icon">🧠</div>
-                        <div class="achievement-name">Sabio</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Actividad reciente -->
-        <div class="recent-activity">
-            <h3 style="color: #E0E1DD; margin-bottom: 20px;">📈 Actividad Reciente</h3>
-            <div class="activity-item">
-                <div class="activity-icon">🎯</div>
-                <div class="activity-content">
-                    <div class="activity-title">Completaste "Matemáticas Básicas" en modo Clásico</div>
-                    <div class="activity-time">Hace 2 horas</div>
-                </div>
-                <div style="color: #10B981; font-weight: bold;">+50 XP</div>
-            </div>
-            <div class="activity-item">
-                <div class="activity-icon">⚡</div>
-                <div class="activity-content">
-                    <div class="activity-title">Nuevo récord en modo Contrarreloj: 45 segundos</div>
-                    <div class="activity-time">Ayer</div>
-                </div>
-                <div style="color: #F59E0B; font-weight: bold;">🏆</div>
-            </div>
-            <div class="activity-item">
-                <div class="activity-icon">🔥</div>
-                <div class="activity-content">
-                    <div class="activity-title">Racha de 15 aciertos consecutivos</div>
-                    <div class="activity-time">Hace 2 días</div>
-                </div>
-                <div style="color: #EF4444; font-weight: bold;">+100 XP</div>
-            </div>
-        </div>
-    </div>
-
-    
-    <!-- Scripts específicos del panel de jugadores -->
-    <script>
-        // Datos del jugador (normalmente vendrían de una API)
-        const playerData = {
-            level: 5,
-            xp: 850,
-            xpToNext: 1300,
-            gamesPlayed: 127,
-            winRate: 78,
-            bestStreak: 23,
-            luminarias: 2340,
-            activeBlocks: 8,
-            completedBlocks: 15
+        // Context para idioma (simplificado)
+        const LanguageContext = createContext();
+        const useLanguage = () => useContext(LanguageContext);
+        const LanguageProvider = ({ children }) => {
+            const t = (key, params = {}) => {
+                const translations = {
+                    // Traducciones básicas necesarias
+                    'loading': 'Cargando...',
+                    'error': 'Error',
+                    'game_setup_title': 'Configuración de partida',
+                    'active_games_title': 'Juegos Activos',
+                    'block_management_title': 'Gestión de Bloques',
+                    'game_history_title': 'Historial de Partidas',
+                    'created_blocks_title': 'Mis Bloques Creados'
+                };
+                let text = translations[key] || key;
+                Object.keys(params).forEach(param => {
+                    text = text.replace(`{${param}}`, params[param]);
+                });
+                return text;
+            };
+            
+            return React.createElement(LanguageContext.Provider, { value: { t } }, children);
         };
 
-        // Actualizar estadísticas en la interfaz
-        function updatePlayerStats() {
-            document.getElementById('player-level').textContent = playerData.level;
-            document.getElementById('games-played').textContent = playerData.gamesPlayed;
-            document.getElementById('win-rate').textContent = playerData.winRate + '%';
-            document.getElementById('best-streak').textContent = playerData.bestStreak;
-            document.getElementById('player-luminarias').textContent = playerData.luminarias.toLocaleString();
-            document.getElementById('active-blocks').textContent = playerData.activeBlocks;
-            document.getElementById('completed-blocks').textContent = playerData.completedBlocks;
-        }
+        // Componente principal del dashboard de jugadores
+        const PlayerDashboard = () => {
+            const { t } = useLanguage();
+            const [currentUser, setCurrentUser] = useState(null);
+            const [isLoading, setIsLoading] = useState(true);
+            const [blocks, setBlocks] = useState([]);
+            const [games, setGames] = useState([]);
+            const [gameHistory, setGameHistory] = useState([]);
+            const [challenges, setChallenges] = useState([]);
+            const [error, setError] = useState(null);
 
-        // Funciones para modales (reutilizar de otros paneles)
-        function openGameModesModal() {
-            document.getElementById('game-modes-modal').style.display = 'flex';
-        }
+            // Cargar datos del usuario desde localStorage
+            useEffect(() => {
+                const loadUserSession = () => {
+                    try {
+                        const sessionString = localStorage.getItem('playtest_session');
+                        const token = localStorage.getItem('playtest_auth_token');
+                        
+                        if (sessionString && token) {
+                            const session = JSON.parse(sessionString);
+                            if (session && session.userId && session.nickname) {
+                                setCurrentUser({
+                                    id: session.userId,
+                                    nickname: session.nickname
+                                });
+                                
+                                // Configurar token en apiDataService si existe
+                                if (window.apiDataService && !window.apiDataService.token) {
+                                    window.apiDataService.token = token;
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Error loading user session:', e);
+                    } finally {
+                        setIsLoading(false);
+                    }
+                };
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
+                loadUserSession();
+            }, []);
 
-        function openRoleLevelsModal() {
-            document.getElementById('role-levels-modal').style.display = 'flex';
-        }
+            // Cargar datos del jugador
+            const loadPlayerData = useCallback(async () => {
+                if (!currentUser) return;
+                
+                try {
+                    setError(null);
+                    setIsLoading(true);
+                    
+                    if (window.apiDataService) {
+                        const [
+                            fetchedGames,
+                            loadedBlocks,
+                            history,
+                            fetchedChallenges
+                        ] = await Promise.all([
+                            window.apiDataService.fetchGamesForUser(currentUser.id),
+                            window.apiDataService.fetchLoadedBlocks(),
+                            window.apiDataService.fetchGameHistory(currentUser.id),
+                            window.apiDataService.fetchChallengesForUser(currentUser.id)
+                        ]);
 
-        // Funciones del header (copiadas del sistema existente)
-        function toggleUserDropdown() {
-            const dropdown = document.getElementById('user-dropdown');
-            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
-        }
+                        setGames(fetchedGames || []);
+                        setBlocks(loadedBlocks || []);
+                        setGameHistory(history || []);
+                        setChallenges(fetchedChallenges || []);
+                    }
+                } catch (err) {
+                    setError(err instanceof Error ? `Error al cargar datos: ${err.message}` : 'Error desconocido.');
+                } finally {
+                    setIsLoading(false);
+                }
+            }, [currentUser]);
 
-        function closeUserDropdown() {
-            document.getElementById('user-dropdown').style.display = 'none';
-        }
+            useEffect(() => {
+                loadPlayerData();
+            }, [loadPlayerData]);
 
-        function toggleGameExplanationSubmenu() {
-            const submenu = document.getElementById('game-explanation-submenu');
-            submenu.style.display = submenu.style.display === 'none' ? 'block' : 'none';
-        }
+            // Navegación a juegos
+            const onNavigateToGame = (game) => {
+                const isInProgress = (game.mode === 'Duelo' || game.mode === 'Trivial') && 
+                    (game.gameState || game.turnState || (game.round && game.round > 0));
 
-        function openPersonalDataModal() {
-            console.log('Abrir modal de datos personales');
-        }
+                if (isInProgress) {
+                    const targetPage = game.mode === 'Duelo' ? 'game-duel.html' : 'game-trivial.html';
+                    window.location.href = `${targetPage}?gameId=${game.id}`;
+                } else {
+                    window.location.href = `active-game.html?gameId=${game.id}`;
+                }
+            };
 
-        function openRoleModificationModal() {
-            console.log('Abrir modal de modificación de roles');
-        }
+            // Crear nuevo juego
+            const handleCreateGame = async (gameConfig) => {
+                try {
+                    if (window.apiDataService) {
+                        const newGame = await window.apiDataService.createGameForUser(
+                            currentUser.id, 
+                            currentUser.nickname, 
+                            gameConfig
+                        );
+                        
+                        if (newGame && newGame.id) {
+                            localStorage.setItem('current_game_id', newGame.id);
+                            localStorage.setItem('current_game_mode', 'normal');
+                            await loadPlayerData();
+                            onNavigateToGame(newGame);
+                        }
+                    }
+                } catch (err) {
+                    setError(err instanceof Error ? `Error al crear juego: ${err.message}` : 'Error desconocido.');
+                }
+            };
 
-        function openTopicDevelopmentModal() {
-            console.log('Abrir modal de desarrollo de temarios');
-        }
+            const handleDeleteGame = async (gameId) => {
+                try {
+                    if (window.apiDataService) {
+                        await window.apiDataService.deleteGameForUser(currentUser.id, gameId);
+                        await loadPlayerData();
+                    }
+                } catch (err) {
+                    setError(err instanceof Error ? `Error al eliminar juego: ${err.message}` : 'Error desconocido.');
+                }
+            };
 
-        function openLuminariasModal() {
-            window.open('luminarias-store.html', '_blank');
-        }
+            const viewBlockQuestions = (blockId) => {
+                window.location.href = `block-questions.html?blockId=${blockId}&returnUrl=jugadores-panel-gaming.html&viewMode=readonly`;
+            };
 
-        function openPasswordChangeModal() {
-            console.log('Abrir modal de cambio de contraseña');
-        }
-
-        function logout() {
-            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-                window.location.href = 'index.html';
+            if (isLoading) {
+                return React.createElement('div', { 
+                    className: "flex justify-center items-center h-64" 
+                }, React.createElement('div', { 
+                    className: "text-center text-white" 
+                }, t('loading')));
             }
-        }
 
-        // Inicializar cuando se carga la página
-        document.addEventListener('DOMContentLoaded', function() {
-            updatePlayerStats();
-        });
+            if (error) {
+                return React.createElement('div', { 
+                    className: "text-center text-red-400 bg-red-500/10 p-4 rounded-lg m-4" 
+                }, `${t('error')}: ${error}`);
+            }
 
-        // Cerrar dropdowns al hacer click fuera
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('user-dropdown');
-            const dropdownBtn = document.getElementById('user-dropdown-btn');
+            if (!currentUser) {
+                return React.createElement('div', { 
+                    className: "text-center text-white p-4" 
+                }, 'Usuario no encontrado. Regresa a la página de inicio.');
+            }
+
+            return React.createElement('div', { 
+                className: "container mx-auto px-4 py-6 space-y-8" 
+            }, [
+                // Bienvenida
+                React.createElement('div', { 
+                    key: 'welcome',
+                    className: "text-center" 
+                }, [
+                    React.createElement('h1', { 
+                        key: 'title',
+                        className: "text-3xl font-bold text-blue-400 mb-2" 
+                    }, `🎮 Bienvenido, ${currentUser.nickname}!`),
+                    React.createElement('p', { 
+                        key: 'subtitle',
+                        className: "text-gray-400" 
+                    }, 'Tu dashboard personal de PLAYTEST')
+                ]),
+
+                // Grid principal
+                React.createElement('div', { 
+                    key: 'main-grid',
+                    className: "grid grid-cols-1 lg:grid-cols-3 gap-8" 
+                }, [
+                    // Columna izquierda - Juegos
+                    React.createElement('div', { 
+                        key: 'games-column',
+                        className: "lg:col-span-2 space-y-8" 
+                    }, [
+                        // Configuración de juego
+                        React.createElement('div', { 
+                            key: 'game-setup',
+                            className: "bg-slate-800 p-6 rounded-xl shadow-lg" 
+                        }, [
+                            React.createElement('h2', { 
+                                key: 'setup-title',
+                                className: "text-xl font-bold text-white mb-4" 
+                            }, '🎯 Configurar Nueva Partida'),
+                            React.createElement('div', { 
+                                key: 'setup-content',
+                                className: "text-center text-gray-400" 
+                            }, [
+                                React.createElement('p', { key: 'setup-text' }, 'Configuración de juego disponible'),
+                                React.createElement('button', { 
+                                    key: 'setup-btn',
+                                    className: "mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors",
+                                    onClick: () => window.location.href = 'index.html'
+                                }, 'Ir a Configuración Completa')
+                            ])
+                        ]),
+
+                        // Juegos activos
+                        React.createElement('div', { 
+                            key: 'active-games',
+                            className: "bg-slate-800 p-6 rounded-xl shadow-lg" 
+                        }, [
+                            React.createElement('h2', { 
+                                key: 'active-title',
+                                className: "text-xl font-bold text-white mb-4" 
+                            }, '🎮 Partidas Activas'),
+                            games.length > 0 ? 
+                                React.createElement('div', { 
+                                    key: 'games-list',
+                                    className: "space-y-3" 
+                                }, games.slice(0, 5).map((game, index) =>
+                                    React.createElement('div', { 
+                                        key: game.id || index,
+                                        className: "flex justify-between items-center p-3 bg-slate-700 rounded-lg" 
+                                    }, [
+                                        React.createElement('div', { key: 'game-info' }, [
+                                            React.createElement('div', { 
+                                                key: 'game-mode',
+                                                className: "font-semibold text-white" 
+                                            }, game.mode || 'Partida'),
+                                            React.createElement('div', { 
+                                                key: 'game-block',
+                                                className: "text-sm text-gray-400" 
+                                            }, game.blockName || 'Bloque')
+                                        ]),
+                                        React.createElement('button', { 
+                                            key: 'play-btn',
+                                            className: "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm transition-colors",
+                                            onClick: () => onNavigateToGame(game)
+                                        }, 'Jugar')
+                                    ])
+                                )) :
+                                React.createElement('p', { 
+                                    key: 'no-games',
+                                    className: "text-center text-gray-400 py-8" 
+                                }, 'No hay partidas activas')
+                        ])
+                    ]),
+
+                    // Columna derecha - Bloques
+                    React.createElement('div', { 
+                        key: 'blocks-column',
+                        className: "lg:col-span-1 space-y-8" 
+                    }, [
+                        // Mis bloques
+                        React.createElement('div', { 
+                            key: 'my-blocks',
+                            className: "bg-slate-800 p-6 rounded-xl shadow-lg" 
+                        }, [
+                            React.createElement('h2', { 
+                                key: 'blocks-title',
+                                className: "text-xl font-bold text-white mb-4" 
+                            }, '📚 Mis Bloques'),
+                            blocks.length > 0 ? 
+                                React.createElement('div', { 
+                                    key: 'blocks-list',
+                                    className: "space-y-3" 
+                                }, blocks.slice(0, 5).map((block, index) =>
+                                    React.createElement('div', { 
+                                        key: block.id || index,
+                                        className: "p-3 bg-slate-700 rounded-lg" 
+                                    }, [
+                                        React.createElement('div', { 
+                                            key: 'block-name',
+                                            className: "font-semibold text-white text-sm" 
+                                        }, block.nombreCorto || `Bloque ${index + 1}`),
+                                        React.createElement('div', { 
+                                            key: 'block-questions',
+                                            className: "text-xs text-gray-400" 
+                                        }, `${block.totalPreguntas || 0} preguntas`),
+                                        React.createElement('button', { 
+                                            key: 'view-btn',
+                                            className: "mt-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition-colors",
+                                            onClick: () => viewBlockQuestions(block.id)
+                                        }, 'Ver')
+                                    ])
+                                )) :
+                                React.createElement('p', { 
+                                    key: 'no-blocks',
+                                    className: "text-center text-gray-400 py-8" 
+                                }, 'No hay bloques cargados'),
+                            
+                            React.createElement('button', { 
+                                key: 'add-block-btn',
+                                className: "w-full mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-colors",
+                                onClick: () => window.location.href = 'all-blocks.html'
+                            }, '+ Agregar Bloques')
+                        ])
+                    ])
+                ])
+            ]);
+        };
+
+        // Aplicación principal
+        const App = () => {
+            const [currentUser] = useState({ nickname: 'Jugador' }); // Simplificado para esta versión
             
-            if (dropdown && !dropdown.contains(event.target) && !dropdownBtn.contains(event.target)) {
-                closeUserDropdown();
-            }
-        });
+            return React.createElement(LanguageProvider, {}, 
+                React.createElement(UserContext.Provider, { value: { currentUser } },
+                    React.createElement(PlayerDashboard, {})
+                )
+            );
+        };
 
-        // Funciones adicionales para los modales de navegación
-        let currentRoleLevelScreen = 1;
-        let currentGameModeScreen = 1;
-        const totalRoleLevelScreens = 19;
-        const totalGameModeScreens = 12;
-
-        function nextRoleLevelScreen() {
-            document.getElementById(`role-level-screen-${currentRoleLevelScreen}`).style.display = 'none';
-            currentRoleLevelScreen = currentRoleLevelScreen < totalRoleLevelScreens ? currentRoleLevelScreen + 1 : 1;
-            document.getElementById(`role-level-screen-${currentRoleLevelScreen}`).style.display = 'block';
-            updateRoleLevelCounter();
-            updateRoleLevelNavigation();
-        }
-
-        function previousRoleLevelScreen() {
-            document.getElementById(`role-level-screen-${currentRoleLevelScreen}`).style.display = 'none';
-            currentRoleLevelScreen = currentRoleLevelScreen > 1 ? currentRoleLevelScreen - 1 : totalRoleLevelScreens;
-            document.getElementById(`role-level-screen-${currentRoleLevelScreen}`).style.display = 'block';
-            updateRoleLevelCounter();
-            updateRoleLevelNavigation();
-        }
-
-        function updateRoleLevelCounter() {
-            document.getElementById('role-level-counter').textContent = `${currentRoleLevelScreen} / ${totalRoleLevelScreens}`;
-        }
-
-        function updateRoleLevelNavigation() {
-            const prevBtn = document.getElementById('prev-role-level-btn');
-            const nextBtn = document.getElementById('next-role-level-btn');
-            
-            if (currentRoleLevelScreen === 1) {
-                prevBtn.style.display = 'none';
-            } else {
-                prevBtn.style.display = 'block';
-            }
-            
-            if (currentRoleLevelScreen === totalRoleLevelScreens) {
-                nextBtn.textContent = 'Reiniciar ↻';
-            } else {
-                nextBtn.textContent = 'Siguiente ▶';
-            }
-        }
-
-        function nextGameModeScreen() {
-            document.getElementById(`game-mode-screen-${currentGameModeScreen}`).style.display = 'none';
-            currentGameModeScreen = currentGameModeScreen < totalGameModeScreens ? currentGameModeScreen + 1 : 1;
-            document.getElementById(`game-mode-screen-${currentGameModeScreen}`).style.display = 'block';
-            updateGameModeCounter();
-            updateGameModeNavigation();
-        }
-
-        function previousGameModeScreen() {
-            document.getElementById(`game-mode-screen-${currentGameModeScreen}`).style.display = 'none';
-            currentGameModeScreen = currentGameModeScreen > 1 ? currentGameModeScreen - 1 : totalGameModeScreens;
-            document.getElementById(`game-mode-screen-${currentGameModeScreen}`).style.display = 'block';
-            updateGameModeCounter();
-            updateGameModeNavigation();
-        }
-
-        function updateGameModeCounter() {
-            document.getElementById('game-modes-counter').textContent = `${currentGameModeScreen} / ${totalGameModeScreens}`;
-        }
-
-        function updateGameModeNavigation() {
-            const prevBtn = document.getElementById('game-modes-prev-btn');
-            const nextBtn = document.getElementById('game-modes-next-btn');
-            
-            if (currentGameModeScreen === 1) {
-                prevBtn.style.display = 'none';
-            } else {
-                prevBtn.style.display = 'block';
-            }
-            
-            if (currentGameModeScreen === totalGameModeScreens) {
-                nextBtn.textContent = 'Reiniciar ↻';
-            } else {
-                nextBtn.textContent = 'Siguiente →';
-            }
-        }
-        });
+        // Renderizar la aplicación
+        const root = ReactDOM.createRoot(document.getElementById('player-dashboard-root'));
+        root.render(React.createElement(App));
     </script>
 
-    <!-- Modales incluidos desde el sistema común -->
-    <!-- Los modales se cargan dinámicamente con el header-component -->
+    <!-- Los modales se cargan dinámicamente con el header-component (SIN modales de Explicación del Juego) -->
 </body>
 </html>

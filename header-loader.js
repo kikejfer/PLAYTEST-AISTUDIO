@@ -680,10 +680,24 @@ window.openModal = function(modalId) {
         visible: introModal.offsetWidth > 0 && introModal.offsetHeight > 0
     });
     
+    // CLAVE: Mostrar temporalmente el introduction-modal para que tenga dimensiones correctas al clonarlo
+    const wasVisible = introModal.style.display === 'flex';
+    if (!wasVisible) {
+        console.log(`🔧 Activando temporalmente introduction-modal para clonación correcta`);
+        introModal.style.display = 'flex';
+        // Forzar recálculo de dimensiones
+        introModal.offsetHeight;
+    }
+    
     console.log(`🔄 Clonando estructura exitosa de introduction-modal para ${modalId}`);
     
-    // Clonar completamente el modal de introducción
+    // Clonar completamente el modal de introducción (ahora con dimensiones correctas)
     const clonedModal = introModal.cloneNode(true);
+    
+    // Ocultar el introduction-modal original si no estaba visible
+    if (!wasVisible) {
+        introModal.style.display = 'none';
+    }
     clonedModal.id = modalId;
     
     // Verificar si el modal original tiene contenido problemático

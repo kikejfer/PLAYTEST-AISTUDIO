@@ -3490,8 +3490,17 @@
               
             case 'jugador':
             default:
-              console.log(`🎮 JUGADOR DETECTED (${currentUser.nickname}) - Staying in game panel`);
-              // Los jugadores permanecen en el panel principal (sin redirección)
+              console.log(`🎮 JUGADOR DETECTED (${currentUser.nickname}) - Redirecting to dedicated player panel`);
+              const playerUrl = window.location.href;
+              const isInPlayerPanel = playerUrl.includes('jugadores-panel-gaming.html');
+              
+              if (!isInPlayerPanel) {
+                console.log('🎯 REDIRECTING TO PLAYER PANEL NOW');
+                const uniqueId = Date.now() + Math.random();
+                window.location.href = `jugadores-panel-gaming.html?id=${uniqueId}`;
+              } else {
+                console.log('✅ Player already in correct location');
+              }
               break;
           }
         }, [currentUser]);
