@@ -713,6 +713,44 @@ window.openModal = function(modalId) {
                 width: modal.offsetWidth,
                 height: modal.offsetHeight
             });
+            
+            // Debugging adicional: inspeccionar contenido del modal
+            console.log(`🔍 DEBUG: Inspeccionando contenido del modal ${modalId}:`);
+            console.log('- Número de hijos:', modal.children.length);
+            if (modal.children.length > 0) {
+                const firstChild = modal.children[0];
+                console.log('- Primer hijo:', firstChild.tagName);
+                console.log('- Dimensiones primer hijo:', {
+                    width: firstChild.offsetWidth,
+                    height: firstChild.offsetHeight,
+                    scrollHeight: firstChild.scrollHeight
+                });
+                console.log('- Contenido HTML length:', firstChild.innerHTML.length);
+                console.log('- Primeros 200 caracteres:', firstChild.innerHTML.substring(0, 200));
+            }
+            
+            // Intentar fix más extremo: remover modal y recargar
+            if (modal.offsetWidth === 0 && modal.offsetHeight === 0) {
+                console.log(`🚨 DEBUG: Fix extremo para ${modalId} - recargando modal`);
+                const modalsContainer = document.getElementById('modals-container');
+                if (modalsContainer) {
+                    // Guardar HTML original
+                    const originalHTML = modalsContainer.innerHTML;
+                    // Limpiar y recargar
+                    modalsContainer.innerHTML = '';
+                    setTimeout(() => {
+                        modalsContainer.innerHTML = originalHTML;
+                        const reloadedModal = document.getElementById(modalId);
+                        if (reloadedModal) {
+                            reloadedModal.style.display = 'flex';
+                            console.log(`🚨 DEBUG: Modal recargado ${modalId}:`, {
+                                width: reloadedModal.offsetWidth,
+                                height: reloadedModal.offsetHeight
+                            });
+                        }
+                    }, 100);
+                }
+            }
         }
     } else {
         console.error(`❌ DEBUG: Modal ${modalId} no encontrado en el DOM`);
