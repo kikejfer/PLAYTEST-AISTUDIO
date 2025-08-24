@@ -670,9 +670,10 @@ window.openModal = function(modalId) {
             opacity: 1 !important;
         `;
         
-        // Configurar contenedor interno inmediatamente con máxima agresividad
-        const modalContent = modal.children[0];
-        console.log(`🔍 DEBUG: Contenedor interno para ${modalId}:`, modalContent);
+        // Identificar el contenedor correcto (el que tiene onclick="event.stopPropagation()")
+        const modalContent = modal.querySelector('[onclick="event.stopPropagation();"]');
+        console.log(`🔍 DEBUG: Contenedor interno real para ${modalId}:`, modalContent);
+        console.log(`🔍 DEBUG: Primer hijo directo:`, modal.children[0]);
         if (modalContent) {
             // Método 1: setAttribute (máxima prioridad)
             modalContent.setAttribute('style', `
