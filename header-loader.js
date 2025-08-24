@@ -636,6 +636,13 @@ function initializeHeaderFunctions() {
             window.location.href = 'index.html';
         }
     };
+
+    // Funciones globales para los modales
+    window.closeRoleModificationModal = closeRoleModificationModal;
+    window.saveRoleModifications = saveRoleModifications;
+    window.closePersonalDataModal = closePersonalDataModal;
+    window.savePersonalData = savePersonalData;
+    window.toggleEditPersonalData = toggleEditPersonalData;
     
     // Funciones para abrir modales (se conectan con modals-component.html)
     window.openIntroductionModal = function() {
@@ -655,12 +662,14 @@ function initializeHeaderFunctions() {
     
     // Funciones placeholder para modales específicos de cada panel
     window.openPersonalDataModal = function() {
-        alert('Modal de Datos Personales - Por implementar');
+        // Crear modal de datos personales
+        createPersonalDataModal();
         closeUserDropdown();
     };
     
     window.openRoleModificationModal = function() {
-        alert('Modal de Modificación de Roles - Por implementar');
+        // Crear modal de modificación de roles
+        createRoleModificationModal();
         closeUserDropdown();
     };
     
@@ -1093,6 +1102,516 @@ function updateRoleLevelNavigation(screenIndex) {
     const counter = document.getElementById('role-level-counter');
     if (counter) {
         counter.textContent = `${screenIndex + 1} / ${totalScreens}`;
+    }
+}
+
+/**
+ * Crea y muestra un modal para modificar los roles del usuario
+ */
+function createRoleModificationModal() {
+    // Remover modal existente si existe
+    const existingModal = document.getElementById('role-modification-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    // Crear modal
+    const modal = document.createElement('div');
+    modal.id = 'role-modification-modal';
+    modal.style.cssText = `
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    `;
+
+    modal.innerHTML = `
+        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 100%; max-width: 500px; border: 1px solid #415A77;" onclick="event.stopPropagation();">
+            <div style="padding: 2rem; position: relative;">
+                <button onclick="closeRoleModificationModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
+                
+                <h2 style="color: #E0E1DD; margin: 0 0 1.5rem 0; font-size: 1.5rem; text-align: center;">🎭 Modificar Roles</h2>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <p style="color: #778DA9; margin: 0 0 1rem 0; text-align: center; font-size: 0.9rem;">
+                        Selecciona los roles que deseas adoptar. Puedes tener múltiples roles activos.
+                    </p>
+                </div>
+
+                <div id="role-options-container" style="margin-bottom: 2rem;">
+                    <!-- Las opciones de roles se cargan dinámicamente -->
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button onclick="saveRoleModifications()" id="save-roles-btn" style="background: #10B981; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10B981'">
+                        Guardar Cambios
+                    </button>
+                    <button onclick="closeRoleModificationModal()" style="background: #6B7280; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#4B5563'" onmouseout="this.style.background='#6B7280'">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Agregar al DOM
+    document.body.appendChild(modal);
+
+    // Cargar opciones de roles
+    loadRoleOptions();
+
+    // Cerrar con Escape
+    document.addEventListener('keydown', handleEscapeKey);
+    
+    // Cerrar al hacer clic fuera
+    modal.addEventListener('click', closeRoleModificationModal);
+}
+
+/**
+ * Carga las opciones de roles disponibles
+ */
+async function loadRoleOptions() {
+    const container = document.getElementById('role-options-container');
+    if (!container) return;
+
+    try {
+        // Obtener datos del usuario actual
+        const token = localStorage.getItem('playtest_auth_token');
+        if (!token) {
+            container.innerHTML = '<p style="color: #DC2626; text-align: center;">Error: No se encontró token de autenticación</p>';
+            return;
+        }
+
+        // Decodificar token para obtener roles actuales
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const currentRoles = payload.roles || [];
+
+        // Definir todos los roles disponibles
+        const availableRoles = [
+            { id: 'jugador', name: '🎮 Jugador', description: 'Participa en partidas y duelos' },
+            { id: 'creador', name: '🎨 Creador de Contenido', description: 'Crea bloques y monetiza contenido' },
+            { id: 'profesor', name: '👨‍🏫 Profesor', description: 'Gestiona estudiantes y clases' }
+        ];
+
+        // Crear checkboxes para cada rol
+        container.innerHTML = availableRoles.map(role => `
+            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid #415A77; border-radius: 0.5rem; margin-bottom: 0.75rem; transition: background 0.2s;" onmouseover="this.style.background='rgba(65, 90, 119, 0.1)'" onmouseout="this.style.background='transparent'">
+                <input type="checkbox" id="role-${role.id}" ${currentRoles.includes(role.id) ? 'checked' : ''} style="width: 1.25rem; height: 1.25rem; cursor: pointer;">
+                <div style="flex: 1;">
+                    <label for="role-${role.id}" style="color: #E0E1DD; font-weight: 500; cursor: pointer; display: block; margin-bottom: 0.25rem;">${role.name}</label>
+                    <p style="color: #778DA9; margin: 0; font-size: 0.875rem;">${role.description}</p>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error('Error cargando opciones de roles:', error);
+        container.innerHTML = '<p style="color: #DC2626; text-align: center;">Error al cargar los roles disponibles</p>';
+    }
+}
+
+/**
+ * Guarda las modificaciones de roles
+ */
+async function saveRoleModifications() {
+    const saveBtn = document.getElementById('save-roles-btn');
+    if (!saveBtn) return;
+
+    // Deshabilitar botón durante el proceso
+    saveBtn.textContent = 'Guardando...';
+    saveBtn.disabled = true;
+
+    try {
+        // Obtener roles seleccionados
+        const checkboxes = document.querySelectorAll('#role-options-container input[type="checkbox"]');
+        const selectedRoles = Array.from(checkboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.id.replace('role-', ''));
+
+        if (selectedRoles.length === 0) {
+            alert('Debes seleccionar al menos un rol');
+            return;
+        }
+
+        // Enviar al backend
+        const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+            ? 'https://playtest-backend.onrender.com' 
+            : '';
+            
+        const token = localStorage.getItem('playtest_auth_token');
+        
+        const response = await fetch(`${API_BASE_URL}/api/users/me/roles`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ roles: selectedRoles })
+        });
+
+        if (response.ok) {
+            alert('Roles actualizados correctamente. La página se recargará para aplicar los cambios.');
+            window.location.reload();
+        } else {
+            throw new Error('Error del servidor');
+        }
+
+    } catch (error) {
+        console.error('Error guardando roles:', error);
+        alert('Error al guardar los roles. Inténtalo de nuevo.');
+    } finally {
+        // Reactivar botón
+        saveBtn.textContent = 'Guardar Cambios';
+        saveBtn.disabled = false;
+    }
+}
+
+/**
+ * Cierra el modal de modificación de roles
+ */
+function closeRoleModificationModal() {
+    const modal = document.getElementById('role-modification-modal');
+    if (modal) {
+        modal.remove();
+    }
+    document.removeEventListener('keydown', handleEscapeKey);
+}
+
+/**
+ * Maneja la tecla Escape para cerrar el modal
+ */
+function handleEscapeKey(event) {
+    if (event.key === 'Escape') {
+        closeRoleModificationModal();
+        closePersonalDataModal();
+    }
+}
+
+/**
+ * Crea y muestra un modal para ver/editar datos personales del usuario
+ */
+function createPersonalDataModal() {
+    // Remover modal existente si existe
+    const existingModal = document.getElementById('personal-data-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    // Crear modal
+    const modal = document.createElement('div');
+    modal.id = 'personal-data-modal';
+    modal.style.cssText = `
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    `;
+
+    modal.innerHTML = `
+        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 100%; max-width: 600px; max-height: 80vh; border: 1px solid #415A77; overflow-y: auto;" onclick="event.stopPropagation();">
+            <div style="padding: 2rem; position: relative;">
+                <button onclick="closePersonalDataModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
+                
+                <h2 style="color: #E0E1DD; margin: 0 0 1.5rem 0; font-size: 1.5rem; text-align: center;">👤 Datos Personales</h2>
+                
+                <div id="personal-data-content" style="margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: center; align-items: center; padding: 2rem;">
+                        <div style="color: #778DA9;">Cargando datos...</div>
+                    </div>
+                </div>
+
+                <div id="personal-data-actions" style="display: flex; gap: 1rem; justify-content: center;">
+                    <button onclick="toggleEditPersonalData()" id="edit-personal-data-btn" style="background: #3B82F6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">
+                        Editar
+                    </button>
+                    <button onclick="closePersonalDataModal()" style="background: #6B7280; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#4B5563'" onmouseout="this.style.background='#6B7280'">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Agregar al DOM
+    document.body.appendChild(modal);
+
+    // Cargar datos personales
+    loadPersonalData();
+
+    // Cerrar con Escape
+    document.addEventListener('keydown', handleEscapeKeyPersonalData);
+    
+    // Cerrar al hacer clic fuera
+    modal.addEventListener('click', closePersonalDataModal);
+}
+
+/**
+ * Carga los datos personales del usuario
+ */
+async function loadPersonalData() {
+    const contentContainer = document.getElementById('personal-data-content');
+    if (!contentContainer) return;
+
+    try {
+        // Obtener token
+        const token = localStorage.getItem('playtest_auth_token');
+        if (!token) {
+            contentContainer.innerHTML = '<p style="color: #DC2626; text-align: center;">Error: No se encontró token de autenticación</p>';
+            return;
+        }
+
+        // Hacer petición al backend
+        const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+            ? 'https://playtest-backend.onrender.com' 
+            : '';
+            
+        const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al obtener datos del usuario');
+        }
+
+        const userData = await response.json();
+        
+        // Renderizar datos en modo solo lectura
+        renderPersonalDataView(userData);
+
+    } catch (error) {
+        console.error('Error cargando datos personales:', error);
+        contentContainer.innerHTML = '<p style="color: #DC2626; text-align: center;">Error al cargar los datos personales</p>';
+    }
+}
+
+/**
+ * Renderiza los datos personales en modo solo lectura
+ */
+function renderPersonalDataView(userData) {
+    const container = document.getElementById('personal-data-content');
+    if (!container) return;
+
+    const fields = [
+        { key: 'nickname', label: 'Nickname', value: userData.nickname },
+        { key: 'first_name', label: 'Nombre', value: userData.first_name || 'No especificado' },
+        { key: 'last_name', label: 'Apellidos', value: userData.last_name || 'No especificado' },
+        { key: 'email', label: 'Email', value: userData.email || 'No especificado' },
+        { key: 'roles', label: 'Roles', value: Array.isArray(userData.roles) ? userData.roles.join(', ') : userData.role || 'No especificado' },
+        { key: 'created_at', label: 'Fecha de registro', value: userData.created_at ? new Date(userData.created_at).toLocaleDateString('es-ES') : 'No disponible' }
+    ];
+
+    container.innerHTML = `
+        <div style="display: grid; gap: 1rem;">
+            ${fields.map(field => `
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; padding: 1rem; border: 1px solid #415A77; border-radius: 0.5rem; align-items: center;">
+                    <label style="color: #778DA9; font-weight: 500; font-size: 0.9rem;">${field.label}:</label>
+                    <span id="view-${field.key}" style="color: #E0E1DD; padding: 0.5rem; background: rgba(65, 90, 119, 0.1); border-radius: 0.375rem;">${field.value}</span>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    // Guardar datos para edición
+    window.currentUserData = userData;
+}
+
+/**
+ * Renderiza los datos personales en modo edición
+ */
+function renderPersonalDataEdit(userData) {
+    const container = document.getElementById('personal-data-content');
+    if (!container) return;
+
+    const editableFields = [
+        { key: 'first_name', label: 'Nombre', value: userData.first_name || '', type: 'text' },
+        { key: 'last_name', label: 'Apellidos', value: userData.last_name || '', type: 'text' },
+        { key: 'email', label: 'Email', value: userData.email || '', type: 'email' }
+    ];
+
+    const readOnlyFields = [
+        { key: 'nickname', label: 'Nickname', value: userData.nickname },
+        { key: 'roles', label: 'Roles', value: Array.isArray(userData.roles) ? userData.roles.join(', ') : userData.role || 'No especificado' },
+        { key: 'created_at', label: 'Fecha de registro', value: userData.created_at ? new Date(userData.created_at).toLocaleDateString('es-ES') : 'No disponible' }
+    ];
+
+    container.innerHTML = `
+        <div style="display: grid; gap: 1rem;">
+            <h3 style="color: #E0E1DD; margin: 0 0 0.5rem 0; font-size: 1.1rem; border-bottom: 1px solid #415A77; padding-bottom: 0.5rem;">Campos Editables</h3>
+            ${editableFields.map(field => `
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; padding: 1rem; border: 1px solid #415A77; border-radius: 0.5rem; align-items: center;">
+                    <label for="edit-${field.key}" style="color: #778DA9; font-weight: 500; font-size: 0.9rem;">${field.label}:</label>
+                    <input 
+                        type="${field.type}" 
+                        id="edit-${field.key}" 
+                        value="${field.value}" 
+                        style="color: #E0E1DD; padding: 0.5rem; background: #0D1B2A; border: 1px solid #415A77; border-radius: 0.375rem; outline: none;" 
+                        onfocus="this.style.borderColor='#3B82F6'" 
+                        onblur="this.style.borderColor='#415A77'"
+                    >
+                </div>
+            `).join('')}
+            
+            <h3 style="color: #E0E1DD; margin: 1.5rem 0 0.5rem 0; font-size: 1.1rem; border-bottom: 1px solid #415A77; padding-bottom: 0.5rem;">Información Solo Lectura</h3>
+            ${readOnlyFields.map(field => `
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; padding: 1rem; border: 1px solid #415A77; border-radius: 0.5rem; align-items: center; opacity: 0.7;">
+                    <label style="color: #778DA9; font-weight: 500; font-size: 0.9rem;">${field.label}:</label>
+                    <span style="color: #E0E1DD; padding: 0.5rem; background: rgba(65, 90, 119, 0.05); border-radius: 0.375rem;">${field.value}</span>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+/**
+ * Alterna entre modo vista y edición
+ */
+function toggleEditPersonalData() {
+    const editBtn = document.getElementById('edit-personal-data-btn');
+    const actionsContainer = document.getElementById('personal-data-actions');
+    
+    if (!editBtn || !window.currentUserData) return;
+    
+    const isEditing = editBtn.textContent === 'Cancelar';
+    
+    if (isEditing) {
+        // Cancelar edición - volver a modo vista
+        renderPersonalDataView(window.currentUserData);
+        editBtn.textContent = 'Editar';
+        editBtn.style.background = '#3B82F6';
+        
+        // Restablecer acciones
+        actionsContainer.innerHTML = `
+            <button onclick="toggleEditPersonalData()" id="edit-personal-data-btn" style="background: #3B82F6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">
+                Editar
+            </button>
+            <button onclick="closePersonalDataModal()" style="background: #6B7280; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#4B5563'" onmouseout="this.style.background='#6B7280'">
+                Cerrar
+            </button>
+        `;
+    } else {
+        // Entrar en modo edición
+        renderPersonalDataEdit(window.currentUserData);
+        
+        // Cambiar acciones
+        actionsContainer.innerHTML = `
+            <button onclick="savePersonalData()" id="save-personal-data-btn" style="background: #10B981; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10B981'">
+                Guardar
+            </button>
+            <button onclick="toggleEditPersonalData()" id="edit-personal-data-btn" style="background: #EF4444; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#DC2626'" onmouseout="this.style.background='#EF4444'">
+                Cancelar
+            </button>
+            <button onclick="closePersonalDataModal()" style="background: #6B7280; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='#4B5563'" onmouseout="this.style.background='#6B7280'">
+                Cerrar
+            </button>
+        `;
+    }
+}
+
+/**
+ * Guarda los datos personales modificados
+ */
+async function savePersonalData() {
+    const saveBtn = document.getElementById('save-personal-data-btn');
+    if (!saveBtn) return;
+
+    // Deshabilitar botón durante el proceso
+    saveBtn.textContent = 'Guardando...';
+    saveBtn.disabled = true;
+
+    try {
+        // Obtener datos del formulario
+        const firstName = document.getElementById('edit-first_name')?.value || '';
+        const lastName = document.getElementById('edit-last_name')?.value || '';
+        const email = document.getElementById('edit-email')?.value || '';
+
+        // Validar email si se proporciona
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            alert('El formato del email no es válido');
+            return;
+        }
+
+        // Preparar datos para envío
+        const updateData = {
+            first_name: firstName,
+            last_name: lastName,
+            email: email
+        };
+
+        // Enviar al backend
+        const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+            ? 'https://playtest-backend.onrender.com' 
+            : '';
+            
+        const token = localStorage.getItem('playtest_auth_token');
+        
+        const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updateData)
+        });
+
+        if (response.ok) {
+            const updatedUser = await response.json();
+            window.currentUserData = updatedUser;
+            
+            alert('Datos personales actualizados correctamente');
+            
+            // Volver a modo vista
+            renderPersonalDataView(updatedUser);
+            toggleEditPersonalData();
+        } else {
+            throw new Error('Error del servidor');
+        }
+
+    } catch (error) {
+        console.error('Error guardando datos personales:', error);
+        alert('Error al guardar los datos personales. Inténtalo de nuevo.');
+    } finally {
+        // Reactivar botón
+        saveBtn.textContent = 'Guardar';
+        saveBtn.disabled = false;
+    }
+}
+
+/**
+ * Cierra el modal de datos personales
+ */
+function closePersonalDataModal() {
+    const modal = document.getElementById('personal-data-modal');
+    if (modal) {
+        modal.remove();
+    }
+    document.removeEventListener('keydown', handleEscapeKeyPersonalData);
+}
+
+/**
+ * Maneja la tecla Escape para cerrar el modal de datos personales
+ */
+function handleEscapeKeyPersonalData(event) {
+    if (event.key === 'Escape') {
+        closePersonalDataModal();
     }
 }
 
