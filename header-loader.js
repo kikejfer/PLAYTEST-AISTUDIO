@@ -585,13 +585,11 @@ function initializeHeaderFunctions() {
     };
     
     window.openGameModesModal = function() {
-        console.log('🎮 DEBUG: openGameModesModal llamado');
         openModal('game-modes-modal');
         closeUserDropdown();
     };
     
     window.openRoleLevelsModal = function() {
-        console.log('🎭 DEBUG: openRoleLevelsModal llamado');
         openModal('role-levels-modal');
         closeUserDropdown();
     };
@@ -608,13 +606,11 @@ function initializeHeaderFunctions() {
     };
     
     window.openTopicDevelopmentModal = function() {
-        console.log('📚 DEBUG: openTopicDevelopmentModal llamado');
         openModal('topic-development-modal');
         closeUserDropdown();
     };
     
     window.openLuminariasModal = function() {
-        console.log('✨ DEBUG: openLuminariasModal llamado');
         openModal('luminarias-modal');
         closeUserDropdown();
     };
@@ -645,126 +641,12 @@ function initializeHeaderFunctions() {
 
 // Funciones globales para manejar modales
 window.openModal = function(modalId) {
-    console.log(`🔍 DEBUG: Intentando abrir modal: ${modalId}`);
     const modal = document.getElementById(modalId);
-    console.log(`🔍 DEBUG: Modal encontrado:`, modal);
-    
     if (modal) {
-        console.log(`🔍 DEBUG: Modal ${modalId} - Estado antes:`, {
-            display: modal.style.display,
-            visibility: modal.style.visibility,
-            zIndex: modal.style.zIndex,
-            width: modal.offsetWidth,
-            height: modal.offsetHeight
-        });
-        
-        // Si no es el modal de introducción, intentar solucionarlo copiando sus estilos
-        if (modalId !== 'introduction-modal') {
-            const introModal = document.getElementById('introduction-modal');
-            if (introModal) {
-                // Abrir temporalmente el modal de introducción para activar algo
-                console.log(`🔧 DEBUG: Activando modal de introducción para desbloquear ${modalId}`);
-                introModal.style.display = 'flex';
-                introModal.offsetHeight; // Forzar renderizado
-                introModal.style.display = 'none'; // Ocultarlo inmediatamente
-            }
-        }
-        
         modal.style.display = 'flex';
-        
-        // Forzar recálculo del layout (solución al problema de dimensiones 0x0)
-        modal.offsetHeight;
-        
-        // Forzar recálculo también en elementos hijos si existen
-        if (modal.children.length > 0) {
-            modal.children[0].offsetHeight;
-        }
-        
-        console.log(`🔍 DEBUG: Modal ${modalId} - Estado después:`, {
-            display: modal.style.display,
-            visibility: modal.style.visibility,
-            zIndex: modal.style.zIndex,
-            width: modal.offsetWidth,
-            height: modal.offsetHeight
-        });
-        
-        // Verificar si el modal es realmente visible
-        const isVisible = modal.offsetWidth > 0 && modal.offsetHeight > 0;
-        console.log(`🔍 DEBUG: Modal ${modalId} - ¿Es visible?:`, isVisible);
-        
-        if (!isVisible) {
-            console.log(`❌ DEBUG: Modal ${modalId} no es visible después de display: flex`);
-            console.log(`🔍 DEBUG: Contenido interno:`, modal.children.length, 'elementos');
-            
-            if (modal.children.length > 0) {
-                const firstChild = modal.children[0];
-                console.log(`🔍 DEBUG: Primer hijo:`, {
-                    tagName: firstChild.tagName,
-                    width: firstChild.offsetWidth,
-                    height: firstChild.offsetHeight,
-                    display: firstChild.style.display,
-                    hasContent: firstChild.innerHTML.length > 0
-                });
-            }
-        }
-    } else {
-        console.error(`❌ DEBUG: Modal ${modalId} no encontrado en el DOM`);
     }
 };
 
-// Función de respaldo más agresiva para casos problemáticos
-window.forceOpenModal = function(modalId) {
-    console.log(`🚀 DEBUG: Forzando apertura del modal: ${modalId}`);
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        // Remover cualquier evento que pueda estar interfiriendo
-        modal.style.removeProperty('display');
-        modal.removeAttribute('hidden');
-        modal.classList.remove('hidden');
-        
-        // Aplicar estilos con máxima prioridad
-        const modalStyle = `
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            position: fixed !important;
-            top: 0px !important;
-            left: 0px !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 99999 !important;
-            background: rgba(0,0,0,0.7) !important;
-            backdrop-filter: blur(4px) !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        `;
-        
-        modal.setAttribute('style', modalStyle);
-        
-        const modalContent = modal.children[0];
-        if (modalContent) {
-            const contentStyle = `
-                background: #1B263B !important;
-                border-radius: 12px !important;
-                width: 95% !important;
-                max-width: 900px !important;
-                min-width: 350px !important;
-                max-height: 85vh !important;
-                min-height: 400px !important;
-                border: 1px solid #415A77 !important;
-                overflow-y: auto !important;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.5) !important;
-                display: block !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                position: relative !important;
-            `;
-            modalContent.setAttribute('style', contentStyle);
-        }
-        
-        console.log(`🚀 DEBUG: Modal ${modalId} forzado a mostrar`);
-    }
-};
 
 window.closeModal = function(modalId) {
     const modal = document.getElementById(modalId);
