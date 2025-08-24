@@ -655,6 +655,10 @@ window.openModal = function(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.style.display = 'flex';
+            console.log(`✅ Modal introduction-modal abierto con función simple:`, {
+                width: modal.offsetWidth,
+                height: modal.offsetHeight
+            });
             return;
         }
     }
@@ -667,6 +671,14 @@ window.openModal = function(modalId) {
         console.error(`❌ No se encontró modal de introducción o modal objetivo: ${modalId}`);
         return;
     }
+    
+    // Verificar si introduction-modal funciona correctamente
+    console.log(`🔍 Estado del introduction-modal:`, {
+        display: introModal.style.display,
+        width: introModal.offsetWidth,
+        height: introModal.offsetHeight,
+        visible: introModal.offsetWidth > 0 && introModal.offsetHeight > 0
+    });
     
     console.log(`🔄 Clonando estructura exitosa de introduction-modal para ${modalId}`);
     
