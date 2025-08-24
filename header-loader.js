@@ -658,6 +658,18 @@ window.openModal = function(modalId) {
             height: modal.offsetHeight
         });
         
+        // Si no es el modal de introducción, intentar solucionarlo copiando sus estilos
+        if (modalId !== 'introduction-modal') {
+            const introModal = document.getElementById('introduction-modal');
+            if (introModal) {
+                // Abrir temporalmente el modal de introducción para activar algo
+                console.log(`🔧 DEBUG: Activando modal de introducción para desbloquear ${modalId}`);
+                introModal.style.display = 'flex';
+                introModal.offsetHeight; // Forzar renderizado
+                introModal.style.display = 'none'; // Ocultarlo inmediatamente
+            }
+        }
+        
         modal.style.display = 'flex';
         
         // Forzar recálculo del layout (solución al problema de dimensiones 0x0)
