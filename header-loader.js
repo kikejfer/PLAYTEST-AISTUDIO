@@ -121,12 +121,14 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
  */
 async function loadModals() {
     try {
+        console.log('🔄 DEBUG: Iniciando carga de modales...');
         const response = await fetch('modals-component.html');
         if (!response.ok) {
             throw new Error(`Error al cargar modales: ${response.status}`);
         }
         
         const modalsHTML = await response.text();
+        console.log('🔄 DEBUG: HTML de modales cargado, tamaño:', modalsHTML.length);
         
         // Crear contenedor para modales si no existe
         let modalsContainer = document.getElementById('modals-container');
@@ -134,12 +136,17 @@ async function loadModals() {
             modalsContainer = document.createElement('div');
             modalsContainer.id = 'modals-container';
             document.body.appendChild(modalsContainer);
+            console.log('🔄 DEBUG: Contenedor de modales creado');
         }
         
         modalsContainer.innerHTML = modalsHTML;
         
+        // Verificar qué modales se cargaron
+        const modalElements = document.querySelectorAll('[id$="-modal"]');
+        console.log('🔄 DEBUG: Modales cargados:', Array.from(modalElements).map(m => m.id));
+        
     } catch (error) {
-        console.error('Error al cargar los modales:', error);
+        console.error('❌ ERROR: al cargar los modales:', error);
     }
 }
 
@@ -641,9 +648,27 @@ function initializeHeaderFunctions() {
 
 // Funciones globales para manejar modales
 window.openModal = function(modalId) {
+    console.log(`🔍 DEBUG: Intentando abrir modal: ${modalId}`);
     const modal = document.getElementById(modalId);
+    console.log(`🔍 DEBUG: Modal encontrado:`, modal);
+    
     if (modal) {
+        console.log(`🔍 DEBUG: Modal ${modalId} - Antes del cambio:`, {
+            display: modal.style.display,
+            width: modal.offsetWidth,
+            height: modal.offsetHeight
+        });
+        
         modal.style.display = 'flex';
+        
+        console.log(`🔍 DEBUG: Modal ${modalId} - Después del cambio:`, {
+            display: modal.style.display,
+            width: modal.offsetWidth,
+            height: modal.offsetHeight
+        });
+    } else {
+        console.error(`❌ DEBUG: Modal ${modalId} no encontrado en el DOM`);
+        console.log(`🔍 DEBUG: Modales disponibles:`, Array.from(document.querySelectorAll('[id$="-modal"]')).map(m => m.id));
     }
 };
 
