@@ -59,6 +59,8 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
         // Procesar datos del usuario con valores por defecto
         const userInfo = {
             name: userData.name || 'Cargando...',
+            firstName: userData.firstName || '',
+            lastName: userData.lastName || '',
             luminarias: userData.luminarias || 0,
             roles: userData.roles || [],
             activeRole: userData.activeRole || panelType
@@ -360,6 +362,8 @@ async function getUserData() {
             
             return {
                 name: profile.nickname || session.nickname || 'Usuario',
+                firstName: profile.first_name || '',
+                lastName: profile.last_name || '',
                 luminarias: profile.luminarias || profile.stats?.luminarias || 0,
                 roles: userRoles,
                 activeRole: localStorage.getItem('activeRole') || detectRoleFromToken() || userRoles[0]?.code || 'PJG'
@@ -470,6 +474,8 @@ function getUserDataFromLocalStorage() {
     
     return {
         name: session.nickname || 'Usuario Demo',
+        firstName: '',
+        lastName: '',
         luminarias: 0, // TODO: Implementar sistema de luminarias
         roles: [
             { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' }
@@ -500,11 +506,19 @@ if (document.readyState === 'loading') {
  */
 function updateUserData(userInfo) {
     const userNameElement = document.getElementById('user-name');
+    const userFullNameElement = document.getElementById('user-full-name');
     const userLuminariasElement = document.getElementById('user-luminarias');
     const userAvatarElement = document.getElementById('user-avatar');
     
+    // Actualizar nickname
     if (userNameElement) {
         userNameElement.textContent = userInfo.name;
+    }
+    
+    // Actualizar nombre completo
+    if (userFullNameElement) {
+        const fullName = [userInfo.firstName, userInfo.lastName].filter(Boolean).join(' ');
+        userFullNameElement.textContent = fullName || 'Usuario';
     }
     
     if (userLuminariasElement) {
