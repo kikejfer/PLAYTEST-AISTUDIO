@@ -86,12 +86,48 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
         // Actualizar datos del usuario después de inyectar el HTML
         updateUserData(userInfo);
         
-        // Inicializar selector de roles si el usuario tiene múltiples roles
+        // Inicializar selector de roles (SIEMPRE VISIBLE PARA PRUEBAS)
+        console.log('🔍 DEBUG: Datos del usuario para selector de rol:', userInfo);
+        console.log('🔍 DEBUG: Número de roles detectados:', userInfo.roles.length);
+        
+        // Agregar roles adicionales para prueba si solo tiene uno
+        if (userInfo.roles.length === 1) {
+            console.log('🧪 MODO PRUEBA: Agregando roles adicionales para demostrar selector');
+            const currentRole = userInfo.roles[0];
+            console.log('🔍 DEBUG: Rol actual antes de agregar:', currentRole);
+            
+            const allRoles = [
+                { code: 'PAP', name: 'Administrador Principal', panel: 'admin-principal-panel.html' },
+                { code: 'PAS', name: 'Administrador Secundario', panel: 'admin-secundario-panel.html' },
+                { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
+                { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-schedules.html' },
+                { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' }
+            ];
+            
+            // Mantener el rol actual y agregar otros roles para prueba
+            userInfo.roles = allRoles.filter(role => role.code !== currentRole.code);
+            userInfo.roles.unshift(currentRole); // Poner el rol actual primero
+            console.log('🔍 DEBUG: Roles después de agregar:', userInfo.roles);
+        }
+        
+        // Verificar que el contenedor del selector exista
+        const roleSelectorContainer = document.getElementById('role-selector-container');
+        console.log('🔍 DEBUG: Contenedor del selector encontrado:', !!roleSelectorContainer);
+        if (roleSelectorContainer) {
+            console.log('🔍 DEBUG: Estilo display del contenedor:', roleSelectorContainer.style.display);
+        }
+        
         if (userInfo.roles.length > 1) {
+            console.log('✅ DEBUG: Inicializando selector con múltiples roles');
             initializeRoleSelector(userInfo.roles, userInfo.activeRole);
+            
+            // Forzar visibilidad del contenedor
+            if (roleSelectorContainer) {
+                roleSelectorContainer.style.display = 'block';
+                console.log('✅ DEBUG: Selector forzado a visible');
+            }
         } else {
-            // Ocultar selector si solo tiene un rol
-            const roleSelectorContainer = document.getElementById('role-selector-container');
+            console.log('❌ DEBUG: Ocultando selector (no debería pasar)');
             if (roleSelectorContainer) {
                 roleSelectorContainer.style.display = 'none';
             }
@@ -226,6 +262,22 @@ async function enhanceExistingHeader() {
         
         // Obtener datos del usuario
         const userData = await getUserData();
+        
+        // Agregar roles adicionales para prueba si solo tiene uno (para header existente)
+        if (userData.roles && userData.roles.length === 1) {
+            console.log('🧪 MODO PRUEBA: Agregando roles adicionales para header existente');
+            const currentRole = userData.roles[0];
+            const allRoles = [
+                { code: 'PAP', name: 'Administrador Principal', panel: 'admin-principal-panel.html' },
+                { code: 'PAS', name: 'Administrador Secundario', panel: 'admin-secundario-panel.html' },
+                { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
+                { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-schedules.html' },
+                { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' }
+            ];
+            
+            userData.roles = allRoles.filter(role => role.code !== currentRole.code);
+            userData.roles.unshift(currentRole);
+        }
         
         // Si el usuario tiene múltiples roles, agregar selector
         if (userData.roles && userData.roles.length > 1) {
