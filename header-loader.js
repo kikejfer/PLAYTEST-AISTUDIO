@@ -782,6 +782,63 @@ window.openModal = function(modalId) {
         
         console.log(`✅ DEBUG: Modal ${modalId} configurado correctamente`);
         
+        // DEBUG EXTREMO: Si nada es visible, crear un mensaje de emergencia en el body
+        if (modal.offsetWidth === 0 || modal.offsetHeight === 0) {
+            console.log(`🚨 EMERGENCIA MÁXIMA: Modal ${modalId} completamente invisible, creando alerta en body`);
+            
+            // Crear div de emergencia directamente en el body
+            const emergencyDiv = document.createElement('div');
+            emergencyDiv.id = `emergency-${modalId}`;
+            emergencyDiv.style.cssText = `
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                width: 600px !important;
+                height: 400px !important;
+                background: #FF0000 !important;
+                color: #FFFFFF !important;
+                border: 5px solid #FFFF00 !important;
+                z-index: 99999 !important;
+                padding: 20px !important;
+                font-size: 16px !important;
+                font-family: monospace !important;
+                overflow: auto !important;
+                box-shadow: 0 0 20px rgba(255,0,0,0.8) !important;
+            `;
+            
+            emergencyDiv.innerHTML = `
+                <h2>🚨 EMERGENCIA TOTAL - ${modalId.toUpperCase()}</h2>
+                <p>El modal no se puede mostrar normalmente.</p>
+                <p>Estado del modal:</p>
+                <ul>
+                    <li>Width: ${modal.offsetWidth}px</li>
+                    <li>Height: ${modal.offsetHeight}px</li>
+                    <li>Display: ${modal.style.display}</li>
+                    <li>Z-index: ${modal.style.zIndex}</li>
+                </ul>
+                <button onclick="document.body.removeChild(this.parentElement)" style="
+                    background: #FFFFFF;
+                    color: #FF0000;
+                    border: 2px solid #000000;
+                    padding: 10px;
+                    margin-top: 10px;
+                    cursor: pointer;
+                    font-weight: bold;
+                ">CERRAR EMERGENCIA</button>
+            `;
+            
+            // Añadir al body
+            document.body.appendChild(emergencyDiv);
+            
+            // Auto-remover después de 10 segundos
+            setTimeout(() => {
+                if (document.getElementById(`emergency-${modalId}`)) {
+                    document.body.removeChild(emergencyDiv);
+                }
+            }, 10000);
+        }
+        
         // Debug adicional después de un momento para ver si algo cambia
         setTimeout(() => {
             console.log(`🔍 DEBUG: Estado del modal ${modalId} después de 1 segundo:`, {
