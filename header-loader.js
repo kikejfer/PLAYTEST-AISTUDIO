@@ -661,11 +661,59 @@ window.openModal = function(modalId) {
         
         modal.style.display = 'flex';
         
-        console.log(`🔍 DEBUG: Modal ${modalId} - Después del cambio:`, {
+        // Verificar si tiene dimensiones después del cambio
+        const afterChange = {
             display: modal.style.display,
             width: modal.offsetWidth,
             height: modal.offsetHeight
-        });
+        };
+        
+        console.log(`🔍 DEBUG: Modal ${modalId} - Después del cambio:`, afterChange);
+        
+        // Si las dimensiones son 0x0, forzar estilos más agresivos
+        if (afterChange.width === 0 && afterChange.height === 0) {
+            console.log(`🔧 DEBUG: Aplicando fix para dimensiones 0x0`);
+            
+            // Aplicar estilos más específicos y forzados
+            modal.style.cssText = `
+                display: flex !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                background: rgba(0,0,0,0.6) !important;
+                backdrop-filter: blur(4px) !important;
+                z-index: 10000 !important;
+                align-items: center !important;
+                justify-content: center !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            `;
+            
+            // También forzar estilos en el contenido interno
+            const modalContent = modal.querySelector('div');
+            if (modalContent) {
+                modalContent.style.cssText = `
+                    background: #1B263B !important;
+                    border-radius: 12px !important;
+                    width: 95% !important;
+                    max-width: 900px !important;
+                    max-height: 85vh !important;
+                    border: 1px solid #415A77 !important;
+                    overflow-y: auto !important;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                    display: block !important;
+                `;
+            }
+            
+            console.log(`🔧 DEBUG: Modal ${modalId} - Después del fix:`, {
+                width: modal.offsetWidth,
+                height: modal.offsetHeight
+            });
+        }
     } else {
         console.error(`❌ DEBUG: Modal ${modalId} no encontrado en el DOM`);
         console.log(`🔍 DEBUG: Modales disponibles:`, Array.from(document.querySelectorAll('[id$="-modal"]')).map(m => m.id));
