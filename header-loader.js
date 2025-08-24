@@ -670,10 +670,14 @@ window.openModal = function(modalId) {
             opacity: 1 !important;
         `;
         
-        // Identificar el contenedor correcto (el que tiene onclick="event.stopPropagation()")
-        const modalContent = modal.querySelector('[onclick="event.stopPropagation();"]');
-        console.log(`🔍 DEBUG: Contenedor interno real para ${modalId}:`, modalContent);
-        console.log(`🔍 DEBUG: Primer hijo directo:`, modal.children[0]);
+        // Identificar el contenedor correcto - probar múltiples estrategias
+        let modalContent = modal.querySelector('[onclick="event.stopPropagation();"]');
+        if (!modalContent) {
+            modalContent = modal.children[0]; // Fallback al primer hijo
+        }
+        
+        console.log(`🔍 DEBUG: Contenedor interno para ${modalId}:`, modalContent);
+        
         if (modalContent) {
             // Método 1: setAttribute (máxima prioridad)
             modalContent.setAttribute('style', `
@@ -709,19 +713,54 @@ window.openModal = function(modalId) {
             modalContent.offsetHeight;
             modalContent.getBoundingClientRect();
             
-            // Verificar contenido interno y forzar dimensiones también
-            const modalBody = modalContent.querySelector('.modal-body');
-            if (modalBody) {
-                modalBody.setAttribute('style', `
-                    display: block !important;
-                    visibility: visible !important;
-                    opacity: 1 !important;
-                    min-height: 500px !important;
-                    height: 500px !important;
-                    width: 100% !important;
-                    background: rgba(255,0,0,0.1) !important;
-                `);
-                console.log(`🔍 DEBUG: Modal body encontrado y configurado para ${modalId}`);
+            // SI TODAVÍA TIENE DIMENSIONES 0, CREAR UN CONTENEDOR DE EMERGENCIA
+            if (modalContent.offsetWidth === 0 || modalContent.offsetHeight === 0) {
+                console.log(`🚨 DEBUG: Contenedor sigue con dimensiones 0, aplicando solución de emergencia para ${modalId}`);
+                
+                // Limpiar contenido actual
+                const originalContent = modalContent.innerHTML;
+                
+                // Crear contenedor de emergencia completamente nuevo
+                modalContent.innerHTML = `
+                    <div style="
+                        width: 800px !important;
+                        height: 600px !important;
+                        background: #1B263B !important;
+                        border: 3px solid #FFD700 !important;
+                        border-radius: 12px !important;
+                        padding: 20px !important;
+                        overflow-y: auto !important;
+                        display: block !important;
+                        position: relative !important;
+                        margin: 0 auto !important;
+                    ">
+                        <h2 style="color: #FFD700; margin-bottom: 20px;">🚨 MODAL DE EMERGENCIA - ${modalId.toUpperCase()}</h2>
+                        <div style="color: #E0E1DD; background: rgba(255,0,0,0.1); padding: 20px; border-radius: 8px;">
+                            <p>Este modal está funcionando con el sistema de emergencia.</p>
+                            <p>Contenido original preservado abajo:</p>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            ${originalContent}
+                        </div>
+                    </div>
+                `;
+                
+                console.log(`🚨 DEBUG: Contenedor de emergencia creado para ${modalId}`);
+            } else {
+                // Configurar modal-body normal si el contenedor tiene dimensiones
+                const modalBody = modalContent.querySelector('.modal-body');
+                if (modalBody) {
+                    modalBody.setAttribute('style', `
+                        display: block !important;
+                        visibility: visible !important;
+                        opacity: 1 !important;
+                        min-height: 500px !important;
+                        height: 500px !important;
+                        width: 100% !important;
+                        background: rgba(255,0,0,0.1) !important;
+                    `);
+                    console.log(`🔍 DEBUG: Modal body encontrado y configurado para ${modalId}`);
+                }
             }
             
             console.log(`🔍 DEBUG: Estilos aplicados al contenedor interno de ${modalId}`);
