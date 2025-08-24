@@ -2479,7 +2479,8 @@
         const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
         const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
         const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-        const [currentPanel, setCurrentPanel] = useState('juego');
+        // VARIABLE ANULADA - Ahora se maneja en header-component.html
+        // const [currentPanel, setCurrentPanel] = useState('juego');
         const dropdownRef = useRef(null);
         const notificationDropdownRef = useRef(null);
 
@@ -2489,6 +2490,8 @@
           // The currentUser prop already contains the user data
         }, []);
 
+        // FUNCIÓN Y VARIABLES ANULADAS - Ahora se manejan en header-component.html
+        /*
         // Obtener roles disponibles del usuario actual
         const getUserAvailablePanels = () => {
           if (!currentUser) return [];
@@ -2524,7 +2527,10 @@
         };
 
         const availablePanels = getUserAvailablePanels();
+        */
 
+        // FUNCIÓN ANULADA - Ahora se maneja en header-component.html
+        /*
         const handlePanelChange = (panelId) => {
           console.log('🔀 Cambio de panel solicitado:', panelId);
           
@@ -2544,6 +2550,7 @@
               break;
           }
         };
+        */
 
         // Detectar panel actual basado en la URL
         useEffect(() => {
@@ -2631,7 +2638,7 @@
                       <span className="text-base font-bold text-blue-400 tracking-wider" style={{fontSize: '1rem', fontWeight: '700', color: '#3B82F6', letterSpacing: '0.1em'}}>PANEL JUGADOR</span>
                     </div>
                     
-                    {/* Selector de panel para usuarios con múltiples roles */}
+                    {/* SELECTOR DE PANEL ANULADO - Ahora se maneja en header-component.html
                     {availablePanels.length > 1 && (
                       <div className="hidden md:flex items-center gap-2 ml-6">
                         <span className="text-brand-accent text-sm">Panel:</span>
@@ -2651,6 +2658,7 @@
                         </select>
                       </div>
                     )}
+                    */}
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -2766,7 +2774,7 @@
                     {isDropdownOpen && (
                       <div className="absolute right-0 mt-2 w-64 bg-brand-primary rounded-md shadow-lg z-20 ring-1 ring-black ring-opacity-5">
                         <div className="py-1">
-                          {/* Selector de panel en móvil - solo si tiene múltiples roles */}
+                          {/* SELECTOR DE PANEL MÓVIL ANULADO - Ahora se maneja en header-component.html
                           {availablePanels.length > 1 && (
                             <>
                               <div className="px-4 py-2 text-xs font-semibold text-brand-accent uppercase tracking-wider">
@@ -2797,6 +2805,7 @@
                               <div className="border-t border-brand-tertiary my-1"></div>
                             </>
                           )}
+                          */}
                           
                           <a href="#" onClick={(e) => { e.preventDefault(); loadUserDataForModal(); setIsProfileModalOpen(true); setIsDropdownOpen(false); }} className="flex items-center gap-3 px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
