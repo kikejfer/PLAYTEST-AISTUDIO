@@ -691,7 +691,7 @@ window.openModal = function(modalId) {
                 opacity: 1 !important;
             `;
             
-            // También forzar estilos en el contenido interno
+            // También forzar estilos en el contenido interno y sus hijos
             const modalContent = modal.querySelector('div');
             if (modalContent) {
                 modalContent.style.cssText = `
@@ -699,7 +699,9 @@ window.openModal = function(modalId) {
                     border-radius: 12px !important;
                     width: 95% !important;
                     max-width: 900px !important;
+                    min-width: 350px !important;
                     max-height: 85vh !important;
+                    min-height: 400px !important;
                     border: 1px solid #415A77 !important;
                     overflow-y: auto !important;
                     box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important;
@@ -707,6 +709,38 @@ window.openModal = function(modalId) {
                     opacity: 1 !important;
                     display: block !important;
                 `;
+                
+                // Forzar también en el modal-body
+                const modalBody = modalContent.querySelector('.modal-body');
+                if (modalBody) {
+                    modalBody.style.cssText = `
+                        padding: 1.5rem !important;
+                        line-height: 1.6 !important;
+                        min-height: 400px !important;
+                        display: block !important;
+                        visibility: visible !important;
+                        opacity: 1 !important;
+                    `;
+                }
+                
+                // Si sigue fallando, recrear completamente el modal basado en introduction
+                if (modalContent.offsetHeight === 0) {
+                    console.log(`🛠️ DEBUG: Recreando modal ${modalId} con estructura de introduction`);
+                    const introModal = document.getElementById('introduction-modal');
+                    if (introModal && introModal.offsetHeight > 0) {
+                        // Clonar estructura exitosa
+                        const introContent = introModal.cloneNode(true);
+                        introContent.id = modalId;
+                        // Reemplazar contenido específico
+                        const modalBodyClone = introContent.querySelector('.modal-body');
+                        if (modalBodyClone && modalBody) {
+                            modalBodyClone.innerHTML = modalBody.innerHTML;
+                        }
+                        // Reemplazar modal completo
+                        modal.parentNode.replaceChild(introContent, modal);
+                        introContent.style.display = 'flex';
+                    }
+                }
             }
             
             console.log(`🔧 DEBUG: Modal ${modalId} - Después del fix:`, {
