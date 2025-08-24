@@ -674,13 +674,35 @@ window.openModal = function(modalId) {
     const clonedModal = introModal.cloneNode(true);
     clonedModal.id = modalId;
     
-    // Obtener el contenido original del modal problemático
+    // Verificar si el modal original tiene contenido problemático
     const originalModalBody = targetModal.querySelector('.modal-body');
     const clonedModalBody = clonedModal.querySelector('.modal-body');
     
     if (originalModalBody && clonedModalBody) {
-        // Reemplazar solo el contenido del modal-body
-        clonedModalBody.innerHTML = originalModalBody.innerHTML;
+        // Si es uno de los modales que sabemos que fallan, usar contenido simple de prueba
+        if (['game-modes-modal', 'topic-development-modal', 'luminarias-modal'].includes(modalId)) {
+            console.log(`🚨 Modal ${modalId} detectado como problemático, usando contenido de emergencia`);
+            clonedModalBody.innerHTML = `
+                <div style="padding: 2rem; text-align: center; min-height: 400px;">
+                    <h2 style="color: #3B82F6; margin-bottom: 2rem;">⚠️ Modal en Mantenimiento</h2>
+                    <p style="color: #E0E1DD; font-size: 1.2rem; margin-bottom: 2rem;">
+                        Este modal está siendo reparado. Contenido temporal activo.
+                    </p>
+                    <div style="background: #1B263B; padding: 2rem; border-radius: 12px; border: 1px solid #415A77;">
+                        <h3 style="color: #FFB347; margin-bottom: 1rem;">${modalId.replace('-modal', '').replace('-', ' ').toUpperCase()}</h3>
+                        <p style="color: #778DA9;">Funcionalidad temporalmente deshabilitada mientras se solucionan problemas de renderizado.</p>
+                        <div style="margin-top: 2rem;">
+                            <button onclick="closeModal('${modalId}')" style="background: #3B82F6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-size: 1rem;">
+                                Cerrar Modal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Para modales que funcionan, usar contenido original
+            clonedModalBody.innerHTML = originalModalBody.innerHTML;
+        }
     }
     
     // Actualizar el botón de cerrar para que use el ID correcto
