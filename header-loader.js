@@ -8,28 +8,23 @@ if (!window.PANEL_CONFIGS) {
     window.PANEL_CONFIGS = {
         'PAP': {
             title: 'PANEL ADMINISTRADOR PRINCIPAL',
-            role: 'Administrador Principal',
-            avatar: 'A'
+            role: 'Administrador Principal'
         },
         'PAS': {
             title: 'PANEL ADMINISTRADOR SECUNDARIO',
-            role: 'Administrador Secundario',
-            avatar: 'A'
+            role: 'Administrador Secundario'
         },
         'PCC': {
             title: 'PANEL CREADOR DE CONTENIDO',
-            role: 'Creador de Contenido',
-            avatar: 'C'
+            role: 'Creador de Contenido'
         },
         'PPF': {
             title: 'PANEL PROFESOR',
-            role: 'Profesor',
-            avatar: 'P'
+            role: 'Profesor'
         },
         'PJG': {
             title: 'PANEL JUGADOR',
-            role: 'Jugador',
-            avatar: 'J'
+            role: 'Jugador'
         }
     };
 }
@@ -69,11 +64,16 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
             activeRole: userData.activeRole || panelType
         };
         
+        // Generar inicial del usuario basada en su nombre
+        const userInitial = userInfo.name && userInfo.name !== 'Cargando...' 
+            ? userInfo.name.charAt(0).toUpperCase() 
+            : '?';
+        
         // Reemplazar placeholders con los valores específicos del panel y usuario
         headerHTML = headerHTML
             .replace(/\{\{PANEL_TITLE\}\}/g, config.title)
             .replace(/\{\{USER_ROLE\}\}/g, config.role)
-            .replace(/\{\{AVATAR_INITIAL\}\}/g, config.avatar);
+            .replace(/\{\{AVATAR_INITIAL\}\}/g, userInitial);
         
         // Inyectar en el contenedor
         const container = document.getElementById(containerId);
@@ -194,8 +194,7 @@ async function loadModals() {
 function createFallbackHeader(panelType, containerId) {
     const config = window.PANEL_CONFIGS[panelType] || {
         title: 'PANEL DESCONOCIDO',
-        role: 'Usuario',
-        avatar: '?'
+        role: 'Usuario'
     };
     
     const fallbackHTML = `
@@ -502,6 +501,7 @@ if (document.readyState === 'loading') {
 function updateUserData(userInfo) {
     const userNameElement = document.getElementById('user-name');
     const userLuminariasElement = document.getElementById('user-luminarias');
+    const userAvatarElement = document.getElementById('user-avatar');
     
     if (userNameElement) {
         userNameElement.textContent = userInfo.name;
@@ -509,6 +509,12 @@ function updateUserData(userInfo) {
     
     if (userLuminariasElement) {
         userLuminariasElement.textContent = userInfo.luminarias.toString();
+    }
+    
+    // Actualizar inicial del avatar basada en el nombre del usuario
+    if (userAvatarElement && userInfo.name) {
+        const initial = userInfo.name.charAt(0).toUpperCase();
+        userAvatarElement.textContent = initial;
     }
 }
 
