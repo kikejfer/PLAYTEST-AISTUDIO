@@ -77,20 +77,57 @@
         const UserContext = createContext();
         const useUser = () => useContext(UserContext);
 
-        // Context para idioma (simplificado)
+        // Context para idioma (completo)
         const LanguageContext = createContext();
         const useLanguage = () => useContext(LanguageContext);
         const LanguageProvider = ({ children }) => {
             const t = (key, params = {}) => {
                 const translations = {
-                    // Traducciones básicas necesarias
+                    // Traducciones básicas
                     'loading': 'Cargando...',
                     'error': 'Error',
                     'game_setup_title': 'Configuración de partida',
+                    'game_setup_category': 'Modalidad',
+                    'game_setup_training': 'Entrenamiento',
+                    'game_setup_competition': 'Competición',
+                    'game_setup_mode': 'Juego',
+                    'game_setup_blocks_topics': 'Selección de bloques',
+                    'game_setup_configure': 'Configurar',
+                    'game_setup_not_selected': 'No seleccionado',
+                    'game_setup_all_topics': 'Todos los temas',
+                    'game_setup_topics_selected': '{count} tema(s) seleccionado(s)',
+                    'game_setup_button_create': 'Nueva Partida',
+                    'game_setup_button_challenge': 'Enviar Reto',
+                    'game_setup_challenge_user': 'Retar a un Usuario',
+                    'game_setup_challenge_random': 'Retar a Aleatorio',
+                    'game_setup_select_opponent': 'Selecciona un oponente',
+                    'game_setup_selected': 'Seleccionado',
+                    'challenge_sent': '¡Reto enviado correctamente!',
+                    'challenge_no_users': 'No hay usuarios disponibles para retar.',
+                    'add': 'Agregar',
+                    'remove': 'Quitar',
+                    'generic_cancel': 'Cancelar',
+                    'topic_modal_title': 'Configurar Temas',
+                    'topic_modal_subtitle': 'Seleccionar temas para "{blockName}"',
+                    'topic_modal_deselect_all': 'Deseleccionar Todo',
+                    'topic_modal_select_all': 'Seleccionar Todo',
+                    'topic_modal_no_topics': 'Este bloque no tiene temas definidos en sus preguntas.',
+                    'topic_modal_save': 'Guardar Selección',
+                    'admin_blocks_by': 'por',
                     'active_games_title': 'Juegos Activos',
                     'block_management_title': 'Gestión de Bloques',
                     'game_history_title': 'Historial de Partidas',
-                    'created_blocks_title': 'Mis Bloques Creados'
+                    'created_blocks_title': 'Mis Bloques Creados',
+                    // Traducciones para modalidades de juego
+                    'game_mode_classic': 'Modo Clásico',
+                    'game_mode_timetrial': 'Modo Contrarreloj',
+                    'game_mode_lives': 'Modo Vidas',
+                    'game_mode_levels': 'Por Niveles',
+                    'game_mode_streak': 'Racha de Aciertos',
+                    'game_mode_exam': 'Examen Simulado',
+                    'game_mode_duel': 'Duelo',
+                    'game_mode_trivial': 'Trivial',
+                    'game_mode_marathon': 'Maratón'
                 };
                 let text = translations[key] || key;
                 Object.keys(params).forEach(param => {
@@ -100,6 +137,441 @@
             };
             
             return React.createElement(LanguageContext.Provider, { value: { t } }, children);
+        };
+
+        // Componente TopicSelectionModal
+        const TopicSelectionModal = ({ block, existingSelection, onSave, onClose }) => {
+            const { t } = useLanguage();
+            const uniqueTopics = useMemo(() => {
+                if (!block || !block.questions) return [];
+                return [...new Set(block.questions.map(q => q.tema).filter(Boolean))].sort();
+            }, [block]);
+
+            const [selectedTopics, setSelectedTopics] = useState(() => {
+                if (existingSelection === 'all') return new Set(uniqueTopics);
+                return new Set(existingSelection || []);
+            });
+
+            const handleToggleTopic = (topic) => {
+                setSelectedTopics(prev => {
+                    const newSet = new Set(prev);
+                    if (newSet.has(topic)) newSet.delete(topic);
+                    else newSet.add(topic);
+                    return newSet;
+                });
+            };
+
+            const handleSelectAll = () => {
+                if (selectedTopics.size === uniqueTopics.length) {
+                    setSelectedTopics(new Set());
+                } else {
+                    setSelectedTopics(new Set(uniqueTopics));
+                }
+            };
+
+            const handleSave = () => {
+                if (selectedTopics.size === 0) {
+                    onSave(block.id, null);
+                } else if (selectedTopics.size === uniqueTopics.length) {
+                    onSave(block.id, 'all');
+                } else {
+                    onSave(block.id, Array.from(selectedTopics));
+                }
+            };
+            
+            if (!block) return null;
+
+            return React.createElement('div', {
+                className: "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50",
+                onClick: onClose
+            }, React.createElement('div', {
+                className: "bg-slate-800 rounded-xl shadow-2xl w-full max-w-md m-4 border border-slate-600",
+                onClick: e => e.stopPropagation()
+            }, [
+                React.createElement('div', {
+                    key: 'header',
+                    className: "p-6 border-b border-slate-600"
+                }, [
+                    React.createElement('h4', {
+                        key: 'title',
+                        className: "text-xl font-bold text-white"
+                    }, t('topic_modal_title')),
+                    React.createElement('p', {
+                        key: 'subtitle',
+                        className: "text-sm text-gray-400"
+                    }, t('topic_modal_subtitle', {blockName: block.nombreCorto}))
+                ]),
+                React.createElement('div', {
+                    key: 'content',
+                    className: "p-6 max-h-96 overflow-y-auto"
+                }, uniqueTopics.length > 0 ? [
+                    React.createElement('button', {
+                        key: 'select-all',
+                        onClick: handleSelectAll,
+                        className: "w-full text-sm font-semibold bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-md transition-colors mb-4"
+                    }, `${selectedTopics.size === uniqueTopics.length ? t('topic_modal_deselect_all') : t('topic_modal_select_all')} (${uniqueTopics.length})`),
+                    React.createElement('div', {
+                        key: 'topics',
+                        className: "space-y-2"
+                    }, uniqueTopics.map(topic =>
+                        React.createElement('label', {
+                            key: topic,
+                            className: "flex items-center p-3 rounded-md hover:bg-slate-700 cursor-pointer transition-colors"
+                        }, [
+                            React.createElement('input', {
+                                key: 'checkbox',
+                                type: "checkbox",
+                                checked: selectedTopics.has(topic),
+                                onChange: () => handleToggleTopic(topic),
+                                className: "h-4 w-4 rounded border-slate-600 text-blue-600 bg-slate-800 focus:ring-blue-600 focus:ring-2"
+                            }),
+                            React.createElement('span', {
+                                key: 'label',
+                                className: "ml-3 text-white"
+                            }, topic)
+                        ])
+                    ))
+                ] : React.createElement('p', {
+                    className: "text-center text-gray-400 py-8"
+                }, t('topic_modal_no_topics'))),
+                React.createElement('div', {
+                    key: 'footer',
+                    className: "p-4 bg-slate-900 flex justify-end gap-3 rounded-b-xl"
+                }, [
+                    React.createElement('button', {
+                        key: 'cancel',
+                        onClick: onClose,
+                        className: "py-2 px-4 rounded-lg bg-slate-600 hover:bg-slate-500 text-white font-semibold transition-colors"
+                    }, t('generic_cancel')),
+                    React.createElement('button', {
+                        key: 'save',
+                        onClick: handleSave,
+                        className: "py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors"
+                    }, t('topic_modal_save'))
+                ])
+            ]));
+        };
+
+        // Componente GameSetup completo
+        const GameSetup = ({ blocks, onCreateGame, onSendChallenge }) => {
+            const { t } = useLanguage();
+            const { currentUser } = useUser();
+            const [allUsers, setAllUsers] = useState([]);
+            const [allProfiles, setAllProfiles] = useState({});
+            
+            const trainingModes = [
+                { key: 'game_mode_classic', value: 'Modo Clásico', image: './Imagenes/Clasico.png'},
+                { key: 'game_mode_timetrial', value: 'Modo Contrarreloj', image: './Imagenes/Contrarreloj.png'},
+                { key: 'game_mode_lives', value: 'Modo Vidas', image: './Imagenes/Vidas.png'},
+                { key: 'game_mode_levels', value: 'Por Niveles', image: './Imagenes/Niveles.png'},
+                { key: 'game_mode_streak', value: 'Racha de Aciertos', image: './Imagenes/Racha.png'},
+                { key: 'game_mode_exam', value: 'Examen Simulado', image: './Imagenes/Examen.png'},
+            ];
+            const competitionModes = [
+                { key: 'game_mode_duel', value: 'Duelo', image: './Imagenes/Duelo.png' },
+                { key: 'game_mode_trivial', value: 'Trivial', image: './Imagenes/Trivia.png' },
+                { key: 'game_mode_marathon', value: 'Maratón', image: './Imagenes/Maraton.png' },
+            ];
+
+            const [category, setCategory] = useState('Entrenamiento');
+            const [mode, setMode] = useState(trainingModes[0].value);
+            const [configuredBlocks, setConfiguredBlocks] = useState({});
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [blockToConfigure, setBlockToConfigure] = useState(null);
+            const [challengedUserId, setChallengedUserId] = useState('');
+            const [challengeStatus, setChallengeStatus] = useState('');
+
+            const isCompetitionMode = useMemo(() => category === 'Competición' && (mode === 'Duelo' || mode === 'Trivial'), [category, mode]);
+
+            useEffect(() => {
+                if (category === 'Entrenamiento') setMode(trainingModes[0].value);
+                else setMode(competitionModes[0].value);
+            }, [category]);
+            
+            useEffect(() => {
+                const fetchUsersAndProfiles = async () => {
+                    if (window.apiDataService) {
+                        try {
+                            const [users, profiles] = await Promise.all([
+                                window.apiDataService.fetchAllUsers(),
+                                window.apiDataService.fetchAllUserProfiles()
+                            ]);
+                            setAllUsers(users || []);
+                            setAllProfiles(profiles || {});
+                        } catch (error) {
+                            console.error('Error fetching users:', error);
+                        }
+                    }
+                };
+                fetchUsersAndProfiles();
+            }, []);
+            
+            const challengeableUsers = useMemo(() => {
+                const selectedBlockIds = Object.keys(configuredBlocks).map(id => parseInt(id));
+                if (!isCompetitionMode || selectedBlockIds.length === 0) return [];
+
+                return allUsers.filter(user => {
+                    if (user.isAdmin || user.id === currentUser.id) return false;
+                    const profile = allProfiles[user.id];
+                    if (!profile || !profile.loadedBlocks) return false;
+                    
+                    const userLoadedBlocks = profile.loadedBlocks.map(id => parseInt(id));
+                    return selectedBlockIds.every(blockId => userLoadedBlocks.includes(blockId));
+                });
+            }, [allUsers, allProfiles, configuredBlocks, currentUser?.id, isCompetitionMode]);
+
+            const handleToggleBlockForCompetition = (blockId) => {
+                setConfiguredBlocks(prev => {
+                    const newConfig = { ...prev };
+                    if (newConfig[blockId]) {
+                        delete newConfig[blockId];
+                    } else {
+                        newConfig[blockId] = { topics: 'all' };
+                    }
+                    return newConfig;
+                });
+            };
+
+            const handleOpenModal = (block) => { setBlockToConfigure(block); setIsModalOpen(true); };
+            const handleCloseModal = () => { setBlockToConfigure(null); setIsModalOpen(false); };
+            
+            const handleSaveTopicSelection = (blockId, topics) => {
+                setConfiguredBlocks(prev => {
+                    const newConfig = { ...prev };
+                    if (topics) newConfig[blockId] = { topics };
+                    else delete newConfig[blockId];
+                    return newConfig;
+                });
+                handleCloseModal();
+            };
+
+            const handleGameAction = () => {
+                if (Object.keys(configuredBlocks).length === 0) return;
+                const gameConfig = { mode, config: configuredBlocks };
+                
+                if (isCompetitionMode) {
+                    const challengedUser = challengeableUsers.find(u => u.id === challengedUserId);
+                    if (!challengedUser) return;
+                    onSendChallenge(challengedUser, gameConfig);
+                    setChallengeStatus(t('challenge_sent'));
+                    setTimeout(() => setChallengeStatus(''), 3000);
+                } else {
+                    onCreateGame(gameConfig);
+                }
+
+                setConfiguredBlocks({}); 
+                setChallengedUserId('');
+            };
+
+            const handleRandomChallenge = () => {
+                if (challengeableUsers.length === 0) return;
+                const randomUser = challengeableUsers[Math.floor(Math.random() * challengeableUsers.length)];
+                const gameConfig = { mode, config: configuredBlocks };
+                onSendChallenge(randomUser, gameConfig);
+                setChallengeStatus(t('challenge_sent'));
+                setTimeout(() => setChallengeStatus(''), 3000);
+                setConfiguredBlocks({});
+                setChallengedUserId('');
+            };
+            
+            const getBlockSelectionText = (blockId) => {
+                const config = configuredBlocks[blockId];
+                if (!config) return React.createElement('span', { className: "text-gray-400" }, t('game_setup_not_selected'));
+                if (config.topics === 'all') return React.createElement('span', { className: "text-green-400" }, t('game_setup_all_topics'));
+                return React.createElement('span', { className: "text-blue-400" }, t('game_setup_topics_selected', {count: config.topics.length}));
+            };
+            
+            const buttonDisabled = Object.keys(configuredBlocks).length === 0 || (isCompetitionMode && !challengedUserId);
+            const buttonText = isCompetitionMode ? t('game_setup_button_challenge') : t('game_setup_button_create');
+
+            return React.createElement('div', { 
+                className: "bg-slate-800 p-6 rounded-xl shadow-lg" 
+            }, [
+                isModalOpen && blockToConfigure && React.createElement(TopicSelectionModal, {
+                    key: 'modal',
+                    block: blockToConfigure,
+                    existingSelection: configuredBlocks[blockToConfigure.id]?.topics,
+                    onSave: handleSaveTopicSelection,
+                    onClose: handleCloseModal
+                }),
+                
+                // Header
+                React.createElement('div', {
+                    key: 'header',
+                    className: "flex items-center mb-4"
+                }, [
+                    React.createElement('img', {
+                        key: 'icon',
+                        src: "./Imagenes/Config.png",
+                        alt: "Game Setup",
+                        className: "h-10 w-10 mr-3"
+                    }),
+                    React.createElement('h3', {
+                        key: 'title',
+                        className: "text-xl font-bold text-white"
+                    }, t('game_setup_title'))
+                ]),
+
+                // Content
+                React.createElement('div', {
+                    key: 'content',
+                    className: "space-y-4"
+                }, [
+                    // Category selector
+                    React.createElement('div', { key: 'category' }, [
+                        React.createElement('label', {
+                            key: 'label',
+                            className: "block text-sm font-medium text-gray-400 mb-1"
+                        }, t('game_setup_category')),
+                        React.createElement('select', {
+                            key: 'select',
+                            value: category,
+                            onChange: (e) => setCategory(e.target.value),
+                            className: "w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                        }, [
+                            React.createElement('option', { key: 'training', value: "Entrenamiento" }, t('game_setup_training')),
+                            React.createElement('option', { key: 'competition', value: "Competición" }, t('game_setup_competition'))
+                        ])
+                    ]),
+
+                    // Mode selector
+                    React.createElement('div', { key: 'mode' }, [
+                        React.createElement('label', {
+                            key: 'label',
+                            className: "block text-sm font-medium text-gray-400 mb-2"
+                        }, t('game_setup_mode')),
+                        React.createElement('div', {
+                            key: 'grid',
+                            className: "grid grid-cols-2 sm:grid-cols-3 gap-3"
+                        }, (category === 'Entrenamiento' ? trainingModes : competitionModes).map(m =>
+                            React.createElement('button', {
+                                key: m.key,
+                                type: "button",
+                                onClick: () => setMode(m.value),
+                                className: `p-3 text-center rounded-lg border-2 transition-all duration-200 ${mode === m.value ? 'bg-blue-600/20 border-blue-600' : 'bg-slate-900 border-slate-600 hover:border-gray-400'}`
+                            }, [
+                                React.createElement('div', {
+                                    key: 'image-container',
+                                    className: "w-24 h-24 mx-auto mb-2 rounded-full bg-slate-700 flex items-center justify-center ring-1 ring-slate-600"
+                                }, React.createElement('img', {
+                                    key: 'image',
+                                    src: m.image,
+                                    alt: t(m.key),
+                                    className: "h-16 w-16 object-contain"
+                                })),
+                                React.createElement('span', {
+                                    key: 'text',
+                                    className: "text-xs font-semibold text-white"
+                                }, t(m.key))
+                            ])
+                        ))
+                    ]),
+
+                    // Competition mode options
+                    isCompetitionMode && React.createElement('div', {
+                        key: 'competition',
+                        className: "p-3 bg-slate-900 rounded-lg space-y-2"
+                    }, [
+                        React.createElement('div', { key: 'opponent-select' }, [
+                            React.createElement('label', {
+                                key: 'label',
+                                className: "block text-sm font-medium text-gray-400 mb-1"
+                            }, t('game_setup_challenge_user')),
+                            React.createElement('select', {
+                                key: 'select',
+                                value: challengedUserId,
+                                onChange: (e) => setChallengedUserId(e.target.value),
+                                className: "w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-blue-600 focus:outline-none",
+                                disabled: Object.keys(configuredBlocks).length === 0
+                            }, [
+                                React.createElement('option', { key: 'default', value: "" }, t('game_setup_select_opponent')),
+                                ...(challengeableUsers.length > 0 ? 
+                                    challengeableUsers.map(user =>
+                                        React.createElement('option', { key: user.id, value: user.id }, user.nickname)
+                                    ) : 
+                                    [React.createElement('option', { key: 'no-users', disabled: true }, t('challenge_no_users'))]
+                                )
+                            ])
+                        ]),
+                        React.createElement('div', {
+                            key: 'divider',
+                            className: "flex items-center gap-2"
+                        }, [
+                            React.createElement('div', { key: 'line1', className: "flex-grow border-t border-slate-600" }),
+                            React.createElement('span', { key: 'or', className: "text-xs text-gray-400" }, 'O'),
+                            React.createElement('div', { key: 'line2', className: "flex-grow border-t border-slate-600" })
+                        ]),
+                        React.createElement('button', {
+                            key: 'random',
+                            onClick: handleRandomChallenge,
+                            disabled: challengeableUsers.length === 0,
+                            className: "w-full bg-slate-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-500 transition-colors disabled:bg-slate-700 disabled:cursor-not-allowed"
+                        }, t('game_setup_challenge_random'))
+                    ]),
+
+                    // Block selection
+                    React.createElement('div', { key: 'blocks' }, [
+                        React.createElement('label', {
+                            key: 'label',
+                            className: "block text-sm font-medium text-gray-400 mb-2"
+                        }, t('game_setup_blocks_topics')),
+                        React.createElement('div', {
+                            key: 'list',
+                            className: "max-h-40 overflow-y-auto space-y-2 p-1"
+                        }, blocks.map(block =>
+                            React.createElement('div', {
+                                key: block.id,
+                                className: "flex items-center justify-between p-2 rounded-md hover:bg-slate-700 transition-colors"
+                            }, [
+                                React.createElement('div', { key: 'info', className: "overflow-hidden" }, [
+                                    React.createElement('p', {
+                                        key: 'name',
+                                        className: "font-semibold text-white truncate"
+                                    }, block.nombreCorto),
+                                    React.createElement('p', {
+                                        key: 'creator',
+                                        className: "text-xs text-gray-400 truncate"
+                                    }, `${t('admin_blocks_by')} ${block.creatorNickname}`),
+                                    React.createElement('p', {
+                                        key: 'status',
+                                        className: "text-xs mt-1"
+                                    }, category === 'Competición' ? 
+                                        (configuredBlocks[block.id] ? 
+                                            React.createElement('span', { className: "text-green-400" }, t('game_setup_selected')) : 
+                                            React.createElement('span', { className: "text-gray-400" }, t('game_setup_not_selected'))
+                                        ) : getBlockSelectionText(block.id)
+                                    )
+                                ]),
+                                category === 'Competición' ? 
+                                    React.createElement('button', {
+                                        key: 'toggle',
+                                        onClick: () => handleToggleBlockForCompetition(block.id),
+                                        className: `text-sm font-semibold py-1 px-3 rounded-md transition-colors ${configuredBlocks[block.id] ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white'}`
+                                    }, configuredBlocks[block.id] ? t('remove') : t('add')) :
+                                    React.createElement('button', {
+                                        key: 'config',
+                                        onClick: () => handleOpenModal(block),
+                                        className: "text-sm font-semibold bg-slate-600 hover:bg-slate-500 text-white py-1 px-3 rounded-md transition-colors"
+                                    }, t('game_setup_configure'))
+                            ])
+                        ))
+                    ]),
+
+                    // Challenge status
+                    challengeStatus && React.createElement('p', {
+                        key: 'status',
+                        className: "text-center text-sm text-green-400 animate-pulse"
+                    }, challengeStatus),
+
+                    // Action button
+                    React.createElement('button', {
+                        key: 'action',
+                        onClick: handleGameAction,
+                        disabled: buttonDisabled,
+                        className: "w-full mt-2 bg-blue-600 text-white font-bold py-2.5 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed"
+                    }, buttonText)
+                ])
+            ]);
         };
 
         // Componente principal del dashboard de jugadores
@@ -279,27 +751,13 @@
                         key: 'games-column',
                         className: "lg:col-span-2 space-y-8" 
                     }, [
-                        // Configuración de juego
-                        React.createElement('div', { 
+                        // Configuración de juego completa
+                        React.createElement(GameSetup, {
                             key: 'game-setup',
-                            className: "bg-slate-800 p-6 rounded-xl shadow-lg" 
-                        }, [
-                            React.createElement('h2', { 
-                                key: 'setup-title',
-                                className: "text-xl font-bold text-white mb-4" 
-                            }, '🎯 Configurar Nueva Partida'),
-                            React.createElement('div', { 
-                                key: 'setup-content',
-                                className: "text-center text-gray-400" 
-                            }, [
-                                React.createElement('p', { key: 'setup-text' }, 'Configuración de juego disponible'),
-                                React.createElement('button', { 
-                                    key: 'setup-btn',
-                                    className: "mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors",
-                                    onClick: () => window.location.href = 'index.html'
-                                }, 'Ir a Configuración Completa')
-                            ])
-                        ]),
+                            blocks: blocks,
+                            onCreateGame: handleCreateGame,
+                            onSendChallenge: (user, config) => console.log('Challenge sent:', user, config)
+                        }),
 
                         // Juegos activos
                         React.createElement('div', { 
@@ -340,6 +798,65 @@
                                     key: 'no-games',
                                     className: "text-center text-gray-400 py-8" 
                                 }, 'No hay partidas activas')
+                        ]),
+
+                        // Historial de partidas
+                        React.createElement('div', { 
+                            key: 'game-history',
+                            className: "bg-slate-800 p-6 rounded-xl shadow-lg" 
+                        }, [
+                            React.createElement('h2', { 
+                                key: 'history-title',
+                                className: "text-xl font-bold text-white mb-4" 
+                            }, '📈 Historial de Partidas'),
+                            gameHistory.length > 0 ? 
+                                React.createElement('div', { 
+                                    key: 'history-list',
+                                    className: "space-y-3 max-h-60 overflow-y-auto" 
+                                }, gameHistory.slice(0, 10).map((game, index) =>
+                                    React.createElement('div', { 
+                                        key: game.id || index,
+                                        className: "flex justify-between items-center p-3 bg-slate-700 rounded-lg border-l-4 border-blue-600" 
+                                    }, [
+                                        React.createElement('div', { key: 'game-info' }, [
+                                            React.createElement('div', { 
+                                                key: 'game-details',
+                                                className: "font-semibold text-white text-sm" 
+                                            }, `${game.mode || 'Partida'} - ${game.blockName || 'Bloque'}`),
+                                            React.createElement('div', { 
+                                                key: 'game-stats',
+                                                className: "text-xs text-gray-400 mt-1" 
+                                            }, `${game.correct || 0} aciertos, ${game.incorrect || 0} fallos`),
+                                            React.createElement('div', { 
+                                                key: 'game-date',
+                                                className: "text-xs text-gray-500 mt-1" 
+                                            }, new Date(game.createdAt || Date.now()).toLocaleDateString())
+                                        ]),
+                                        React.createElement('div', { 
+                                            key: 'score',
+                                            className: "text-right" 
+                                        }, [
+                                            React.createElement('div', { 
+                                                key: 'score-value',
+                                                className: `font-bold text-lg ${(game.score || 0) >= 7 ? 'text-green-400' : (game.score || 0) >= 5 ? 'text-yellow-400' : 'text-red-400'}` 
+                                            }, (game.score || 0).toFixed(1)),
+                                            React.createElement('div', { 
+                                                key: 'score-label',
+                                                className: "text-xs text-gray-400" 
+                                            }, 'Nota')
+                                        ])
+                                    ])
+                                )) :
+                                React.createElement('p', { 
+                                    key: 'no-history',
+                                    className: "text-center text-gray-400 py-8" 
+                                }, 'No hay historial de partidas'),
+                            
+                            gameHistory.length > 10 && React.createElement('button', { 
+                                key: 'view-all-btn',
+                                className: "w-full mt-4 bg-slate-600 hover:bg-slate-500 text-white px-4 py-2 rounded transition-colors text-sm",
+                                onClick: () => window.location.href = 'game-history.html'
+                            }, `Ver todas (${gameHistory.length})`)
                         ])
                     ]),
 
@@ -389,7 +906,7 @@
                             React.createElement('button', { 
                                 key: 'add-block-btn',
                                 className: "w-full mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-colors",
-                                onClick: () => window.location.href = 'all-blocks.html'
+                                onClick: () => window.location.href = 'available-blocks.html'
                             }, '+ Agregar Bloques')
                         ])
                     ])
