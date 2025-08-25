@@ -105,9 +105,7 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
             container: !!roleSelectorContainer
         });
         
-        // TEMPORAL DEBUG: Siempre mostrar selector para verificar funcionalidad
-        console.log('🧪 MODO DEBUG: Forzando visualización del selector de roles');
-        
+        // Mostrar selector de roles basado en roles reales del usuario
         if (userInfo.roles.length > 1) {
             console.log('✅ Múltiples roles detectados, inicializando selector');
             initializeRoleSelector(userInfo.roles, userInfo.activeRole);
@@ -119,18 +117,10 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
             }
         } else if (userInfo.roles.length === 1) {
             console.log(`ℹ️ Usuario tiene solo 1 rol: ${userInfo.roles[0].name}`);
-            
-            // TEMPORAL: Mostrar selector incluso con 1 rol para debug
-            console.log('🧪 MODO DEBUG: Mostrando selector incluso con 1 rol');
-            const testRoles = [
-                userInfo.roles[0],
-                { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' }
-            ];
-            initializeRoleSelector(testRoles, userInfo.activeRole);
-            
+            // Ocultar el selector si solo hay un rol
             if (roleSelectorContainer) {
-                roleSelectorContainer.style.display = 'block';
-                console.log('✅ Contenedor del selector mostrado (modo debug)');
+                roleSelectorContainer.style.display = 'none';
+                console.log('🔒 Contenedor del selector oculto (solo 1 rol)');
             }
         } else {
             console.log('❌ No se detectaron roles válidos');
@@ -429,6 +419,13 @@ function getUserRolesFromSystem(profile, session) {
     // Si no se detectaron roles, asignar rol de jugador por defecto
     if (roles.length === 0) {
         roles.push(roleMapping['jugador']);
+    } else {
+        // Los usuarios con roles específicos también tienen rol de jugador
+        // (excepto si ya está incluido para evitar duplicados)
+        const hasJugadorRole = roles.some(role => role.code === 'PJG');
+        if (!hasJugadorRole) {
+            roles.push(roleMapping['jugador']);
+        }
     }
     
     return roles;
@@ -534,6 +531,12 @@ function updateUserData(userInfo) {
     // Actualizar nombre completo
     if (userFullNameElement) {
         const fullName = [userInfo.firstName, userInfo.lastName].filter(Boolean).join(' ');
+        console.log('🔍 DEBUG Full Name Update:', {
+            firstName: userInfo.firstName,
+            lastName: userInfo.lastName,
+            fullName: fullName,
+            element: !!userFullNameElement
+        });
         userFullNameElement.textContent = fullName || 'Usuario';
     }
     
