@@ -29,6 +29,10 @@ if (!window.PANEL_CONFIGS) {
     };
 }
 
+// Prevent multiple header loads
+let isHeaderLoading = false;
+let isHeaderLoaded = false;
+
 /**
  * Carga el header dinámicamente
  * @param {string} panelType - Tipo de panel (PAP, PAS, PCC, PPF, PJG)
@@ -41,6 +45,20 @@ if (!window.PANEL_CONFIGS) {
  */
 async function loadHeader(panelType, containerId = 'header-container', userData = {}) {
     try {
+        // Prevent multiple simultaneous loads
+        if (isHeaderLoading) {
+            console.log('🔄 HEADER DEBUG - Header already loading, skipping');
+            return;
+        }
+        
+        if (isHeaderLoaded) {
+            console.log('🔄 HEADER DEBUG - Header already loaded, skipping');
+            return;
+        }
+        
+        isHeaderLoading = true;
+        console.log('🚀 HEADER DEBUG - Starting header load for panel:', panelType);
+        
         // Verificar que el tipo de panel sea válido
         if (!window.PANEL_CONFIGS[panelType]) {
             throw new Error(`Tipo de panel no válido: ${panelType}`);
@@ -139,11 +157,22 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
         initializeHeaderFunctions();
         
         
+        // Mark header as loaded
+        isHeaderLoaded = true;
+        console.log('✅ HEADER DEBUG - Header load completed successfully');
+
     } catch (error) {
         console.error('Error al cargar el header:', error);
         
         // Fallback: crear header básico
         createFallbackHeader(panelType, containerId);
+        
+        // Mark as loaded even on error to prevent endless retries
+        isHeaderLoaded = true;
+        console.log('❌ HEADER DEBUG - Header load failed, marked as loaded to prevent retries');
+    } finally {
+        // Always clear the loading flag
+        isHeaderLoading = false;
     }
 }
 
@@ -332,11 +361,35 @@ function getCurrentRoleName(userData) {
     return activeRole ? activeRole.name : userData.roles[0].name;
 }
 
+// Prevent multiple simultaneous calls
+let userDataPromise = null;
+
 /**
  * Obtiene los datos del usuario actual desde tu sistema real
  * @returns {Object} userData
  */
 async function getUserData() {
+    // If there's already a getUserData call in progress, return that promise
+    if (userDataPromise) {
+        console.log('🔄 HEADER DEBUG - Using existing getUserData promise');
+        return userDataPromise;
+    }
+    
+    console.log('🚀 HEADER DEBUG - Starting new getUserData call');
+    
+    // Create the promise and store it
+    userDataPromise = getUserDataInternal();
+    
+    try {
+        const result = await userDataPromise;
+        return result;
+    } finally {
+        // Clear the promise when done (success or error)
+        userDataPromise = null;
+    }
+}
+
+async function getUserDataInternal() {
     try {
         // Leer roles directamente del JWT token (como lo hace el panel)
         const tokenRoles = getTokenRoles();
