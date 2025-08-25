@@ -543,16 +543,13 @@ function updateUserData(userInfo) {
         userNameElement.textContent = userInfo.name;
     }
     
-    // Actualizar nombre completo
+    // Actualizar nombre (solo first_name)
     if (userFullNameElement) {
-        const fullName = [userInfo.firstName, userInfo.lastName].filter(Boolean).join(' ');
-        console.log('🔍 DEBUG Full Name Update:', {
+        console.log('🔍 DEBUG First Name Update:', {
             firstName: userInfo.firstName,
-            lastName: userInfo.lastName,
-            fullName: fullName,
             element: !!userFullNameElement
         });
-        userFullNameElement.textContent = fullName || 'Usuario';
+        userFullNameElement.textContent = userInfo.firstName || '';
     }
     
     if (userLuminariasElement) {
