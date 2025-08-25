@@ -1660,11 +1660,11 @@
                             setCurrentView: () => {}
                         }),
 
-                        // GameHistory completo
+                        // GameHistory completo - MOVIDO A PESTAÑA HISTÓRICO
                         React.createElement('div', { 
-                            key: 'game-history',
-                            className: "bg-slate-800 p-6 rounded-xl shadow-lg flex flex-col" 
-                        }, [
+                            key: 'game-history-placeholder',
+                            className: "bg-slate-800 p-6 rounded-xl shadow-lg text-center" 
+                        }, 'El historial se encuentra en la pestaña Histórico')
                             React.createElement('div', {
                                 key: 'history-header',
                                 className: "flex items-center mb-4 flex-shrink-0"
@@ -1747,29 +1747,16 @@
                         ])
                     ]),
 
-                    // Columna derecha - Gestión de Bloques (UserBlockManagement y CreatedBlocksManagement)
+                    // Sección de Juegos Activos (movida aquí desde la columna eliminada)
                     React.createElement('div', { 
-                        key: 'blocks-column',
-                        className: "lg:col-span-1 space-y-8" 
+                        key: 'active-games-section',
+                        className: "lg:col-span-1" 
                     }, [
-                        // UserBlockManagement completo con progreso y estadísticas
-                        React.createElement(UserBlockManagement, {
-                            key: 'user-block-management',
-                            blocks: blocks,
-                            onViewBlock: handleViewBlock,
-                            onDeleteBlock: handleDeleteBlock,
-                            onOpenAddBlockModal: () => {},
-                            onOpenStatsModal: handleOpenStatsModal,
-                            setCurrentView: () => {}
-                        }),
-
-                        // CreatedBlocksManagement para usuarios creadores
-                        React.createElement(CreatedBlocksManagement, {
-                            key: 'created-blocks-management',
-                            blocks: createdBlocks,
-                            setCurrentView: () => {},
-                            onDeleteBlock: handleDeleteBlock
-                        })
+                        // Contenido de juegos activos se renderizará aquí
+                        React.createElement('div', {
+                            key: 'active-games-placeholder',
+                            id: 'active-games-content-internal'
+                        }, 'Juegos activos se cargarán aquí')
                     ])
                 ])
             ]);
@@ -1786,9 +1773,55 @@
             );
         };
 
-        // Renderizar la aplicación
+        // Renderizar la aplicación principal solo en la pestaña de Partidas
         const root = ReactDOM.createRoot(document.getElementById('player-dashboard-root'));
         root.render(React.createElement(App));
+
+        // Renderizar componentes específicos en pestañas
+        setTimeout(() => {
+            // Renderizar Bloques Cargados en su pestaña
+            const loadedBlocksContainer = document.getElementById('loaded-blocks-content');
+            if (loadedBlocksContainer) {
+                const loadedBlocksRoot = ReactDOM.createRoot(loadedBlocksContainer);
+                loadedBlocksRoot.render(React.createElement(UserBlockManagement, {
+                    blocks: [], // Se actualizará cuando se carguen los datos
+                    onViewBlock: () => {},
+                    onDeleteBlock: () => {},
+                    onOpenAddBlockModal: () => {},
+                    onOpenStatsModal: () => {},
+                    setCurrentView: () => {}
+                }));
+            }
+
+            // Renderizar Historial de Partidas en su pestaña
+            const gameHistoryContainer = document.getElementById('games-history-content');
+            if (gameHistoryContainer) {
+                const gameHistoryRoot = ReactDOM.createRoot(gameHistoryContainer);
+                gameHistoryRoot.render(React.createElement('div', {
+                    className: "bg-slate-800 p-6 rounded-xl shadow-lg flex flex-col"
+                }, [
+                    React.createElement('div', {
+                        key: 'history-header',
+                        className: "flex items-center mb-4 flex-shrink-0"
+                    }, [
+                        React.createElement('img', {
+                            key: 'history-icon',
+                            src: "./Imagenes/Historia.png",
+                            alt: "Game History",
+                            className: "h-10 w-10 mr-3"
+                        }),
+                        React.createElement('h3', {
+                            key: 'title',
+                            className: "text-xl font-bold text-white"
+                        }, 'Historial de Partidas')
+                    ]),
+                    React.createElement('div', {
+                        key: 'history-content',
+                        className: "text-gray-400 text-center"
+                    }, 'Cargando historial de partidas...')
+                ]));
+            }
+        }, 500);
 
         // Función para cambiar entre pestañas
         window.switchTab = function(tabName) {
