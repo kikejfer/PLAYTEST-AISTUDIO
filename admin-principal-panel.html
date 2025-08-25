@@ -1041,9 +1041,9 @@
                         const usersWithBlocks = debugData.users_with_blocks;
                         const blockCreatorIds = new Set(usersWithBlocks.map(u => u.id));
                         
-                        // AdminPrincipal como administrador
+                        // Administrador Principal como administrador
                         const adminSecundarios = allUsers
-                            .filter(user => user.nickname === 'AdminPrincipal')
+                            .filter(user => user.role_name === 'administrador_principal')
                             .map(user => ({
                                 id: user.id,
                                 nickname: user.nickname,
@@ -1055,7 +1055,7 @@
 
                         // Usuarios con bloques como creadores
                         const profesoresCreadores = usersWithBlocks
-                            .filter(user => user.nickname !== 'AdminPrincipal')
+                            .filter(user => user.role_name !== 'administrador_principal')
                             .map(user => ({
                                 id: user.id, nickname: user.nickname, email: user.email || 'Sin email',
                                 first_name: '', last_name: '', assigned_admin_id: 0, assigned_admin_nickname: 'Sin asignar',
@@ -1069,7 +1069,7 @@
 
                         // Usuarios sin bloques
                         const usuarios = allUsers
-                            .filter(user => user.nickname !== 'AdminPrincipal' && !blockCreatorIds.has(user.id))
+                            .filter(user => user.role_name !== 'administrador_principal' && !blockCreatorIds.has(user.id))
                             .map(user => ({
                                 id: user.id, nickname: user.nickname, email: user.email || 'Sin email',
                                 first_name: '', last_name: '', assigned_admin_id: 0, assigned_admin_nickname: 'Sin asignar', blocks_loaded: 0,
