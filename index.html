@@ -525,10 +525,6 @@
           }
           throw new Error("User not found");
         },
-        getUserProfile: async (userId) => {
-            const db = getDatabase();
-            return simulateDelay(db.userProfiles[userId] || null);
-        },
         fetchGameHistory: async (userId) => {
             const db = getDatabase();
             const profile = db.userProfiles[userId];
