@@ -1747,16 +1747,29 @@
                         ])
                     ]),
 
-                    // Sección de Juegos Activos (movida aquí desde la columna eliminada)
+                    // Columna derecha - Gestión de Bloques (UserBlockManagement y CreatedBlocksManagement) - RESTAURADA
                     React.createElement('div', { 
-                        key: 'active-games-section',
-                        className: "lg:col-span-1" 
+                        key: 'blocks-column',
+                        className: "lg:col-span-1 space-y-8" 
                     }, [
-                        // Contenido de juegos activos se renderizará aquí
-                        React.createElement('div', {
-                            key: 'active-games-placeholder',
-                            id: 'active-games-content-internal'
-                        }, 'Juegos activos se cargarán aquí')
+                        // UserBlockManagement completo con progreso y estadísticas
+                        React.createElement(UserBlockManagement, {
+                            key: 'user-block-management',
+                            blocks: blocks,
+                            onViewBlock: handleViewBlock,
+                            onDeleteBlock: handleDeleteBlock,
+                            onOpenAddBlockModal: () => {},
+                            onOpenStatsModal: handleOpenStatsModal,
+                            setCurrentView: () => {}
+                        }),
+
+                        // CreatedBlocksManagement para usuarios creadores
+                        React.createElement(CreatedBlocksManagement, {
+                            key: 'created-blocks-management',
+                            blocks: createdBlocks,
+                            setCurrentView: () => {},
+                            onDeleteBlock: handleDeleteBlock
+                        })
                     ])
                 ])
             ]);
@@ -1777,51 +1790,143 @@
         const root = ReactDOM.createRoot(document.getElementById('player-dashboard-root'));
         root.render(React.createElement(App));
 
-        // Renderizar componentes específicos en pestañas
+        // Crear componentes completos y funcionales para las pestañas
+        const TabBlocksComponent = () => {
+            const [tabBlocks, setTabBlocks] = useState([]);
+            const [tabCreatedBlocks, setTabCreatedBlocks] = useState([]);
+
+            useEffect(() => {
+                // Usar los mismos datos del componente principal
+                const mainApp = document.querySelector('#player-dashboard-root');
+                if (mainApp && mainApp._reactInternalInstance) {
+                    // Los datos se cargarán cuando estén disponibles
+                    setTabBlocks([]);
+                    setTabCreatedBlocks([]);
+                }
+            }, []);
+
+            return React.createElement('div', {}, [
+                React.createElement(UserBlockManagement, {
+                    key: 'tab-user-block-management',
+                    blocks: tabBlocks,
+                    onViewBlock: (block) => window.location.href = `game-classic.html?blockId=${block.id}`,
+                    onDeleteBlock: async (blockId) => {
+                        if (window.apiDataService) {
+                            await window.apiDataService.deleteBlockForUser(blockId);
+                            // Recargar datos
+                            setTabBlocks(prev => prev.filter(b => b.id !== blockId));
+                        }
+                    },
+                    onOpenAddBlockModal: () => window.location.href = 'available-blocks.html',
+                    onOpenStatsModal: () => {},
+                    setCurrentView: () => {}
+                })
+            ]);
+        };
+
+        const TabHistoryComponent = () => {
+            const [tabGameHistory, setTabGameHistory] = useState([]);
+
+            useEffect(() => {
+                // Cargar historial de partidas
+                const loadHistory = async () => {
+                    try {
+                        if (window.apiDataService) {
+                            const currentUser = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+                            if (currentUser.id) {
+                                const history = await window.apiDataService.fetchGameHistory(currentUser.id);
+                                setTabGameHistory(history || []);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error loading game history:', error);
+                    }
+                };
+                loadHistory();
+            }, []);
+
+            return React.createElement('div', {
+                className: "bg-slate-800 p-6 rounded-xl shadow-lg flex flex-col"
+            }, [
+                React.createElement('div', {
+                    key: 'history-header',
+                    className: "flex items-center mb-4 flex-shrink-0"
+                }, [
+                    React.createElement('img', {
+                        key: 'history-icon',
+                        src: "./Imagenes/Historia.png",
+                        alt: "Game History",
+                        className: "h-10 w-10 mr-3"
+                    }),
+                    React.createElement('h3', {
+                        key: 'title',
+                        className: "text-xl font-bold text-white"
+                    }, 'Historial de Partidas')
+                ]),
+                tabGameHistory && tabGameHistory.length > 0 ? React.createElement('div', {
+                    key: 'history-table-container',
+                    className: "overflow-x-auto flex-grow"
+                }, React.createElement('table', {
+                    key: 'history-table',
+                    className: "w-full text-sm"
+                }, [
+                    React.createElement('thead', { key: 'thead' }, React.createElement('tr', {
+                        key: 'header-row',
+                        className: "border-b border-slate-600"
+                    }, [
+                        React.createElement('th', { key: 'block-header', className: "py-2 px-2 text-left text-gray-300 font-semibold truncate" }, 'Bloque'),
+                        React.createElement('th', { key: 'mode-header', className: "py-2 px-2 text-left text-gray-300 font-semibold" }, 'Modo'),
+                        React.createElement('th', { key: 'score-header', className: "py-2 px-2 text-center text-gray-300 font-semibold" }, 'Punt.'),
+                        React.createElement('th', { key: 'date-header', className: "py-2 px-2 text-left text-gray-300 font-semibold" }, 'Fecha')
+                    ])),
+                    React.createElement('tbody', { key: 'tbody' }, tabGameHistory.map((game, index) =>
+                        React.createElement('tr', {
+                            key: game.gameId + index,
+                            className: "border-b border-slate-600"
+                        }, [
+                            React.createElement('td', {
+                                key: 'block-name',
+                                className: "py-3 px-2 font-medium text-white truncate max-w-32",
+                                title: game.blockName
+                            }, game.blockName),
+                            React.createElement('td', { key: 'mode-info', className: "py-3 px-2 text-gray-400" }, [
+                                React.createElement('div', { key: 'game-mode', className: "font-medium text-white" }, game.gameMode || 'Clásico'),
+                                React.createElement('div', { key: 'config-info', className: "text-xs" }, `${game.totalQuestions || 0} preguntas`)
+                            ]),
+                            React.createElement('td', { key: 'score-cell', className: "py-3 px-2 text-center" }, React.createElement('span', {
+                                key: 'score-value',
+                                className: "font-bold px-2 py-1 rounded text-xs",
+                                style: { color: game.score >= 5 ? '#10B981' : '#EF4444' }
+                            }, game.score || 0)),
+                            React.createElement('td', { key: 'date-cell', className: "py-3 px-2 text-gray-400 text-xs" }, (() => {
+                                const date = new Date(game.createdAt || Date.now());
+                                return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                            })())
+                        ])
+                    ))
+                ])) : React.createElement('div', {
+                    key: 'no-history',
+                    className: "text-center text-gray-400 py-8"
+                }, 'No hay historial de partidas')
+            ]);
+        };
+
+        // Renderizar componentes específicos en pestañas después de que React esté disponible
         setTimeout(() => {
-            // Renderizar Bloques Cargados en su pestaña
+            // Renderizar Bloques Cargados COMPLETO en su pestaña
             const loadedBlocksContainer = document.getElementById('loaded-blocks-content');
             if (loadedBlocksContainer) {
                 const loadedBlocksRoot = ReactDOM.createRoot(loadedBlocksContainer);
-                loadedBlocksRoot.render(React.createElement(UserBlockManagement, {
-                    blocks: [], // Se actualizará cuando se carguen los datos
-                    onViewBlock: () => {},
-                    onDeleteBlock: () => {},
-                    onOpenAddBlockModal: () => {},
-                    onOpenStatsModal: () => {},
-                    setCurrentView: () => {}
-                }));
+                loadedBlocksRoot.render(React.createElement(TabBlocksComponent));
             }
 
-            // Renderizar Historial de Partidas en su pestaña
+            // Renderizar Historial de Partidas COMPLETO en su pestaña
             const gameHistoryContainer = document.getElementById('games-history-content');
             if (gameHistoryContainer) {
                 const gameHistoryRoot = ReactDOM.createRoot(gameHistoryContainer);
-                gameHistoryRoot.render(React.createElement('div', {
-                    className: "bg-slate-800 p-6 rounded-xl shadow-lg flex flex-col"
-                }, [
-                    React.createElement('div', {
-                        key: 'history-header',
-                        className: "flex items-center mb-4 flex-shrink-0"
-                    }, [
-                        React.createElement('img', {
-                            key: 'history-icon',
-                            src: "./Imagenes/Historia.png",
-                            alt: "Game History",
-                            className: "h-10 w-10 mr-3"
-                        }),
-                        React.createElement('h3', {
-                            key: 'title',
-                            className: "text-xl font-bold text-white"
-                        }, 'Historial de Partidas')
-                    ]),
-                    React.createElement('div', {
-                        key: 'history-content',
-                        className: "text-gray-400 text-center"
-                    }, 'Cargando historial de partidas...')
-                ]));
+                gameHistoryRoot.render(React.createElement(TabHistoryComponent));
             }
-        }, 500);
+        }, 1000);
 
         // Función para cambiar entre pestañas
         window.switchTab = function(tabName) {
