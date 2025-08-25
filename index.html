@@ -878,6 +878,13 @@
         
         // Check in roles array (new system)
         if (user.roles && Array.isArray(user.roles)) {
+          // Handle role name variants for admin roles
+          if (role === 'administrador_secundario') {
+            return user.roles.includes('administrador_secundario') || user.roles.includes('admin_secundario');
+          }
+          if (role === 'administrador_principal') {
+            return user.roles.includes('administrador_principal') || user.roles.includes('admin_principal');
+          }
           return user.roles.includes(role);
         }
         
@@ -895,7 +902,7 @@
         }
         
         const secondaryAdmins = ['kikejfer', 'admin_sec_1', 'admin_secundario'];
-        if (hasRole(user, 'administrador_secundario') || secondaryAdmins.includes(user.nickname)) {
+        if (hasRole(user, 'administrador_secundario') || hasRole(user, 'admin_secundario') || secondaryAdmins.includes(user.nickname)) {
           return 'administrador_secundario';
         }
         

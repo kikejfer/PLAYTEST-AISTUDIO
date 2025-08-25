@@ -338,58 +338,52 @@ function getCurrentRoleName(userData) {
  */
 async function getUserData() {
     try {
+        // Leer roles directamente del JWT token (como lo hace el panel)
+        const tokenRoles = getTokenRoles();
+        const userRoles = getUserRolesFromSystem({ roles: tokenRoles }, {});
+        
         // Intentar obtener datos del usuario desde tu API
+        let profile = {};
+        let session = {};
+        
         if (window.apiDataService) {
-            const profile = await window.apiDataService.getUserProfile();
-            
-            // Obtener sesión actual para datos adicionales
-            const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
-            
-            // DEBUG: Verificar datos del perfil del usuario
-            console.log('🔍 DEBUG API Profile Data:', {
-                profile,
-                session,
-                nickname: profile.nickname,
-                first_name: profile.first_name,
-                last_name: profile.last_name,
-                roles: profile.roles
-            });
-            
-            // Mapear roles de tu sistema a códigos de panel
-            const userRoles = getUserRolesFromSystem(profile, session);
-            
-            // DEBUG: Verificar detección de roles
-            console.log('🔍 DEBUG Role Detection:', {
-                tokenRoles: getTokenRoles(),
-                detectedActiveRole: detectRoleFromToken(),
-                mappedUserRoles: userRoles,
-                storedActiveRole: localStorage.getItem('activeRole')
-            });
-            
-            // TEMPORAL: Si el usuario es admin o profesor, agregar roles adicionales para prueba
-            const nickname = profile.nickname || session.nickname;
-            if (nickname && (nickname.includes('Admin') || nickname.includes('admin') || userRoles.some(r => r.code === 'PAP' || r.code === 'PAS'))) {
-                console.log('🧪 MODO PRUEBA: Agregando roles adicionales para admin/profesor');
-                
-                // Evitar duplicados y agregar roles que debería tener
-                const existingCodes = userRoles.map(r => r.code);
-                
-                if (!existingCodes.includes('PJG')) {
-                    userRoles.push({ code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' });
-                }
-                
-                console.log('🔧 Roles después de agregar adicionales:', userRoles);
+            try {
+                profile = await window.apiDataService.getUserProfile();
+            } catch (error) {
+                console.warn('⚠️ Error obteniendo profile de API:', error);
             }
             
-            return {
-                name: profile.nickname || session.nickname || 'Usuario',
-                firstName: profile.first_name || '',
-                lastName: profile.last_name || '',
-                luminarias: profile.luminarias || profile.stats?.luminarias || 0,
-                roles: userRoles,
-                activeRole: localStorage.getItem('activeRole') || detectRoleFromToken() || userRoles[0]?.code || 'PJG'
-            };
+            // Obtener sesión actual para datos adicionales
+            session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
         }
+        
+        // DEBUG: Verificar datos del perfil del usuario
+        console.log('🔍 DEBUG API Profile Data:', {
+            profile,
+            session,
+            nickname: profile.nickname,
+            first_name: profile.first_name,
+            last_name: profile.last_name,
+            roles: profile.roles
+        });
+        
+        // DEBUG: Verificar detección de roles desde JWT
+        console.log('🔍 DEBUG Role Detection:', {
+            tokenRoles: tokenRoles,
+            detectedActiveRole: detectRoleFromToken(),
+            mappedUserRoles: userRoles,
+            storedActiveRole: localStorage.getItem('activeRole')
+        });
+        
+        return {
+            name: profile.nickname || session.nickname || 'Usuario',
+            firstName: profile.first_name || '',
+            lastName: profile.last_name || '',
+            luminarias: profile.luminarias || profile.stats?.luminarias || 0,
+            roles: userRoles,
+            activeRole: localStorage.getItem('activeRole') || detectRoleFromToken() || userRoles[0]?.code || 'PJG'
+        };
+    }
         
         // Fallback: usar datos de localStorage si API no está disponible
         return getUserDataFromLocalStorage();
@@ -415,9 +409,12 @@ function getUserRolesFromSystem(profile, session) {
     // Mapeo de roles de tu sistema a códigos de panel
     const roleMapping = {
         'administrador_principal': { code: 'PAP', name: 'Administrador Principal', panel: 'admin-principal-panel.html' },
+        'admin_principal': { code: 'PAP', name: 'Administrador Principal', panel: 'admin-principal-panel.html' },
         'administrador_secundario': { code: 'PAS', name: 'Administrador Secundario', panel: 'admin-secundario-panel.html' },
+        'admin_secundario': { code: 'PAS', name: 'Administrador Secundario', panel: 'admin-secundario-panel.html' },
         'creador': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
         'creador_contenido': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
+        'profesor_creador': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
         'profesor': { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-schedules.html' },
         'jugador': { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' }
     };
@@ -473,15 +470,18 @@ function detectRoleFromToken() {
     if (tokenRoles.length === 0) return null;
     
     // Prioridad de roles para detección automática
-    const rolePriority = ['administrador_principal', 'administrador_secundario', 'profesor', 'creador', 'creador_contenido', 'jugador'];
+    const rolePriority = ['administrador_principal', 'admin_principal', 'administrador_secundario', 'admin_secundario', 'profesor', 'creador', 'creador_contenido', 'profesor_creador', 'jugador'];
     
     for (const priorityRole of rolePriority) {
         if (tokenRoles.includes(priorityRole)) {
             const roleMapping = {
                 'administrador_principal': 'PAP',
-                'administrador_secundario': 'PAS', 
+                'admin_principal': 'PAP',
+                'administrador_secundario': 'PAS',
+                'admin_secundario': 'PAS',
                 'creador': 'PCC',
                 'creador_contenido': 'PCC',
+                'profesor_creador': 'PCC',
                 'profesor': 'PPF',
                 'jugador': 'PJG'
             };
