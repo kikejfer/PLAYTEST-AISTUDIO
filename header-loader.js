@@ -91,17 +91,44 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
         // Inicializar selector de roles
         const roleSelectorContainer = document.getElementById('role-selector-container');
         
+        // DEBUG: Verificar datos del usuario para troubleshoot
+        console.log('🔍 DEBUG Selector de Rol:', {
+            userInfo,
+            rolesCount: userInfo.roles.length,
+            roles: userInfo.roles,
+            activeRole: userInfo.activeRole,
+            container: !!roleSelectorContainer
+        });
+        
         if (userInfo.roles.length > 1) {
+            console.log('✅ Múltiples roles detectados, inicializando selector');
             initializeRoleSelector(userInfo.roles, userInfo.activeRole);
             
             // Mostrar el contenedor del selector
             if (roleSelectorContainer) {
                 roleSelectorContainer.style.display = 'block';
+                console.log('✅ Contenedor del selector mostrado');
             }
         } else {
-            // Ocultar selector para usuarios con un solo rol
+            console.log(`❌ Solo ${userInfo.roles.length} rol(es) detectado(s)`);
+            
+            // TEMPORAL: Mostrar selector con roles de prueba para verificar funcionalidad
+            console.log('🧪 MODO PRUEBA: Agregando roles adicionales para mostrar selector');
+            const currentRole = userInfo.roles[0] || { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' };
+            const testRoles = [
+                currentRole,
+                { code: 'PAP', name: 'Administrador Principal', panel: 'admin-principal-panel.html' },
+                { code: 'PAS', name: 'Administrador Secundario', panel: 'admin-secundario-panel.html' },
+                { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
+                { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-schedules.html' }
+            ];
+            
+            console.log('🔧 Inicializando selector con roles de prueba:', testRoles);
+            initializeRoleSelector(testRoles, currentRole.code);
+            
             if (roleSelectorContainer) {
-                roleSelectorContainer.style.display = 'none';
+                roleSelectorContainer.style.display = 'block';
+                console.log('✅ Contenedor del selector mostrado (modo prueba)');
             }
         }
         
