@@ -778,15 +778,15 @@
                             
                             // Filter data for secondary admin
                             let profesoresAsignados = [];
-                            let usuariosAsignados = [];
+                            let jugadoresAsignados = [];
                             
                             if (currentUserId) {
                                 // Filter by user ID
                                 profesoresAsignados = (mainData.profesoresCreadores || []).filter(p => 
                                     p.assigned_admin_id === currentUserId
                                 );
-                                usuariosAsignados = (mainData.usuarios || []).filter(u => 
-                                    u.assigned_admin_id === currentUserId
+                                jugadoresAsignados = (mainData.jugadores || []).filter(j => 
+                                    j.assigned_admin_id === currentUserId
                                 );
                                 console.log(`🎯 Filtering by user ID ${currentUserId}`);
                             } else {
@@ -800,27 +800,28 @@
                                     profesoresAsignados = (mainData.profesoresCreadores || []).filter(p => 
                                         p.assigned_admin_id === currentUserData.id
                                     );
-                                    usuariosAsignados = (mainData.usuarios || []).filter(u => 
-                                        u.assigned_admin_id === currentUserData.id
+                                    jugadoresAsignados = (mainData.jugadores || []).filter(j => 
+                                        j.assigned_admin_id === currentUserData.id
                                     );
                                 } else {
                                     // Last resort: show a few sample entries for kikejfer
                                     console.log(`⚠️ Could not find user ID, showing sample data for kikejfer`);
                                     profesoresAsignados = (mainData.profesores || []).slice(0, 2);
-                                    usuariosAsignados = (mainData.jugadores || []).slice(0, 3);
+                                    jugadoresAsignados = (mainData.jugadores || []).slice(0, 3);
                                 }
                             }
                             
                             // Adapt the data for secondary admin panel
                             panelData = {
-                                profesoresAsignados: profesoresAsignados,
-                                usuariosAsignados: usuariosAsignados
+                                profesores: profesoresAsignados,
+                                creadores: [],
+                                jugadores: jugadoresAsignados
                             };
                             
                             console.log('Admin secundario data filtered:', {
                                 currentUserId,
-                                profesoresAsignados: profesoresAsignados.length,
-                                usuariosAsignados: usuariosAsignados.length
+                                profesores: profesoresAsignados.length,
+                                jugadores: jugadoresAsignados.length
                             });
                             
                             updateStats();
@@ -879,8 +880,9 @@
                                         });
 
                                     panelData = {
-                                        profesoresAsignados: profesoresAsignados,
-                                        usuariosAsignados: allUsers.filter(u => u.nickname !== 'AdminPrincipal')
+                                        profesores: profesoresAsignados,
+                                        creadores: [],
+                                        jugadores: allUsers.filter(u => u.nickname !== 'AdminPrincipal')
                                     };
                                     
                                     console.log('✅ Admin secundario data from debug:', panelData);
@@ -922,10 +924,14 @@
                 }
                 
                 // Process data depending on structure
-                if (data.profesoresAsignados && data.usuariosAsignados) {
+                if (data.profesoresAsignados && data.jugadoresAsignados) {
                     // Data already filtered by backend
                     console.log('✅ Using pre-filtered backend data');
-                    panelData = data;
+                    panelData = {
+                        profesores: data.profesoresAsignados,
+                        creadores: data.creadores || [],
+                        jugadores: data.jugadoresAsignados
+                    };
                 } else if (data.profesores && data.creadores) {
                     // Direct backend data structure
                     console.log('✅ Using direct backend data structure');
@@ -939,16 +945,18 @@
                     
                     // Enhanced filtering logic
                     let profesoresAsignados = [];
-                    let usuariosAsignados = [];
+                    let jugadoresAsignados = [];
                     
                     if (currentUserId) {
                         profesoresAsignados = (data.profesoresCreadores || []).filter(p => 
                             p.assigned_admin_id === currentUserId
                         );
-                        usuariosAsignados = (data.usuarios || []).filter(u => 
-                            u.assigned_admin_id === currentUserId
+                        jugadoresAsignados = (data.jugadores || []).filter(j => 
+                            j.assigned_admin_id === currentUserId
                         );
                         console.log(`🎯 Filtered by user ID ${currentUserId}`);
+                        console.log(`   - Profesores asignados: ${profesoresAsignados.length}`);
+                        console.log(`   - Jugadores asignados: ${jugadoresAsignados.length}`);
                     } else if (currentUserNickname) {
                         // Try to find admin by nickname and use their ID
                         const adminUser = (data.administradoresSecundarios || []).find(admin => 
@@ -959,14 +967,16 @@
                             profesoresAsignados = (data.profesoresCreadores || []).filter(p => 
                                 p.assigned_admin_id === adminUser.id
                             );
-                            usuariosAsignados = (data.usuarios || []).filter(u => 
-                                u.assigned_admin_id === adminUser.id
+                            jugadoresAsignados = (data.jugadores || []).filter(j => 
+                                j.assigned_admin_id === adminUser.id
                             );
                             console.log(`🔄 Found admin by nickname, using ID: ${adminUser.id}`);
+                            console.log(`   - Profesores asignados: ${profesoresAsignados.length}`);
+                            console.log(`   - Jugadores asignados: ${jugadoresAsignados.length}`);
                         } else {
                             // Show sample data
                             profesoresAsignados = (data.profesores || []).slice(0, 2);
-                            usuariosAsignados = (data.jugadores || []).slice(0, 3);
+                            jugadoresAsignados = (data.jugadores || []).slice(0, 3);
                             console.log(`⚠️ Showing sample data for ${currentUserNickname}`);
                         }
                     } else {
@@ -976,7 +986,7 @@
                     panelData = {
                         profesores: profesoresAsignados,
                         creadores: data.creadores || [],
-                        jugadores: usuariosAsignados
+                        jugadores: jugadoresAsignados
                     };
                 } else {
                     // Fallback structure
@@ -990,8 +1000,8 @@
                 
                 console.log('Admin secundario data processed:', {
                     currentUserId,
-                    profesoresAsignados: panelData.profesoresAsignados?.length || 0,
-                    creadoresAsignados: panelData.creadoresAsignados?.length || 0,
+                    profesores: panelData.profesores?.length || 0,
+                    creadores: panelData.creadores?.length || 0,
                     jugadores: panelData.jugadores?.length || 0
                 });
                 
@@ -1004,7 +1014,7 @@
                 
                 // Fallback with sample data for admin secundario
                 panelData = {
-                    profesoresAsignados: [
+                    profesores: [
                         {
                             id: 2,
                             nickname: 'profesor_demo',
