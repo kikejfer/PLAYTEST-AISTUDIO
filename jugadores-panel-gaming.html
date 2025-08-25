@@ -60,6 +60,122 @@
             --brand-success: #10B981;
             --brand-danger: #EF4444;
         }
+
+        /* Panel Layout */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 1px solid #415A77;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            color: #E0E1DD;
+            margin: 0;
+        }
+
+        /* Tabs Styles */
+        .tabs-container {
+            background: #1B263B;
+            border: 1px solid #415A77;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .tabs-nav {
+            display: flex;
+            border-bottom: 1px solid #415A77;
+            overflow-x: auto;
+        }
+
+        .tab-button {
+            flex: none;
+            padding: 15px 25px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #778DA9;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: fit-content;
+        }
+
+        .tab-button.active {
+            color: #E0E1DD;
+            background: #415A77;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .tab-button:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3B82F6;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Section Styles */
+        .section {
+            background: #1B263B;
+            border: 1px solid #415A77;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-title {
+            background: #415A77;
+            color: #E0E1DD;
+            padding: 15px 20px;
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 10px 10px 0 0;
+            border-bottom: 1px solid #778DA9;
+        }
+
+        .section-content {
+            padding: 20px;
+        }
+
+        /* Search Input */
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #415A77;
+            border-radius: 6px;
+            background: #0D1B2A;
+            color: #E0E1DD;
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -67,7 +183,79 @@
     <div id="header-container"></div>
 
     <!-- Contenido principal del panel de jugadores -->
-    <div id="player-dashboard-root"></div>
+    <div class="container">
+        <div class="header">
+            <p>Plataforma completa para jugar, gestionar bloques de contenido y revisar tu progreso académico.</p>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-nav">
+                <button class="tab-button active" onclick="switchTab('partidas')">🎮 Partidas</button>
+                <button class="tab-button" onclick="switchTab('bloques')">📚 Carga de Bloques</button>
+                <button class="tab-button" onclick="switchTab('historico')">📊 Histórico</button>
+            </div>
+        </div>
+
+        <!-- Pestaña Partidas -->
+        <div id="partidas-tab" class="tab-content active">
+            <!-- Sección Configuración de Partida -->
+            <div class="section">
+                <h2 class="section-title">⚙️ Configuración de Partida</h2>
+                <div class="section-content">
+                    <div id="player-dashboard-root"></div>
+                </div>
+            </div>
+
+            <!-- Sección Juegos Activos -->
+            <div class="section">
+                <h2 class="section-title">🎮 Juegos Activos</h2>
+                <div class="section-content">
+                    <div id="active-games-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña Carga de Bloques -->
+        <div id="bloques-tab" class="tab-content">
+            <!-- Sección Bloques Cargados -->
+            <div class="section">
+                <h2 class="section-title">✅ Bloques Cargados</h2>
+                <div class="section-content">
+                    <div id="loaded-blocks-content"></div>
+                </div>
+            </div>
+
+            <!-- Sección Bloques Disponibles -->
+            <div class="section">
+                <h2 class="section-title">📚 Bloques Disponibles</h2>
+                <div class="section-content">
+                    <div class="search-container">
+                        <input type="text" id="blocks-search" placeholder="Buscar bloques..." class="search-input">
+                    </div>
+                    <div id="available-blocks-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña Histórico -->
+        <div id="historico-tab" class="tab-content">
+            <!-- Sección Historial de Partidas -->
+            <div class="section">
+                <h2 class="section-title">📜 Historial de Partidas</h2>
+                <div class="section-content">
+                    <div id="games-history-content"></div>
+                </div>
+            </div>
+
+            <!-- Sección Estadísticas -->
+            <div class="section">
+                <h2 class="section-title">📊 Estadísticas</h2>
+                <div class="section-content">
+                    <div id="statistics-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Script principal del panel -->
     <script type="text/babel">
@@ -1601,6 +1789,33 @@
         // Renderizar la aplicación
         const root = ReactDOM.createRoot(document.getElementById('player-dashboard-root'));
         root.render(React.createElement(App));
+
+        // Función para cambiar entre pestañas
+        window.switchTab = function(tabName) {
+            // Ocultar todos los contenidos de pestañas
+            const allTabContents = document.querySelectorAll('.tab-content');
+            allTabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Desactivar todos los botones de pestaña
+            const allTabButtons = document.querySelectorAll('.tab-button');
+            allTabButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Mostrar el contenido de la pestaña seleccionada
+            const selectedTab = document.getElementById(tabName + '-tab');
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+
+            // Activar el botón de la pestaña seleccionada
+            const selectedButton = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+            if (selectedButton) {
+                selectedButton.classList.add('active');
+            }
+        };
     </script>
 
     <!-- Los modales se cargan dinámicamente con el header-component (SIN modales de Explicación del Juego) -->
