@@ -793,13 +793,15 @@
         let currentUser = null;
 
         // Función de fetch con reintentos automáticos para cold start
-        async function fetchWithRetry(url, options, maxRetries = 3, timeout = 10000) {
+        async function fetchWithRetry(url, options, maxRetries = 5, timeout = 30000) {
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), timeout);
+                    // Timeout más largo para el primer intento (cold start puede tardar hasta 30s)
+                    const currentTimeout = attempt === 1 ? timeout : Math.min(timeout * 0.7, 20000);
+                    const timeoutId = setTimeout(() => controller.abort(), currentTimeout);
                     
-                    console.log(`🔄 Intento ${attempt}/${maxRetries} - ${url}`);
+                    console.log(`🔄 Intento ${attempt}/${maxRetries} - ${url} (timeout: ${currentTimeout}ms)`);
                     
                     const response = await fetch(url, {
                         ...options,
@@ -810,8 +812,8 @@
                     
                     // Si es 503 (cold start), esperar progresivamente más tiempo
                     if (response.status === 503 && attempt < maxRetries) {
-                        const waitTime = Math.min(3000 * attempt, 10000); // 3s, 6s, 9s max 10s
-                        console.log(`🥶 Cold start detectado, esperando ${waitTime}ms antes del siguiente intento...`);
+                        const waitTime = Math.min(5000 * attempt, 15000); // 5s, 10s, 15s max
+                        console.log(`🥶 Cold start detectado (503), esperando ${waitTime}ms antes del siguiente intento...`);
                         await new Promise(resolve => setTimeout(resolve, waitTime));
                         continue;
                     }
@@ -825,9 +827,13 @@
                         throw error;
                     }
                     
-                    // Esperar antes del siguiente intento
-                    const waitTime = Math.min(2000 * attempt, 8000);
-                    console.log(`⏳ Esperando ${waitTime}ms antes del siguiente intento...`);
+                    // Si es abort por timeout en el primer intento, esperar más tiempo (probablemente cold start)
+                    const isTimeout = error.name === 'AbortError' || error.message.includes('aborted');
+                    const waitTime = isTimeout && attempt === 1 
+                        ? 15000 // 15s para cold start 
+                        : Math.min(3000 * attempt, 10000); // 3s, 6s, 9s normal
+                    
+                    console.log(`⏳ Esperando ${waitTime}ms antes del siguiente intento...${isTimeout && attempt === 1 ? ' (posible cold start)' : ''}`);
                     await new Promise(resolve => setTimeout(resolve, waitTime));
                 }
             }
