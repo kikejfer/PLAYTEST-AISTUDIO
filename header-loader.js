@@ -383,10 +383,6 @@ async function getUserData() {
             roles: userRoles,
             activeRole: localStorage.getItem('activeRole') || detectRoleFromToken() || userRoles[0]?.code || 'PJG'
         };
-    }
-        
-        // Fallback: usar datos de localStorage si API no está disponible
-        return getUserDataFromLocalStorage();
         
     } catch (error) {
         console.warn('⚠️ Error obteniendo datos del usuario:', error);
