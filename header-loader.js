@@ -346,8 +346,10 @@ async function getUserData() {
         let profile = {};
         let session = {};
         
-        if (window.apiDataService) {
+        // Wait for apiDataService to be fully initialized
+        if (window.apiDataService && window.apiDataService.getUserProfile && typeof window.apiDataService.getUserProfile === 'function') {
             try {
+                console.log('🔄 HEADER DEBUG - Waiting for API service...');
                 profile = await window.apiDataService.getUserProfile();
                 console.log('✅ HEADER DEBUG - API Success:', {
                     firstName: profile.firstName,
@@ -358,10 +360,32 @@ async function getUserData() {
                 console.warn('⚠️ Error obteniendo profile de API:', error);
                 console.log('❌ HEADER DEBUG - API Failed, using fallback');
             }
+        } else {
+            console.warn('❌ HEADER DEBUG - apiDataService not ready, waiting...');
+            // Wait a bit for apiDataService to initialize
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
-            // Obtener sesión actual para datos adicionales
-            session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+            // Try again after waiting
+            if (window.apiDataService && window.apiDataService.getUserProfile && typeof window.apiDataService.getUserProfile === 'function') {
+                try {
+                    console.log('🔄 HEADER DEBUG - Retry after wait...');
+                    profile = await window.apiDataService.getUserProfile();
+                    console.log('✅ HEADER DEBUG - API Success (retry):', {
+                        firstName: profile.firstName,
+                        lastName: profile.lastName,
+                        nickname: profile.nickname
+                    });
+                } catch (error) {
+                    console.warn('⚠️ Error obteniendo profile de API (retry):', error);
+                    console.log('❌ HEADER DEBUG - API Failed after retry, using session data');
+                }
+            } else {
+                console.log('❌ HEADER DEBUG - apiDataService still not ready, using session data');
+            }
         }
+        
+        // Obtener sesión actual para datos adicionales
+        session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
         
         // DEBUG: Verificar datos del perfil del usuario
         console.log('🔍 DEBUG API Profile Data:', {
