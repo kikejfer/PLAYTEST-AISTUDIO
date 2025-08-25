@@ -445,8 +445,8 @@ async function getUserDataInternal() {
             profile,
             session,
             nickname: profile.nickname,
-            first_name: profile.first_name,
-            last_name: profile.last_name,
+            firstName: profile.firstName,
+            lastName: profile.lastName,
             roles: profile.roles
         });
         
@@ -460,8 +460,8 @@ async function getUserDataInternal() {
         
         return {
             name: profile.nickname || session.nickname || 'Usuario',
-            firstName: profile.first_name || '',
-            lastName: profile.last_name || '',
+            firstName: profile.firstName || '',
+            lastName: profile.lastName || '',
             luminarias: profile.luminarias || profile.stats?.luminarias || 0,
             roles: userRoles,
             activeRole: localStorage.getItem('activeRole') || detectRoleFromToken() || userRoles[0]?.code || 'PJG'
