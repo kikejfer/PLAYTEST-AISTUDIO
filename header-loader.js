@@ -72,9 +72,10 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
             : '?';
         
         // Reemplazar placeholders con los valores específicos del panel y usuario
+        const currentRoleName = getCurrentRoleName(userInfo);
         headerHTML = headerHTML
             .replace(/\{\{PANEL_TITLE\}\}/g, config.title)
-            .replace(/\{\{USER_ROLE\}\}/g, config.role)
+            .replace(/\{\{USER_ROLE\}\}/g, currentRoleName)
             .replace(/\{\{AVATAR_INITIAL\}\}/g, userInitial);
         
         // Inyectar en el contenedor
@@ -113,26 +114,17 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
                 roleSelectorContainer.style.display = 'block';
                 console.log('✅ Contenedor del selector mostrado');
             }
-        } else {
-            console.log(`❌ Solo ${userInfo.roles.length} rol(es) detectado(s)`);
-            
-            // TEMPORAL: Mostrar selector con roles de prueba para verificar funcionalidad
-            console.log('🧪 MODO PRUEBA: Agregando roles adicionales para mostrar selector');
-            const currentRole = userInfo.roles[0] || { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' };
-            const testRoles = [
-                currentRole,
-                { code: 'PAP', name: 'Administrador Principal', panel: 'admin-principal-panel.html' },
-                { code: 'PAS', name: 'Administrador Secundario', panel: 'admin-secundario-panel.html' },
-                { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
-                { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-schedules.html' }
-            ];
-            
-            console.log('🔧 Inicializando selector con roles de prueba:', testRoles);
-            initializeRoleSelector(testRoles, currentRole.code);
-            
+        } else if (userInfo.roles.length === 1) {
+            console.log(`ℹ️ Usuario tiene solo 1 rol: ${userInfo.roles[0].name}`);
+            // Ocultar el selector si solo hay un rol
             if (roleSelectorContainer) {
-                roleSelectorContainer.style.display = 'block';
-                console.log('✅ Contenedor del selector mostrado (modo prueba)');
+                roleSelectorContainer.style.display = 'none';
+                console.log('🔒 Contenedor del selector oculto (solo 1 rol)');
+            }
+        } else {
+            console.log('❌ No se detectaron roles válidos');
+            if (roleSelectorContainer) {
+                roleSelectorContainer.style.display = 'none';
             }
         }
         
