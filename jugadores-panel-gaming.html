@@ -1701,25 +1701,39 @@
             const [tabBlocks, setTabBlocks] = useState([]);
             const [tabCreatedBlocks, setTabCreatedBlocks] = useState([]);
             const [currentUser, setCurrentUser] = useState(null);
+            const [isLoading, setIsLoading] = useState(true);
 
             useEffect(() => {
                 const loadBlocksData = async () => {
+                    console.log('TabBlocksComponent: Cargando datos de bloques...');
                     try {
+                        setIsLoading(true);
                         const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+                        console.log('TabBlocksComponent: Sesión de usuario:', session);
+                        
                         if (session.id) {
                             setCurrentUser(session);
                             
                             if (window.apiDataService) {
+                                console.log('TabBlocksComponent: Llamando a API...');
                                 const [blocks, createdBlocks] = await Promise.all([
                                     window.apiDataService.fetchUserBlocks(session.id),
                                     window.apiDataService.fetchCreatedBlocks(session.id)
                                 ]);
+                                console.log('TabBlocksComponent: Bloques cargados:', blocks);
+                                console.log('TabBlocksComponent: Bloques creados:', createdBlocks);
                                 setTabBlocks(blocks || []);
                                 setTabCreatedBlocks(createdBlocks || []);
+                            } else {
+                                console.error('TabBlocksComponent: apiDataService no disponible');
                             }
+                        } else {
+                            console.error('TabBlocksComponent: No hay sesión de usuario');
                         }
                     } catch (error) {
-                        console.error('Error loading blocks data:', error);
+                        console.error('TabBlocksComponent: Error loading blocks data:', error);
+                    } finally {
+                        setIsLoading(false);
                     }
                 };
                 loadBlocksData();
@@ -1753,7 +1767,22 @@
                 return user.role === role || user.role_name === role;
             };
 
-            return React.createElement('div', { className: "space-y-8" }, [
+            if (isLoading) {
+                return React.createElement('div', { 
+                    className: "bg-slate-800 p-6 rounded-xl shadow-lg text-center" 
+                }, [
+                    React.createElement('div', {
+                        key: 'spinner',
+                        className: "animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"
+                    }),
+                    React.createElement('p', {
+                        key: 'loading-text',
+                        className: "text-gray-400"
+                    }, 'Cargando bloques...')
+                ]);
+            }
+
+            return React.createElement('div', { className: "space-y-6" }, [
                 // UserBlockManagement completo
                 React.createElement(UserBlockManagement, {
                     key: 'tab-user-block-management',
@@ -1863,21 +1892,48 @@
         };
 
         // Renderizar componentes específicos en pestañas después de que React esté disponible
-        setTimeout(() => {
+        const initializeTabComponents = () => {
+            console.log('Inicializando componentes de pestañas...');
+            
             // Renderizar Bloques Cargados COMPLETO en su pestaña
             const loadedBlocksContainer = document.getElementById('loaded-blocks-content');
             if (loadedBlocksContainer) {
+                console.log('Renderizando TabBlocksComponent...');
                 const loadedBlocksRoot = ReactDOM.createRoot(loadedBlocksContainer);
-                loadedBlocksRoot.render(React.createElement(TabBlocksComponent));
+                loadedBlocksRoot.render(
+                    React.createElement(LanguageProvider, {}, 
+                        React.createElement(UserContext.Provider, { value: { currentUser: JSON.parse(localStorage.getItem('playtest_session') || '{}') } },
+                            React.createElement(TabBlocksComponent)
+                        )
+                    )
+                );
+            } else {
+                console.error('Contenedor loaded-blocks-content no encontrado');
             }
 
             // Renderizar Historial de Partidas COMPLETO en su pestaña
             const gameHistoryContainer = document.getElementById('games-history-content');
             if (gameHistoryContainer) {
+                console.log('Renderizando TabHistoryComponent...');
                 const gameHistoryRoot = ReactDOM.createRoot(gameHistoryContainer);
-                gameHistoryRoot.render(React.createElement(TabHistoryComponent));
+                gameHistoryRoot.render(
+                    React.createElement(LanguageProvider, {}, 
+                        React.createElement(UserContext.Provider, { value: { currentUser: JSON.parse(localStorage.getItem('playtest_session') || '{}') } },
+                            React.createElement(TabHistoryComponent)
+                        )
+                    )
+                );
+            } else {
+                console.error('Contenedor games-history-content no encontrado');
             }
-        }, 1000);
+        };
+
+        // Ejecutar cuando el DOM esté completamente cargado
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeTabComponents);
+        } else {
+            setTimeout(initializeTabComponents, 500);
+        }
 
         // Función para cambiar entre pestañas
         window.switchTab = function(tabName) {
