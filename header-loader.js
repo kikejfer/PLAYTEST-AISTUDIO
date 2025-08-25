@@ -92,8 +92,12 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
         const roleSelectorContainer = document.getElementById('role-selector-container');
         
         // DEBUG: Verificar datos del usuario para troubleshoot
-        console.log('🔍 DEBUG Selector de Rol:', {
+        console.log('🔍 DEBUG Header Usuario Completo:', {
             userInfo,
+            name: userInfo.name,
+            firstName: userInfo.firstName,
+            lastName: userInfo.lastName,
+            fullName: [userInfo.firstName, userInfo.lastName].filter(Boolean).join(' '),
             rolesCount: userInfo.roles.length,
             roles: userInfo.roles,
             activeRole: userInfo.activeRole,
@@ -347,6 +351,16 @@ async function getUserData() {
             
             // Obtener sesión actual para datos adicionales
             const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+            
+            // DEBUG: Verificar datos del perfil del usuario
+            console.log('🔍 DEBUG API Profile Data:', {
+                profile,
+                session,
+                nickname: profile.nickname,
+                first_name: profile.first_name,
+                last_name: profile.last_name,
+                roles: profile.roles
+            });
             
             // Mapear roles de tu sistema a códigos de panel
             const userRoles = getUserRolesFromSystem(profile, session);
