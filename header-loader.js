@@ -366,6 +366,21 @@ async function getUserData() {
                 storedActiveRole: localStorage.getItem('activeRole')
             });
             
+            // TEMPORAL: Si el usuario es admin o profesor, agregar roles adicionales para prueba
+            const nickname = profile.nickname || session.nickname;
+            if (nickname && (nickname.includes('Admin') || nickname.includes('admin') || userRoles.some(r => r.code === 'PAP' || r.code === 'PAS'))) {
+                console.log('🧪 MODO PRUEBA: Agregando roles adicionales para admin/profesor');
+                
+                // Evitar duplicados y agregar roles que debería tener
+                const existingCodes = userRoles.map(r => r.code);
+                
+                if (!existingCodes.includes('PJG')) {
+                    userRoles.push({ code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' });
+                }
+                
+                console.log('🔧 Roles después de agregar adicionales:', userRoles);
+            }
+            
             return {
                 name: profile.nickname || session.nickname || 'Usuario',
                 firstName: profile.first_name || '',
