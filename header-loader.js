@@ -349,8 +349,14 @@ async function getUserData() {
         if (window.apiDataService) {
             try {
                 profile = await window.apiDataService.getUserProfile();
+                console.log('✅ HEADER DEBUG - API Success:', {
+                    firstName: profile.firstName,
+                    lastName: profile.lastName,
+                    nickname: profile.nickname
+                });
             } catch (error) {
                 console.warn('⚠️ Error obteniendo profile de API:', error);
+                console.log('❌ HEADER DEBUG - API Failed, using fallback');
             }
             
             // Obtener sesión actual para datos adicionales
