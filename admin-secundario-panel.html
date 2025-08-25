@@ -642,17 +642,9 @@
                     const userData = JSON.parse(jsonPayload);
                     currentUser = userData;
                     
-                    // Update UI - show nickname or email (verificar que los elementos existan)
-                    const displayName = userData.nickname || userData.username || userData.email || 'Administrador Secundario';
+                    // Update UI (verificar que los elementos existan) - Let header-loader handle header elements
                     const userNameElement = document.getElementById('user-name');
                     const userAvatarElement = document.getElementById('user-avatar');
-                    
-                    if (userNameElement) {
-                        userNameElement.textContent = displayName;
-                    }
-                    if (userAvatarElement) {
-                        userAvatarElement.textContent = displayName[0].toUpperCase();
-                    }
                     
                     // Update role display
                     const roleElement = document.getElementById('user-role');
