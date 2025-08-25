@@ -105,6 +105,9 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
             container: !!roleSelectorContainer
         });
         
+        // TEMPORAL DEBUG: Siempre mostrar selector para verificar funcionalidad
+        console.log('🧪 MODO DEBUG: Forzando visualización del selector de roles');
+        
         if (userInfo.roles.length > 1) {
             console.log('✅ Múltiples roles detectados, inicializando selector');
             initializeRoleSelector(userInfo.roles, userInfo.activeRole);
@@ -116,10 +119,18 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
             }
         } else if (userInfo.roles.length === 1) {
             console.log(`ℹ️ Usuario tiene solo 1 rol: ${userInfo.roles[0].name}`);
-            // Ocultar el selector si solo hay un rol
+            
+            // TEMPORAL: Mostrar selector incluso con 1 rol para debug
+            console.log('🧪 MODO DEBUG: Mostrando selector incluso con 1 rol');
+            const testRoles = [
+                userInfo.roles[0],
+                { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' }
+            ];
+            initializeRoleSelector(testRoles, userInfo.activeRole);
+            
             if (roleSelectorContainer) {
-                roleSelectorContainer.style.display = 'none';
-                console.log('🔒 Contenedor del selector oculto (solo 1 rol)');
+                roleSelectorContainer.style.display = 'block';
+                console.log('✅ Contenedor del selector mostrado (modo debug)');
             }
         } else {
             console.log('❌ No se detectaron roles válidos');
@@ -356,6 +367,14 @@ async function getUserData() {
             
             // Mapear roles de tu sistema a códigos de panel
             const userRoles = getUserRolesFromSystem(profile, session);
+            
+            // DEBUG: Verificar detección de roles
+            console.log('🔍 DEBUG Role Detection:', {
+                tokenRoles: getTokenRoles(),
+                detectedActiveRole: detectRoleFromToken(),
+                mappedUserRoles: userRoles,
+                storedActiveRole: localStorage.getItem('activeRole')
+            });
             
             return {
                 name: profile.nickname || session.nickname || 'Usuario',
