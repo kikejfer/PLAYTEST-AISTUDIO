@@ -190,21 +190,17 @@
       // is expected to populate process.env.API_KEY.
       globalThis.process = globalThis.process || { env: {} };
       
-      console.log("🎮 LumiQuiz JavaScript loaded successfully!");
-      console.log("📅 Script version: 2025-08-17-v2.5 - CACHE BUSTED - Fixed admin redirect loop by correcting token storage and retrieval");
       
       // Nuclear option: Unregister any service workers that might be caching
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(registrations => {
           registrations.forEach(registration => {
             registration.unregister();
-            console.log('🗑️ Unregistered service worker:', registration.scope);
           });
         });
       }
 
       // Force browser cache clear for admin redirect fix
-      console.log("🧹 Clearing browser caches and session data for admin redirect fix...");
       
       // Clear all storage types to force fresh start
       try {

@@ -88,48 +88,18 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
         // Actualizar datos del usuario después de inyectar el HTML
         updateUserData(userInfo);
         
-        // Inicializar selector de roles (SIEMPRE VISIBLE PARA PRUEBAS)
-        console.log('🔍 DEBUG: Datos del usuario para selector de rol:', userInfo);
-        console.log('🔍 DEBUG: Número de roles detectados:', userInfo.roles.length);
-        
-        // Agregar roles adicionales para prueba si solo tiene uno
-        if (userInfo.roles.length === 1) {
-            console.log('🧪 MODO PRUEBA: Agregando roles adicionales para demostrar selector');
-            const currentRole = userInfo.roles[0];
-            console.log('🔍 DEBUG: Rol actual antes de agregar:', currentRole);
-            
-            const allRoles = [
-                { code: 'PAP', name: 'Administrador Principal', panel: 'admin-principal-panel.html' },
-                { code: 'PAS', name: 'Administrador Secundario', panel: 'admin-secundario-panel.html' },
-                { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
-                { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-schedules.html' },
-                { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' }
-            ];
-            
-            // Mantener el rol actual y agregar otros roles para prueba
-            userInfo.roles = allRoles.filter(role => role.code !== currentRole.code);
-            userInfo.roles.unshift(currentRole); // Poner el rol actual primero
-            console.log('🔍 DEBUG: Roles después de agregar:', userInfo.roles);
-        }
-        
-        // Verificar que el contenedor del selector exista
+        // Inicializar selector de roles
         const roleSelectorContainer = document.getElementById('role-selector-container');
-        console.log('🔍 DEBUG: Contenedor del selector encontrado:', !!roleSelectorContainer);
-        if (roleSelectorContainer) {
-            console.log('🔍 DEBUG: Estilo display del contenedor:', roleSelectorContainer.style.display);
-        }
         
         if (userInfo.roles.length > 1) {
-            console.log('✅ DEBUG: Inicializando selector con múltiples roles');
             initializeRoleSelector(userInfo.roles, userInfo.activeRole);
             
-            // Forzar visibilidad del contenedor
+            // Mostrar el contenedor del selector
             if (roleSelectorContainer) {
                 roleSelectorContainer.style.display = 'block';
-                console.log('✅ DEBUG: Selector forzado a visible');
             }
         } else {
-            console.log('❌ DEBUG: Ocultando selector (no debería pasar)');
+            // Ocultar selector para usuarios con un solo rol
             if (roleSelectorContainer) {
                 roleSelectorContainer.style.display = 'none';
             }
@@ -144,7 +114,6 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
         // Inicializar funciones del header
         initializeHeaderFunctions();
         
-        console.log(`Header cargado exitosamente para panel ${panelType}`);
         
     } catch (error) {
         console.error('Error al cargar el header:', error);
@@ -159,14 +128,12 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
  */
 async function loadModals() {
     try {
-        console.log('🔄 DEBUG: Iniciando carga de modales...');
         const response = await fetch('modals-component.html');
         if (!response.ok) {
             throw new Error(`Error al cargar modales: ${response.status}`);
         }
         
         const modalsHTML = await response.text();
-        console.log('🔄 DEBUG: HTML de modales cargado, tamaño:', modalsHTML.length);
         
         // Crear contenedor para modales si no existe
         let modalsContainer = document.getElementById('modals-container');
@@ -174,14 +141,12 @@ async function loadModals() {
             modalsContainer = document.createElement('div');
             modalsContainer.id = 'modals-container';
             document.body.appendChild(modalsContainer);
-            console.log('🔄 DEBUG: Contenedor de modales creado');
         }
         
         modalsContainer.innerHTML = modalsHTML;
         
         // Verificar qué modales se cargaron
         const modalElements = document.querySelectorAll('[id$="-modal"]');
-        console.log('🔄 DEBUG: Modales cargados:', Array.from(modalElements).map(m => m.id));
         
     } catch (error) {
         console.error('❌ ERROR: al cargar los modales:', error);
@@ -266,7 +231,6 @@ async function enhanceExistingHeader() {
         
         // Agregar roles adicionales para prueba si solo tiene uno (para header existente)
         if (userData.roles && userData.roles.length === 1) {
-            console.log('🧪 MODO PRUEBA: Agregando roles adicionales para header existente');
             const currentRole = userData.roles[0];
             const allRoles = [
                 { code: 'PAP', name: 'Administrador Principal', panel: 'admin-principal-panel.html' },
@@ -729,17 +693,12 @@ function initializeHeaderFunctions() {
 
 // Funciones globales para manejar modales
 window.openModal = function(modalId) {
-    console.log(`🆘 RADICAL FIX: Recreando modal ${modalId} desde cero`);
     
     // Si es el modal de introducción, usar función simple
     if (modalId === 'introduction-modal') {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.style.display = 'flex';
-            console.log(`✅ Modal introduction-modal abierto con función simple:`, {
-                width: modal.offsetWidth,
-                height: modal.offsetHeight
-            });
             return;
         }
     }
@@ -754,23 +713,15 @@ window.openModal = function(modalId) {
     }
     
     // Verificar si introduction-modal funciona correctamente
-    console.log(`🔍 Estado del introduction-modal:`, {
-        display: introModal.style.display,
-        width: introModal.offsetWidth,
-        height: introModal.offsetHeight,
-        visible: introModal.offsetWidth > 0 && introModal.offsetHeight > 0
-    });
     
     // CLAVE: Mostrar temporalmente el introduction-modal para que tenga dimensiones correctas al clonarlo
     const wasVisible = introModal.style.display === 'flex';
     if (!wasVisible) {
-        console.log(`🔧 Activando temporalmente introduction-modal para clonación correcta`);
         introModal.style.display = 'flex';
         // Forzar recálculo de dimensiones
         introModal.offsetHeight;
     }
     
-    console.log(`🔄 Clonando estructura exitosa de introduction-modal para ${modalId}`);
     
     // Clonar completamente el modal de introducción (ahora con dimensiones correctas)
     const clonedModal = introModal.cloneNode(true);
@@ -788,7 +739,6 @@ window.openModal = function(modalId) {
     if (originalModalBody && clonedModalBody) {
         // Si es uno de los modales que sabemos que fallan, usar contenido simple de prueba
         if (['game-modes-modal', 'topic-development-modal', 'luminarias-modal'].includes(modalId)) {
-            console.log(`🚨 Modal ${modalId} detectado como problemático, usando contenido de emergencia`);
             clonedModalBody.innerHTML = `
                 <div style="padding: 2rem; text-align: center; min-height: 400px;">
                     <h2 style="color: #3B82F6; margin-bottom: 2rem;">⚠️ Modal en Mantenimiento</h2>
@@ -824,10 +774,6 @@ window.openModal = function(modalId) {
     // Mostrar el modal clonado
     clonedModal.style.display = 'flex';
     
-    console.log(`✅ Modal ${modalId} reconstruido exitosamente:`, {
-        width: clonedModal.offsetWidth,
-        height: clonedModal.offsetHeight
-    });
 };
 
 
