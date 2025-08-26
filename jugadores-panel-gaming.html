@@ -871,6 +871,54 @@
                         }))
                     ]),
 
+                    activeGames.length > 0 && React.createElement('div', { key: 'active-games-section' }, [
+                        React.createElement('h4', {
+                            key: 'active-games-title',
+                            className: "font-semibold text-blue-400 mb-2"
+                        }, 'Partidas Activas'),
+                        React.createElement('ul', {
+                            key: 'active-games-list',
+                            className: "space-y-3 mb-4"
+                        }, activeGames.map(game => React.createElement('li', {
+                            key: game.id,
+                            className: "p-3 rounded-md bg-blue-900/20 border border-blue-500/30"
+                        }, [
+                            React.createElement('div', { key: 'game-header', className: "flex items-center justify-between mb-2" }, [
+                                React.createElement('div', { key: 'game-info', className: "flex items-center gap-2" }, [
+                                    React.createElement('div', {
+                                        key: 'game-icon',
+                                        className: "h-6 w-6 text-blue-400 flex-shrink-0"
+                                    }, '🎮'),
+                                    React.createElement('span', {
+                                        key: 'game-mode',
+                                        className: "font-semibold text-white"
+                                    }, game.mode || 'Modo Clásico'),
+                                    React.createElement('span', {
+                                        key: 'game-status',
+                                        className: "text-xs bg-green-600 px-2 py-0.5 rounded text-white"
+                                    }, 'Activa')
+                                ]),
+                                React.createElement('button', {
+                                    key: 'delete-game',
+                                    onClick: () => handleDeleteClick(game.id),
+                                    className: "text-red-400 hover:text-red-300 text-sm",
+                                    title: "Eliminar juego"
+                                }, '🗑️')
+                            ]),
+                            React.createElement('div', { key: 'game-config', className: "mb-3" }, [
+                                React.createElement('p', {
+                                    key: 'config-details',
+                                    className: "text-xs text-gray-300"
+                                }, getGameConfigDetails(game.config, game.configurationMetadata))
+                            ]),
+                            React.createElement('button', {
+                                key: 'continue-game',
+                                onClick: () => onNavigateToGame(game),
+                                className: "w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+                            }, '▶️ Continuar Partida')
+                        ])))
+                    ]),
+
                     gameConfigurations.length > 0 ? React.createElement('ul', {
                         key: 'configurations',
                         className: "space-y-3"
