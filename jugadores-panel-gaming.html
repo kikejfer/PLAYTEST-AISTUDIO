@@ -1708,6 +1708,11 @@
                     const currentUser = JSON.parse(localStorage.getItem('playtest_session') || '{}');
                     console.log('AvailableBlocks: Usuario actual:', currentUser);
                     
+                    // Verificar disponibilidad del servicio
+                    console.log('AvailableBlocks: Verificando servicios...');
+                    console.log('AvailableBlocks: window.apiDataService:', typeof window.apiDataService);
+                    console.log('AvailableBlocks: global apiDataService:', typeof apiDataService);
+                    
                     if (!window.apiDataService) {
                         console.log('AvailableBlocks: apiDataService no disponible, reintentando...');
                         setTimeout(loadData, 1000);
@@ -1721,8 +1726,8 @@
 
                     console.log('AvailableBlocks: Cargando datos...');
                     const [available, profile] = await Promise.all([
-                        apiDataService.fetchAvailableBlocks(),
-                        apiDataService.getUserProfile()
+                        window.apiDataService.fetchAvailableBlocks(),
+                        window.apiDataService.getUserProfile()
                     ]);
                     
                     console.log('AvailableBlocks: Datos cargados:', available?.length, 'bloques disponibles');
@@ -1738,7 +1743,7 @@
             const handleLoadBlock = async (blockId) => {
                 setLoadingActions(prev => ({ ...prev, [blockId]: 'loading' }));
                 try {
-                    await apiDataService.loadBlock(blockId);
+                    await window.apiDataService.loadBlock(blockId);
                     setMessage('Bloque cargado exitosamente');
                     await loadData(); // Refresh data
                 } catch (error) {
@@ -1753,7 +1758,7 @@
             const handleUnloadBlock = async (blockId) => {
                 setLoadingActions(prev => ({ ...prev, [blockId]: 'unloading' }));
                 try {
-                    await apiDataService.unloadBlock(blockId);
+                    await window.apiDataService.unloadBlock(blockId);
                     setMessage('Bloque descargado exitosamente');
                     await loadData(); // Refresh data
                 } catch (error) {
