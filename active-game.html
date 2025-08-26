@@ -166,7 +166,7 @@
       const ChevronUpDownIcon = (props) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}> <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" /> </svg> );
 
       // Use API Data Service instead of localStorage
-      const dataService = apiDataService;
+      const dataService = window.apiDataService;
 
       // --- INLINED: auth ---
       const UserContext = createContext();
@@ -180,7 +180,7 @@
           const checkAuth = async () => {
             try {
               const sessionString = localStorage.getItem('playtest_session');
-              if (sessionString && apiDataService.token) {
+              if (sessionString && window.apiDataService.token) {
                 const session = JSON.parse(sessionString);
                 if (session && session.userId) {
                   // Create a user object from session data
