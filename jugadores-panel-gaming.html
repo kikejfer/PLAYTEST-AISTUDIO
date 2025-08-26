@@ -580,23 +580,6 @@
                     onClose: handleCloseModal
                 }),
                 
-                // Header
-                React.createElement('div', {
-                    key: 'header',
-                    className: "flex items-center mb-4"
-                }, [
-                    React.createElement('img', {
-                        key: 'icon',
-                        src: "./Imagenes/Config.png",
-                        alt: "Game Setup",
-                        className: "h-10 w-10 mr-3"
-                    }),
-                    React.createElement('h3', {
-                        key: 'title',
-                        className: "text-xl font-bold text-white"
-                    }, t('game_setup_title'))
-                ]),
-
                 // Content
                 React.createElement('div', {
                     key: 'content',
@@ -1584,38 +1567,12 @@
                 ]),
 
                 // Grid principal con todos los componentes completos
-                React.createElement('div', { 
-                    key: 'main-grid',
-                    className: "grid grid-cols-1 lg:grid-cols-3 gap-8 items-start" 
-                }, [
-                    // Columna izquierda - Juegos (GameSetup y ActiveGames)
-                    React.createElement('div', { 
-                        key: 'games-column',
-                        className: "lg:col-span-2" 
-                    }, React.createElement(GameSetup, {
-                        key: 'game-setup',
-                        blocks: blocks,
-                        onCreateGame: handleCreateGame,
-                        onSendChallenge: (user, config) => console.log('Challenge sent:', user, config)
-                    })),
-
-                    // Columna derecha - Placeholder (bloques movidos a pestaña "Carga de Bloques")
-                    React.createElement('div', { 
-                        key: 'info-column',
-                        className: "lg:col-span-1" 
-                    }, React.createElement('div', { 
-                        className: "bg-slate-800 p-6 rounded-xl shadow-lg text-center" 
-                    }, [
-                        React.createElement('h3', { 
-                            key: 'info-title',
-                            className: "text-lg font-bold text-white mb-2" 
-                        }, 'Gestión de Bloques'),
-                        React.createElement('p', { 
-                            key: 'info-text',
-                            className: "text-gray-400" 
-                        }, 'Los bloques cargados se encuentran en la pestaña "Carga de Bloques"')
-                    ]))
-                ])
+                React.createElement(GameSetup, {
+                    key: 'game-setup',
+                    blocks: blocks,
+                    onCreateGame: handleCreateGame,
+                    onSendChallenge: (user, config) => console.log('Challenge sent:', user, config)
+                })
             ]);
         };
 
