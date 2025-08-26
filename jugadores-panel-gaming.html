@@ -1592,25 +1592,29 @@
                         const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
                         console.log('TabBlocksComponent: Sesión de usuario:', session);
                         
-                        if (session.id) {
-                            setCurrentUser(session);
-                            
-                            if (window.apiDataService) {
-                                console.log('TabBlocksComponent: Llamando a API...');
-                                const [blocks, createdBlocks] = await Promise.all([
-                                    window.apiDataService.fetchUserBlocks(session.id),
-                                    window.apiDataService.fetchCreatedBlocks(session.id)
-                                ]);
-                                console.log('TabBlocksComponent: Bloques cargados:', blocks);
-                                console.log('TabBlocksComponent: Bloques creados:', createdBlocks);
-                                setTabBlocks(blocks || []);
-                                setTabCreatedBlocks(createdBlocks || []);
-                            } else {
-                                console.error('TabBlocksComponent: apiDataService no disponible');
-                            }
-                        } else {
-                            console.error('TabBlocksComponent: No hay sesión de usuario');
+                        if (!window.apiDataService) {
+                            console.log('TabBlocksComponent: apiDataService no disponible, reintentando...');
+                            setTimeout(loadBlocksData, 1000);
+                            return;
                         }
+                        
+                        if (!session.id) {
+                            console.error('TabBlocksComponent: No hay ID de usuario');
+                            return;
+                        }
+
+                        setCurrentUser(session);
+                        console.log('TabBlocksComponent: Llamando a API...');
+                        
+                        const [blocks, createdBlocks] = await Promise.all([
+                            window.apiDataService.fetchUserBlocks(session.id),
+                            window.apiDataService.fetchCreatedBlocks(session.id)
+                        ]);
+                        
+                        console.log('TabBlocksComponent: Bloques cargados:', blocks?.length, 'bloques');
+                        console.log('TabBlocksComponent: Bloques creados:', createdBlocks?.length, 'bloques');
+                        setTabBlocks(blocks || []);
+                        setTabCreatedBlocks(createdBlocks || []);
                     } catch (error) {
                         console.error('TabBlocksComponent: Error loading blocks data:', error);
                     } finally {
@@ -1907,25 +1911,36 @@
                     try {
                         setIsLoading(true);
                         const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
-                        if (session.id) {
-                            setCurrentUser(session);
-                            
-                            if (window.apiDataService) {
-                                const [gamesData, configurations, challengesData, blocksData] = await Promise.all([
-                                    window.apiDataService.fetchGamesForUser(session.id),
-                                    window.apiDataService.fetchGameConfigurations(session.id),
-                                    window.apiDataService.fetchChallengesForUser(session.id),
-                                    window.apiDataService.fetchUserBlocks(session.id)
-                                ]);
-                                
-                                setGames(gamesData || []);
-                                setGameConfigurations(configurations || []);
-                                setChallenges(challengesData || []);
-                                setBlocks(blocksData || []);
-                            }
+                        console.log('ActiveGamesComponent: Usuario actual:', session);
+                        
+                        if (!window.apiDataService) {
+                            console.log('ActiveGamesComponent: apiDataService no disponible, reintentando...');
+                            setTimeout(loadActiveGamesData, 1000);
+                            return;
                         }
+                        
+                        if (!session.id) {
+                            console.error('ActiveGamesComponent: No hay ID de usuario');
+                            return;
+                        }
+
+                        setCurrentUser(session);
+                        console.log('ActiveGamesComponent: Cargando datos...');
+                        
+                        const [gamesData, configurations, challengesData, blocksData] = await Promise.all([
+                            window.apiDataService.fetchGamesForUser(session.id),
+                            window.apiDataService.fetchGameConfigurations(session.id),
+                            window.apiDataService.fetchChallengesForUser(session.id),
+                            window.apiDataService.fetchUserBlocks(session.id)
+                        ]);
+                        
+                        console.log('ActiveGamesComponent: Datos cargados:', gamesData?.length, 'juegos,', challengesData?.length, 'retos');
+                        setGames(gamesData || []);
+                        setGameConfigurations(configurations || []);
+                        setChallenges(challengesData || []);
+                        setBlocks(blocksData || []);
                     } catch (error) {
-                        console.error('Error loading active games data:', error);
+                        console.error('ActiveGamesComponent: Error loading active games data:', error);
                     } finally {
                         setIsLoading(false);
                     }
@@ -2054,24 +2069,53 @@
 
         const TabHistoryComponent = () => {
             const [tabGameHistory, setTabGameHistory] = useState([]);
+            const [isLoading, setIsLoading] = useState(true);
 
             useEffect(() => {
-                // Cargar historial de partidas
                 const loadHistory = async () => {
                     try {
-                        if (window.apiDataService) {
-                            const currentUser = JSON.parse(localStorage.getItem('playtest_session') || '{}');
-                            if (currentUser.id) {
-                                const history = await window.apiDataService.fetchGameHistory(currentUser.id);
-                                setTabGameHistory(history || []);
-                            }
+                        setIsLoading(true);
+                        const currentUser = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+                        console.log('TabHistoryComponent: Usuario actual:', currentUser);
+                        
+                        if (!window.apiDataService) {
+                            console.log('TabHistoryComponent: apiDataService no disponible, reintentando...');
+                            setTimeout(loadHistory, 1000);
+                            return;
                         }
+                        
+                        if (!currentUser.id) {
+                            console.error('TabHistoryComponent: No hay ID de usuario');
+                            return;
+                        }
+
+                        console.log('TabHistoryComponent: Cargando historial...');
+                        const history = await window.apiDataService.fetchGameHistory(currentUser.id);
+                        console.log('TabHistoryComponent: Historial cargado:', history?.length, 'partidas');
+                        setTabGameHistory(history || []);
                     } catch (error) {
-                        console.error('Error loading game history:', error);
+                        console.error('TabHistoryComponent: Error loading game history:', error);
+                    } finally {
+                        setIsLoading(false);
                     }
                 };
                 loadHistory();
             }, []);
+
+            if (isLoading) {
+                return React.createElement('div', { 
+                    className: "bg-slate-800 p-6 rounded-xl shadow-lg text-center" 
+                }, [
+                    React.createElement('div', {
+                        key: 'spinner',
+                        className: "animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"
+                    }),
+                    React.createElement('p', {
+                        key: 'loading-text',
+                        className: "text-gray-400"
+                    }, 'Cargando historial...')
+                ]);
+            }
 
             return React.createElement('div', {
                 className: "bg-slate-800 p-6 rounded-xl shadow-lg flex flex-col"
