@@ -786,11 +786,23 @@
             console.log('🔍 ActiveGames DEBUG - All games:', games);
             console.log('🔍 ActiveGames DEBUG - Games statuses:', games.map(g => ({ id: g.id, status: g.status, mode: g.mode })));
             
+            // Log each game's full details
+            games.forEach((game, index) => {
+                console.log(`🔍 ActiveGames DEBUG - Game ${index + 1} full details:`, game);
+            });
+            
+            // Try different filtering approaches
             const activeGames = games.filter(g => g.status === 'active');
+            const allNonPendingGames = games.filter(g => g.status !== 'pending' && !g.status?.includes('completed'));
             const pendingChallenges = games.filter(g => g.status === 'pending' && challenges.some(c => c.gameId === g.id));
             
-            console.log('🔍 ActiveGames DEBUG - Active games filtered:', activeGames);
+            console.log('🔍 ActiveGames DEBUG - Active games filtered (status=active):', activeGames);
             console.log('🔍 ActiveGames DEBUG - Active games count:', activeGames.length);
+            console.log('🔍 ActiveGames DEBUG - All non-pending games:', allNonPendingGames);
+            console.log('🔍 ActiveGames DEBUG - All non-pending count:', allNonPendingGames.length);
+            
+            // Use all non-pending games if no strictly 'active' games found
+            const gamesToShow = activeGames.length > 0 ? activeGames : allNonPendingGames;
 
             return React.createElement('div', {
                 className: "bg-slate-800 p-6 rounded-xl shadow-lg flex flex-col h-full"
@@ -817,14 +829,14 @@
                     ])
                 ])),
 
-                activeGames.length > 0 && React.createElement('div', {
+                gamesToShow.length > 0 && React.createElement('div', {
                     key: 'header',
                     className: "flex justify-end mb-4 flex-shrink-0"
                 }, React.createElement('a', {
                     key: 'view-all',
                     href: "/all-games.html",
                     className: "text-sm font-semibold bg-slate-600 hover:bg-slate-500 text-white py-1 px-3 rounded-md transition-colors"
-                }, `Ver todos (${activeGames.length})`)),
+                }, `Ver todos (${gamesToShow.length})`)),
                 
                 React.createElement('div', {
                     key: 'content',
@@ -877,7 +889,7 @@
                         }))
                     ]),
 
-                    activeGames.length > 0 && React.createElement('div', { key: 'active-games-section' }, [
+                    gamesToShow.length > 0 && React.createElement('div', { key: 'active-games-section' }, [
                         React.createElement('h4', {
                             key: 'active-games-title',
                             className: "font-semibold text-blue-400 mb-2"
@@ -885,7 +897,7 @@
                         React.createElement('ul', {
                             key: 'active-games-list',
                             className: "space-y-3 mb-4"
-                        }, activeGames.map(game => React.createElement('li', {
+                        }, gamesToShow.map(game => React.createElement('li', {
                             key: game.id,
                             className: "p-3 rounded-md bg-blue-900/20 border border-blue-500/30"
                         }, [
