@@ -783,8 +783,14 @@
                 }
             };
 
+            console.log('🔍 ActiveGames DEBUG - All games:', games);
+            console.log('🔍 ActiveGames DEBUG - Games statuses:', games.map(g => ({ id: g.id, status: g.status, mode: g.mode })));
+            
             const activeGames = games.filter(g => g.status === 'active');
             const pendingChallenges = games.filter(g => g.status === 'pending' && challenges.some(c => c.gameId === g.id));
+            
+            console.log('🔍 ActiveGames DEBUG - Active games filtered:', activeGames);
+            console.log('🔍 ActiveGames DEBUG - Active games count:', activeGames.length);
 
             return React.createElement('div', {
                 className: "bg-slate-800 p-6 rounded-xl shadow-lg flex flex-col h-full"
