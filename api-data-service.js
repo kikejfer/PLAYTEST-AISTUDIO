@@ -423,22 +423,16 @@ class APIDataService {
         body: JSON.stringify(gameData)
       });
       
-      // If we get a gameId, fetch the full game object for consistency
+      // Return basic response immediately to avoid authorization timing issues
       if (response && response.gameId) {
-        try {
-          const fullGame = await this.fetchGame(response.gameId);
-          return this.simulateDelay(fullGame);
-        } catch (fetchError) {
-          console.warn('⚠️ Failed to fetch created game, returning basic response:', fetchError.message);
-          return this.simulateDelay({
-            id: response.gameId,
-            gameType: gameData.gameType,
-            mode: this.getGameModeDisplay(gameData.gameType),
-            config: gameData.config,
-            players: gameData.players,
-            status: 'active'
-          });
-        }
+        return this.simulateDelay({
+          id: response.gameId,
+          gameType: gameData.gameType,
+          mode: this.getGameModeDisplay(gameData.gameType),
+          config: gameData.config,
+          players: gameData.players,
+          status: 'active'
+        });
       }
       
       return this.simulateDelay(response);
