@@ -958,9 +958,6 @@
             const { currentUser } = useUser();
             const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
             const [expandedBlockId, setExpandedBlockId] = useState(null);
-            
-            console.log('UserBlockManagement: Recibidos', blocks?.length || 0, 'bloques');
-            console.log('UserBlockManagement: currentUser', currentUser);
 
             const handleDeleteClick = (blockId) => {
                 setConfirmingDeleteId(blockId);
@@ -1589,38 +1586,31 @@
 
             useEffect(() => {
                 const loadBlocksData = async () => {
-                    console.log('TabBlocksComponent: Cargando datos de bloques...');
                     try {
                         setIsLoading(true);
                         const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
-                        console.log('TabBlocksComponent: Sesión de usuario:', session);
                         
                         if (!window.apiDataService) {
-                            console.log('TabBlocksComponent: apiDataService no disponible, reintentando...');
                             setTimeout(loadBlocksData, 1000);
                             return;
                         }
                         
                         const userId = session.id || session.userId;
                         if (!userId) {
-                            console.error('TabBlocksComponent: No hay ID de usuario');
                             return;
                         }
 
                         setCurrentUser(session);
-                        console.log('TabBlocksComponent: Llamando a API con userId:', userId);
                         
                         const [blocks, createdBlocks] = await Promise.all([
                             window.apiDataService.fetchLoadedBlocks(),
                             window.apiDataService.fetchCreatedBlocks(userId)
                         ]);
                         
-                        console.log('TabBlocksComponent: Bloques cargados:', blocks?.length, 'bloques');
-                        console.log('TabBlocksComponent: Bloques creados:', createdBlocks?.length, 'bloques');
                         setTabBlocks(blocks || []);
                         setTabCreatedBlocks(createdBlocks || []);
                     } catch (error) {
-                        console.error('TabBlocksComponent: Error loading blocks data:', error);
+                        console.error('Error loading blocks data:', error);
                     } finally {
                         setIsLoading(false);
                     }
@@ -1636,13 +1626,11 @@
                 if (window.apiDataService && currentUser) {
                     try {
                         const userId = currentUser.id || currentUser.userId;
-                        console.log('TabBlocksComponent: Eliminando bloque', blockId, 'para usuario', userId);
                         await window.apiDataService.deleteBlockForUser(userId, blockId);
                         setTabBlocks(prev => prev.filter(b => b.id !== blockId));
                         setTabCreatedBlocks(prev => prev.filter(b => b.id !== blockId));
-                        console.log('TabBlocksComponent: Bloque eliminado exitosamente');
                     } catch (error) {
-                        console.error('TabBlocksComponent: Error deleting block:', error);
+                        console.error('Error deleting block:', error);
                     }
                 }
             };
@@ -1674,9 +1662,6 @@
                 ]);
             }
 
-            console.log('TabBlocksComponent: Renderizando con', tabBlocks?.length, 'bloques cargados');
-            console.log('TabBlocksComponent: Datos de bloques:', tabBlocks);
-            
             return React.createElement('div', { className: "space-y-6" }, [
                 // UserBlockManagement completo
                 React.createElement(UserBlockManagement, {
@@ -1716,36 +1701,26 @@
                 try {
                     setIsLoading(true);
                     const currentUser = JSON.parse(localStorage.getItem('playtest_session') || '{}');
-                    console.log('AvailableBlocks: Usuario actual:', currentUser);
-                    
-                    // Verificar disponibilidad del servicio
-                    console.log('AvailableBlocks: Verificando servicios...');
-                    console.log('AvailableBlocks: window.apiDataService:', typeof window.apiDataService);
-                    console.log('AvailableBlocks: global apiDataService:', typeof apiDataService);
                     
                     if (!window.apiDataService) {
-                        console.log('AvailableBlocks: apiDataService no disponible, reintentando...');
                         setTimeout(loadData, 1000);
                         return;
                     }
                     
                     const userId = currentUser.id || currentUser.userId;
                     if (!userId) {
-                        console.error('AvailableBlocks: No hay ID de usuario');
                         return;
                     }
 
-                    console.log('AvailableBlocks: Cargando datos...');
                     const [available, profile] = await Promise.all([
                         window.apiDataService.fetchAvailableBlocks(),
                         window.apiDataService.getUserProfile()
                     ]);
                     
-                    console.log('AvailableBlocks: Datos cargados:', available?.length, 'bloques disponibles');
                     setAvailableBlocks(available || []);
                     setLoadedBlockIds(profile?.loadedBlocks || []);
                 } catch (error) {
-                    console.error('AvailableBlocks: Error loading available blocks:', error);
+                    console.error('Error loading available blocks:', error);
                 } finally {
                     setIsLoading(false);
                 }
@@ -1923,22 +1898,18 @@
                     try {
                         setIsLoading(true);
                         const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
-                        console.log('ActiveGamesComponent: Usuario actual:', session);
                         
                         if (!window.apiDataService) {
-                            console.log('ActiveGamesComponent: apiDataService no disponible, reintentando...');
                             setTimeout(loadActiveGamesData, 1000);
                             return;
                         }
                         
                         const userId = session.id || session.userId;
                         if (!userId) {
-                            console.error('ActiveGamesComponent: No hay ID de usuario');
                             return;
                         }
 
                         setCurrentUser(session);
-                        console.log('ActiveGamesComponent: Cargando datos con userId:', userId);
                         
                         const [gamesData, configurations, challengesData, blocksData] = await Promise.all([
                             window.apiDataService.fetchGamesForUser(userId),
@@ -1947,13 +1918,12 @@
                             window.apiDataService.fetchLoadedBlocks()
                         ]);
                         
-                        console.log('ActiveGamesComponent: Datos cargados:', gamesData?.length, 'juegos,', challengesData?.length, 'retos');
                         setGames(gamesData || []);
                         setGameConfigurations(configurations || []);
                         setChallenges(challengesData || []);
                         setBlocks(blocksData || []);
                     } catch (error) {
-                        console.error('ActiveGamesComponent: Error loading active games data:', error);
+                        console.error('Error loading active games data:', error);
                     } finally {
                         setIsLoading(false);
                     }
@@ -2090,26 +2060,21 @@
                     try {
                         setIsLoading(true);
                         const currentUser = JSON.parse(localStorage.getItem('playtest_session') || '{}');
-                        console.log('TabHistoryComponent: Usuario actual:', currentUser);
                         
                         if (!window.apiDataService) {
-                            console.log('TabHistoryComponent: apiDataService no disponible, reintentando...');
                             setTimeout(loadHistory, 1000);
                             return;
                         }
                         
                         const userId = currentUser.id || currentUser.userId;
                         if (!userId) {
-                            console.error('TabHistoryComponent: No hay ID de usuario');
                             return;
                         }
 
-                        console.log('TabHistoryComponent: Cargando historial con userId:', userId);
                         const history = await window.apiDataService.fetchGameHistory(userId);
-                        console.log('TabHistoryComponent: Historial cargado:', history?.length, 'partidas');
                         setTabGameHistory(history || []);
                     } catch (error) {
-                        console.error('TabHistoryComponent: Error loading game history:', error);
+                        console.error('Error loading game history:', error);
                     } finally {
                         setIsLoading(false);
                     }
@@ -2185,12 +2150,9 @@
 
         // Renderizar componentes específicos en pestañas después de que React esté disponible
         const initializeTabComponents = () => {
-            console.log('Inicializando componentes de pestañas...');
-            
             // Renderizar Bloques Cargados COMPLETO en su pestaña
             const loadedBlocksContainer = document.getElementById('loaded-blocks-content');
             if (loadedBlocksContainer) {
-                console.log('Renderizando TabBlocksComponent...');
                 const loadedBlocksRoot = ReactDOM.createRoot(loadedBlocksContainer);
                 loadedBlocksRoot.render(
                     React.createElement(LanguageProvider, {}, 
@@ -2199,14 +2161,11 @@
                         )
                     )
                 );
-            } else {
-                console.error('Contenedor loaded-blocks-content no encontrado');
             }
 
             // Renderizar Bloques Disponibles COMPLETO en su pestaña
             const availableBlocksContainer = document.getElementById('available-blocks-content');
             if (availableBlocksContainer) {
-                console.log('Renderizando AvailableBlocksComponent...');
                 const availableBlocksRoot = ReactDOM.createRoot(availableBlocksContainer);
                 availableBlocksRoot.render(
                     React.createElement(LanguageProvider, {}, 
@@ -2215,14 +2174,11 @@
                         )
                     )
                 );
-            } else {
-                console.error('Contenedor available-blocks-content no encontrado');
             }
 
             // Renderizar Juegos Activos COMPLETO en su sección
             const activeGamesContainer = document.getElementById('active-games-content');
             if (activeGamesContainer) {
-                console.log('Renderizando ActiveGamesComponent...');
                 const activeGamesRoot = ReactDOM.createRoot(activeGamesContainer);
                 activeGamesRoot.render(
                     React.createElement(LanguageProvider, {}, 
@@ -2231,14 +2187,11 @@
                         )
                     )
                 );
-            } else {
-                console.error('Contenedor active-games-content no encontrado');
             }
 
             // Renderizar Historial de Partidas COMPLETO en su pestaña
             const gameHistoryContainer = document.getElementById('games-history-content');
             if (gameHistoryContainer) {
-                console.log('Renderizando TabHistoryComponent...');
                 const gameHistoryRoot = ReactDOM.createRoot(gameHistoryContainer);
                 gameHistoryRoot.render(
                     React.createElement(LanguageProvider, {}, 
@@ -2247,8 +2200,6 @@
                         )
                     )
                 );
-            } else {
-                console.error('Contenedor games-history-content no encontrado');
             }
         };
 
@@ -2257,7 +2208,6 @@
             if (window.apiDataService) {
                 initializeTabComponents();
             } else {
-                console.log('Esperando a que apiDataService esté disponible...');
                 setTimeout(waitForApiAndInitialize, 1000);
             }
         };
