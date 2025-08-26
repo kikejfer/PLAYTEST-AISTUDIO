@@ -793,16 +793,19 @@
             
             // Try different filtering approaches
             const activeGames = games.filter(g => g.status === 'active');
-            const allNonPendingGames = games.filter(g => g.status !== 'pending' && !g.status?.includes('completed'));
+            const completedGames = games.filter(g => g.status === 'completed');
             const pendingChallenges = games.filter(g => g.status === 'pending' && challenges.some(c => c.gameId === g.id));
             
             console.log('🔍 ActiveGames DEBUG - Active games filtered (status=active):', activeGames);
             console.log('🔍 ActiveGames DEBUG - Active games count:', activeGames.length);
-            console.log('🔍 ActiveGames DEBUG - All non-pending games:', allNonPendingGames);
-            console.log('🔍 ActiveGames DEBUG - All non-pending count:', allNonPendingGames.length);
+            console.log('🔍 ActiveGames DEBUG - Completed games:', completedGames);
+            console.log('🔍 ActiveGames DEBUG - Completed games count:', completedGames.length);
             
-            // Use all non-pending games if no strictly 'active' games found
-            const gamesToShow = activeGames.length > 0 ? activeGames : allNonPendingGames;
+            // Show completed games as available to replay
+            const gamesToShow = activeGames.length > 0 ? activeGames : completedGames;
+            const sectionTitle = activeGames.length > 0 ? 'Partidas Activas' : 'Partidas Disponibles';
+            const statusBadge = activeGames.length > 0 ? 'Activa' : 'Completada';
+            const buttonText = activeGames.length > 0 ? '▶️ Continuar Partida' : '🔄 Jugar de Nuevo';
 
             return React.createElement('div', {
                 className: "bg-slate-800 p-6 rounded-xl shadow-lg flex flex-col h-full"
@@ -893,7 +896,7 @@
                         React.createElement('h4', {
                             key: 'active-games-title',
                             className: "font-semibold text-blue-400 mb-2"
-                        }, 'Partidas Activas'),
+                        }, sectionTitle),
                         React.createElement('ul', {
                             key: 'active-games-list',
                             className: "space-y-3 mb-4"
@@ -913,8 +916,8 @@
                                     }, game.mode || 'Modo Clásico'),
                                     React.createElement('span', {
                                         key: 'game-status',
-                                        className: "text-xs bg-green-600 px-2 py-0.5 rounded text-white"
-                                    }, 'Activa')
+                                        className: `text-xs px-2 py-0.5 rounded text-white ${activeGames.length > 0 ? 'bg-green-600' : 'bg-gray-600'}`
+                                    }, statusBadge)
                                 ]),
                                 React.createElement('button', {
                                     key: 'delete-game',
@@ -933,7 +936,7 @@
                                 key: 'continue-game',
                                 onClick: () => onNavigateToGame(game),
                                 className: "w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
-                            }, '▶️ Continuar Partida')
+                            }, buttonText)
                         ])))
                     ]),
 
