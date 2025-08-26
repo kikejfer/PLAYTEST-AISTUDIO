@@ -342,7 +342,10 @@ class APIDataService {
   // === GAMES ===
   async fetchGamesForUser(userId) {
     try {
+      console.log('🔍 fetchGamesForUser - Requesting games for user ID:', userId);
       const games = await this.apiCall('/games');
+      console.log('📦 fetchGamesForUser - Raw response:', games);
+      console.log('📦 fetchGamesForUser - Games count:', games ? games.length : 0);
       
       // Transform backend response to frontend format for all games
       if (games && Array.isArray(games)) {
@@ -364,9 +367,12 @@ class APIDataService {
           mode: game.gameType ? typeToMode[game.gameType] || game.gameType : game.mode
         }));
         
+        console.log('✅ fetchGamesForUser - Transformed games:', transformedGames);
+        console.log('✅ fetchGamesForUser - Returning games count:', transformedGames.length);
         return this.simulateDelay(transformedGames);
       }
       
+      console.log('⚠️ fetchGamesForUser - Games not array, returning as-is:', games);
       return this.simulateDelay(games || []);
     } catch (error) {
       console.error('❌ Failed to fetch games for user:', error.message);
