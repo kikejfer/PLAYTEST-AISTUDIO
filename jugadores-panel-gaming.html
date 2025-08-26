@@ -1552,21 +1552,7 @@
                 className: "container mx-auto px-4 py-6 space-y-8 animate-fade-in" 
             }, [
                 // Bienvenida
-                React.createElement('div', { 
-                    key: 'welcome',
-                    className: "text-center" 
-                }, [
-                    React.createElement('h1', { 
-                        key: 'title',
-                        className: "text-3xl font-bold text-blue-400 mb-2" 
-                    }, `🎮 Bienvenido, ${currentUser.nickname}!`),
-                    React.createElement('p', { 
-                        key: 'subtitle',
-                        className: "text-gray-400" 
-                    }, 'Tu dashboard personal de PLAYTEST')
-                ]),
-
-                // Grid principal con todos los componentes completos
+                // Componente principal
                 React.createElement(GameSetup, {
                     key: 'game-setup',
                     blocks: blocks,
@@ -1716,17 +1702,30 @@
                 try {
                     setIsLoading(true);
                     const currentUser = JSON.parse(localStorage.getItem('playtest_session') || '{}');
-                    if (window.apiDataService && currentUser.id) {
-                        const [available, profile] = await Promise.all([
-                            window.apiDataService.fetchAvailableBlocks(),
-                            window.apiDataService.getUserProfile()
-                        ]);
-                        
-                        setAvailableBlocks(available || []);
-                        setLoadedBlockIds(profile.loadedBlocks || []);
+                    console.log('AvailableBlocks: Usuario actual:', currentUser);
+                    
+                    if (!window.apiDataService) {
+                        console.log('AvailableBlocks: apiDataService no disponible, reintentando...');
+                        setTimeout(loadData, 1000);
+                        return;
                     }
+                    
+                    if (!currentUser.id) {
+                        console.error('AvailableBlocks: No hay ID de usuario');
+                        return;
+                    }
+
+                    console.log('AvailableBlocks: Cargando datos...');
+                    const [available, profile] = await Promise.all([
+                        window.apiDataService.fetchAvailableBlocks(),
+                        window.apiDataService.getUserProfile()
+                    ]);
+                    
+                    console.log('AvailableBlocks: Datos cargados:', available?.length, 'bloques disponibles');
+                    setAvailableBlocks(available || []);
+                    setLoadedBlockIds(profile?.loadedBlocks || []);
                 } catch (error) {
-                    console.error('Error loading available blocks:', error);
+                    console.error('AvailableBlocks: Error loading available blocks:', error);
                 } finally {
                     setIsLoading(false);
                 }
@@ -2194,11 +2193,20 @@
             }
         };
 
-        // Ejecutar cuando el DOM esté completamente cargado
+        // Ejecutar cuando el DOM y apiDataService estén disponibles
+        const waitForApiAndInitialize = () => {
+            if (window.apiDataService) {
+                initializeTabComponents();
+            } else {
+                console.log('Esperando a que apiDataService esté disponible...');
+                setTimeout(waitForApiAndInitialize, 1000);
+            }
+        };
+
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeTabComponents);
+            document.addEventListener('DOMContentLoaded', waitForApiAndInitialize);
         } else {
-            setTimeout(initializeTabComponents, 500);
+            waitForApiAndInitialize();
         }
 
         // Función para cambiar entre pestañas
