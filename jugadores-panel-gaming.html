@@ -958,6 +958,9 @@
             const { currentUser } = useUser();
             const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
             const [expandedBlockId, setExpandedBlockId] = useState(null);
+            
+            console.log('UserBlockManagement: Recibidos', blocks?.length || 0, 'bloques');
+            console.log('UserBlockManagement: currentUser', currentUser);
 
             const handleDeleteClick = (blockId) => {
                 setConfirmingDeleteId(blockId);
@@ -1632,11 +1635,14 @@
             const handleDeleteBlock = async (blockId) => {
                 if (window.apiDataService && currentUser) {
                     try {
-                        await window.apiDataService.deleteBlockForUser(currentUser.id, blockId);
+                        const userId = currentUser.id || currentUser.userId;
+                        console.log('TabBlocksComponent: Eliminando bloque', blockId, 'para usuario', userId);
+                        await window.apiDataService.deleteBlockForUser(userId, blockId);
                         setTabBlocks(prev => prev.filter(b => b.id !== blockId));
                         setTabCreatedBlocks(prev => prev.filter(b => b.id !== blockId));
+                        console.log('TabBlocksComponent: Bloque eliminado exitosamente');
                     } catch (error) {
-                        console.error('Error deleting block:', error);
+                        console.error('TabBlocksComponent: Error deleting block:', error);
                     }
                 }
             };
@@ -1668,6 +1674,9 @@
                 ]);
             }
 
+            console.log('TabBlocksComponent: Renderizando con', tabBlocks?.length, 'bloques cargados');
+            console.log('TabBlocksComponent: Datos de bloques:', tabBlocks);
+            
             return React.createElement('div', { className: "space-y-6" }, [
                 // UserBlockManagement completo
                 React.createElement(UserBlockManagement, {
