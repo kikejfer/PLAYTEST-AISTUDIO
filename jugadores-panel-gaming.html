@@ -1721,8 +1721,8 @@
 
                     console.log('AvailableBlocks: Cargando datos...');
                     const [available, profile] = await Promise.all([
-                        window.apiDataService.fetchAvailableBlocks(),
-                        window.apiDataService.getUserProfile()
+                        apiDataService.fetchAvailableBlocks(),
+                        apiDataService.getUserProfile()
                     ]);
                     
                     console.log('AvailableBlocks: Datos cargados:', available?.length, 'bloques disponibles');
@@ -1738,11 +1738,9 @@
             const handleLoadBlock = async (blockId) => {
                 setLoadingActions(prev => ({ ...prev, [blockId]: 'loading' }));
                 try {
-                    if (window.apiDataService) {
-                        await window.apiDataService.loadBlock(blockId);
-                        setMessage('Bloque cargado exitosamente');
-                        await loadData(); // Refresh data
-                    }
+                    await apiDataService.loadBlock(blockId);
+                    setMessage('Bloque cargado exitosamente');
+                    await loadData(); // Refresh data
                 } catch (error) {
                     console.error('Error loading block:', error);
                     setMessage('Error al cargar el bloque');
@@ -1755,11 +1753,9 @@
             const handleUnloadBlock = async (blockId) => {
                 setLoadingActions(prev => ({ ...prev, [blockId]: 'unloading' }));
                 try {
-                    if (window.apiDataService) {
-                        await window.apiDataService.unloadBlock(blockId);
-                        setMessage('Bloque descargado exitosamente');
-                        await loadData(); // Refresh data
-                    }
+                    await apiDataService.unloadBlock(blockId);
+                    setMessage('Bloque descargado exitosamente');
+                    await loadData(); // Refresh data
                 } catch (error) {
                     console.error('Error unloading block:', error);
                     setMessage('Error al descargar el bloque');
