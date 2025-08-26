@@ -53,9 +53,20 @@ class APIDataService {
       };
 
       try {
+        // Debug logging for authorization issues
+        if (endpoint.includes('/games/')) {
+          console.log('🔍 API Debug - URL:', url);
+          console.log('🔍 API Debug - Token used:', token ? token.substring(0, 50) + '...' : 'null');
+          console.log('🔍 API Debug - Headers:', finalOptions.headers);
+        }
+        
         const response = await fetch(url, finalOptions);
         
         if (!response.ok) {
+          if (endpoint.includes('/games/')) {
+            console.log('❌ API Debug - Response status:', response.status);
+            console.log('❌ API Debug - Response headers:', Object.fromEntries(response.headers.entries()));
+          }
           const errorData = await response.json().catch(() => ({}));
           throw new Error(errorData.error || `HTTP ${response.status}`);
         }
@@ -367,6 +378,14 @@ class APIDataService {
   async fetchGame(gameId) {
     try {
       console.log('🔍 fetchGame - Requesting game ID:', gameId);
+      
+      // Debug token information
+      const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+      console.log('🔑 fetchGame - Token exists:', !!token);
+      console.log('🔑 fetchGame - Token length:', token ? token.length : 0);
+      console.log('🔑 fetchGame - Token preview:', token ? token.substring(0, 50) + '...' : 'null');
+      console.log('🔑 fetchGame - this.token:', this.token ? this.token.substring(0, 50) + '...' : 'null');
+      
       const game = await this.apiCall(`/games/${gameId}`);
       console.log('📦 fetchGame - Raw response:', game);
       
