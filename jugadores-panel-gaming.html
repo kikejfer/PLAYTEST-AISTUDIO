@@ -200,7 +200,7 @@
         <div id="partidas-tab" class="tab-content active">
             <!-- Sección Configuración de Partida -->
             <div class="section">
-                <h2 class="section-title">⚙️ Configuración de Partida</h2>
+                <h2 class="section-title"><img src="./Imagenes/Config.png" alt="Config" style="height: 24px; width: 24px; display: inline-block; margin-right: 8px;"> Configuración de Partida</h2>
                 <div class="section-content">
                     <div id="player-dashboard-root"></div>
                 </div>
@@ -208,7 +208,7 @@
 
             <!-- Sección Juegos Activos -->
             <div class="section">
-                <h2 class="section-title">🎮 Juegos Activos</h2>
+                <h2 class="section-title"><img src="./Imagenes/Juegos.png" alt="Juegos" style="height: 24px; width: 24px; display: inline-block; margin-right: 8px;"> Juegos Activos</h2>
                 <div class="section-content">
                     <div id="active-games-content"></div>
                 </div>
@@ -219,7 +219,7 @@
         <div id="bloques-tab" class="tab-content">
             <!-- Sección Bloques Cargados -->
             <div class="section">
-                <h2 class="section-title">✅ Bloques Cargados</h2>
+                <h2 class="section-title"><img src="./Imagenes/Cargados.png" alt="Cargados" style="height: 24px; width: 24px; display: inline-block; margin-right: 8px;"> Bloques Cargados</h2>
                 <div class="section-content">
                     <div id="loaded-blocks-content"></div>
                 </div>
@@ -227,11 +227,8 @@
 
             <!-- Sección Bloques Disponibles -->
             <div class="section">
-                <h2 class="section-title">📚 Bloques Disponibles</h2>
+                <h2 class="section-title"><img src="./Imagenes/Disponibles.png" alt="Disponibles" style="height: 24px; width: 24px; display: inline-block; margin-right: 8px;"> Bloques Disponibles</h2>
                 <div class="section-content">
-                    <div class="search-container">
-                        <input type="text" id="blocks-search" placeholder="Buscar bloques..." class="search-input">
-                    </div>
                     <div id="available-blocks-content"></div>
                 </div>
             </div>
@@ -241,7 +238,7 @@
         <div id="historico-tab" class="tab-content">
             <!-- Sección Historial de Partidas -->
             <div class="section">
-                <h2 class="section-title">📜 Historial de Partidas</h2>
+                <h2 class="section-title"><img src="./Imagenes/Historia.png" alt="Historia" style="height: 24px; width: 24px; display: inline-block; margin-right: 8px;"> Historial de Partidas</h2>
                 <div class="section-content">
                     <div id="games-history-content"></div>
                 </div>
@@ -831,28 +828,14 @@
                     ])
                 ])),
 
-                React.createElement('div', {
+                activeGames.length > 0 && React.createElement('div', {
                     key: 'header',
-                    className: "flex items-center justify-between mb-4 flex-shrink-0"
-                }, [
-                    React.createElement('div', { key: 'title-container', className: "flex items-center" }, [
-                        React.createElement('img', {
-                            key: 'icon',
-                            src: "./Imagenes/Juegos.png",
-                            alt: "Active Games",
-                            className: "h-10 w-10 mr-3"
-                        }),
-                        React.createElement('h3', {
-                            key: 'title',
-                            className: "text-xl font-bold text-white"
-                        }, t('active_games_title'))
-                    ]),
-                    activeGames.length > 0 && React.createElement('a', {
-                        key: 'view-all',
-                        href: "/all-games.html",
-                        className: "text-sm font-semibold bg-slate-600 hover:bg-slate-500 text-white py-1 px-3 rounded-md transition-colors"
-                    }, `Ver todos (${activeGames.length})`)
-                ]),
+                    className: "flex justify-end mb-4 flex-shrink-0"
+                }, React.createElement('a', {
+                    key: 'view-all',
+                    href: "/all-games.html",
+                    className: "text-sm font-semibold bg-slate-600 hover:bg-slate-500 text-white py-1 px-3 rounded-md transition-colors"
+                }, `Ver todos (${activeGames.length})`)),
                 
                 React.createElement('div', {
                     key: 'content',
@@ -1043,40 +1026,14 @@
                     ])
                 ])),
 
-                React.createElement('div', { key: 'header', className: "mb-4" }, [
-                    React.createElement('div', {
-                        key: 'header-content',
-                        className: "flex items-center justify-between mb-3"
-                    }, [
-                        React.createElement('div', { key: 'title-section', className: "flex items-center" }, [
-                            React.createElement('img', {
-                                key: 'icon',
-                                src: "./Imagenes/Cargados.png",
-                                alt: "Loaded Blocks",
-                                className: "h-10 w-10 mr-3"
-                            }),
-                            React.createElement('h3', {
-                                key: 'title',
-                                className: "text-xl font-bold text-white"
-                            }, 'Bloques Cargados')
-                        ])
-                    ]),
-                    React.createElement('div', {
-                        key: 'actions',
-                        className: "flex flex-col sm:flex-row gap-2"
-                    }, [
-                        React.createElement('a', {
-                            key: 'available',
-                            href: "available-blocks.html",
-                            className: "text-xs font-semibold bg-slate-600 hover:bg-slate-500 text-white py-2 px-3 rounded-md transition-colors text-center flex-1"
-                        }, 'Agregar desde Disponibles'),
-                        hasRole(currentUser, 'creador') && React.createElement('button', {
-                            key: 'create',
-                            onClick: () => window.location.href = './add-question.html',
-                            className: "text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-md transition-colors flex-1"
-                        }, 'Crear Nuevo Bloque')
-                    ])
-                ]),
+                hasRole(currentUser, 'creador') && React.createElement('div', {
+                    key: 'actions',
+                    className: "flex justify-end mb-4"
+                }, React.createElement('button', {
+                    key: 'create',
+                    onClick: () => window.location.href = './add-question.html',
+                    className: "text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-md transition-colors"
+                }, 'Crear Nuevo Bloque')),
 
                 blocks.length > 0 ? React.createElement('div', {
                     key: 'blocks-list',
@@ -1634,32 +1591,13 @@
                     // Columna izquierda - Juegos (GameSetup y ActiveGames)
                     React.createElement('div', { 
                         key: 'games-column',
-                        className: "lg:col-span-2 space-y-8" 
-                    }, [
-                        // GameSetup completo con todas las modalidades
-                        React.createElement(GameSetup, {
-                            key: 'game-setup',
-                            blocks: blocks,
-                            onCreateGame: handleCreateGame,
-                            onSendChallenge: (user, config) => console.log('Challenge sent:', user, config)
-                        }),
-
-                        // ActiveGames completo con retos pendientes y configuraciones guardadas
-                        React.createElement(ActiveGames, {
-                            key: 'active-games',
-                            games: games,
-                            gameConfigurations: gameConfigurations,
-                            challenges: challenges,
-                            blocks: blocks,
-                            onDeleteGame: handleDeleteGame,
-                            onNavigateToGame: onNavigateToGame,
-                            onAcceptChallenge: handleAcceptChallenge,
-                            onDeclineChallenge: handleDeclineChallenge,
-                            handleDeleteConfiguration: handleDeleteConfiguration,
-                            onRepeatConfiguration: handleRepeatConfiguration,
-                            setCurrentView: () => {}
-                        })
-                    ]),
+                        className: "lg:col-span-2" 
+                    }, React.createElement(GameSetup, {
+                        key: 'game-setup',
+                        blocks: blocks,
+                        onCreateGame: handleCreateGame,
+                        onSendChallenge: (user, config) => console.log('Challenge sent:', user, config)
+                    })),
 
                     // Columna derecha - Placeholder (bloques movidos a pestaña "Carga de Bloques")
                     React.createElement('div', { 
@@ -1789,7 +1727,7 @@
                     blocks: tabBlocks,
                     onViewBlock: handleViewBlock,
                     onDeleteBlock: handleDeleteBlock,
-                    onOpenAddBlockModal: () => window.location.href = 'available-blocks.html',
+                    onOpenAddBlockModal: () => {},
                     onOpenStatsModal: handleOpenStatsModal,
                     setCurrentView: () => {}
                 }),
@@ -1802,6 +1740,360 @@
                     onDeleteBlock: handleDeleteBlock
                 })
             ]);
+        };
+
+        // Componente AvailableBlocks completo (funcionalidades de available-blocks.html)
+        const AvailableBlocksComponent = () => {
+            const [availableBlocks, setAvailableBlocks] = useState([]);
+            const [loadedBlockIds, setLoadedBlockIds] = useState([]);
+            const [isLoading, setIsLoading] = useState(true);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [loadingActions, setLoadingActions] = useState({});
+            const [message, setMessage] = useState('');
+
+            useEffect(() => {
+                loadData();
+            }, []);
+
+            const loadData = async () => {
+                try {
+                    setIsLoading(true);
+                    const currentUser = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+                    if (window.apiDataService && currentUser.id) {
+                        const [available, profile] = await Promise.all([
+                            window.apiDataService.fetchAvailableBlocks(),
+                            window.apiDataService.getUserProfile()
+                        ]);
+                        
+                        setAvailableBlocks(available || []);
+                        setLoadedBlockIds(profile.loadedBlocks || []);
+                    }
+                } catch (error) {
+                    console.error('Error loading available blocks:', error);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            const handleLoadBlock = async (blockId) => {
+                setLoadingActions(prev => ({ ...prev, [blockId]: 'loading' }));
+                try {
+                    if (window.apiDataService) {
+                        await window.apiDataService.loadBlock(blockId);
+                        setMessage('Bloque cargado exitosamente');
+                        await loadData(); // Refresh data
+                    }
+                } catch (error) {
+                    console.error('Error loading block:', error);
+                    setMessage('Error al cargar el bloque');
+                } finally {
+                    setLoadingActions(prev => ({ ...prev, [blockId]: null }));
+                    setTimeout(() => setMessage(''), 3000);
+                }
+            };
+
+            const handleUnloadBlock = async (blockId) => {
+                setLoadingActions(prev => ({ ...prev, [blockId]: 'unloading' }));
+                try {
+                    if (window.apiDataService) {
+                        await window.apiDataService.unloadBlock(blockId);
+                        setMessage('Bloque descargado exitosamente');
+                        await loadData(); // Refresh data
+                    }
+                } catch (error) {
+                    console.error('Error unloading block:', error);
+                    setMessage('Error al descargar el bloque');
+                } finally {
+                    setLoadingActions(prev => ({ ...prev, [blockId]: null }));
+                    setTimeout(() => setMessage(''), 3000);
+                }
+            };
+
+            const filteredBlocks = availableBlocks.filter(block =>
+                block.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                block.creatorNickname?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            if (isLoading) {
+                return React.createElement('div', { 
+                    className: "bg-slate-800 p-6 rounded-xl shadow-lg text-center" 
+                }, [
+                    React.createElement('div', {
+                        key: 'spinner',
+                        className: "animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"
+                    }),
+                    React.createElement('p', {
+                        key: 'loading-text',
+                        className: "text-gray-400"
+                    }, 'Cargando bloques disponibles...')
+                ]);
+            }
+
+            return React.createElement('div', { className: "bg-slate-800 p-6 rounded-xl shadow-lg" }, [
+                // Message display
+                message && React.createElement('div', {
+                    key: 'message',
+                    className: `mb-4 p-3 rounded-lg text-center ${message.includes('Error') ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-green-300'}`
+                }, message),
+
+                // Search bar
+                React.createElement('div', {
+                    key: 'search-container',
+                    className: "mb-6"
+                }, React.createElement('div', {
+                    className: "relative"
+                }, [
+                    React.createElement('input', {
+                        key: 'search-input',
+                        type: "text",
+                        placeholder: "Buscar bloques...",
+                        value: searchTerm,
+                        onChange: (e) => setSearchTerm(e.target.value),
+                        className: "w-full px-4 py-2 pl-10 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                    }),
+                    React.createElement('svg', {
+                        key: 'search-icon',
+                        className: "absolute left-3 top-3 h-4 w-4 text-gray-400",
+                        fill: "none",
+                        viewBox: "0 0 24 24",
+                        stroke: "currentColor"
+                    }, React.createElement('path', {
+                        strokeLinecap: "round",
+                        strokeLinejoin: "round",
+                        strokeWidth: 2,
+                        d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    }))
+                ])),
+
+                // Blocks grid
+                filteredBlocks.length === 0 ? React.createElement('div', {
+                    key: 'no-blocks',
+                    className: "text-center py-12"
+                }, React.createElement('p', {
+                    className: "text-gray-400 text-lg"
+                }, searchTerm ? 'No se encontraron bloques que coincidan con la búsqueda' : 'No hay bloques disponibles')) : 
+                React.createElement('div', {
+                    key: 'blocks-grid',
+                    className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                }, filteredBlocks.map(block => {
+                    const isLoaded = loadedBlockIds.includes(block.id);
+                    const actionLoading = loadingActions[block.id];
+                    
+                    return React.createElement('div', {
+                        key: block.id,
+                        className: "bg-slate-700 p-4 rounded-lg border border-slate-600 hover:border-slate-500 transition-colors"
+                    }, [
+                        React.createElement('div', {
+                            key: 'block-header',
+                            className: "flex justify-between items-start mb-3"
+                        }, [
+                            React.createElement('h3', {
+                                key: 'block-name',
+                                className: "font-semibold text-white text-lg leading-tight pr-2"
+                            }, block.name),
+                            isLoaded && React.createElement('span', {
+                                key: 'loaded-badge',
+                                className: "text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded-full flex-shrink-0"
+                            }, 'Cargado')
+                        ]),
+                        
+                        React.createElement('p', {
+                            key: 'block-description',
+                            className: "text-gray-400 text-sm mb-3 line-clamp-2"
+                        }, block.description || 'Sin descripción'),
+                        
+                        React.createElement('div', {
+                            key: 'block-info',
+                            className: "flex justify-between items-center mb-4 text-xs text-gray-500"
+                        }, [
+                            React.createElement('span', {
+                                key: 'questions-count'
+                            }, `${block.questionCount || 0} preguntas`),
+                            React.createElement('span', {
+                                key: 'creator'
+                            }, `por ${block.creatorNickname || 'Usuario'}`)
+                        ]),
+                        
+                        React.createElement('button', {
+                            key: 'action-button',
+                            onClick: () => isLoaded ? handleUnloadBlock(block.id) : handleLoadBlock(block.id),
+                            disabled: !!actionLoading,
+                            className: `w-full py-2 px-4 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                                isLoaded
+                                    ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30'
+                                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                            }`
+                        }, actionLoading ? React.createElement('div', {
+                            className: "flex items-center justify-center"
+                        }, [
+                            React.createElement('div', {
+                                key: 'action-spinner',
+                                className: "animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"
+                            }),
+                            actionLoading === 'loading' ? 'Cargando...' : 'Descargando...'
+                        ]) : (isLoaded ? 'Descargar' : 'Cargar'))
+                    ]);
+                }))
+            ]);
+        };
+
+        // Componente ActiveGames separado para la sección Juegos Activos  
+        const ActiveGamesComponent = () => {
+            const [games, setGames] = useState([]);
+            const [gameConfigurations, setGameConfigurations] = useState([]);
+            const [challenges, setChallenges] = useState([]);
+            const [blocks, setBlocks] = useState([]);
+            const [isLoading, setIsLoading] = useState(true);
+            const [currentUser, setCurrentUser] = useState(null);
+
+            useEffect(() => {
+                const loadActiveGamesData = async () => {
+                    try {
+                        setIsLoading(true);
+                        const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+                        if (session.id) {
+                            setCurrentUser(session);
+                            
+                            if (window.apiDataService) {
+                                const [gamesData, configurations, challengesData, blocksData] = await Promise.all([
+                                    window.apiDataService.fetchGamesForUser(session.id),
+                                    window.apiDataService.fetchGameConfigurations(session.id),
+                                    window.apiDataService.fetchChallengesForUser(session.id),
+                                    window.apiDataService.fetchUserBlocks(session.id)
+                                ]);
+                                
+                                setGames(gamesData || []);
+                                setGameConfigurations(configurations || []);
+                                setChallenges(challengesData || []);
+                                setBlocks(blocksData || []);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error loading active games data:', error);
+                    } finally {
+                        setIsLoading(false);
+                    }
+                };
+                loadActiveGamesData();
+            }, []);
+
+            const onNavigateToGame = (game) => {
+                const isInProgress = (game.mode === 'Duelo' || game.mode === 'Trivial') && 
+                    (game.gameState || game.turnState || (game.round && game.round > 0));
+
+                if (isInProgress) {
+                    const targetPage = game.mode === 'Duelo' ? 'game-duel.html' : 'game-trivial.html';
+                    window.location.href = `${targetPage}?gameId=${game.id}`;
+                } else {
+                    window.location.href = `active-game.html?gameId=${game.id}`;
+                }
+            };
+
+            const handleDeleteGame = async (gameId) => {
+                try {
+                    if (window.apiDataService && currentUser) {
+                        await window.apiDataService.deleteGameForUser(currentUser.id, gameId);
+                        setGames(prev => prev.filter(g => g.id !== gameId));
+                    }
+                } catch (error) {
+                    console.error('Error deleting game:', error);
+                }
+            };
+
+            const handleAcceptChallenge = async (challengeId) => {
+                try {
+                    if (window.apiDataService) {
+                        await window.apiDataService.acceptChallenge(challengeId);
+                        // Recargar datos
+                        const [gamesData, challengesData] = await Promise.all([
+                            window.apiDataService.fetchGamesForUser(currentUser.id),
+                            window.apiDataService.fetchChallengesForUser(currentUser.id)
+                        ]);
+                        setGames(gamesData || []);
+                        setChallenges(challengesData || []);
+                    }
+                } catch (error) {
+                    console.error('Error accepting challenge:', error);
+                }
+            };
+
+            const handleDeclineChallenge = async (challengeId) => {
+                try {
+                    if (window.apiDataService) {
+                        await window.apiDataService.declineChallenge(challengeId);
+                        // Recargar datos
+                        const challengesData = await window.apiDataService.fetchChallengesForUser(currentUser.id);
+                        setChallenges(challengesData || []);
+                    }
+                } catch (error) {
+                    console.error('Error declining challenge:', error);
+                }
+            };
+
+            const handleDeleteConfiguration = async (configId) => {
+                try {
+                    if (window.apiDataService) {
+                        await window.apiDataService.deleteGameConfiguration(configId);
+                        const configurations = await window.apiDataService.fetchGameConfigurations(currentUser.id);
+                        setGameConfigurations(configurations || []);
+                    }
+                } catch (error) {
+                    console.error('Error deleting configuration:', error);
+                }
+            };
+
+            const handleRepeatConfiguration = async (config) => {
+                try {
+                    if (window.apiDataService && currentUser) {
+                        const gameConfig = { 
+                            mode: config.game_type || config.gameType || 'Partida', 
+                            config: config.configuration || config.config 
+                        };
+                        const newGame = await window.apiDataService.createGameForUser(
+                            currentUser.id, 
+                            currentUser.nickname, 
+                            gameConfig
+                        );
+                        
+                        if (newGame && newGame.id) {
+                            localStorage.setItem('current_game_id', newGame.id);
+                            localStorage.setItem('current_game_mode', 'normal');
+                            onNavigateToGame(newGame);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error repeating configuration:', error);
+                }
+            };
+
+            if (isLoading) {
+                return React.createElement('div', { 
+                    className: "bg-slate-800 p-6 rounded-xl shadow-lg text-center" 
+                }, [
+                    React.createElement('div', {
+                        key: 'spinner',
+                        className: "animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"
+                    }),
+                    React.createElement('p', {
+                        key: 'loading-text',
+                        className: "text-gray-400"
+                    }, 'Cargando juegos activos...')
+                ]);
+            }
+
+            return React.createElement(ActiveGames, {
+                games: games,
+                gameConfigurations: gameConfigurations,
+                challenges: challenges,
+                blocks: blocks,
+                onDeleteGame: handleDeleteGame,
+                onNavigateToGame: onNavigateToGame,
+                onAcceptChallenge: handleAcceptChallenge,
+                onDeclineChallenge: handleDeclineChallenge,
+                handleDeleteConfiguration: handleDeleteConfiguration,
+                onRepeatConfiguration: handleRepeatConfiguration,
+                setCurrentView: () => {}
+            });
         };
 
         const TabHistoryComponent = () => {
@@ -1828,21 +2120,6 @@
             return React.createElement('div', {
                 className: "bg-slate-800 p-6 rounded-xl shadow-lg flex flex-col"
             }, [
-                React.createElement('div', {
-                    key: 'history-header',
-                    className: "flex items-center mb-4 flex-shrink-0"
-                }, [
-                    React.createElement('img', {
-                        key: 'history-icon',
-                        src: "./Imagenes/Historia.png",
-                        alt: "Game History",
-                        className: "h-10 w-10 mr-3"
-                    }),
-                    React.createElement('h3', {
-                        key: 'title',
-                        className: "text-xl font-bold text-white"
-                    }, 'Historial de Partidas')
-                ]),
                 tabGameHistory && tabGameHistory.length > 0 ? React.createElement('div', {
                     key: 'history-table-container',
                     className: "overflow-x-auto flex-grow"
@@ -1909,6 +2186,38 @@
                 );
             } else {
                 console.error('Contenedor loaded-blocks-content no encontrado');
+            }
+
+            // Renderizar Bloques Disponibles COMPLETO en su pestaña
+            const availableBlocksContainer = document.getElementById('available-blocks-content');
+            if (availableBlocksContainer) {
+                console.log('Renderizando AvailableBlocksComponent...');
+                const availableBlocksRoot = ReactDOM.createRoot(availableBlocksContainer);
+                availableBlocksRoot.render(
+                    React.createElement(LanguageProvider, {}, 
+                        React.createElement(UserContext.Provider, { value: { currentUser: JSON.parse(localStorage.getItem('playtest_session') || '{}') } },
+                            React.createElement(AvailableBlocksComponent)
+                        )
+                    )
+                );
+            } else {
+                console.error('Contenedor available-blocks-content no encontrado');
+            }
+
+            // Renderizar Juegos Activos COMPLETO en su sección
+            const activeGamesContainer = document.getElementById('active-games-content');
+            if (activeGamesContainer) {
+                console.log('Renderizando ActiveGamesComponent...');
+                const activeGamesRoot = ReactDOM.createRoot(activeGamesContainer);
+                activeGamesRoot.render(
+                    React.createElement(LanguageProvider, {}, 
+                        React.createElement(UserContext.Provider, { value: { currentUser: JSON.parse(localStorage.getItem('playtest_session') || '{}') } },
+                            React.createElement(ActiveGamesComponent)
+                        )
+                    )
+                );
+            } else {
+                console.error('Contenedor active-games-content no encontrado');
             }
 
             // Renderizar Historial de Partidas COMPLETO en su pestaña
