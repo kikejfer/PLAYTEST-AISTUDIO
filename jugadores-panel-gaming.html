@@ -1598,17 +1598,18 @@
                             return;
                         }
                         
-                        if (!session.id) {
+                        const userId = session.id || session.userId;
+                        if (!userId) {
                             console.error('TabBlocksComponent: No hay ID de usuario');
                             return;
                         }
 
                         setCurrentUser(session);
-                        console.log('TabBlocksComponent: Llamando a API...');
+                        console.log('TabBlocksComponent: Llamando a API con userId:', userId);
                         
                         const [blocks, createdBlocks] = await Promise.all([
-                            window.apiDataService.fetchUserBlocks(session.id),
-                            window.apiDataService.fetchCreatedBlocks(session.id)
+                            window.apiDataService.fetchUserBlocks(userId),
+                            window.apiDataService.fetchCreatedBlocks(userId)
                         ]);
                         
                         console.log('TabBlocksComponent: Bloques cargados:', blocks?.length, 'bloques');
@@ -1719,7 +1720,8 @@
                         return;
                     }
                     
-                    if (!currentUser.id) {
+                    const userId = currentUser.id || currentUser.userId;
+                    if (!userId) {
                         console.error('AvailableBlocks: No hay ID de usuario');
                         return;
                     }
@@ -1920,19 +1922,20 @@
                             return;
                         }
                         
-                        if (!session.id) {
+                        const userId = session.id || session.userId;
+                        if (!userId) {
                             console.error('ActiveGamesComponent: No hay ID de usuario');
                             return;
                         }
 
                         setCurrentUser(session);
-                        console.log('ActiveGamesComponent: Cargando datos...');
+                        console.log('ActiveGamesComponent: Cargando datos con userId:', userId);
                         
                         const [gamesData, configurations, challengesData, blocksData] = await Promise.all([
-                            window.apiDataService.fetchGamesForUser(session.id),
-                            window.apiDataService.fetchGameConfigurations(session.id),
-                            window.apiDataService.fetchChallengesForUser(session.id),
-                            window.apiDataService.fetchUserBlocks(session.id)
+                            window.apiDataService.fetchGamesForUser(userId),
+                            window.apiDataService.fetchGameConfigurations(userId),
+                            window.apiDataService.fetchChallengesForUser(userId),
+                            window.apiDataService.fetchUserBlocks(userId)
                         ]);
                         
                         console.log('ActiveGamesComponent: Datos cargados:', gamesData?.length, 'juegos,', challengesData?.length, 'retos');
@@ -1964,7 +1967,8 @@
             const handleDeleteGame = async (gameId) => {
                 try {
                     if (window.apiDataService && currentUser) {
-                        await window.apiDataService.deleteGameForUser(currentUser.id, gameId);
+                        const userId = currentUser.id || currentUser.userId;
+                        await window.apiDataService.deleteGameForUser(userId, gameId);
                         setGames(prev => prev.filter(g => g.id !== gameId));
                     }
                 } catch (error) {
@@ -2085,13 +2089,14 @@
                             return;
                         }
                         
-                        if (!currentUser.id) {
+                        const userId = currentUser.id || currentUser.userId;
+                        if (!userId) {
                             console.error('TabHistoryComponent: No hay ID de usuario');
                             return;
                         }
 
-                        console.log('TabHistoryComponent: Cargando historial...');
-                        const history = await window.apiDataService.fetchGameHistory(currentUser.id);
+                        console.log('TabHistoryComponent: Cargando historial con userId:', userId);
+                        const history = await window.apiDataService.fetchGameHistory(userId);
                         console.log('TabHistoryComponent: Historial cargado:', history?.length, 'partidas');
                         setTabGameHistory(history || []);
                     } catch (error) {
