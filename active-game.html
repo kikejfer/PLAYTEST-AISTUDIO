@@ -1081,6 +1081,7 @@
 
       const Header = () => {
         const { language, setLanguage, t } = useLanguage();
+        const { currentUser } = useUser();
         const [isDropdownOpen, setIsDropdownOpen] = useState(false);
         const dropdownRef = useRef(null);
         useEffect(() => { const handleClickOutside = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setIsDropdownOpen(false); }; document.addEventListener("mousedown", handleClickOutside); return () => document.removeEventListener("mousedown", handleClickOutside); }, [dropdownRef]);
