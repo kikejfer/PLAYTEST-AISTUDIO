@@ -947,7 +947,7 @@
                         }))
                     ]),
 
-                    gameConfigurations.length > 0 ? React.createElement('ul', {
+                    (gameConfigurations.length > 0 || gamesToShow.length > 0) ? React.createElement('ul', {
                         key: 'configurations',
                         className: "space-y-3"
                     }, gameConfigurations.slice(0, 5).map(config => {
