@@ -2112,19 +2112,11 @@
                 ]);
             }
 
-            return React.createElement(ActiveGames, {
-                games: games,
-                gameConfigurations: gameConfigurations,
-                challenges: challenges,
-                blocks: blocks,
-                onDeleteGame: handleDeleteGame,
-                onNavigateToGame: onNavigateToGame,
-                onAcceptChallenge: handleAcceptChallenge,
-                onDeclineChallenge: handleDeclineChallenge,
-                handleDeleteConfiguration: handleDeleteConfiguration,
-                onRepeatConfiguration: handleRepeatConfiguration,
-                setCurrentView: () => {}
-            });
+            return React.createElement('div', {
+                className: "bg-slate-800 p-6 rounded-xl shadow-lg text-center"
+            }, React.createElement('p', {
+                className: "text-gray-400"
+            }, 'Juegos activos cargados desde componente dedicado'));
         };
 
         const TabHistoryComponent = () => {
