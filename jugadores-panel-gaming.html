@@ -1611,7 +1611,7 @@
                         console.log('TabBlocksComponent: Llamando a API con userId:', userId);
                         
                         const [blocks, createdBlocks] = await Promise.all([
-                            window.apiDataService.fetchUserBlocks(userId),
+                            window.apiDataService.fetchLoadedBlocks(),
                             window.apiDataService.fetchCreatedBlocks(userId)
                         ]);
                         
@@ -1944,7 +1944,7 @@
                             window.apiDataService.fetchGamesForUser(userId),
                             window.apiDataService.fetchGameConfigurations(userId),
                             window.apiDataService.fetchChallengesForUser(userId),
-                            window.apiDataService.fetchUserBlocks(userId)
+                            window.apiDataService.fetchLoadedBlocks()
                         ]);
                         
                         console.log('ActiveGamesComponent: Datos cargados:', gamesData?.length, 'juegos,', challengesData?.length, 'retos');
