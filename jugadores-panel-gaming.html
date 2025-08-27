@@ -926,81 +926,11 @@
                         ])))
                     ]),
 
-                    (gameConfigurations.length > 0 || gamesToShow.length > 0) ? React.createElement('ul', {
-                        key: 'configurations',
-                        className: "space-y-3"
-                    }, gameConfigurations.slice(0, 5).map(config => {
-                        const gameMode = config.game_type || config.gameType || 'Partida';
-                        const modeDisplayMap = {
-                            'classic': 'Modo Clásico',
-                            'time-trial': 'Modo Contrarreloj',
-                            'lives': 'Modo Vidas',
-                            'by-levels': 'Por Niveles',
-                            'streak': 'Racha de Aciertos',
-                            'exam': 'Examen Simulado',
-                            'duel': 'Duelo',
-                            'marathon': 'Maratón',
-                            'trivial': 'Trivial'
-                        };
-                        const displayMode = modeDisplayMap[gameMode] || gameMode;
-                        
-                        return React.createElement('li', {
-                            key: `config-${config.id}`,
-                            className: "p-3 rounded-md bg-slate-900 border-l-4 border-blue-600"
-                        }, [
-                            React.createElement('div', { key: 'config-content', className: "flex items-center justify-between" }, [
-                                React.createElement('div', { key: 'config-info', className: "flex-grow" }, [
-                                    React.createElement('div', { key: 'config-header', className: "flex items-center gap-2 mb-2" }, [
-                                        React.createElement('p', {
-                                            key: 'mode',
-                                            className: "font-semibold text-white"
-                                        }, displayMode),
-                                        React.createElement('span', {
-                                            key: 'badge',
-                                            className: "text-xs bg-blue-600 px-2 py-0.5 rounded text-white"
-                                        }, 'Configuración Guardada')
-                                    ]),
-                                    config.configuration_metadata && React.createElement('div', {
-                                        key: 'metadata',
-                                        className: "p-2 bg-slate-800 rounded text-center"
-                                    }, React.createElement('div', {
-                                        key: 'stats',
-                                        className: "grid grid-cols-3 gap-2 text-xs"
-                                    }, [
-                                        React.createElement('div', { key: 'blocks' }, [
-                                            React.createElement('span', { key: 'blocks-label', className: "text-gray-400" }, 'Bloques'),
-                                            React.createElement('div', { key: 'blocks-value', className: "font-bold text-white" }, config.configuration_metadata.summary?.blockCount || 0)
-                                        ]),
-                                        React.createElement('div', { key: 'topics' }, [
-                                            React.createElement('span', { key: 'topics-label', className: "text-gray-400" }, 'Temas'),
-                                            React.createElement('div', { key: 'topics-value', className: "font-bold text-white" }, config.configuration_metadata.summary?.topicCount || 0)
-                                        ]),
-                                        React.createElement('div', { key: 'questions' }, [
-                                            React.createElement('span', { key: 'questions-label', className: "text-gray-400" }, 'Preguntas'),
-                                            React.createElement('div', { key: 'questions-value', className: "font-bold text-white" }, config.configuration_metadata.summary?.questionCount || 0)
-                                        ])
-                                    ])),
-                                    React.createElement('div', { key: 'actions', className: "flex gap-2 mt-3" }, [
-                                        React.createElement('button', {
-                                            key: 'play',
-                                            onClick: () => onRepeatConfiguration(config),
-                                            className: "flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
-                                        }, '🎮 Jugar Nueva Partida'),
-                                        React.createElement('button', {
-                                            key: 'delete',
-                                            onClick: () => handleDeleteConfiguration(config.id),
-                                            className: "bg-red-600/20 hover:bg-red-600/40 text-red-400 font-semibold py-2 px-3 rounded-lg transition-colors text-sm",
-                                            title: "Eliminar configuración"
-                                        }, '🗑️')
-                                    ])
-                                ])
-                            ])
-                        ]);
-                    })) : React.createElement('div', {
+                    gamesToShow.length === 0 && React.createElement('div', {
                         key: 'no-games',
                         className: "text-center py-6 flex-grow flex items-center justify-center"
                     }, React.createElement('div', { key: 'no-games-content' }, [
-                        React.createElement('p', { key: 'no-games-text', className: "text-gray-400" }, 'No hay juegos activos'),
+                        React.createElement('p', { key: 'no-games-text', className: "text-gray-400" }, 'No hay juegos disponibles'),
                         React.createElement('p', { key: 'no-games-hint', className: "text-sm text-gray-500 mt-1" }, 'Crea una nueva partida para empezar')
                     ]))
                 ])
