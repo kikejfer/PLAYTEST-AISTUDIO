@@ -1887,29 +1887,40 @@
 
         const mockCurrentUser = { id: 1, nickname: 'Profesor' };
 
-        // Simplified components for teacher panel (reused from creators panel)
+        // Enhanced components for teacher panel with multiple file support
         const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock }) => {
             const { t } = useLanguage();
             const [blockName, setBlockName] = useState('');
             const [topicName, setTopicName] = useState('');
-            const [file, setFile] = useState(null);
+            const [files, setFiles] = useState([]);
+            const [uploadMode, setUploadMode] = useState('single'); // 'single' or 'multiple'
             const [status, setStatus] = useState('idle');
             const [message, setMessage] = useState('');
 
             const blockOptions = blocks.map(b => ({ id: b.id, label: b.nombreCorto }));
 
             const handleFileChange = (event) => {
-                const selectedFile = event.target.files[0];
-                setFile(selectedFile);
+                const selectedFiles = Array.from(event.target.files);
+                if (uploadMode === 'single') {
+                    setFiles(selectedFiles.slice(0, 1));
+                } else {
+                    setFiles(selectedFiles);
+                }
+            };
+
+            const removeFile = (index) => {
+                const newFiles = files.filter((_, i) => i !== index);
+                setFiles(newFiles);
             };
 
             const handleLoadForReview = () => {
-                if (!topicName.trim() || !file) {
-                    setMessage('Por favor, introduce un tema y selecciona un fichero.');
+                if (!topicName.trim() || files.length === 0) {
+                    setMessage('Por favor, introduce un tema y selecciona al menos un fichero.');
                     setStatus('error');
                     return;
                 }
-                setMessage(`Archivo ${file.name} listo para procesar.`);
+                const fileNames = files.map(f => f.name).join(', ');
+                setMessage(`${files.length} archivo(s) listo(s) para procesar: ${fileNames}`);
                 setStatus('success');
             };
 
@@ -1956,9 +1967,49 @@
                         </div>
                     </div>
 
+                    {/* Upload Mode Selector */}
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>
+                            Modo de Subida
+                        </label>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button
+                                type="button"
+                                onClick={() => setUploadMode('single')}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #415A77',
+                                    background: uploadMode === 'single' ? '#3B82F6' : '#0D1B2A',
+                                    color: uploadMode === 'single' ? 'white' : '#E0E1DD',
+                                    cursor: 'pointer',
+                                    fontSize: '14px'
+                                }}
+                            >
+                                📄 Archivo Único
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setUploadMode('multiple')}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #415A77',
+                                    background: uploadMode === 'multiple' ? '#3B82F6' : '#0D1B2A',
+                                    color: uploadMode === 'multiple' ? 'white' : '#E0E1DD',
+                                    cursor: 'pointer',
+                                    fontSize: '14px'
+                                }}
+                            >
+                                📁 Múltiples Archivos
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* File Upload Area */}
                     <div style={{ marginBottom: '16px' }}>
                         <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
-                            {t('uploader_file_label')}
+                            {uploadMode === 'single' ? 'Subir Fichero (.txt)' : 'Subir Ficheros (.txt)'}
                         </label>
                         <div style={{
                             border: '2px dashed #415A77',
@@ -1966,19 +2017,65 @@
                             padding: '32px 16px',
                             textAlign: 'center',
                             cursor: 'pointer',
-                            background: file ? '#0D1B2A' : 'transparent'
+                            background: files.length > 0 ? '#0D1B2A' : 'transparent'
                         }}>
                             <input 
                                 type="file" 
                                 accept=".txt" 
+                                multiple={uploadMode === 'multiple'}
                                 onChange={handleFileChange}
                                 style={{ display: 'none' }}
                                 id="file-upload-teachers"
                             />
                             <label htmlFor="file-upload-teachers" style={{ cursor: 'pointer', color: '#E0E1DD' }}>
-                                {file ? `Seleccionado: ${file.name}` : `${t('uploader_file_prompt_1')} ${t('uploader_file_prompt_2')}`}
+                                {files.length > 0 
+                                    ? `Seleccionado(s): ${files.length} archivo(s)` 
+                                    : `${t('uploader_file_prompt_1')} ${t('uploader_file_prompt_2')}`}
                             </label>
                         </div>
+                        
+                        {/* Selected Files List */}
+                        {files.length > 0 && (
+                            <div style={{ marginTop: '12px', background: '#0D1B2A', borderRadius: '6px', padding: '12px' }}>
+                                <div style={{ fontSize: '12px', color: '#778DA9', marginBottom: '8px' }}>
+                                    Archivos seleccionados ({files.length}):
+                                </div>
+                                {files.map((file, index) => (
+                                    <div key={index} style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        padding: '6px 0',
+                                        borderBottom: index < files.length - 1 ? '1px solid #415A77' : 'none'
+                                    }}>
+                                        <span style={{ color: '#E0E1DD', fontSize: '14px', flex: 1 }}>
+                                            📄 {file.name}
+                                        </span>
+                                        <span style={{ color: '#778DA9', fontSize: '12px', marginRight: '8px' }}>
+                                            {(file.size / 1024).toFixed(1)} KB
+                                        </span>
+                                        <button
+                                            onClick={() => removeFile(index)}
+                                            style={{
+                                                background: '#EF4444',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                width: '20px',
+                                                height: '20px',
+                                                cursor: 'pointer',
+                                                fontSize: '12px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <button 
