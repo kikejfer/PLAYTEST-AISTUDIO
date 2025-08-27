@@ -2045,6 +2045,13 @@
                     return;
                 }
 
+                // Start progress tracking
+                setIsProcessing(true);
+                setProcessingProgress(0);
+                setProcessingStep('Iniciando guardado de preguntas...');
+                setStatus('saving');
+                setMessage('Guardando preguntas en la base de datos...');
+
                 try {
                     console.log(`🚀 Starting to save ${processedQuestions.length} questions...`);
                     
@@ -2060,9 +2067,16 @@
 
                     let totalSaved = 0;
                     const blockResults = [];
+                    const totalQuestions = processedQuestions.length;
+                    const startTime = Date.now();
 
                     // Process each block
+                    let blockIndex = 0;
+                    const totalBlocks = Object.keys(questionsByBlock).length;
+                    
                     for (const [blockName, questions] of Object.entries(questionsByBlock)) {
+                        blockIndex++;
+                        setProcessingStep(`Procesando bloque ${blockIndex}/${totalBlocks}: ${blockName}`);
                         console.log(`📦 Processing block: ${blockName} with ${questions.length} questions`);
                         
                         try {
@@ -2114,6 +2128,19 @@
                                 };
 
                                 console.log(`💾 Saving question ${i + 1}/${questions.length} to block ${blockName}`);
+                                setProcessingStep(`Guardando pregunta ${totalSaved + 1}/${totalQuestions} en ${blockName}`);
+                                
+                                // Update progress based on total questions saved
+                                const progress = Math.round(((totalSaved + 1) / totalQuestions) * 100);
+                                setProcessingProgress(progress);
+                                
+                                // Calculate and update time remaining
+                                const elapsedTime = Date.now() - startTime;
+                                const avgTimePerQuestion = elapsedTime / (totalSaved + 1);
+                                const remainingQuestions = totalQuestions - (totalSaved + 1);
+                                const estimatedTimeRemaining = Math.round((remainingQuestions * avgTimePerQuestion) / 1000);
+                                setTimeRemaining(estimatedTimeRemaining);
+                                
                                 await apiDataService.createQuestion(questionData);
                                 totalSaved++;
                                 
@@ -2168,13 +2195,21 @@
                     // Clear processed questions after successful save
                     if (totalSaved > 0) {
                         setProcessedQuestions([]);
-                        setStatus('idle');
-                        setMessage('');
+                        setStatus('completed');
+                        setMessage(`✅ ${totalSaved} preguntas guardadas exitosamente`);
                     }
                     
                 } catch (error) {
                     console.error('❌ Error saving questions:', error);
+                    setStatus('error');
+                    setMessage(`Error al guardar las preguntas: ${error.message}`);
                     alert(`Error al guardar las preguntas: ${error.message}`);
+                } finally {
+                    // Reset progress indicators
+                    setIsProcessing(false);
+                    setProcessingProgress(0);
+                    setProcessingStep('');
+                    setTimeRemaining(0);
                 }
             };
 
