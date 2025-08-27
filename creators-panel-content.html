@@ -580,7 +580,7 @@
         <div class="tabs-container">
             <div class="tabs-nav">
                 <button class="tab-button active">📝 Contenido</button>
-                <button class="tab-button" onclick="window.location.href='add-question.html'">➕ Añadir Preguntas</button>
+                <button class="tab-button" onclick="showAddQuestionsModal()">➕ Añadir Preguntas</button>
                 <button class="tab-button" onclick="window.location.href='creators-panel-statistics.html'">📊 Estadísticas</button>
                 <button class="tab-button" onclick="window.location.href='creators-panel-tournaments.html'">🏆 Torneos</button>
                 <button class="tab-button" onclick="window.location.href='creators-panel-monetization.html'">💰 Monetización</button>
@@ -1563,6 +1563,865 @@
             }
         }
 
+    </script>
+
+    <!-- Modal de Añadir Preguntas -->
+    <div id="add-questions-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 95%; max-width: 1200px; height: 85%; border: 1px solid #415A77; display: flex; flex-direction: column;" onclick="event.stopPropagation();">
+            <div style="padding: 24px; border-bottom: 1px solid #415A77; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="color: #E0E1DD; font-size: 20px; font-weight: bold; margin: 0;">➕ Añadir Preguntas</h3>
+                <button onclick="closeModal('add-questions-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
+            </div>
+            <div style="flex: 1; overflow: auto; padding: 24px;">
+                <div id="add-questions-content">
+                    <!-- React content will be mounted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- React CDN and Add Questions App -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } = React;
+        
+        // Translation system for Add Questions
+        const translations = {
+            es: {
+                add_question_tab_uploader: 'Subir Fichero',
+                add_question_tab_manual: 'Agregar Manualmente', 
+                add_question_tab_generator: 'Generar con IA',
+                generator_title: 'Generador de Preguntas',
+                generator_api_key: 'API Key de Gemini',
+                generator_api_key_placeholder: 'Introduce tu API Key aquí',
+                generator_block: 'Bloque',
+                generator_block_placeholder: 'Escribe un bloque nuevo o elige uno existente',
+                generator_topic: 'Tema',
+                generator_topic_placeholder: 'Elige o crea un tema nuevo',
+                generator_button_generate: 'Generar Preguntas',
+                generator_button_generating: 'Generando...',
+                uploader_title: 'Subir Preguntas desde Fichero',
+                uploader_file_label: 'Subir Fichero (.txt)',
+                uploader_file_prompt_1: 'Sube un fichero',
+                uploader_file_prompt_2: 'o arrástralo aquí',
+                uploader_button_load: 'Cargar Preguntas para Revisar',
+                manual_form_title: 'Nueva Pregunta Manual',
+                manual_form_question_text: 'Texto de la Pregunta',
+                manual_form_answers: 'Respuestas (marca la correcta)',
+                manual_form_add_button: 'Añadir Pregunta',
+                manual_form_add_answer: 'Añadir Respuesta',
+                block_type: 'Tipo de Bloque',
+                block_public: 'Público',
+                block_private: 'Privado'
+            }
+        };
+
+        const useLanguage = () => ({
+            t: (key, params = {}) => {
+                let text = translations.es[key] || key;
+                Object.keys(params).forEach(param => {
+                    text = text.replace(`{${param}}`, params[param]);
+                });
+                return text;
+            }
+        });
+
+        // Simplified Combobox component
+        const Combobox = ({ options, value, onChange, placeholder, disabled }) => {
+            const [isOpen, setIsOpen] = useState(false);
+            const containerRef = useRef(null);
+
+            const filteredOptions = options.filter(option => 
+                option.label.toLowerCase().includes(value.toLowerCase())
+            );
+
+            useEffect(() => {
+                const handleClickOutside = (event) => {
+                    if (containerRef.current && !containerRef.current.contains(event.target)) {
+                        setIsOpen(false);
+                    }
+                };
+                document.addEventListener('mousedown', handleClickOutside);
+                return () => document.removeEventListener('mousedown', handleClickOutside);
+            }, []);
+
+            return (
+                <div className="relative" ref={containerRef}>
+                    <div className="relative">
+                        <input 
+                            type="text" 
+                            value={value} 
+                            onChange={(e) => {
+                                onChange(e.target.value);
+                                if (!isOpen) setIsOpen(true);
+                            }}
+                            onFocus={() => setIsOpen(true)}
+                            style={{
+                                width: '100%',
+                                background: '#0D1B2A',
+                                border: '1px solid #415A77',
+                                borderRadius: '6px',
+                                padding: '8px 32px 8px 12px',
+                                color: '#E0E1DD',
+                                fontSize: '14px',
+                                outline: 'none'
+                            }}
+                            placeholder={placeholder}
+                            disabled={disabled}
+                        />
+                        <button 
+                            type="button" 
+                            onClick={() => setIsOpen(!isOpen)} 
+                            disabled={disabled}
+                            style={{
+                                position: 'absolute',
+                                right: '8px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                background: 'none',
+                                border: 'none',
+                                color: '#778DA9',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            ▼
+                        </button>
+                    </div>
+                    {isOpen && (
+                        <ul style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: 0,
+                            right: 0,
+                            zIndex: 10,
+                            background: '#1B263B',
+                            border: '1px solid #415A77',
+                            borderRadius: '6px',
+                            marginTop: '4px',
+                            maxHeight: '200px',
+                            overflowY: 'auto',
+                            padding: '4px 0'
+                        }}>
+                            {filteredOptions.length > 0 ? (
+                                filteredOptions.map(option => (
+                                    <li 
+                                        key={option.id}
+                                        onClick={() => {
+                                            onChange(option.label);
+                                            setIsOpen(false);
+                                        }}
+                                        style={{
+                                            padding: '8px 12px',
+                                            color: '#E0E1DD',
+                                            cursor: 'pointer',
+                                            listStyle: 'none'
+                                        }}
+                                        onMouseOver={(e) => e.target.style.background = '#415A77'}
+                                        onMouseOut={(e) => e.target.style.background = 'transparent'}
+                                    >
+                                        {option.label}
+                                    </li>
+                                ))
+                            ) : (
+                                <li style={{ padding: '8px 12px', color: '#778DA9', listStyle: 'none' }}>
+                                    {value ? "No se encontraron bloques. Escribe para crear uno nuevo." : "Escribe para buscar o crear nuevo."}
+                                </li>
+                            )}
+                        </ul>
+                    )}
+                </div>
+            );
+        };
+
+        // Mock data and functions (integrate with your existing API)
+        const mockBlocks = [
+            { id: 1, nombreCorto: 'Matemáticas', creatorId: 1, questions: [{ tema: 'Álgebra' }, { tema: 'Geometría' }] },
+            { id: 2, nombreCorto: 'Historia', creatorId: 1, questions: [{ tema: 'Medieval' }, { tema: 'Moderna' }] }
+        ];
+
+        const mockCurrentUser = { id: 1, nickname: 'Creador de Contenido' };
+
+        // Simplified File Upload Component
+        const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock }) => {
+            const { t } = useLanguage();
+            const [blockName, setBlockName] = useState('');
+            const [topicName, setTopicName] = useState('');
+            const [file, setFile] = useState(null);
+            const [status, setStatus] = useState('idle');
+            const [message, setMessage] = useState('');
+
+            const blockOptions = blocks.map(b => ({ id: b.id, label: b.nombreCorto }));
+
+            const handleFileChange = (event) => {
+                const selectedFile = event.target.files[0];
+                setFile(selectedFile);
+            };
+
+            const handleLoadForReview = () => {
+                if (!topicName.trim() || !file) {
+                    setMessage('Por favor, introduce un tema y selecciona un fichero.');
+                    setStatus('error');
+                    return;
+                }
+                setMessage(`Archivo ${file.name} listo para procesar.`);
+                setStatus('success');
+            };
+
+            return (
+                <div style={{ background: '#1B263B', padding: '24px', borderRadius: '12px', border: '1px solid #415A77' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <h3 style={{ color: '#E0E1DD', fontSize: '18px', fontWeight: 'bold', margin: 0 }}>
+                            📄 {t('uploader_title')}
+                        </h3>
+                    </div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                        <div>
+                            <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                {t('generator_block')}
+                            </label>
+                            <Combobox 
+                                options={blockOptions} 
+                                value={blockName} 
+                                onChange={setBlockName} 
+                                placeholder={t('generator_block_placeholder')} 
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                {t('generator_topic')}
+                            </label>
+                            <input 
+                                type="text" 
+                                value={topicName} 
+                                onChange={(e) => setTopicName(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    background: '#0D1B2A',
+                                    border: '1px solid #415A77',
+                                    borderRadius: '6px',
+                                    padding: '8px 12px',
+                                    color: '#E0E1DD',
+                                    fontSize: '14px',
+                                    outline: 'none'
+                                }}
+                                placeholder={t('generator_topic_placeholder')}
+                            />
+                        </div>
+                    </div>
+
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                            {t('uploader_file_label')}
+                        </label>
+                        <div style={{
+                            border: '2px dashed #415A77',
+                            borderRadius: '8px',
+                            padding: '32px 16px',
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            background: file ? '#0D1B2A' : 'transparent'
+                        }}>
+                            <input 
+                                type="file" 
+                                accept=".txt" 
+                                onChange={handleFileChange}
+                                style={{ display: 'none' }}
+                                id="file-upload"
+                            />
+                            <label htmlFor="file-upload" style={{ cursor: 'pointer', color: '#E0E1DD' }}>
+                                {file ? `Seleccionado: ${file.name}` : `${t('uploader_file_prompt_1')} ${t('uploader_file_prompt_2')}`}
+                            </label>
+                        </div>
+                    </div>
+
+                    <button 
+                        onClick={handleLoadForReview}
+                        style={{
+                            width: '100%',
+                            background: '#3B82F6',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '12px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            marginBottom: '16px'
+                        }}
+                        onMouseOver={(e) => e.target.style.background = '#2563EB'}
+                        onMouseOut={(e) => e.target.style.background = '#3B82F6'}
+                    >
+                        {t('uploader_button_load')}
+                    </button>
+
+                    {status !== 'idle' && (
+                        <div style={{ 
+                            padding: '12px', 
+                            borderRadius: '6px', 
+                            background: status === 'success' ? '#10B981' : '#EF4444',
+                            color: 'white',
+                            fontSize: '14px'
+                        }}>
+                            {message}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // Simplified Manual Question Form
+        const ManualQuestionForm = ({ currentUser, blocks, onSaveQuestions, onCreateBlock }) => {
+            const { t } = useLanguage();
+            const [formState, setFormState] = useState({
+                blockName: '',
+                topicName: '',
+                questionText: '',
+                answers: [{ text: '', isCorrect: true }, { text: '', isCorrect: false }],
+                explanation: '',
+                isPublic: true
+            });
+            const [status, setStatus] = useState({ type: 'idle', message: '' });
+
+            const blockOptions = blocks.map(b => ({ id: b.id, label: b.nombreCorto }));
+
+            const handleInputChange = (e) => {
+                const { name, value, type, checked } = e.target;
+                setFormState(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+            };
+
+            const handleAnswerChange = (index, text) => {
+                const newAnswers = [...formState.answers];
+                newAnswers[index].text = text;
+                setFormState(prev => ({ ...prev, answers: newAnswers }));
+            };
+
+            const setCorrectAnswer = (index) => {
+                const newAnswers = formState.answers.map((ans, i) => ({ ...ans, isCorrect: i === index }));
+                setFormState(prev => ({ ...prev, answers: newAnswers }));
+            };
+
+            const addAnswer = () => {
+                if (formState.answers.length < 6) {
+                    setFormState(prev => ({ ...prev, answers: [...prev.answers, { text: '', isCorrect: false }] }));
+                }
+            };
+
+            const removeAnswer = (index) => {
+                if (formState.answers.length > 2) {
+                    const newAnswers = formState.answers.filter((_, i) => i !== index);
+                    if (!newAnswers.some(a => a.isCorrect) && newAnswers.length > 0) {
+                        newAnswers[0].isCorrect = true;
+                    }
+                    setFormState(prev => ({ ...prev, answers: newAnswers }));
+                }
+            };
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                if (!formState.blockName.trim() || !formState.topicName.trim() || !formState.questionText.trim() || 
+                    formState.answers.length < 2 || !formState.answers.some(a => a.isCorrect)) {
+                    setStatus({ type: 'error', message: 'Por favor, completa todos los campos requeridos.' });
+                    return;
+                }
+                setStatus({ type: 'success', message: '¡Pregunta añadida correctamente!' });
+                // Reset form
+                setFormState({
+                    blockName: '',
+                    topicName: '',
+                    questionText: '',
+                    answers: [{ text: '', isCorrect: true }, { text: '', isCorrect: false }],
+                    explanation: '',
+                    isPublic: true
+                });
+                setTimeout(() => setStatus({ type: 'idle', message: '' }), 3000);
+            };
+
+            return (
+                <div style={{ background: '#1B263B', padding: '24px', borderRadius: '12px', border: '1px solid #415A77' }}>
+                    <h3 style={{ color: '#E0E1DD', fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>
+                        ✍️ {t('manual_form_title')}
+                    </h3>
+                    
+                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <div>
+                                <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                    {t('generator_block')}
+                                </label>
+                                <Combobox 
+                                    options={blockOptions} 
+                                    value={formState.blockName} 
+                                    onChange={(value) => setFormState(prev => ({ ...prev, blockName: value }))} 
+                                    placeholder={t('generator_block_placeholder')} 
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                    {t('generator_topic')}
+                                </label>
+                                <input 
+                                    type="text" 
+                                    name="topicName"
+                                    value={formState.topicName} 
+                                    onChange={handleInputChange}
+                                    style={{
+                                        width: '100%',
+                                        background: '#0D1B2A',
+                                        border: '1px solid #415A77',
+                                        borderRadius: '6px',
+                                        padding: '8px 12px',
+                                        color: '#E0E1DD',
+                                        fontSize: '14px',
+                                        outline: 'none'
+                                    }}
+                                    placeholder={t('generator_topic_placeholder')}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                {t('manual_form_question_text')}
+                            </label>
+                            <textarea 
+                                name="questionText"
+                                value={formState.questionText} 
+                                onChange={handleInputChange}
+                                style={{
+                                    width: '100%',
+                                    background: '#0D1B2A',
+                                    border: '1px solid #415A77',
+                                    borderRadius: '6px',
+                                    padding: '8px 12px',
+                                    color: '#E0E1DD',
+                                    fontSize: '14px',
+                                    outline: 'none',
+                                    minHeight: '80px',
+                                    resize: 'vertical'
+                                }}
+                                placeholder="Escribe tu pregunta aquí..."
+                            />
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>
+                                {t('manual_form_answers')}
+                            </label>
+                            {formState.answers.map((answer, index) => (
+                                <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+                                    <input 
+                                        type="radio" 
+                                        name="correct-answer"
+                                        checked={answer.isCorrect}
+                                        onChange={() => setCorrectAnswer(index)}
+                                        style={{ marginRight: '8px' }}
+                                    />
+                                    <input 
+                                        type="text" 
+                                        value={answer.text} 
+                                        onChange={(e) => handleAnswerChange(index, e.target.value)}
+                                        style={{
+                                            flex: 1,
+                                            background: '#0D1B2A',
+                                            border: '1px solid #415A77',
+                                            borderRadius: '6px',
+                                            padding: '8px 12px',
+                                            color: '#E0E1DD',
+                                            fontSize: '14px',
+                                            outline: 'none'
+                                        }}
+                                        placeholder={`Respuesta ${index + 1}`}
+                                    />
+                                    {formState.answers.length > 2 && (
+                                        <button 
+                                            type="button" 
+                                            onClick={() => removeAnswer(index)}
+                                            style={{
+                                                background: '#EF4444',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                padding: '6px 8px',
+                                                cursor: 'pointer',
+                                                fontSize: '12px'
+                                            }}
+                                        >
+                                            ×
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                            {formState.answers.length < 6 && (
+                                <button 
+                                    type="button" 
+                                    onClick={addAnswer}
+                                    style={{
+                                        background: '#10B981',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        padding: '8px 12px',
+                                        cursor: 'pointer',
+                                        fontSize: '14px',
+                                        marginTop: '8px'
+                                    }}
+                                >
+                                    + {t('manual_form_add_answer')}
+                                </button>
+                            )}
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                Explicación (opcional)
+                            </label>
+                            <textarea 
+                                name="explanation"
+                                value={formState.explanation} 
+                                onChange={handleInputChange}
+                                style={{
+                                    width: '100%',
+                                    background: '#0D1B2A',
+                                    border: '1px solid #415A77',
+                                    borderRadius: '6px',
+                                    padding: '8px 12px',
+                                    color: '#E0E1DD',
+                                    fontSize: '14px',
+                                    outline: 'none',
+                                    minHeight: '60px',
+                                    resize: 'vertical'
+                                }}
+                                placeholder="Explica por qué esta es la respuesta correcta..."
+                            />
+                        </div>
+
+                        <button 
+                            type="submit"
+                            style={{
+                                background: '#3B82F6',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                padding: '12px',
+                                fontSize: '16px',
+                                fontWeight: '500',
+                                cursor: 'pointer'
+                            }}
+                            onMouseOver={(e) => e.target.style.background = '#2563EB'}
+                            onMouseOut={(e) => e.target.style.background = '#3B82F6'}
+                        >
+                            {t('manual_form_add_button')}
+                        </button>
+
+                        {status.type !== 'idle' && (
+                            <div style={{ 
+                                padding: '12px', 
+                                borderRadius: '6px', 
+                                background: status.type === 'success' ? '#10B981' : '#EF4444',
+                                color: 'white',
+                                fontSize: '14px'
+                            }}>
+                                {status.message}
+                            </div>
+                        )}
+                    </form>
+                </div>
+            );
+        };
+
+        // Simplified AI Generator
+        const QuestionGenerator = ({ currentUser, blocks, onSaveQuestions, onCreateBlock }) => {
+            const { t } = useLanguage();
+            const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
+            const [blockName, setBlockName] = useState('');
+            const [topicName, setTopicName] = useState('');
+            const [questionCount, setQuestionCount] = useState(5);
+            const [difficulty, setDifficulty] = useState(3);
+            const [isLoading, setIsLoading] = useState(false);
+
+            const blockOptions = blocks.map(b => ({ id: b.id, label: b.nombreCorto }));
+
+            useEffect(() => {
+                localStorage.setItem('gemini_api_key', apiKey);
+            }, [apiKey]);
+
+            const handleGenerate = () => {
+                if (!blockName.trim() || !topicName.trim()) {
+                    alert('Por favor, introduce un nombre de bloque y de tema.');
+                    return;
+                }
+                setIsLoading(true);
+                // Simulate API call
+                setTimeout(() => {
+                    setIsLoading(false);
+                    alert(`Simulación: ${questionCount} preguntas generadas para ${blockName} - ${topicName}`);
+                }, 2000);
+            };
+
+            return (
+                <div style={{ background: '#1B263B', padding: '24px', borderRadius: '12px', border: '1px solid #415A77' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <h3 style={{ color: '#E0E1DD', fontSize: '18px', fontWeight: 'bold', margin: 0 }}>
+                            ✨ {t('generator_title')}
+                        </h3>
+                        <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#778DA9', background: '#0D1B2A', padding: '4px 8px', borderRadius: '4px' }}>
+                            Hecho con Gemini
+                        </span>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div>
+                            <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                {t('generator_api_key')}
+                            </label>
+                            <input 
+                                type="password" 
+                                value={apiKey} 
+                                onChange={(e) => setApiKey(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    background: '#0D1B2A',
+                                    border: '1px solid #415A77',
+                                    borderRadius: '6px',
+                                    padding: '8px 12px',
+                                    color: '#E0E1DD',
+                                    fontSize: '14px',
+                                    outline: 'none'
+                                }}
+                                placeholder={t('generator_api_key_placeholder')}
+                                disabled={isLoading}
+                            />
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <div>
+                                <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                    {t('generator_block')}
+                                </label>
+                                <Combobox 
+                                    options={blockOptions} 
+                                    value={blockName} 
+                                    onChange={setBlockName} 
+                                    placeholder={t('generator_block_placeholder')} 
+                                    disabled={isLoading}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                    {t('generator_topic')}
+                                </label>
+                                <input 
+                                    type="text" 
+                                    value={topicName} 
+                                    onChange={(e) => setTopicName(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        background: '#0D1B2A',
+                                        border: '1px solid #415A77',
+                                        borderRadius: '6px',
+                                        padding: '8px 12px',
+                                        color: '#E0E1DD',
+                                        fontSize: '14px',
+                                        outline: 'none'
+                                    }}
+                                    placeholder={t('generator_topic_placeholder')}
+                                    disabled={isLoading}
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <div>
+                                <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                    Preguntas
+                                </label>
+                                <input 
+                                    type="number" 
+                                    value={questionCount} 
+                                    onChange={(e) => setQuestionCount(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                                    style={{
+                                        width: '100%',
+                                        background: '#0D1B2A',
+                                        border: '1px solid #415A77',
+                                        borderRadius: '6px',
+                                        padding: '8px 12px',
+                                        color: '#E0E1DD',
+                                        fontSize: '14px',
+                                        outline: 'none'
+                                    }}
+                                    disabled={isLoading}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                    Dificultad ({difficulty}/5)
+                                </label>
+                                <input 
+                                    type="range" 
+                                    min="1" 
+                                    max="5" 
+                                    value={difficulty} 
+                                    onChange={(e) => setDifficulty(parseInt(e.target.value, 10))}
+                                    style={{ width: '100%' }}
+                                    disabled={isLoading}
+                                />
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={handleGenerate}
+                            disabled={!blockName.trim() || !topicName.trim() || isLoading}
+                            style={{
+                                width: '100%',
+                                background: isLoading ? '#415A77' : '#3B82F6',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                padding: '12px',
+                                fontSize: '16px',
+                                fontWeight: '500',
+                                cursor: isLoading ? 'not-allowed' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px'
+                            }}
+                            onMouseOver={(e) => !isLoading && (e.target.style.background = '#2563EB')}
+                            onMouseOut={(e) => !isLoading && (e.target.style.background = '#3B82F6')}
+                        >
+                            {isLoading ? (
+                                <>
+                                    <div style={{ width: '16px', height: '16px', border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                                    {t('generator_button_generating')}
+                                </>
+                            ) : (
+                                t('generator_button_generate')
+                            )}
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // Main Add Questions App Component
+        const AddQuestionsApp = () => {
+            const { t } = useLanguage();
+            const [activeTab, setActiveTab] = useState('uploader'); // Default order: Subir Fichero first
+
+            const mockSaveQuestions = (blockId, questions) => {
+                console.log('Saving questions to block:', blockId, questions);
+            };
+
+            const mockCreateBlock = (name, questions, isPublic, observations) => {
+                console.log('Creating new block:', { name, questions, isPublic, observations });
+            };
+
+            // Tab order as requested: Subir Fichero / Agregar Manualmente / Generar con IA
+            const tabs = [
+                { id: 'uploader', label: t('add_question_tab_uploader'), icon: '📄' },
+                { id: 'manual', label: t('add_question_tab_manual'), icon: '✍️' },
+                { id: 'generator', label: t('add_question_tab_generator'), icon: '✨' }
+            ];
+
+            return (
+                <div>
+                    {/* Tab Navigation */}
+                    <div style={{ marginBottom: '24px', borderBottom: '1px solid #415A77' }}>
+                        <nav style={{ display: 'flex', gap: '24px', paddingBottom: '0' }}>
+                            {tabs.map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        borderBottom: activeTab === tab.id ? '2px solid #3B82F6' : '2px solid transparent',
+                                        color: activeTab === tab.id ? '#3B82F6' : '#778DA9',
+                                        padding: '12px 8px',
+                                        fontSize: '14px',
+                                        fontWeight: '500',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px'
+                                    }}
+                                    onMouseOver={(e) => {
+                                        if (activeTab !== tab.id) {
+                                            e.target.style.color = '#E0E1DD';
+                                            e.target.style.borderBottomColor = '#415A77';
+                                        }
+                                    }}
+                                    onMouseOut={(e) => {
+                                        if (activeTab !== tab.id) {
+                                            e.target.style.color = '#778DA9';
+                                            e.target.style.borderBottomColor = 'transparent';
+                                        }
+                                    }}
+                                >
+                                    {tab.icon} {tab.label}
+                                </button>
+                            ))}
+                        </nav>
+                    </div>
+
+                    {/* Tab Content */}
+                    <div style={{ animation: 'fadeIn 0.3s ease-in-out' }}>
+                        {activeTab === 'uploader' && (
+                            <QuestionUploader 
+                                currentUser={mockCurrentUser} 
+                                blocks={mockBlocks} 
+                                onSaveQuestions={mockSaveQuestions} 
+                                onCreateBlock={mockCreateBlock} 
+                            />
+                        )}
+                        {activeTab === 'manual' && (
+                            <ManualQuestionForm 
+                                currentUser={mockCurrentUser} 
+                                blocks={mockBlocks} 
+                                onSaveQuestions={mockSaveQuestions} 
+                                onCreateBlock={mockCreateBlock} 
+                            />
+                        )}
+                        {activeTab === 'generator' && (
+                            <QuestionGenerator 
+                                currentUser={mockCurrentUser} 
+                                blocks={mockBlocks} 
+                                onSaveQuestions={mockSaveQuestions} 
+                                onCreateBlock={mockCreateBlock} 
+                            />
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // Global functions for modal management
+        window.showAddQuestionsModal = function() {
+            const modal = document.getElementById('add-questions-modal');
+            modal.style.display = 'flex';
+            
+            // Mount React app
+            const contentDiv = document.getElementById('add-questions-content');
+            const root = ReactDOM.createRoot(contentDiv);
+            root.render(React.createElement(AddQuestionsApp));
+        };
+
+        window.closeModal = function(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        };
+
+        // Add CSS animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        `;
+        document.head.appendChild(style);
     </script>
 
     <!-- Modales para Opciones de Usuario -->
