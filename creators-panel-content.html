@@ -1756,12 +1756,40 @@
 
             const blockOptions = blocks.map(b => ({ id: b.id, label: b.nombreCorto }));
 
+            // Function to parse filename format: bloque_tema.txt
+            const parseFilename = (filename) => {
+                const nameWithoutExt = filename.replace(/\.[^/.]+$/, ''); // Remove extension
+                const parts = nameWithoutExt.split('_');
+                
+                if (parts.length >= 2) {
+                    const bloque = parts[0];
+                    const tema = parts.slice(1).join('_'); // Join remaining parts in case tema has underscores
+                    return { bloque, tema };
+                }
+                return { bloque: '', tema: '' };
+            };
+
             const handleFileChange = (event) => {
                 const selectedFiles = Array.from(event.target.files);
+                let filesToSet;
+                
                 if (uploadMode === 'single') {
-                    setFiles(selectedFiles.slice(0, 1));
+                    filesToSet = selectedFiles.slice(0, 1);
                 } else {
-                    setFiles(selectedFiles);
+                    filesToSet = selectedFiles;
+                }
+                
+                setFiles(filesToSet);
+                
+                // Auto-fill block and topic from first file if available
+                if (filesToSet.length > 0) {
+                    const firstFile = filesToSet[0];
+                    const parsed = parseFilename(firstFile.name);
+                    
+                    if (parsed.bloque && parsed.tema) {
+                        setBlockName(parsed.bloque);
+                        setTopicName(parsed.tema);
+                    }
                 }
             };
 
@@ -1771,13 +1799,30 @@
             };
 
             const handleLoadForReview = () => {
-                if (!topicName.trim() || files.length === 0) {
-                    setMessage('Por favor, introduce un tema y selecciona al menos un fichero.');
+                if (files.length === 0) {
+                    setMessage('Por favor, selecciona al menos un fichero.');
                     setStatus('error');
                     return;
                 }
-                const fileNames = files.map(f => f.name).join(', ');
-                setMessage(`${files.length} archivo(s) listo(s) para procesar: ${fileNames}`);
+                
+                // Check if files follow the naming convention
+                const validFiles = files.filter(file => {
+                    const parsed = parseFilename(file.name);
+                    return parsed.bloque && parsed.tema;
+                });
+                
+                if (validFiles.length === 0) {
+                    setMessage('Los archivos deben seguir el formato: bloque_tema.txt');
+                    setStatus('error');
+                    return;
+                }
+                
+                const fileDetails = validFiles.map(file => {
+                    const parsed = parseFilename(file.name);
+                    return `${parsed.bloque}→${parsed.tema}`;
+                }).join(', ');
+                
+                setMessage(`${validFiles.length} archivo(s) listo(s) para procesar: ${fileDetails}`);
                 setStatus('success');
             };
 
@@ -1897,40 +1942,50 @@
                                 <div style={{ fontSize: '12px', color: '#778DA9', marginBottom: '8px' }}>
                                     Archivos seleccionados ({files.length}):
                                 </div>
-                                {files.map((file, index) => (
-                                    <div key={index} style={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        padding: '6px 0',
-                                        borderBottom: index < files.length - 1 ? '1px solid #415A77' : 'none'
-                                    }}>
-                                        <span style={{ color: '#E0E1DD', fontSize: '14px', flex: 1 }}>
-                                            📄 {file.name}
-                                        </span>
-                                        <span style={{ color: '#778DA9', fontSize: '12px', marginRight: '8px' }}>
-                                            {(file.size / 1024).toFixed(1)} KB
-                                        </span>
-                                        <button
-                                            onClick={() => removeFile(index)}
-                                            style={{
-                                                background: '#EF4444',
-                                                color: 'white',
-                                                border: 'none',
-                                                borderRadius: '4px',
-                                                width: '20px',
-                                                height: '20px',
-                                                cursor: 'pointer',
-                                                fontSize: '12px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                ))}
+                                {files.map((file, index) => {
+                                    const parsed = parseFilename(file.name);
+                                    return (
+                                        <div key={index} style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            padding: '8px 0',
+                                            borderBottom: index < files.length - 1 ? '1px solid #415A77' : 'none'
+                                        }}>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ color: '#E0E1DD', fontSize: '14px', marginBottom: '2px' }}>
+                                                    📄 {file.name}
+                                                </div>
+                                                {parsed.bloque && parsed.tema && (
+                                                    <div style={{ color: '#10B981', fontSize: '12px' }}>
+                                                        📚 {parsed.bloque} → 📖 {parsed.tema}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <span style={{ color: '#778DA9', fontSize: '12px', marginRight: '8px' }}>
+                                                {(file.size / 1024).toFixed(1)} KB
+                                            </span>
+                                            <button
+                                                onClick={() => removeFile(index)}
+                                                style={{
+                                                    background: '#EF4444',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '4px',
+                                                    width: '20px',
+                                                    height: '20px',
+                                                    cursor: 'pointer',
+                                                    fontSize: '12px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
