@@ -1393,8 +1393,38 @@ async function saveRoleModifications() {
         });
 
         if (response.ok) {
-            alert('Roles actualizados correctamente. La página se recargará para aplicar los cambios.');
-            window.location.reload();
+            console.log('✅ Roles updated successfully, refreshing user session...');
+            
+            // Cerrar modal primero
+            closeRoleModificationModal();
+            
+            // Limpiar datos cacheados para forzar actualización
+            try {
+                // Limpiar datos de roles cacheados pero mantener token
+                const currentToken = localStorage.getItem('playtest_auth_token');
+                
+                // Eliminar datos cacheados de usuario para forzar recarga
+                localStorage.removeItem('activeRole');
+                
+                console.log('✅ Cleared cached role data');
+                
+                // Mostrar mensaje de éxito
+                alert('✅ Roles actualizados correctamente. Los cambios se aplicarán inmediatamente.');
+                
+                // Recargar header con datos frescos
+                if (window.loadHeader && typeof window.loadHeader === 'function') {
+                    console.log('🔄 Reloading header with fresh data...');
+                    await window.loadHeader();
+                } else {
+                    console.log('🔄 loadHeader not available, reloading page...');
+                    window.location.reload();
+                }
+                
+            } catch (refreshError) {
+                console.warn('⚠️ Error during refresh, falling back to page reload:', refreshError);
+                alert('Roles actualizados correctamente. La página se recargará para aplicar los cambios.');
+                window.location.reload();
+            }
         } else {
             // Obtener el mensaje de error específico del servidor
             const errorData = await response.json().catch(() => ({ error: 'Error desconocido del servidor' }));
