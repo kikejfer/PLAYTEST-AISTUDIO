@@ -1308,21 +1308,30 @@ async function loadRoleOptions() {
 
         // Definir todos los roles disponibles
         const availableRoles = [
-            { id: 'jugador', name: '🎮 Jugador', description: 'Participa en partidas y duelos' },
-            { id: 'creador', name: '🎨 Creador de Contenido', description: 'Crea bloques y monetiza contenido' },
-            { id: 'profesor', name: '👨‍🏫 Profesor', description: 'Gestiona estudiantes y clases' }
+            { id: 'jugador', name: '🎮 Jugador', description: 'Participa en partidas y duelos', editable: true },
+            { id: 'creador', name: '🎨 Creador de Contenido', description: 'Crea bloques y monetiza contenido', editable: true },
+            { id: 'profesor', name: '👨‍🏫 Profesor', description: 'Gestiona estudiantes y clases', editable: true },
+            { id: 'administrador_secundario', name: '⚙️ Administrador Secundario', description: 'Gestión administrativa limitada (solo visible, no modificable)', editable: false },
+            { id: 'administrador_principal', name: '🔧 Administrador Principal', description: 'Gestión administrativa completa (solo visible, no modificable)', editable: false }
         ];
 
         // Crear checkboxes para cada rol
-        container.innerHTML = availableRoles.map(role => `
-            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid #415A77; border-radius: 0.5rem; margin-bottom: 0.75rem; transition: background 0.2s;" onmouseover="this.style.background='rgba(65, 90, 119, 0.1)'" onmouseout="this.style.background='transparent'">
-                <input type="checkbox" id="role-${role.id}" ${currentRoles.includes(role.id) ? 'checked' : ''} style="width: 1.25rem; height: 1.25rem; cursor: pointer;">
-                <div style="flex: 1;">
-                    <label for="role-${role.id}" style="color: #E0E1DD; font-weight: 500; cursor: pointer; display: block; margin-bottom: 0.25rem;">${role.name}</label>
-                    <p style="color: #778DA9; margin: 0; font-size: 0.875rem;">${role.description}</p>
+        container.innerHTML = availableRoles.map(role => {
+            const hasRole = currentRoles.includes(role.id);
+            const isEditable = role.editable;
+            const isDisabled = !isEditable && hasRole; // Solo deshabilitar roles admin que el usuario ya tiene
+            
+            return `
+                <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid ${isDisabled ? '#6B7280' : '#415A77'}; border-radius: 0.5rem; margin-bottom: 0.75rem; transition: background 0.2s; opacity: ${isDisabled ? '0.7' : '1'};" ${!isDisabled ? `onmouseover="this.style.background='rgba(65, 90, 119, 0.1)'" onmouseout="this.style.background='transparent'"` : ''}>
+                    <input type="checkbox" id="role-${role.id}" ${hasRole ? 'checked' : ''} ${isDisabled ? 'disabled' : ''} style="width: 1.25rem; height: 1.25rem; cursor: ${isDisabled ? 'not-allowed' : 'pointer'};">
+                    <div style="flex: 1;">
+                        <label for="role-${role.id}" style="color: ${isDisabled ? '#9CA3AF' : '#E0E1DD'}; font-weight: 500; cursor: ${isDisabled ? 'not-allowed' : 'pointer'}; display: block; margin-bottom: 0.25rem;">${role.name}</label>
+                        <p style="color: ${isDisabled ? '#6B7280' : '#778DA9'}; margin: 0; font-size: 0.875rem;">${role.description}</p>
+                        ${isDisabled ? '<p style="color: #F59E0B; margin: 0.25rem 0 0 0; font-size: 0.75rem;">⚠️ Solo modificable por administrador principal</p>' : ''}
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
     } catch (error) {
         console.error('Error cargando opciones de roles:', error);
@@ -1342,11 +1351,13 @@ async function saveRoleModifications() {
     saveBtn.disabled = true;
 
     try {
-        // Obtener roles seleccionados
+        // Obtener roles seleccionados (incluyendo los deshabilitados que estén marcados)
         const checkboxes = document.querySelectorAll('#role-options-container input[type="checkbox"]');
         const selectedRoles = Array.from(checkboxes)
-            .filter(cb => cb.checked)
+            .filter(cb => cb.checked) // Incluye tanto editables como deshabilitados que estén marcados
             .map(cb => cb.id.replace('role-', ''));
+        
+        console.log('🔍 Roles being sent to backend:', selectedRoles);
 
         if (selectedRoles.length === 0) {
             alert('Debes seleccionar al menos un rol');
