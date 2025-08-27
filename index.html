@@ -3648,7 +3648,7 @@
                 onBottomLinkClick={handleBottomLinkClick}
               >
                 <input name="nickname" type="text" value={loginData.nickname} onChange={handleLoginChange} required placeholder={t('auth_nickname')} className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" />
-                <input name="password" type="password" value={loginData.password} onChange={handleLoginChange} required placeholder={t('auth_password')} className="w-full bg-brand-primary border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" />
+                <input name="password" type="password" value={loginData.password} onChange={handleLoginChange} required placeholder={t('auth_password')} className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" />
                 <div className="flex items-center"><input id="remember" name="remember" type="checkbox" checked={loginData.remember} onChange={handleLoginChange} className="h-4 w-4 text-brand-cta border-brand-tertiary rounded focus:ring-brand-cta" /><label htmlFor="remember" className="ml-2 block text-sm text-brand-accent">{t('auth_remember_me')}</label></div>
               </AuthForm>
             ) : (

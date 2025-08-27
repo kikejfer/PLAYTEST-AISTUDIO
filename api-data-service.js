@@ -149,7 +149,16 @@ class APIDataService {
           roles: ['creador', 'jugador', 'profesor']
         };
         
-        const tempToken = 'temp_' + btoa(JSON.stringify(tempUser)) + '_' + Date.now();
+        // Crear un token JWT-like válido para el decodificador
+        const header = { alg: "none", typ: "JWT" };
+        const payload = {
+          user: tempUser,
+          roles: tempUser.roles,
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 horas
+        };
+        
+        const tempToken = btoa(JSON.stringify(header)) + '.' + btoa(JSON.stringify(payload)) + '.temp_signature';
         
         this.token = tempToken;
         localStorage.setItem('playtest_auth_token', tempToken);
@@ -212,7 +221,16 @@ class APIDataService {
           roles: ['creador', 'jugador', 'profesor']
         };
         
-        const tempToken = 'temp_' + btoa(JSON.stringify(tempUser)) + '_' + Date.now();
+        // Crear un token JWT-like válido para el decodificador
+        const header = { alg: "none", typ: "JWT" };
+        const payload = {
+          user: tempUser,
+          roles: tempUser.roles,
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 horas
+        };
+        
+        const tempToken = btoa(JSON.stringify(header)) + '.' + btoa(JSON.stringify(payload)) + '.temp_signature';
         
         this.token = tempToken;
         localStorage.setItem('playtest_auth_token', tempToken);
