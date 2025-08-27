@@ -783,33 +783,15 @@
                 }
             };
 
-            console.log('🔍 ActiveGames DEBUG - All games:', games);
-            console.log('🔍 ActiveGames DEBUG - Games statuses:', games.map(g => ({ id: g.id, status: g.status, mode: g.mode })));
-            
-            // Log each game's full details
-            games.forEach((game, index) => {
-                console.log(`🔍 ActiveGames DEBUG - Game ${index + 1} full details:`, game);
-            });
-            
-            // Try different filtering approaches
             const activeGames = games.filter(g => g.status === 'active');
             const completedGames = games.filter(g => g.status === 'completed');
             const pendingChallenges = games.filter(g => g.status === 'pending' && challenges.some(c => c.gameId === g.id));
-            
-            console.log('🔍 ActiveGames DEBUG - Active games filtered (status=active):', activeGames);
-            console.log('🔍 ActiveGames DEBUG - Active games count:', activeGames.length);
-            console.log('🔍 ActiveGames DEBUG - Completed games:', completedGames);
-            console.log('🔍 ActiveGames DEBUG - Completed games count:', completedGames.length);
             
             // Show completed games as available to replay
             const gamesToShow = activeGames.length > 0 ? activeGames : completedGames;
             const sectionTitle = activeGames.length > 0 ? 'Partidas Activas' : 'Partidas Disponibles';
             const statusBadge = activeGames.length > 0 ? 'Activa' : 'Completada';
             const buttonText = activeGames.length > 0 ? '▶️ Continuar Partida' : '🔄 Jugar de Nuevo';
-            
-            console.log('🔍 ActiveGames DEBUG - Final gamesToShow:', gamesToShow);
-            console.log('🔍 ActiveGames DEBUG - Final gamesToShow count:', gamesToShow.length);
-            console.log('🔍 ActiveGames DEBUG - Final gamesToShow IDs:', gamesToShow.map(g => g.id));
 
             return React.createElement('div', {
                 className: "bg-slate-800 p-6 rounded-xl shadow-lg flex flex-col h-full"
@@ -904,11 +886,9 @@
                         React.createElement('ul', {
                             key: 'active-games-list',
                             className: "space-y-3 mb-4"
-                        }, gamesToShow.map((game, index) => {
-                            console.log(`🎮 Rendering game ${index + 1}:`, { id: game.id, mode: game.mode });
-                            return React.createElement('li', {
-                                key: game.id,
-                                className: "p-3 rounded-md bg-blue-900/20 border border-blue-500/30"
+                        }, gamesToShow.map(game => React.createElement('li', {
+                            key: game.id,
+                            className: "p-3 rounded-md bg-blue-900/20 border border-blue-500/30"
                         }, [
                             React.createElement('div', { key: 'game-header', className: "flex items-center justify-between mb-2" }, [
                                 React.createElement('div', { key: 'game-info', className: "flex items-center gap-2" }, [
@@ -943,8 +923,7 @@
                                 onClick: () => onNavigateToGame(game),
                                 className: "w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
                             }, buttonText)
-                        ]);
-                        }))
+                        ])))
                     ]),
 
                     (gameConfigurations.length > 0 || gamesToShow.length > 0) ? React.createElement('ul', {
@@ -2112,11 +2091,19 @@
                 ]);
             }
 
-            return React.createElement('div', {
-                className: "bg-slate-800 p-6 rounded-xl shadow-lg text-center"
-            }, React.createElement('p', {
-                className: "text-gray-400"
-            }, 'Juegos activos cargados desde componente dedicado'));
+            return React.createElement(ActiveGames, {
+                games: games,
+                gameConfigurations: gameConfigurations,
+                challenges: challenges,
+                blocks: blocks,
+                onDeleteGame: handleDeleteGame,
+                onNavigateToGame: onNavigateToGame,
+                onAcceptChallenge: handleAcceptChallenge,
+                onDeclineChallenge: handleDeclineChallenge,
+                handleDeleteConfiguration: handleDeleteConfiguration,
+                onRepeatConfiguration: handleRepeatConfiguration,
+                setCurrentView: () => {}
+            });
         };
 
         const TabHistoryComponent = () => {
