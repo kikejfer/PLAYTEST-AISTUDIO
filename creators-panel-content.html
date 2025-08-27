@@ -1755,6 +1755,10 @@
             const [message, setMessage] = useState('');
             const [processedQuestions, setProcessedQuestions] = useState([]);
             const [isProcessing, setIsProcessing] = useState(false);
+            const [processingProgress, setProcessingProgress] = useState(0);
+            const [processingStep, setProcessingStep] = useState('');
+            const [timeRemaining, setTimeRemaining] = useState(0);
+            const [startTime, setStartTime] = useState(null);
 
             const blockOptions = blocks.map(b => ({ id: b.id, label: b.nombreCorto }));
 
@@ -1956,13 +1960,35 @@
                 
                 setIsProcessing(true);
                 setStatus('processing');
-                setMessage('Procesando archivos...');
+                setProcessingProgress(0);
+                setProcessingStep('Iniciando procesamiento...');
+                setStartTime(Date.now());
+                setTimeRemaining(0);
                 
                 try {
                     const allQuestions = [];
+                    const totalFiles = validFiles.length;
+                    const estimatedTimePerFile = 2000; // 2 seconds per file estimation
                     
-                    for (let file of validFiles) {
+                    setProcessingStep(`Procesando ${totalFiles} archivo(s)...`);
+                    
+                    for (let i = 0; i < validFiles.length; i++) {
+                        const file = validFiles[i];
                         const parsed = parseFilename(file.name);
+                        
+                        // Update progress and time estimation
+                        const progressPercent = (i / totalFiles) * 100;
+                        setProcessingProgress(progressPercent);
+                        setProcessingStep(`Procesando archivo ${i + 1}/${totalFiles}: ${file.name}`);
+                        
+                        // Calculate time remaining
+                        const elapsed = Date.now() - startTime;
+                        const avgTimePerFile = elapsed / (i + 1);
+                        const remaining = Math.max(0, Math.ceil((totalFiles - i - 1) * avgTimePerFile / 1000));
+                        setTimeRemaining(remaining);
+                        
+                        // Read file content
+                        setProcessingStep(`Leyendo contenido: ${file.name}`);
                         const content = await new Promise((resolve, reject) => {
                             const reader = new FileReader();
                             reader.onload = (e) => resolve(e.target.result);
@@ -1970,9 +1996,20 @@
                             reader.readAsText(file);
                         });
                         
+                        // Parse questions with small delay to show progress
+                        setProcessingStep(`Parseando preguntas: ${file.name}`);
+                        await new Promise(resolve => setTimeout(resolve, 100)); // Small delay for UI update
+                        
                         const questions = parseQuestions(content, parsed.bloque, parsed.tema);
                         allQuestions.push(...questions);
+                        
+                        console.log(`✅ Procesado ${file.name}: ${questions.length} preguntas`);
                     }
+                    
+                    // Final progress update
+                    setProcessingProgress(100);
+                    setProcessingStep('Finalizando procesamiento...');
+                    setTimeRemaining(0);
                     
                     setProcessedQuestions(allQuestions);
                     setMessage(`✅ Procesado completamente: ${allQuestions.length} preguntas de ${validFiles.length} archivo(s)`);
@@ -1984,6 +2021,9 @@
                     setStatus('error');
                 } finally {
                     setIsProcessing(false);
+                    setProcessingProgress(0);
+                    setProcessingStep('');
+                    setTimeRemaining(0);
                 }
             };
 
@@ -2226,6 +2266,50 @@
                         )}
                         {isProcessing ? 'Procesando...' : 'Cargar y Procesar Preguntas'}
                     </button>
+
+                    {/* Progress Bar - shown during processing */}
+                    {isProcessing && (
+                        <div style={{ marginBottom: '16px' }}>
+                            {/* Progress Bar */}
+                            <div style={{
+                                background: '#415A77',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                marginBottom: '8px'
+                            }}>
+                                <div style={{
+                                    background: 'linear-gradient(90deg, #3B82F6, #10B981)',
+                                    height: '8px',
+                                    width: `${processingProgress}%`,
+                                    transition: 'width 0.3s ease-in-out'
+                                }}></div>
+                            </div>
+                            
+                            {/* Progress Details */}
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                fontSize: '12px',
+                                color: '#778DA9'
+                            }}>
+                                <span>{processingStep}</span>
+                                <span>{Math.round(processingProgress)}%</span>
+                            </div>
+                            
+                            {/* Time Remaining */}
+                            {timeRemaining > 0 && (
+                                <div style={{
+                                    textAlign: 'center',
+                                    fontSize: '12px',
+                                    color: '#E0E1DD',
+                                    marginTop: '4px'
+                                }}>
+                                    ⏱️ Tiempo estimado restante: {timeRemaining}s
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {status !== 'idle' && (
                         <div style={{ 
