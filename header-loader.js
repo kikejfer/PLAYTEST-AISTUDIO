@@ -464,7 +464,7 @@ async function getUserDataInternal() {
             lastName: profile.lastName || '',
             luminarias: profile.luminarias || profile.stats?.luminarias || 0,
             roles: userRoles,
-            activeRole: localStorage.getItem('activeRole') || detectRoleFromToken() || userRoles[0]?.code || 'PJG'
+            activeRole: localStorage.getItem('activeRole') || detectRoleFromToken() || userRoles[0]?.code || null
         };
         
     } catch (error) {
@@ -507,16 +507,12 @@ function getUserRolesFromSystem(profile, session) {
         });
     }
     
-    // Si no se detectaron roles, asignar rol de jugador por defecto
+    // NO ASIGNAR ROLES POR DEFECTO
+    // Los usuarios deben obtener roles específicamente desde la base de datos
+    // Si no tienen roles, se les debe permitir usar el modal de "Modificar Roles"
     if (roles.length === 0) {
-        roles.push(roleMapping['jugador']);
-    } else {
-        // Los usuarios con roles específicos también tienen rol de jugador
-        // (excepto si ya está incluido para evitar duplicados)
-        const hasJugadorRole = roles.some(role => role.code === 'PJG');
-        if (!hasJugadorRole) {
-            roles.push(roleMapping['jugador']);
-        }
+        console.log('⚠️ Usuario sin roles detectados - debe asignar roles manualmente');
+        // No agregar ningún rol por defecto
     }
     
     return roles;
@@ -548,8 +544,12 @@ function detectRoleFromToken() {
     const tokenRoles = getTokenRoles();
     if (tokenRoles.length === 0) return null;
     
-    // Prioridad de roles para detección automática
-    const rolePriority = ['administrador_principal', 'admin_principal', 'administrador_secundario', 'admin_secundario', 'profesor', 'creador', 'creador_contenido', 'profesor_creador', 'jugador'];
+    // Prioridad de roles para detección automática (roles administrativos tienen prioridad)
+    const rolePriority = ['administrador_principal', 'admin_principal', 'administrador_secundario', 'admin_secundario', 'creador', 'creador_contenido', 'profesor_creador', 'profesor', 'jugador'];
+    
+    // DEBUG: Log para troubleshoot
+    console.log('🔍 DEBUG Role Detection - Token roles:', tokenRoles);
+    console.log('🔍 DEBUG Role Detection - Priority order:', rolePriority);
     
     for (const priorityRole of rolePriority) {
         if (tokenRoles.includes(priorityRole)) {
@@ -564,11 +564,13 @@ function detectRoleFromToken() {
                 'profesor': 'PPF',
                 'jugador': 'PJG'
             };
+            console.log(`✅ DEBUG Role Detection - Selected role: ${priorityRole} -> ${roleMapping[priorityRole]}`);
             return roleMapping[priorityRole];
         }
     }
     
-    return null;
+    console.log('❌ DEBUG Role Detection - No matching role found');
+    return null; // No rol por defecto - usuario debe asignar roles manualmente
 }
 
 /**
@@ -580,14 +582,12 @@ function getUserDataFromLocalStorage() {
     const storedActiveRole = localStorage.getItem('activeRole');
     
     return {
-        name: session.nickname || 'Usuario Demo',
+        name: session.nickname || 'Usuario',
         firstName: '',
         lastName: '',
-        luminarias: 0, // TODO: Implementar sistema de luminarias
-        roles: [
-            { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' }
-        ],
-        activeRole: storedActiveRole || 'PJG'
+        luminarias: 0,
+        roles: [], // No roles por defecto - el usuario debe asignarlos
+        activeRole: storedActiveRole || null
     };
 }
 

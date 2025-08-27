@@ -3676,7 +3676,7 @@
 
       // Modal de selección de roles para nuevos usuarios
       const RoleSelectionModal = ({ isOpen, onComplete, onSkip, userNickname }) => {
-        const [selectedRoles, setSelectedRoles] = useState(['jugador']); // Jugador por defecto
+        const [selectedRoles, setSelectedRoles] = useState([]); // Sin roles por defecto
         
         const toggleRole = (role) => {
           setSelectedRoles(prev => 
@@ -3688,6 +3688,12 @@
         
         const handleComplete = async () => {
           console.log('🎯 Roles seleccionados:', selectedRoles);
+          
+          // Validar que se haya seleccionado al menos un rol
+          if (selectedRoles.length === 0) {
+            alert('⚠️ Debes seleccionar al menos un rol para continuar');
+            return;
+          }
           
           try {
             // Aquí se enviarían los roles al backend
@@ -3720,10 +3726,7 @@
           onComplete(selectedRoles);
         };
         
-        const handleSkip = () => {
-          console.log('⏭️ Usuario omitió selección de roles');
-          onSkip();
-        };
+        // Eliminada función handleSkip - los usuarios DEBEN seleccionar roles
         
         if (!isOpen) return null;
         
@@ -3857,20 +3860,7 @@
                   ✅ Continuar con mis roles
                 </button>
                 
-                <button
-                  onClick={handleSkip}
-                  style={{
-                    backgroundColor: '#778DA9',
-                    color: '#E0E1DD',
-                    border: 'none',
-                    padding: '12px 20px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.3s ease'
-                  }}
-                >
-                  ⏭️ Decidir después
-                </button>
+                {/* Eliminado botón "Decidir después" - los usuarios DEBEN seleccionar roles */}
               </div>
               
               <p style={{
@@ -4067,17 +4057,15 @@
             }));
           }
           
-          // Si es un usuario nuevo o no tiene roles definidos, mostrar modal de selección
-          const hasRoles = user.roles && user.roles.length > 0;
-          const hasRoleInfo = user.role || user.role_name;
-          
-          if (isNewUser || (!hasRoles && !hasRoleInfo)) {
-            console.log('🎯 Usuario nuevo o sin roles, mostrando modal de selección');
+          // SOLO mostrar modal de selección de roles para usuarios NUEVOS (registro)
+          // Los usuarios existentes sin roles deben usar la opción "Modificar Roles" del header
+          if (isNewUser) {
+            console.log('🎯 Usuario nuevo, mostrando modal de selección de roles obligatorio');
             setPendingUser(user);
             setShowRoleModal(true);
           } else {
-            // Usuario existente con roles, continuar normalmente
-            console.log('✅ Usuario existente con roles, continuando...');
+            // Usuario existente (login normal), continuar siempre
+            console.log('✅ Login de usuario existente, continuando sin modal de roles');
             setCurrentUser(user);
           }
         };
