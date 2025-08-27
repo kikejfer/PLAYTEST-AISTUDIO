@@ -1254,6 +1254,17 @@
         // Load user data on page load
         document.addEventListener('DOMContentLoaded', async function() {
             await loadUserData();
+            
+            // Initialize apiDataService token for database operations
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+            if (token && typeof apiDataService !== 'undefined') {
+                apiDataService.token = token;
+                console.log('✅ [creators-panel] Set token in apiDataService');
+            } else if (!token) {
+                console.warn('⚠️ [creators-panel] No auth token found for apiDataService');
+            } else {
+                console.warn('⚠️ [creators-panel] apiDataService not available');
+            }
         });
 
         async function loadUserData() {
@@ -2076,26 +2087,31 @@
                             // Save questions to block
                             for (let i = 0; i < questions.length; i++) {
                                 const question = questions[i];
+                                // Prepare answers array correctly
+                                const respuestas = question.respuestas?.map(r => ({
+                                    textoRespuesta: r.texto || r.textoRespuesta || r,
+                                    esCorrecta: r.esCorrecta || false
+                                })) || [];
+
+                                // Ensure at least one correct answer
+                                if (respuestas.length > 0) {
+                                    const hasCorrect = respuestas.some(r => r.esCorrecta);
+                                    if (!hasCorrect) {
+                                        const correctIndex = question.respuestaCorrecta || 0;
+                                        if (correctIndex < respuestas.length) {
+                                            respuestas[correctIndex].esCorrecta = true;
+                                        }
+                                    }
+                                }
+
                                 const questionData = {
                                     blockId: targetBlock.id,
                                     textoPregunta: question.pregunta || question.textoPregunta,
                                     tema: question.tema || 'General',
-                                    respuestasPosibles: question.respuestas?.map(r => ({
-                                        textoRespuesta: r.texto || r.textoRespuesta || r,
-                                        esCorrecta: r.esCorrecta || false
-                                    })) || [],
-                                    respuestaCorrecta: question.respuestaCorrecta || 0,
+                                    respuestas: respuestas, // Use 'respuestas' not 'respuestasPosibles'
                                     explicacionRespuesta: question.explicacion || question.explicacionRespuesta || '',
                                     difficulty: question.difficulty || 1
                                 };
-
-                                // Ensure at least one correct answer
-                                if (questionData.respuestasPosibles.length > 0) {
-                                    const hasCorrect = questionData.respuestasPosibles.some(r => r.esCorrecta);
-                                    if (!hasCorrect && questionData.respuestaCorrecta < questionData.respuestasPosibles.length) {
-                                        questionData.respuestasPosibles[questionData.respuestaCorrecta].esCorrecta = true;
-                                    }
-                                }
 
                                 console.log(`💾 Saving question ${i + 1}/${questions.length} to block ${blockName}`);
                                 await apiDataService.createQuestion(questionData);
