@@ -1360,7 +1360,7 @@ async function saveRoleModifications() {
             
         const token = localStorage.getItem('playtest_auth_token');
         
-        const response = await fetch(`${API_BASE_URL}/api/users/me/roles`, {
+        const response = await fetch(`${API_BASE_URL}/api/users/update-roles`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
