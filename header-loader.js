@@ -1360,6 +1360,18 @@ async function saveRoleModifications() {
             
         const token = localStorage.getItem('playtest_auth_token');
         
+        // Debug logging
+        console.log('🔍 Sending role update request:', {
+            selectedRoles,
+            API_BASE_URL,
+            hasToken: !!token,
+            tokenPreview: token ? token.substring(0, 20) + '...' : 'NO TOKEN'
+        });
+        
+        if (!token) {
+            throw new Error('No se encontró token de autenticación. Por favor, inicia sesión de nuevo.');
+        }
+        
         const response = await fetch(`${API_BASE_URL}/api/users/update-roles`, {
             method: 'PUT',
             headers: {
@@ -1373,7 +1385,14 @@ async function saveRoleModifications() {
             alert('Roles actualizados correctamente. La página se recargará para aplicar los cambios.');
             window.location.reload();
         } else {
-            throw new Error('Error del servidor');
+            // Obtener el mensaje de error específico del servidor
+            const errorData = await response.json().catch(() => ({ error: 'Error desconocido del servidor' }));
+            console.error('Error del servidor:', {
+                status: response.status,
+                statusText: response.statusText,
+                error: errorData
+            });
+            throw new Error(errorData.error || `Error del servidor (${response.status}): ${response.statusText}`);
         }
 
     } catch (error) {
