@@ -1896,6 +1896,8 @@
             const [uploadMode, setUploadMode] = useState('single'); // 'single' or 'multiple'
             const [status, setStatus] = useState('idle');
             const [message, setMessage] = useState('');
+            const [processedQuestions, setProcessedQuestions] = useState([]);
+            const [isProcessing, setIsProcessing] = useState(false);
 
             const blockOptions = blocks.map(b => ({ id: b.id, label: b.nombreCorto }));
 
@@ -1941,7 +1943,59 @@
                 setFiles(newFiles);
             };
 
-            const handleLoadForReview = () => {
+            // Function to parse question format from file content
+            const parseQuestions = (content, bloque, tema) => {
+                const lines = content.split('\n').filter(line => line.trim());
+                const questions = [];
+                
+                let currentQuestion = null;
+                let currentAnswers = [];
+                
+                for (let line of lines) {
+                    line = line.trim();
+                    
+                    // Question line (starts with number)
+                    if (/^\d+\./.test(line)) {
+                        // Save previous question
+                        if (currentQuestion && currentAnswers.length > 0) {
+                            questions.push({
+                                bloque,
+                                tema,
+                                textoPregunta: currentQuestion,
+                                respuestas: currentAnswers
+                            });
+                        }
+                        
+                        // Start new question
+                        currentQuestion = line.replace(/^\d+\.\s*/, '');
+                        currentAnswers = [];
+                    }
+                    // Answer line (starts with letter)
+                    else if (/^[a-d]\)/i.test(line)) {
+                        const isCorrect = line.startsWith('*') || line.toLowerCase().startsWith('*a)') || line.toLowerCase().startsWith('*b)') || line.toLowerCase().startsWith('*c)') || line.toLowerCase().startsWith('*d)');
+                        const answerText = line.replace(/^[*]?[a-d]\)\s*/i, '');
+                        
+                        currentAnswers.push({
+                            textoRespuesta: answerText,
+                            esCorrecta: isCorrect
+                        });
+                    }
+                }
+                
+                // Save last question
+                if (currentQuestion && currentAnswers.length > 0) {
+                    questions.push({
+                        bloque,
+                        tema,
+                        textoPregunta: currentQuestion,
+                        respuestas: currentAnswers
+                    });
+                }
+                
+                return questions;
+            };
+
+            const handleLoadForReview = async () => {
                 if (files.length === 0) {
                     setMessage('Por favor, selecciona al menos un fichero.');
                     setStatus('error');
@@ -1960,13 +2014,37 @@
                     return;
                 }
                 
-                const fileDetails = validFiles.map(file => {
-                    const parsed = parseFilename(file.name);
-                    return `${parsed.bloque}→${parsed.tema}`;
-                }).join(', ');
+                setIsProcessing(true);
+                setStatus('processing');
+                setMessage('Procesando archivos...');
                 
-                setMessage(`${validFiles.length} archivo(s) listo(s) para procesar: ${fileDetails}`);
-                setStatus('success');
+                try {
+                    const allQuestions = [];
+                    
+                    for (let file of validFiles) {
+                        const parsed = parseFilename(file.name);
+                        const content = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = (e) => resolve(e.target.result);
+                            reader.onerror = reject;
+                            reader.readAsText(file);
+                        });
+                        
+                        const questions = parseQuestions(content, parsed.bloque, parsed.tema);
+                        allQuestions.push(...questions);
+                    }
+                    
+                    setProcessedQuestions(allQuestions);
+                    setMessage(`✅ Procesado completamente: ${allQuestions.length} preguntas de ${validFiles.length} archivo(s)`);
+                    setStatus('completed');
+                    
+                } catch (error) {
+                    console.error('Error processing files:', error);
+                    setMessage('Error al procesar los archivos');
+                    setStatus('error');
+                } finally {
+                    setIsProcessing(false);
+                }
             };
 
             return (
@@ -2135,33 +2213,134 @@
 
                     <button 
                         onClick={handleLoadForReview}
+                        disabled={files.length === 0 || isProcessing}
                         style={{
                             width: '100%',
-                            background: '#3B82F6',
+                            background: isProcessing ? '#778DA9' : (files.length === 0 ? '#415A77' : '#3B82F6'),
                             color: 'white',
                             border: 'none',
                             borderRadius: '6px',
                             padding: '12px',
                             fontSize: '14px',
                             fontWeight: '500',
-                            cursor: 'pointer',
-                            marginBottom: '16px'
+                            cursor: files.length === 0 || isProcessing ? 'not-allowed' : 'pointer',
+                            marginBottom: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px'
                         }}
-                        onMouseOver={(e) => e.target.style.background = '#2563EB'}
-                        onMouseOut={(e) => e.target.style.background = '#3B82F6'}
+                        onMouseOver={(e) => {
+                            if (!isProcessing && files.length > 0) {
+                                e.target.style.background = '#2563EB';
+                            }
+                        }}
+                        onMouseOut={(e) => {
+                            if (!isProcessing && files.length > 0) {
+                                e.target.style.background = '#3B82F6';
+                            }
+                        }}
                     >
-                        {t('uploader_button_load')}
+                        {isProcessing && (
+                            <div style={{ 
+                                width: '16px', 
+                                height: '16px', 
+                                border: '2px solid #fff', 
+                                borderTop: '2px solid transparent', 
+                                borderRadius: '50%', 
+                                animation: 'spin 1s linear infinite' 
+                            }}></div>
+                        )}
+                        {isProcessing ? 'Procesando...' : 'Cargar y Procesar Preguntas'}
                     </button>
 
                     {status !== 'idle' && (
                         <div style={{ 
                             padding: '12px', 
                             borderRadius: '6px', 
-                            background: status === 'success' ? '#10B981' : '#EF4444',
+                            background: status === 'completed' ? '#10B981' : (status === 'error' ? '#EF4444' : '#3B82F6'),
                             color: 'white',
                             fontSize: '14px'
                         }}>
                             {message}
+                        </div>
+                    )}
+
+                    {/* Processed Questions Preview */}
+                    {processedQuestions.length > 0 && (
+                        <div style={{ marginTop: '20px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                <h4 style={{ color: '#E0E1DD', fontSize: '16px', fontWeight: 'bold', margin: 0 }}>
+                                    📋 Preguntas Procesadas ({processedQuestions.length})
+                                </h4>
+                                <button
+                                    onClick={() => {
+                                        console.log('Saving questions:', processedQuestions);
+                                        // Here would integrate with actual API
+                                        alert(`Se guardarían ${processedQuestions.length} preguntas en el sistema`);
+                                    }}
+                                    style={{
+                                        background: '#10B981',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        padding: '8px 16px',
+                                        fontSize: '14px',
+                                        fontWeight: '500',
+                                        cursor: 'pointer'
+                                    }}
+                                    onMouseOver={(e) => e.target.style.background = '#059669'}
+                                    onMouseOut={(e) => e.target.style.background = '#10B981'}
+                                >
+                                    ✅ Confirmar y Guardar
+                                </button>
+                            </div>
+                            
+                            <div style={{ 
+                                background: '#0D1B2A', 
+                                borderRadius: '8px', 
+                                border: '1px solid #415A77',
+                                maxHeight: '400px',
+                                overflowY: 'auto'
+                            }}>
+                                {processedQuestions.slice(0, 5).map((question, index) => (
+                                    <div key={index} style={{ 
+                                        padding: '16px', 
+                                        borderBottom: index < Math.min(4, processedQuestions.length - 1) ? '1px solid #415A77' : 'none'
+                                    }}>
+                                        <div style={{ marginBottom: '8px' }}>
+                                            <span style={{ color: '#10B981', fontSize: '12px', fontWeight: 'bold' }}>
+                                                📚 {question.bloque} → 📖 {question.tema}
+                                            </span>
+                                        </div>
+                                        <div style={{ color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>
+                                            {index + 1}. {question.textoPregunta}
+                                        </div>
+                                        <div style={{ paddingLeft: '16px' }}>
+                                            {question.respuestas.map((respuesta, respIndex) => (
+                                                <div key={respIndex} style={{ 
+                                                    color: respuesta.esCorrecta ? '#10B981' : '#778DA9', 
+                                                    fontSize: '13px',
+                                                    marginBottom: '4px'
+                                                }}>
+                                                    {respuesta.esCorrecta ? '✅' : '⚪'} {String.fromCharCode(97 + respIndex)}) {respuesta.textoRespuesta}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                                {processedQuestions.length > 5 && (
+                                    <div style={{ 
+                                        padding: '12px', 
+                                        textAlign: 'center', 
+                                        color: '#778DA9', 
+                                        fontSize: '12px',
+                                        fontStyle: 'italic'
+                                    }}>
+                                        ... y {processedQuestions.length - 5} preguntas más
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>
