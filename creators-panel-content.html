@@ -2027,6 +2027,141 @@
                 }
             };
 
+            // Function to save processed questions to database
+            const handleSaveProcessedQuestions = async () => {
+                if (processedQuestions.length === 0) {
+                    alert('No hay preguntas para guardar');
+                    return;
+                }
+
+                try {
+                    console.log(`🚀 Starting to save ${processedQuestions.length} questions...`);
+                    
+                    // Group questions by block
+                    const questionsByBlock = {};
+                    processedQuestions.forEach(q => {
+                        const blockName = q.bloque || 'Sin Clasificar';
+                        if (!questionsByBlock[blockName]) {
+                            questionsByBlock[blockName] = [];
+                        }
+                        questionsByBlock[blockName].push(q);
+                    });
+
+                    let totalSaved = 0;
+                    const blockResults = [];
+
+                    // Process each block
+                    for (const [blockName, questions] of Object.entries(questionsByBlock)) {
+                        console.log(`📦 Processing block: ${blockName} with ${questions.length} questions`);
+                        
+                        try {
+                            // Check if block exists
+                            let targetBlock = blocks.find(b => b.name === blockName || b.nombreCorto === blockName);
+                            
+                            if (!targetBlock) {
+                                // Create new block
+                                console.log(`🆕 Creating new block: ${blockName}`);
+                                const blockData = {
+                                    name: blockName,
+                                    description: `${blockName} - Bloque creado desde carga masiva`,
+                                    observaciones: `Creado automáticamente con ${questions.length} preguntas`,
+                                    isPublic: true
+                                };
+                                
+                                const response = await apiDataService.createBlock(blockData);
+                                targetBlock = response.block || response;
+                                console.log(`✅ Block created with ID: ${targetBlock.id}`);
+                            }
+
+                            // Save questions to block
+                            for (let i = 0; i < questions.length; i++) {
+                                const question = questions[i];
+                                const questionData = {
+                                    blockId: targetBlock.id,
+                                    textoPregunta: question.pregunta || question.textoPregunta,
+                                    tema: question.tema || 'General',
+                                    respuestasPosibles: question.respuestas?.map(r => ({
+                                        textoRespuesta: r.texto || r.textoRespuesta || r,
+                                        esCorrecta: r.esCorrecta || false
+                                    })) || [],
+                                    respuestaCorrecta: question.respuestaCorrecta || 0,
+                                    explicacionRespuesta: question.explicacion || question.explicacionRespuesta || '',
+                                    difficulty: question.difficulty || 1
+                                };
+
+                                // Ensure at least one correct answer
+                                if (questionData.respuestasPosibles.length > 0) {
+                                    const hasCorrect = questionData.respuestasPosibles.some(r => r.esCorrecta);
+                                    if (!hasCorrect && questionData.respuestaCorrecta < questionData.respuestasPosibles.length) {
+                                        questionData.respuestasPosibles[questionData.respuestaCorrecta].esCorrecta = true;
+                                    }
+                                }
+
+                                console.log(`💾 Saving question ${i + 1}/${questions.length} to block ${blockName}`);
+                                await apiDataService.createQuestion(questionData);
+                                totalSaved++;
+                                
+                                // Small delay to avoid overwhelming the server
+                                if (i < questions.length - 1) {
+                                    await new Promise(resolve => setTimeout(resolve, 50));
+                                }
+                            }
+                            
+                            blockResults.push({
+                                blockName,
+                                questionsCount: questions.length,
+                                success: true
+                            });
+                            
+                        } catch (blockError) {
+                            console.error(`❌ Error processing block ${blockName}:`, blockError);
+                            blockResults.push({
+                                blockName,
+                                questionsCount: questions.length,
+                                success: false,
+                                error: blockError.message
+                            });
+                        }
+                    }
+
+                    // Show results
+                    const successfulBlocks = blockResults.filter(r => r.success);
+                    const failedBlocks = blockResults.filter(r => !r.success);
+                    
+                    let message = `✅ Guardado completado!\n\n`;
+                    message += `📊 Resumen:\n`;
+                    message += `- Total de preguntas guardadas: ${totalSaved}\n`;
+                    message += `- Bloques procesados exitosamente: ${successfulBlocks.length}\n`;
+                    
+                    if (successfulBlocks.length > 0) {
+                        message += `\n✅ Bloques guardados:\n`;
+                        successfulBlocks.forEach(b => {
+                            message += `  • ${b.blockName}: ${b.questionsCount} preguntas\n`;
+                        });
+                    }
+                    
+                    if (failedBlocks.length > 0) {
+                        message += `\n❌ Bloques con errores:\n`;
+                        failedBlocks.forEach(b => {
+                            message += `  • ${b.blockName}: ${b.error}\n`;
+                        });
+                    }
+                    
+                    alert(message);
+                    
+                    // Clear processed questions after successful save
+                    if (totalSaved > 0) {
+                        setProcessedQuestions([]);
+                        setStatus('idle');
+                        setMessage('');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error saving questions:', error);
+                    alert(`Error al guardar las preguntas: ${error.message}`);
+                }
+            };
+
             return (
                 <div style={{ background: '#1B263B', padding: '24px', borderRadius: '12px', border: '1px solid #415A77' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
@@ -2331,10 +2466,8 @@
                                     📋 Preguntas Procesadas ({processedQuestions.length})
                                 </h4>
                                 <button
-                                    onClick={() => {
-                                        console.log('Saving questions:', processedQuestions);
-                                        // Here would integrate with actual API
-                                        alert(`Se guardarían ${processedQuestions.length} preguntas en el sistema`);
+                                    onClick={async () => {
+                                        await handleSaveProcessedQuestions();
                                     }}
                                     style={{
                                         background: '#10B981',
