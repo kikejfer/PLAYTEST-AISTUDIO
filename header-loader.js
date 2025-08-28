@@ -103,6 +103,7 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
         }
         
         container.innerHTML = headerHTML;
+        console.log('🔧 Header injected successfully');
         
         // Actualizar datos del usuario después de inyectar el HTML
         updateUserData(userInfo);
@@ -197,8 +198,11 @@ async function loadModals() {
         }
         
         modalsContainer.innerHTML = modalsHTML;
+        console.log('🎭 Modals loaded successfully');
         
         // Verificar qué modales se cargaron
+        const loadedModals = document.querySelectorAll('[id$="-modal"]');
+        console.log('📋 Loaded modals:', Array.from(loadedModals).map(m => m.id));
         const modalElements = document.querySelectorAll('[id$="-modal"]');
         
     } catch (error) {
@@ -780,6 +784,7 @@ function initializeHeaderFunctions() {
         openModal('introduction-modal');
         closeUserDropdown();
     };
+    console.log('✅ openIntroductionModal defined globally');
     
     window.openGameModesModal = function() {
         console.log('🎯 openGameModesModal called');
@@ -814,6 +819,20 @@ function initializeHeaderFunctions() {
     window.openLuminariasModal = function() {
         openModal('luminarias-modal');
         closeUserDropdown();
+    };
+    
+    // Función de test para verificar que todo funciona
+    window.testModalFunctions = function() {
+        console.log('🧪 Testing modal functions...');
+        console.log('openIntroductionModal exists:', typeof window.openIntroductionModal);
+        console.log('openGameModesModal exists:', typeof window.openGameModesModal);
+        console.log('openRoleLevelsModal exists:', typeof window.openRoleLevelsModal);
+        console.log('openModal exists:', typeof window.openModal);
+        
+        const modals = document.querySelectorAll('[id$="-modal"]');
+        console.log('Available modals:', Array.from(modals).map(m => m.id));
+        
+        console.log('🧪 Test complete. Try calling: openIntroductionModal()');
     };
     
     window.openPasswordChangeModal = function() {
