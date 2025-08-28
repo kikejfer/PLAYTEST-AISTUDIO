@@ -1981,7 +1981,7 @@ window.openLuminariasModal = function() {
     window.closeUserDropdown();
 };
 
-// Función de test para verificar que todo funciona
+// Función de test para verificar que todo funciona - definida globalmente
 window.testModalFunctions = function() {
     console.log('🧪 Testing modal functions...');
     console.log('openIntroductionModal exists:', typeof window.openIntroductionModal);
@@ -1993,6 +1993,15 @@ window.testModalFunctions = function() {
     console.log('Available modals:', Array.from(modals).map(m => m.id));
     
     console.log('🧪 Test complete. Try calling: openIntroductionModal()');
+};
+
+// Función global para cerrar dropdown (backup si no se inicializa en initializeHeaderFunctions)
+window.closeUserDropdown = function() {
+    const dropdown = document.getElementById('user-dropdown');
+    if (dropdown) {
+        dropdown.style.display = 'none';
+        console.log('🔽 User dropdown closed');
+    }
 };
 
 console.log('✅ Modal functions defined globally at script level');
