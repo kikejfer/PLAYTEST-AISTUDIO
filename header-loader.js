@@ -1944,3 +1944,55 @@ function handleEscapeKeyPersonalData(event) {
 // Exportar funciones para uso manual
 window.loadHeader = loadHeader;
 window.updateUserData = updateUserData;
+
+// ==========================================
+// FUNCIONES GLOBALES DE MODALES 
+// ==========================================
+// Estas funciones se definen globalmente para asegurar que estén disponibles
+
+// Funciones para abrir modales (se conectan con modals-component.html)
+window.openIntroductionModal = function() {
+    console.log('🎯 openIntroductionModal called');
+    window.openModal('introduction-modal');
+    window.closeUserDropdown();
+};
+
+window.openGameModesModal = function() {
+    console.log('🎯 openGameModesModal called');
+    window.openModal('game-modes-modal');
+    window.closeUserDropdown();
+};
+
+window.openRoleLevelsModal = function() {
+    console.log('🎯 openRoleLevelsModal called');
+    window.openModal('role-levels-modal');
+    window.closeUserDropdown();
+};
+
+window.openTopicDevelopmentModal = function() {
+    console.log('🎯 openTopicDevelopmentModal called');
+    window.openModal('topic-development-modal');
+    window.closeUserDropdown();
+};
+
+window.openLuminariasModal = function() {
+    console.log('🎯 openLuminariasModal called');
+    window.openModal('luminarias-modal');
+    window.closeUserDropdown();
+};
+
+// Función de test para verificar que todo funciona
+window.testModalFunctions = function() {
+    console.log('🧪 Testing modal functions...');
+    console.log('openIntroductionModal exists:', typeof window.openIntroductionModal);
+    console.log('openGameModesModal exists:', typeof window.openGameModesModal);
+    console.log('openRoleLevelsModal exists:', typeof window.openRoleLevelsModal);
+    console.log('openModal exists:', typeof window.openModal);
+    
+    const modals = document.querySelectorAll('[id$="-modal"]');
+    console.log('Available modals:', Array.from(modals).map(m => m.id));
+    
+    console.log('🧪 Test complete. Try calling: openIntroductionModal()');
+};
+
+console.log('✅ Modal functions defined globally at script level');
