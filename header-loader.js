@@ -776,16 +776,19 @@ function initializeHeaderFunctions() {
     
     // Funciones para abrir modales (se conectan con modals-component.html)
     window.openIntroductionModal = function() {
+        console.log('🎯 openIntroductionModal called');
         openModal('introduction-modal');
         closeUserDropdown();
     };
     
     window.openGameModesModal = function() {
+        console.log('🎯 openGameModesModal called');
         openModal('game-modes-modal');
         closeUserDropdown();
     };
     
     window.openRoleLevelsModal = function() {
+        console.log('🎯 openRoleLevelsModal called');
         openModal('role-levels-modal');
         closeUserDropdown();
     };
@@ -839,15 +842,21 @@ function initializeHeaderFunctions() {
 
 // Funciones globales para manejar modales
 window.openModal = function(modalId) {
+    console.log(`🔍 Attempting to open modal: ${modalId}`);
+    
     const modal = document.getElementById(modalId);
     
     if (!modal) {
         console.error(`❌ Modal not found: ${modalId}`);
+        console.log('Available modals:', document.querySelectorAll('[id$="-modal"]'));
         return;
     }
     
+    console.log(`✅ Modal found: ${modalId}`, modal);
+    
     // Usar la misma lógica simple para todos los modales
     modal.style.display = 'flex';
+    console.log(`📱 Modal display set to flex: ${modalId}`);
     
     // Inicializar navegación de pantallas para modales con múltiples pantallas
     if (modalId === 'introduction-modal') {
