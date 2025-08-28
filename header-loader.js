@@ -839,87 +839,39 @@ function initializeHeaderFunctions() {
 
 // Funciones globales para manejar modales
 window.openModal = function(modalId) {
+    const modal = document.getElementById(modalId);
     
-    // Si es el modal de introducción, usar función simple
-    if (modalId === 'introduction-modal') {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.style.display = 'flex';
-            return;
-        }
-    }
-    
-    // Para todos los otros modales: reemplazar completamente con estructura de introduction
-    const introModal = document.getElementById('introduction-modal');
-    const targetModal = document.getElementById(modalId);
-    
-    if (!introModal || !targetModal) {
-        console.error(`❌ No se encontró modal de introducción o modal objetivo: ${modalId}`);
+    if (!modal) {
+        console.error(`❌ Modal not found: ${modalId}`);
         return;
     }
     
-    // Verificar si introduction-modal funciona correctamente
+    // Usar la misma lógica simple para todos los modales
+    modal.style.display = 'flex';
     
-    // CLAVE: Mostrar temporalmente el introduction-modal para que tenga dimensiones correctas al clonarlo
-    const wasVisible = introModal.style.display === 'flex';
-    if (!wasVisible) {
-        introModal.style.display = 'flex';
-        // Forzar recálculo de dimensiones
-        introModal.offsetHeight;
+    // Inicializar navegación de pantallas para modales con múltiples pantallas
+    if (modalId === 'introduction-modal') {
+        // Introducción: 5 pantallas
+        window.currentIntroductionScreen = 1;
+        showIntroductionScreen(1);
+    } else if (modalId === 'game-modes-modal') {
+        // Modalidades de Juego: múltiples pantallas
+        window.currentGameModeScreen = 1;
+        showGameModeScreen(1);
+    } else if (modalId === 'role-levels-modal') {
+        // Niveles por Roles: 19 pantallas
+        window.currentRoleLevelScreen = 1;
+        showRoleLevelScreen(1);
+    } else if (modalId === 'luminarias-modal') {
+        // Luminarias: 6+ pantallas
+        window.currentLuminariasScreen = 1;
+        showLuminariasScreen(1);
+    } else if (modalId === 'topic-development-modal') {
+        // Desarrollo de Temarios: pantalla única
+        // No requiere inicialización especial
     }
     
-    
-    // Clonar completamente el modal de introducción (ahora con dimensiones correctas)
-    const clonedModal = introModal.cloneNode(true);
-    
-    // Ocultar el introduction-modal original si no estaba visible
-    if (!wasVisible) {
-        introModal.style.display = 'none';
-    }
-    clonedModal.id = modalId;
-    
-    // Verificar si el modal original tiene contenido problemático
-    const originalModalBody = targetModal.querySelector('.modal-body');
-    const clonedModalBody = clonedModal.querySelector('.modal-body');
-    
-    if (originalModalBody && clonedModalBody) {
-        // Si es uno de los modales que sabemos que fallan, usar contenido simple de prueba
-        if (['game-modes-modal', 'topic-development-modal', 'luminarias-modal'].includes(modalId)) {
-            clonedModalBody.innerHTML = `
-                <div style="padding: 2rem; text-align: center; min-height: 400px;">
-                    <h2 style="color: #3B82F6; margin-bottom: 2rem;">⚠️ Modal en Mantenimiento</h2>
-                    <p style="color: #E0E1DD; font-size: 1.2rem; margin-bottom: 2rem;">
-                        Este modal está siendo reparado. Contenido temporal activo.
-                    </p>
-                    <div style="background: #1B263B; padding: 2rem; border-radius: 12px; border: 1px solid #415A77;">
-                        <h3 style="color: #FFB347; margin-bottom: 1rem;">${modalId.replace('-modal', '').replace('-', ' ').toUpperCase()}</h3>
-                        <p style="color: #778DA9;">Funcionalidad temporalmente deshabilitada mientras se solucionan problemas de renderizado.</p>
-                        <div style="margin-top: 2rem;">
-                            <button onclick="closeModal('${modalId}')" style="background: #3B82F6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-size: 1rem;">
-                                Cerrar Modal
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else {
-            // Para modales que funcionan, usar contenido original
-            clonedModalBody.innerHTML = originalModalBody.innerHTML;
-        }
-    }
-    
-    // Actualizar el botón de cerrar para que use el ID correcto
-    const closeButton = clonedModal.querySelector('button[onclick*="closeModal"]');
-    if (closeButton) {
-        closeButton.setAttribute('onclick', `closeModal('${modalId}')`);
-    }
-    
-    // Reemplazar el modal original con el clonado
-    targetModal.parentNode.replaceChild(clonedModal, targetModal);
-    
-    // Mostrar el modal clonado
-    clonedModal.style.display = 'flex';
-    
+    console.log(`✅ Modal opened: ${modalId}`);
 };
 
 
@@ -928,6 +880,180 @@ window.closeModal = function(modalId) {
     if (modal) {
         modal.style.display = 'none';
     }
+};
+
+// Funciones de navegación para modal de Introducción
+window.showIntroductionScreen = function(screenNumber) {
+    const totalScreens = 5;
+    
+    // Ocultar todas las pantallas
+    for (let i = 1; i <= totalScreens; i++) {
+        const screen = document.getElementById(`introduction-screen-${i}`);
+        if (screen) screen.style.display = 'none';
+    }
+    
+    // Mostrar la pantalla actual
+    const currentScreen = document.getElementById(`introduction-screen-${screenNumber}`);
+    if (currentScreen) {
+        currentScreen.style.display = 'block';
+        window.currentIntroductionScreen = screenNumber;
+    }
+    
+    updateIntroductionNavigation(screenNumber);
+};
+
+window.updateIntroductionNavigation = function(screenNumber) {
+    const totalScreens = 5;
+    const prevBtn = document.getElementById('prev-introduction-btn');
+    const nextBtn = document.getElementById('next-introduction-btn');
+    
+    if (prevBtn) prevBtn.style.display = screenNumber > 1 ? 'block' : 'none';
+    if (nextBtn) nextBtn.style.display = screenNumber < totalScreens ? 'block' : 'none';
+};
+
+// Funciones de navegación para modal de Modalidades de Juego
+window.showGameModeScreen = function(screenNumber) {
+    const totalScreens = 12;
+    
+    // Ocultar todas las pantallas
+    for (let i = 1; i <= totalScreens; i++) {
+        const screen = document.getElementById(`game-mode-screen-${i}`);
+        if (screen) screen.style.display = 'none';
+    }
+    
+    // Mostrar la pantalla actual
+    const currentScreen = document.getElementById(`game-mode-screen-${screenNumber}`);
+    if (currentScreen) {
+        currentScreen.style.display = 'block';
+        window.currentGameModeScreen = screenNumber;
+    }
+    
+    updateGameModeNavigation(screenNumber);
+};
+
+window.updateGameModeNavigation = function(screenNumber) {
+    const totalScreens = 12;
+    const prevBtn = document.getElementById('game-modes-prev-btn');
+    const nextBtn = document.getElementById('game-modes-next-btn');
+    
+    if (prevBtn) prevBtn.style.display = screenNumber > 1 ? 'block' : 'none';
+    if (nextBtn) nextBtn.style.display = screenNumber < totalScreens ? 'block' : 'none';
+};
+
+// Funciones de navegación para modal de Niveles por Roles
+window.showRoleLevelScreen = function(screenNumber) {
+    const totalScreens = 19;
+    
+    // Ocultar todas las pantallas
+    for (let i = 1; i <= totalScreens; i++) {
+        const screen = document.getElementById(`role-level-screen-${i}`);
+        if (screen) screen.style.display = 'none';
+    }
+    
+    // Mostrar la pantalla actual
+    const currentScreen = document.getElementById(`role-level-screen-${screenNumber}`);
+    if (currentScreen) {
+        currentScreen.style.display = 'block';
+        window.currentRoleLevelScreen = screenNumber;
+    }
+    
+    updateRoleLevelNavigation(screenNumber);
+};
+
+window.updateRoleLevelNavigation = function(screenNumber) {
+    const totalScreens = 19;
+    const prevBtn = document.getElementById('prev-role-level-btn');
+    const nextBtn = document.getElementById('next-role-level-btn');
+    
+    if (prevBtn) prevBtn.style.display = screenNumber > 1 ? 'block' : 'none';
+    if (nextBtn) nextBtn.style.display = screenNumber < totalScreens ? 'block' : 'none';
+};
+
+// Funciones de navegación para modal de Luminarias
+window.showLuminariasScreen = function(screenNumber) {
+    const totalScreens = 6;
+    
+    // Ocultar todas las pantallas
+    for (let i = 1; i <= totalScreens; i++) {
+        const screen = document.getElementById(`luminarias-screen-${i}`);
+        if (screen) screen.style.display = 'none';
+    }
+    
+    // Mostrar la pantalla actual
+    const currentScreen = document.getElementById(`luminarias-screen-${screenNumber}`);
+    if (currentScreen) {
+        currentScreen.style.display = 'block';
+        window.currentLuminariasScreen = screenNumber;
+    }
+    
+    updateLuminariasNavigation(screenNumber);
+};
+
+window.updateLuminariasNavigation = function(screenNumber) {
+    const totalScreens = 6;
+    const prevBtn = document.getElementById('luminarias-prev-btn');
+    const nextBtn = document.getElementById('luminarias-next-btn');
+    
+    if (prevBtn) prevBtn.style.display = screenNumber > 1 ? 'block' : 'none';
+    if (nextBtn) nextBtn.style.display = screenNumber < totalScreens ? 'block' : 'none';
+};
+
+// Funciones de navegación que son llamadas desde los botones de los modales
+window.nextIntroductionScreen = function() {
+    if (window.currentIntroductionScreen < 5) {
+        showIntroductionScreen(window.currentIntroductionScreen + 1);
+    }
+};
+
+window.previousIntroductionScreen = function() {
+    if (window.currentIntroductionScreen > 1) {
+        showIntroductionScreen(window.currentIntroductionScreen - 1);
+    }
+};
+
+window.nextGameModeScreen = function() {
+    if (window.currentGameModeScreen < 12) {
+        showGameModeScreen(window.currentGameModeScreen + 1);
+    }
+};
+
+window.previousGameModeScreen = function() {
+    if (window.currentGameModeScreen > 1) {
+        showGameModeScreen(window.currentGameModeScreen - 1);
+    }
+};
+
+window.nextRoleLevelScreen = function() {
+    if (window.currentRoleLevelScreen < 19) {
+        showRoleLevelScreen(window.currentRoleLevelScreen + 1);
+    }
+};
+
+window.previousRoleLevelScreen = function() {
+    if (window.currentRoleLevelScreen > 1) {
+        showRoleLevelScreen(window.currentRoleLevelScreen - 1);
+    }
+};
+
+window.nextLuminariasScreen = function() {
+    if (window.currentLuminariasScreen < 6) {
+        showLuminariasScreen(window.currentLuminariasScreen + 1);
+    }
+};
+
+window.previousLuminariasScreen = function() {
+    if (window.currentLuminariasScreen > 1) {
+        showLuminariasScreen(window.currentLuminariasScreen - 1);
+    }
+};
+
+// Funciones para Topic Development modal (si tiene navegación)
+window.nextTopicScreen = function() {
+    console.log('Next topic screen - Not implemented yet');
+};
+
+window.previousTopicScreen = function() {
+    console.log('Previous topic screen - Not implemented yet');
 };
 
 // Configurar eventos globales para modales (solo una vez)
