@@ -1714,7 +1714,7 @@ async function loadPersonalData() {
             ? 'https://playtest-backend.onrender.com' 
             : '';
             
-        const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
+        const response = await fetch(`${API_BASE_URL}/api/users/me`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -1896,7 +1896,7 @@ async function savePersonalData() {
             
         const token = localStorage.getItem('playtest_auth_token');
         
-        const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
+        const response = await fetch(`${API_BASE_URL}/api/users/me`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
