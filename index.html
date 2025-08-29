@@ -3957,6 +3957,24 @@
         const [showRoleModal, setShowRoleModal] = useState(false);
         const [pendingUser, setPendingUser] = useState(null);
 
+        // Helper function to extract roles from JWT token (available globally)
+        const getRolesFromToken = (token = null) => {
+          try {
+            // If no token provided, get from localStorage (like header-loader.js does)
+            const authToken = token || localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+            if (!authToken) return [];
+            
+            const payload = JSON.parse(atob(authToken.split('.')[1]));
+            return payload.roles || [];
+          } catch (error) {
+            console.warn('⚠️ Error decodificando token JWT para roles:', error);
+            return [];
+          }
+        };
+
+        // Make getRolesFromToken available globally for header-loader.js
+        window.getRolesFromToken = getRolesFromToken;
+
         useEffect(() => {
           console.log('Checking for existing session...');
           try {
@@ -3971,12 +3989,16 @@
               
               // Check if session has valid data
               if (session && session.userId && session.nickname) {
-                // Create user object from session data initially
+                // Extract roles from JWT token
+                const roles = getRolesFromToken();
+                
+                // Create user object from session data with roles
                 const user = {
                   id: session.userId,
-                  nickname: session.nickname
+                  nickname: session.nickname,
+                  roles: roles
                 };
-                console.log('✅ Restoring user session (basic data):', user);
+                console.log('✅ Restoring user session with roles:', { ...user, rolesCount: roles.length });
                 setCurrentUser(user);
                 
                 // Ensure apiDataService has the token
@@ -4045,7 +4067,10 @@
           } else {
             // Usuario existente (login normal), continuar siempre
             console.log('✅ Login de usuario existente, continuando sin modal de roles');
-            setCurrentUser(user);
+            const roles = getRolesFromToken();
+            const userWithRoles = { ...user, roles: roles };
+            console.log('✅ Login user with roles:', { ...userWithRoles, rolesCount: roles.length });
+            setCurrentUser(userWithRoles);
           }
         };
         

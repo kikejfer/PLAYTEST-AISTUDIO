@@ -396,7 +396,7 @@ async function getUserData() {
 async function getUserDataInternal() {
     try {
         // Leer roles directamente del JWT token (como lo hace el panel)
-        const tokenRoles = getTokenRoles();
+        const tokenRoles = window.getRolesFromToken ? window.getRolesFromToken() : [];
         const userRoles = getUserRolesFromSystem({ roles: tokenRoles }, {});
         
         // Intentar obtener datos del usuario desde tu API
@@ -522,23 +522,7 @@ function getUserRolesFromSystem(profile, session) {
     return roles;
 }
 
-/**
- * Obtiene roles del token JWT
- * @returns {Array} Array de roles del token
- */
-function getTokenRoles() {
-    try {
-        const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-        if (!token) return [];
-        
-        // Decodificar JWT (solo la parte del payload)
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.roles || [];
-    } catch (error) {
-        console.warn('⚠️ Error decodificando token JWT:', error);
-        return [];
-    }
-}
+// Note: getTokenRoles() moved to index.html as window.getRolesFromToken() to avoid duplication
 
 /**
  * Detecta el rol activo desde el token JWT
