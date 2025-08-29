@@ -1463,6 +1463,9 @@ async function loadRoleOptions() {
         const payload = JSON.parse(atob(token.split('.')[1]));
         const currentRoles = payload.roles || [];
 
+        // Verificar si el usuario actual es Administrador Principal
+        const isAdminPrincipal = currentRoles.includes('administrador_principal') || currentRoles.includes('admin_principal');
+
         // Definir todos los roles disponibles
         const availableRoles = [
             { id: 'jugador', name: '🎮 Jugador', description: 'Participa en partidas y duelos', editable: true },
@@ -1476,7 +1479,8 @@ async function loadRoleOptions() {
         container.innerHTML = availableRoles.map(role => {
             const hasRole = currentRoles.includes(role.id);
             const isEditable = role.editable;
-            const isDisabled = !isEditable && hasRole; // Solo deshabilitar roles admin que el usuario ya tiene
+            // Deshabilitar roles admin para usuarios que no sean Admin Principal
+            const isDisabled = !isEditable && !isAdminPrincipal;
             
             return `
                 <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid ${isDisabled ? '#6B7280' : '#415A77'}; border-radius: 0.5rem; margin-bottom: 0.75rem; transition: background 0.2s; opacity: ${isDisabled ? '0.7' : '1'};" ${!isDisabled ? `onmouseover="this.style.background='rgba(65, 90, 119, 0.1)'" onmouseout="this.style.background='transparent'"` : ''}>

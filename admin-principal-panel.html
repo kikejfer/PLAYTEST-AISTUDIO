@@ -1321,7 +1321,7 @@
                 const row = document.createElement('tr');
                 const deleteButton = admin.role_name === 'administrador_principal' 
                     ? '<span style="color: #9CA3AF;">Protegido</span>' 
-                    : `<button onclick="deleteUser(${admin.id}, '${admin.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️</button>`;
+                    : `<button onclick="removeAdminRole(${admin.id}, '${admin.nickname}')" style="background: #F59E0B; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">➖</button>`;
                 
                 row.innerHTML = `
                     <td><strong>${admin.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
@@ -2006,34 +2006,17 @@
 
 
 
-        async function deleteUser(userId, nickname) {
-            if (!confirm(`⚠️ ADVERTENCIA: ACCIÓN IRREVERSIBLE
+        async function removeAdminRole(userId, nickname) {
+            if (!confirm(`⚠️ Quitar rol de Administrador Secundario
 
-¿Estás seguro de que quieres borrar COMPLETAMENTE al usuario "${nickname}"?
+¿Estás seguro de que quieres quitar el rol de Administrador Secundario al usuario "${nickname}"?
 
-Esto eliminará:
-✗ La cuenta del usuario
-✗ Todos sus bloques creados
-✗ Su perfil y estadísticas
-✗ Todas sus preguntas
-✗ Su historial de respuestas
-✗ Toda información asociada
-
-Esta acción NO se puede deshacer.
+Esto hará que:
+• El usuario mantenga su cuenta activa
+• Pierda los privilegios de administración
+• Pueda seguir usando la plataforma como usuario normal
 
 ¿Continuar?`)) {
-                return;
-            }
-
-            if (!confirm(`CONFIRMACIÓN FINAL
-
-Escribe "CONFIRMAR" en la siguiente ventana para borrar definitivamente al usuario "${nickname}"`)) {
-                return;
-            }
-
-            const confirmation = prompt(`Para confirmar el borrado, escribe exactamente: CONFIRMAR`);
-            if (confirmation !== 'CONFIRMAR') {
-                alert('Borrado cancelado. Confirmación incorrecta.');
                 return;
             }
 
@@ -2043,31 +2026,33 @@ Escribe "CONFIRMAR" en la siguiente ventana para borrar definitivamente al usuar
                     ? 'https://playtest-backend.onrender.com' 
                     : '';
                 
-                const response = await fetch(`${API_BASE_URL}/api/roles-updated/delete-user/${userId}`, {
-                    method: 'DELETE',
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/remove-role`, {
+                    method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        roleToRemove: 'administrador_secundario'
+                    })
                 });
 
                 const result = await response.json();
                 
                 if (response.ok) {
-                    alert(`✅ Usuario "${nickname}" borrado exitosamente
+                    alert(`✅ Rol de Administrador Secundario removido exitosamente
 
-${result.deleted_data.join('\n')}
-
-Total elementos eliminados: ${result.total_deleted}`);
+El usuario "${nickname}" ya no tiene privilegios administrativos pero mantiene su cuenta activa.`);
                     
                     // Recargar el panel
                     window.location.reload();
                 } else {
-                    alert(`❌ Error borrando usuario: ${result.error}`);
+                    alert(`❌ Error removiendo rol: ${result.error || result.message}`);
                 }
                 
             } catch (error) {
-                console.error('Error borrando usuario:', error);
+                console.error('Error removiendo rol:', error);
                 alert('❌ Error: ' + error.message);
             }
         }
