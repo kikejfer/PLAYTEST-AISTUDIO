@@ -3183,77 +3183,46 @@
           // Known secondary admins list (legacy support)
           const secondaryAdmins = ['kikejfer', 'admin_sec_1', 'admin_secundario'];
           
+          // Helper function to handle redirects
+          const handleRoleRedirect = (roleName, panelFile, roleEmoji, roleDisplayName) => {
+            console.log(`${roleEmoji} ${roleDisplayName} DETECTED (${currentUser.nickname}) - Starting redirect process`);
+            const currentUrl = window.location.href;
+            const isInCorrectPanel = currentUrl.includes(panelFile);
+            
+            if (!isInCorrectPanel) {
+              console.log(`🎯 REDIRECTING TO ${roleDisplayName.toUpperCase()} PANEL NOW`);
+              const uniqueId = Date.now() + Math.random();
+              window.location.href = `${panelFile}?id=${uniqueId}`;
+            } else {
+              console.log(`✅ ${roleDisplayName} already in correct location`);
+            }
+          };
+          
           // Redirect based on primary role
           switch (primaryRole) {
             case 'administrador_principal':
-              console.log('🔀 ADMIN PRINCIPAL DETECTED - Starting redirect process');
-              const url = window.location.href;
-              const isInAdminPanel = url.includes('admin-principal-panel.html');
-              
-              if (!isInAdminPanel) {
-                console.log('🎯 REDIRECTING TO ADMIN PRINCIPAL PANEL NOW');
-                const uniqueId = Date.now() + Math.random();
-                window.location.href = `admin-principal-panel.html?id=${uniqueId}`;
-              } else {
-                console.log('✅ Admin Principal already in correct location');
-              }
+              handleRoleRedirect('administrador_principal', 'admin-principal-panel.html', '🔀', 'Admin Principal');
               break;
               
             case 'administrador_secundario':
-              console.log(`🔀 ADMIN SECUNDARIO DETECTED (${currentUser.nickname}) - Starting redirect process`);
-              const currentUrl = window.location.href;
-              const isInSecondaryPanel = currentUrl.includes('admin-secundario-panel.html');
-              
-              if (!isInSecondaryPanel) {
-                console.log('🎯 REDIRECTING TO ADMIN SECUNDARIO PANEL NOW');
-                const uniqueId = Date.now() + Math.random();
-                window.location.href = `admin-secundario-panel.html?id=${uniqueId}`;
-              } else {
-                console.log('✅ Admin Secundario already in correct location');
-              }
+              handleRoleRedirect('administrador_secundario', 'admin-secundario-panel.html', '🔀', 'Admin Secundario');
               break;
               
             case 'creador':
-              console.log(`🎨 CONTENT CREATOR DETECTED (${currentUser.nickname}) - Starting redirect process`);
-              const creatorUrl = window.location.href;
-              const isInCreatorPanel = creatorUrl.includes('creators-panel-content.html');
-              
-              if (!isInCreatorPanel) {
-                console.log('🎯 REDIRECTING TO CONTENT CREATOR PANEL NOW');
-                const uniqueId = Date.now() + Math.random();
-                window.location.href = `creators-panel-content.html?id=${uniqueId}`;
-              } else {
-                console.log('✅ Content Creator already in correct location');
-              }
+              handleRoleRedirect('creador', 'creators-panel-content.html', '🎨', 'Content Creator');
               break;
               
             case 'profesor':
-              console.log(`👨‍🏫 TEACHER DETECTED (${currentUser.nickname}) - Starting redirect process`);
-              const teacherUrl = window.location.href;
-              const isInTeacherPanel = teacherUrl.includes('teachers-panel-schedules.html');
-              
-              if (!isInTeacherPanel) {
-                console.log('🎯 REDIRECTING TO TEACHER PANEL NOW');
-                const uniqueId = Date.now() + Math.random();
-                window.location.href = `teachers-panel-schedules.html?id=${uniqueId}`;
-              } else {
-                console.log('✅ Teacher already in correct location');
-              }
+              handleRoleRedirect('profesor', 'teachers-panel-schedules.html', '👨‍🏫', 'Teacher');
               break;
               
             case 'jugador':
-            default:
-              console.log(`🎮 JUGADOR DETECTED (${currentUser.nickname}) - Redirecting to dedicated player panel`);
-              const playerUrl = window.location.href;
-              const isInPlayerPanel = playerUrl.includes('jugadores-panel-gaming.html');
+              handleRoleRedirect('jugador', 'jugadores-panel-gaming.html', '🎮', 'Player');
+              break;
               
-              if (!isInPlayerPanel) {
-                console.log('🎯 REDIRECTING TO PLAYER PANEL NOW');
-                const uniqueId = Date.now() + Math.random();
-                window.location.href = `jugadores-panel-gaming.html?id=${uniqueId}`;
-              } else {
-                console.log('✅ Player already in correct location');
-              }
+            default:
+              console.log(`❓ UNKNOWN ROLE (${primaryRole}) for user ${currentUser.nickname} - Defaulting to player panel`);
+              handleRoleRedirect('default', 'jugadores-panel-gaming.html', '🎮', 'Player');
               break;
           }
         }, [currentUser]);
