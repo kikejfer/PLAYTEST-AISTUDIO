@@ -487,7 +487,7 @@ function getUserRolesFromSystem(profile, session) {
     const roles = [];
     
     // Detectar roles desde el token JWT decodificado
-    const tokenRoles = getTokenRoles();
+    const tokenRoles = window.getRolesFromToken ? window.getRolesFromToken() : [];
     
     // Mapeo de roles de tu sistema a códigos de panel
     const roleMapping = {
@@ -529,7 +529,7 @@ function getUserRolesFromSystem(profile, session) {
  * @returns {string|null} Código del rol activo
  */
 function detectRoleFromToken() {
-    const tokenRoles = getTokenRoles();
+    const tokenRoles = window.getRolesFromToken ? window.getRolesFromToken() : [];
     if (tokenRoles.length === 0) return null;
     
     // Prioridad de roles para detección automática (roles administrativos tienen prioridad)

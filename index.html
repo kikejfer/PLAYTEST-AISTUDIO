@@ -152,6 +152,22 @@
           },
         },
       };
+
+      // Define getRolesFromToken globally for header-loader.js
+      window.getRolesFromToken = function() {
+        try {
+          const authToken = localStorage.getItem('playtest_auth_token');
+          if (!authToken) {
+            return [];
+          }
+          
+          const payload = JSON.parse(atob(authToken.split('.')[1]));
+          return payload.roles || [];
+        } catch (error) {
+          console.warn('⚠️ Error decodificando token JWT para roles:', error);
+          return [];
+        }
+      };
     </script>
 
     <!-- Import Map to resolve bare module specifiers for React -->
@@ -4041,8 +4057,7 @@
           }
         };
 
-        // Make getRolesFromToken available globally for header-loader.js
-        window.getRolesFromToken = getRolesFromToken;
+        // getRolesFromToken is now defined globally in the head script
 
         useEffect(() => {
           console.log('Checking for existing session...');
