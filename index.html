@@ -643,7 +643,8 @@
         if (user.roles && Array.isArray(user.roles)) {
           if (user.roles.includes('creador')) return 'creador';
           if (user.roles.includes('profesor')) return 'profesor';
-          return 'jugador'; // Default to jugador if only has jugador role or unknown
+          if (user.roles.includes('jugador')) return 'jugador';
+          return 'jugador'; // fallback
         }
         
         // Legacy single role system
@@ -3213,21 +3214,30 @@
               break;
               
             case 'creador':
-              // Solo redirigir si ÚNICAMENTE tiene rol de creador (no multiple roles)
-              if (currentUser.roles && currentUser.roles.length === 1 && currentUser.roles[0] === 'creador') {
-                console.log(`🎨 PURE CONTENT CREATOR DETECTED (${currentUser.nickname}) - Starting redirect process`);
-                const creatorUrl = window.location.href;
-                const isInCreatorPanel = creatorUrl.includes('creators-panel-content.html');
-                
-                if (!isInCreatorPanel) {
-                  console.log('🎯 REDIRECTING TO CONTENT CREATOR PANEL NOW');
-                  const uniqueId = Date.now() + Math.random();
-                  window.location.href = `creators-panel-content.html?id=${uniqueId}`;
-                } else {
-                  console.log('✅ Content Creator already in correct location');
-                }
+              console.log(`🎨 CONTENT CREATOR DETECTED (${currentUser.nickname}) - Starting redirect process`);
+              const creatorUrl = window.location.href;
+              const isInCreatorPanel = creatorUrl.includes('creators-panel-content.html');
+              
+              if (!isInCreatorPanel) {
+                console.log('🎯 REDIRECTING TO CONTENT CREATOR PANEL NOW');
+                const uniqueId = Date.now() + Math.random();
+                window.location.href = `creators-panel-content.html?id=${uniqueId}`;
               } else {
-                console.log(`🎮 MULTI-ROLE USER (${currentUser.nickname}) - Staying in game panel with navigation options`);
+                console.log('✅ Content Creator already in correct location');
+              }
+              break;
+              
+            case 'profesor':
+              console.log(`👨‍🏫 TEACHER DETECTED (${currentUser.nickname}) - Starting redirect process`);
+              const teacherUrl = window.location.href;
+              const isInTeacherPanel = teacherUrl.includes('teachers-panel-schedules.html');
+              
+              if (!isInTeacherPanel) {
+                console.log('🎯 REDIRECTING TO TEACHER PANEL NOW');
+                const uniqueId = Date.now() + Math.random();
+                window.location.href = `teachers-panel-schedules.html?id=${uniqueId}`;
+              } else {
+                console.log('✅ Teacher already in correct location');
               }
               break;
               
