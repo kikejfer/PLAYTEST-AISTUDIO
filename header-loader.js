@@ -478,6 +478,25 @@ async function getUserDataInternal() {
 }
 
 /**
+ * Fallback function to get roles from JWT token when window.getRolesFromToken is not available
+ * @returns {Array} Array of user roles from JWT token
+ */
+function getRolesFromTokenLocal() {
+    try {
+        const authToken = localStorage.getItem('playtest_auth_token');
+        if (!authToken) {
+            return [];
+        }
+        
+        const payload = JSON.parse(atob(authToken.split('.')[1]));
+        return payload.roles || [];
+    } catch (error) {
+        console.warn('⚠️ Error decodificando token JWT para roles:', error);
+        return [];
+    }
+}
+
+/**
  * Obtiene roles del usuario desde tu sistema actual
  * @param {Object} profile - Perfil del usuario de la API
  * @param {Object} session - Datos de sesión de localStorage
@@ -487,7 +506,7 @@ function getUserRolesFromSystem(profile, session) {
     const roles = [];
     
     // Detectar roles desde el token JWT decodificado
-    const tokenRoles = window.getRolesFromToken ? window.getRolesFromToken() : [];
+    const tokenRoles = window.getRolesFromToken ? window.getRolesFromToken() : getRolesFromTokenLocal();
     
     // Mapeo de roles de tu sistema a códigos de panel
     const roleMapping = {
@@ -529,7 +548,7 @@ function getUserRolesFromSystem(profile, session) {
  * @returns {string|null} Código del rol activo
  */
 function detectRoleFromToken() {
-    const tokenRoles = window.getRolesFromToken ? window.getRolesFromToken() : [];
+    const tokenRoles = window.getRolesFromToken ? window.getRolesFromToken() : getRolesFromTokenLocal();
     if (tokenRoles.length === 0) return null;
     
     // Prioridad de roles para detección automática (roles administrativos tienen prioridad)
