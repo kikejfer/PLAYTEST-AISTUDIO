@@ -2209,6 +2209,7 @@
         const { language, setLanguage, t } = useLanguage();
         const { currentUser, logout } = useUser();
         const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+        const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
         const [notifications, setNotifications] = useState([]);
         const [unreadCount, setUnreadCount] = useState(0);
         const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
@@ -2218,12 +2219,85 @@
         // const [currentPanel, setCurrentPanel] = useState('juego');
         const dropdownRef = useRef(null);
         const notificationDropdownRef = useRef(null);
+        const roleDropdownRef = useRef(null);
 
         // Function to load user data for modal
         const loadUserDataForModal = useCallback(async () => {
           // This will be handled by the ProfileModal component when it opens
           // The currentUser prop already contains the user data
         }, []);
+
+        // Function to get user role display name in Spanish
+        const getUserRoleDisplayName = (user) => {
+          if (!user) return 'Jugador';
+          
+          const primaryRole = getUserPrimaryRole(user);
+          
+          switch (primaryRole) {
+            case 'administrador_principal':
+              return 'Admin Principal';
+            case 'administrador_secundario':
+              return 'Admin Secundario';
+            case 'creador':
+              return 'Creador';
+            case 'profesor':
+              return 'Profesor';
+            case 'jugador':
+            default:
+              return 'Jugador';
+          }
+        };
+
+        // Function to get all available roles/panels for current user
+        const getUserAvailableRoles = (user) => {
+          if (!user) return [{ id: 'jugador', name: '🎮 Jugador', url: 'jugadores-panel-gaming.html' }];
+          
+          const availableRoles = [];
+          
+          // Always add jugador role as it's available to everyone
+          availableRoles.push({
+            id: 'jugador',
+            name: '🎮 Jugador',
+            url: 'jugadores-panel-gaming.html'
+          });
+          
+          // Check for admin roles first (highest priority)
+          if (hasRole(user, 'administrador_principal') || user.nickname === 'AdminPrincipal') {
+            availableRoles.push({
+              id: 'administrador_principal',
+              name: '👑 Admin Principal',
+              url: 'admin-principal-panel.html'
+            });
+          }
+          
+          if (hasRole(user, 'administrador_secundario') || user.nickname === 'AdminSecundario') {
+            availableRoles.push({
+              id: 'administrador_secundario',
+              name: '🔧 Admin Secundario',
+              url: 'admin-secundario-panel.html'
+            });
+          }
+          
+          // Check for creador role
+          if (hasRole(user, 'creador')) {
+            availableRoles.push({
+              id: 'creador',
+              name: '🎨 Creador',
+              url: 'creators-panel-content.html'
+            });
+          }
+          
+          // Check for profesor role
+          if (hasRole(user, 'profesor')) {
+            availableRoles.push({
+              id: 'profesor',
+              name: '👨‍🏫 Profesor',
+              url: 'teachers-panel-schedules.html'
+            });
+          }
+          
+          return availableRoles;
+        };
 
         // FUNCIÓN Y VARIABLES ANULADAS - Ahora se manejan en header-component.html
         /*
@@ -2494,7 +2568,7 @@
                   {/* Nombre usuario + rol */}
                   <div className="text-right">
                     <div className="font-bold text-brand-light text-sm">{currentUser.nickname}</div>
-                    <div className="text-xs text-brand-accent">Jugador</div>
+                    <div className="text-xs text-brand-accent">{getUserRoleDisplayName(currentUser)}</div>
                   </div>
 
                   {/* Círculo azul con inicial y dropdown */}
@@ -2509,38 +2583,33 @@
                     {isDropdownOpen && (
                       <div className="absolute right-0 mt-2 w-64 bg-brand-primary rounded-md shadow-lg z-20 ring-1 ring-black ring-opacity-5">
                         <div className="py-1">
-                          {/* SELECTOR DE PANEL MÓVIL ANULADO - Ahora se maneja en header-component.html
-                          {availablePanels.length > 1 && (
-                            <>
-                              <div className="px-4 py-2 text-xs font-semibold text-brand-accent uppercase tracking-wider">
-                                Cambiar Panel
-                              </div>
-                              {availablePanels.map(panel => (
-                                <a 
-                                  key={panel.id}
-                                  href="#" 
-                                  onClick={(e) => { 
-                                    e.preventDefault(); 
-                                    handlePanelChange(panel.id); 
-                                    setIsDropdownOpen(false); 
-                                  }}
-                                  className={`flex items-center gap-3 px-4 py-2 text-sm hover:bg-brand-tertiary ${
-                                    currentPanel === panel.id 
-                                      ? 'bg-brand-tertiary text-brand-cta font-semibold' 
-                                      : 'text-brand-light'
-                                  }`}
-                                >
-                                  <span className="text-base">{panel.name.split(' ')[0]}</span>
-                                  <div>
-                                    <div>{panel.name.substring(2)}</div>
-                                    <div className="text-xs text-brand-accent">{panel.description}</div>
-                                  </div>
-                                </a>
-                              ))}
-                              <div className="border-t border-brand-tertiary my-1"></div>
-                            </>
-                          )}
-                          */}
+                          {/* SELECTOR DE ROLES/PANELES */}
+                          {(() => {
+                            const availableRoles = getUserAvailableRoles(currentUser);
+                            return availableRoles.length > 1 && (
+                              <>
+                                <div className="px-4 py-2 text-xs font-semibold text-brand-accent uppercase tracking-wider">
+                                  Cambiar Panel
+                                </div>
+                                {availableRoles.map(role => (
+                                  <a 
+                                    key={role.id}
+                                    href={role.url}
+                                    onClick={(e) => { 
+                                      setIsDropdownOpen(false); 
+                                    }}
+                                    className="flex items-center gap-3 px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary transition-colors"
+                                  >
+                                    <span className="text-base">{role.name.split(' ')[0]}</span>
+                                    <div>
+                                      <div>{role.name.substring(2)}</div>
+                                    </div>
+                                  </a>
+                                ))}
+                                <div className="border-t border-brand-tertiary my-1"></div>
+                              </>
+                            );
+                          })()}
                           
                           <a href="#" onClick={(e) => { e.preventDefault(); loadUserDataForModal(); setIsProfileModalOpen(true); setIsDropdownOpen(false); }} className="flex items-center gap-3 px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
