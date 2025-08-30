@@ -3027,12 +3027,79 @@
             const { t } = useLanguage();
             const [activeTab, setActiveTab] = useState('uploader'); // Default order: Subir Fichero first
 
-            const mockSaveQuestions = (blockId, questions) => {
-                console.log('Saving questions to block:', blockId, questions);
+            const saveQuestionsToBlock = async (blockId, questions) => {
+                try {
+                    // CRITICAL: Validate topic preservation before saving
+                    if (questions.length === 0) {
+                        throw new Error('No questions to save');
+                    }
+                    
+                    // CRITICAL: Ensure all questions have topics and log for verification
+                    const topicValidation = questions.map((q, idx) => ({
+                        index: idx,
+                        tema: q.tema,
+                        hasValidTopic: q.tema && q.tema.trim() !== ''
+                    }));
+                    
+                    console.log('🔍 Topic Validation:', topicValidation);
+                    
+                    const questionsWithoutTopics = topicValidation.filter(q => !q.hasValidTopic);
+                    if (questionsWithoutTopics.length > 0) {
+                        console.warn('⚠️ Questions without topics:', questionsWithoutTopics);
+                    }
+                    
+                    // Update questions in the block using API
+                    const updatedQuestions = await apiDataService.updateBlockQuestions(blockId, questions);
+                    console.log('✅ Questions successfully updated:', updatedQuestions);
+                    
+                    return updatedQuestions;
+                } catch (error) {
+                    console.error('❌ Error saving questions to block:', error);
+                    throw error;
+                }
             };
 
-            const mockCreateBlock = (name, questions, isPublic, observations) => {
-                console.log('Creating new block:', { name, questions, isPublic, observations });
+            const createBlockWithQuestions = async (blockName, questions, isPublic = true, observaciones = '') => {
+                const sessionString = localStorage.getItem('playtest_session');
+                const token = localStorage.getItem('playtest_auth_token');
+                
+                if (!sessionString || !token) {
+                  throw new Error("User not authenticated - no session or token");
+                }
+                
+                const session = JSON.parse(sessionString);
+                if (!session || !session.userId) {
+                  throw new Error("User not authenticated - invalid session");
+                }
+                
+                const creator = session.nickname || session.username || `User${session.userId}`;
+                console.log(`📝 Creating block: "${blockName}" by ${creator} with ${questions.length} questions`);
+                
+                // Prepare block data for creation
+                const blockData = {
+                    name: blockName,
+                    description: `${blockName} - Creado por ${creator}`,
+                    creator: creator,
+                    creatorId: session.userId,
+                    totalPreguntas: questions.length,
+                    isPublic: isPublic,
+                    observaciones: observaciones || `Bloque creado automáticamente con ${questions.length} preguntas`,
+                    questions: questions
+                };
+                
+                try {
+                    // Create the block
+                    const createdBlock = await apiDataService.createBlock(blockData);
+                    console.log('✅ Block created successfully:', createdBlock);
+                    
+                    // Block is automatically loaded by the backend when created
+                    console.log('✅ Block created and auto-loaded by backend');
+                    
+                    return { ...createdBlock, totalPreguntas: questions.length, questions: questions };
+                } catch (error) {
+                    console.error('❌ Error creating block:', error);
+                    throw error;
+                }
             };
 
             // Tab order as requested: Subir Fichero / Agregar Manualmente / Generar con IA
@@ -3090,24 +3157,24 @@
                             <QuestionUploader 
                                 currentUser={mockCurrentUser} 
                                 blocks={mockBlocks} 
-                                onSaveQuestions={mockSaveQuestions} 
-                                onCreateBlock={mockCreateBlock} 
+                                onSaveQuestions={saveQuestionsToBlock} 
+                                onCreateBlock={createBlockWithQuestions} 
                             />
                         )}
                         {activeTab === 'manual' && (
                             <ManualQuestionForm 
                                 currentUser={mockCurrentUser} 
                                 blocks={mockBlocks} 
-                                onSaveQuestions={mockSaveQuestions} 
-                                onCreateBlock={mockCreateBlock} 
+                                onSaveQuestions={saveQuestionsToBlock} 
+                                onCreateBlock={createBlockWithQuestions} 
                             />
                         )}
                         {activeTab === 'generator' && (
                             <QuestionGenerator 
                                 currentUser={mockCurrentUser} 
                                 blocks={mockBlocks} 
-                                onSaveQuestions={mockSaveQuestions} 
-                                onCreateBlock={mockCreateBlock} 
+                                onSaveQuestions={saveQuestionsToBlock} 
+                                onCreateBlock={createBlockWithQuestions} 
                             />
                         )}
                     </div>
