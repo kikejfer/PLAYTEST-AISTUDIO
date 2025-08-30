@@ -3034,12 +3034,20 @@
                         throw new Error('No questions to save');
                     }
                     
-                    console.log(`📝 Saving ${questions.length} questions to block ${blockId}`);
+                    console.log(`📝 [DEBUG] Saving ${questions.length} questions to block ${blockId}`);
+                    console.log(`📝 [DEBUG] Block ID type:`, typeof blockId, 'Value:', blockId);
+                    console.log(`📝 [DEBUG] Questions array:`, questions.slice(0, 2)); // Show first 2 questions
                     
                     const savedQuestions = [];
                     
                     for (let i = 0; i < questions.length; i++) {
                         const question = questions[i];
+                        
+                        console.log(`📝 [DEBUG] Processing question ${i + 1}:`, {
+                            pregunta: question.pregunta?.substring(0, 50) + '...',
+                            tema: question.tema,
+                            opciones: question.opciones?.length || 0
+                        });
                         
                         // Prepare question data for API (using correct field names expected by backend)
                         const questionData = {
@@ -3054,12 +3062,23 @@
                             tema: question.tema || question.topic || 'General'
                         };
                         
+                        console.log(`📝 [DEBUG] Question data prepared for API:`, {
+                            blockId: questionData.blockId,
+                            textoPregunta: questionData.textoPregunta?.substring(0, 50) + '...',
+                            tema: questionData.tema,
+                            respuestasCount: questionData.respuestas.length,
+                            respuestasSample: questionData.respuestas[0]
+                        });
+                        
                         try {
+                            console.log(`🔄 [DEBUG] Calling apiDataService.createQuestion for question ${i + 1}...`);
                             const savedQuestion = await apiDataService.createQuestion(questionData);
+                            console.log(`✅ [DEBUG] Question ${i + 1} saved successfully:`, savedQuestion);
                             savedQuestions.push(savedQuestion);
-                            console.log(`✅ Question ${i + 1}/${questions.length} saved`);
                         } catch (error) {
-                            console.error(`❌ Error saving question ${i + 1}:`, error);
+                            console.error(`❌ [DEBUG] Error saving question ${i + 1}:`, error);
+                            console.error(`❌ [DEBUG] Error details:`, error.message, error.stack);
+                            console.error(`❌ [DEBUG] Failed question data:`, questionData);
                             throw new Error(`Failed to save question ${i + 1}: ${error.message}`);
                         }
                     }
@@ -3086,7 +3105,9 @@
                 }
                 
                 const creator = session.nickname || session.username || `User${session.userId}`;
-                console.log(`📝 Creating block: "${blockName}" by ${creator} with ${questions.length} questions`);
+                console.log(`📝 [DEBUG] Creating block: "${blockName}" by ${creator} with ${questions.length} questions`);
+                console.log(`📝 [DEBUG] Session data:`, { userId: session.userId, nickname: session.nickname });
+                console.log(`📝 [DEBUG] Auth token present:`, !!token);
                 
                 // Prepare block data for creation (only fields expected by backend)
                 const blockData = {
@@ -3096,13 +3117,33 @@
                     observaciones: observaciones || `Bloque creado automáticamente con ${questions.length} preguntas`
                 };
                 
+                console.log(`📝 [DEBUG] Block data for API:`, blockData);
+                
                 try {
                     // Create the block
+                    console.log(`🔄 [DEBUG] Calling apiDataService.createBlock...`);
                     const createdBlock = await apiDataService.createBlock(blockData);
-                    console.log('✅ Block created successfully:', createdBlock);
+                    console.log('✅ [DEBUG] Block created successfully:', createdBlock);
                     
-                    // Block is automatically loaded by the backend when created
-                    console.log('✅ Block created and auto-loaded by backend');
+                    if (!createdBlock || !createdBlock.id) {
+                        throw new Error('Block creation failed - no block ID returned');
+                    }
+                    
+                    // Now save all questions to the created block
+                    console.log(`🔄 [DEBUG] Now saving ${questions.length} questions to block ID: ${createdBlock.id}`);
+                    if (questions && questions.length > 0) {
+                        try {
+                            const savedQuestions = await saveQuestionsToBlock(createdBlock.id, questions);
+                            console.log(`✅ [DEBUG] All questions saved successfully: ${savedQuestions.length} questions`);
+                        } catch (questionError) {
+                            console.error(`❌ [DEBUG] Failed to save questions:`, questionError);
+                            throw new Error(`Block created but failed to save questions: ${questionError.message}`);
+                        }
+                    } else {
+                        console.log(`⚠️ [DEBUG] No questions to save`);
+                    }
+                    
+                    console.log('✅ [DEBUG] Block creation process completed successfully');
                     
                     return { ...createdBlock, totalPreguntas: questions.length, questions: questions };
                 } catch (error) {
