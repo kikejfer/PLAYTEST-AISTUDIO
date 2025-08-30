@@ -2494,9 +2494,7 @@ const AddQuestionsApp = () => {
 
     return React.createElement('div', {
         style: {
-            width: '100%',
-            maxWidth: '1200px',
-            margin: '0 auto'
+            width: '100%'
         }
     }, [
         // Tab navigation
@@ -2505,7 +2503,7 @@ const AddQuestionsApp = () => {
             style: {
                 display: 'flex',
                 background: '#415A77',
-                borderRadius: '8px 8px 0 0',
+                borderRadius: '0',
                 overflow: 'hidden',
                 marginBottom: '0'
             }
@@ -2536,7 +2534,7 @@ const AddQuestionsApp = () => {
             key: 'content',
             style: {
                 background: '#1B263B',
-                borderRadius: '0 0 8px 8px',
+                borderRadius: '0',
                 padding: '0'
             }
         }, [
