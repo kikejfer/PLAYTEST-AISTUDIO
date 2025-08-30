@@ -2448,7 +2448,8 @@ const AddQuestionsApp = () => {
                     name: blockName,
                     description: `${blockName} - Custom block created with questions`,
                     observaciones: observaciones,
-                    isPublic: isPublic
+                    isPublic: isPublic,
+                    userId: currentUser.id  // Add user ID to block data
                 };
                 
                 const block = await apiDataService.createBlock(blockData);
