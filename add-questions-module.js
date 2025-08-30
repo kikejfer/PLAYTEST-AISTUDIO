@@ -1134,10 +1134,10 @@ const parseQuestions = (content, bloque, tema) => {
         let currentExplanation = '';
         
         const questionPatterns = [
-            /^\d+[.)]\\s*(.+)$/,
-            /^Q\\d*[.:]\\s*(.+)$/i,
-            /^Question\\s*\\d*[.:]\\s*(.+)$/i,
-            /^Pregunta\\s*\\d*[.:]\\s*(.+)$/i
+            /^\d+[.)]\s*(.+)$/,
+            /^Q\d*[.:]\s*(.+)$/i,
+            /^Question\s*\d*[.:]\s*(.+)$/i,
+            /^Pregunta\s*\d*[.:]\s*(.+)$/i
         ];
         
         for (let i = 0; i < lines.length; i++) {
@@ -1167,9 +1167,9 @@ const parseQuestions = (content, bloque, tema) => {
                 currentExplanation = '';
             }
             // Answer patterns
-            else if (/^[*]?[a-zA-Z]\\)?[.\\-\\s]+(.+)$/i.test(line)) {
+            else if (/^[*]?[a-zA-Z]\)?[.\-\s]+(.+)$/i.test(line)) {
                 const isCorrect = line.startsWith('*');
-                let answerText = line.replace(/^[*]?[a-zA-Z]\\)?[.\\-\\s]*/i, '').trim();
+                let answerText = line.replace(/^[*]?[a-zA-Z]\)?[.\-\s]*/i, '').trim();
                 
                 if (answerText) {
                     currentAnswers.push({
@@ -1259,7 +1259,7 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
         if (event.target.files) {
             resetFullState();
             const files = Array.from(event.target.files);
-            const fileRegex = /^([^_]+)_([^_\\.]+)\\.txt$/i;
+            const fileRegex = /^([^_]+)_([^_.]+)\.txt$/i;
             const newQueue = files.map(file => {
                 const match = file.name.match(fileRegex);
                 if (match) {
