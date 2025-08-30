@@ -2455,9 +2455,10 @@ const AddQuestionsApp = () => {
                 
                 // Add questions to the new block
                 console.log('🔍 Created block:', block);
+                console.log('🔍 Block ID:', block.id, 'Block.block.id:', block.block?.id);
                 for (const question of questions) {
                     const questionData = {
-                        blockId: block.id,
+                        blockId: block.block?.id || block.id,  // Try nested path first
                         tema: question.tema,
                         textoPregunta: question.textoPregunta,
                         respuestas: question.respuestas,
