@@ -2409,10 +2409,10 @@ const AddQuestionsApp = () => {
                     const backendQuestionData = {
                         blockId: blockId,
                         topic: question.tema,
-                        questionText: question.textoPregunta,
+                        text_question: question.textoPregunta,
                         answers: question.respuestas.map(respuesta => ({
-                            answerText: respuesta.textoRespuesta,
-                            isCorrect: respuesta.esCorrecta
+                            answer_text: respuesta.textoRespuesta,
+                            is_correct: respuesta.esCorrecta
                         })),
                         explanation: question.explicacionRespuesta,
                         difficulty: question.dificultad || 1
