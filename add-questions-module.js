@@ -2407,7 +2407,7 @@ const AddQuestionsApp = () => {
                 for (const question of questions) {
                     // Convert Spanish field names to English for backend compatibility
                     const backendQuestionData = {
-                        blockId: blockId,
+                        block_id: blockId,
                         topic: question.tema,
                         text_question: question.textoPregunta,
                         answers: question.respuestas.map(respuesta => ({
