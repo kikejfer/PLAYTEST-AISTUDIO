@@ -2461,7 +2461,7 @@ const AddQuestionsApp = () => {
                         textoPregunta: question.textoPregunta,
                         respuestas: question.respuestas,
                         explicacionRespuesta: question.explicacionRespuesta,
-                        dificultad: question.dificultad || 1
+                        difficulty: question.dificultad || 1
                     });
                 }
             }
