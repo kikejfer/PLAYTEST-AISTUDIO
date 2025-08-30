@@ -2418,6 +2418,8 @@ const AddQuestionsApp = () => {
                         difficulty: question.dificultad || 1
                     };
                     
+                    console.log('🔍 Sending question data to backend:', JSON.stringify(backendQuestionData, null, 2));
+                    
                     await apiDataService.createQuestion(backendQuestionData);
                 }
             }
