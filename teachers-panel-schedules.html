@@ -2914,7 +2914,10 @@
                         const questionData = {
                             blockId: blockId,
                             textoPregunta: question.pregunta || question.text,
-                            respuestas: question.opciones || question.options || [],
+                            respuestas: (question.opciones || question.options || []).map(opcion => ({
+                                textoRespuesta: opcion.texto || opcion.text || opcion.textoRespuesta || opcion,
+                                esCorrecta: opcion.esCorrecta || opcion.isCorrect || false
+                            })),
                             explicacionRespuesta: question.explicacion || question.explanation || '',
                             difficulty: question.dificultad || question.difficulty || 1,
                             tema: question.tema || question.topic || 'General'
