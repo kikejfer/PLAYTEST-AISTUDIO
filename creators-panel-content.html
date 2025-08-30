@@ -3041,16 +3041,14 @@
                     for (let i = 0; i < questions.length; i++) {
                         const question = questions[i];
                         
-                        // Prepare question data for API
+                        // Prepare question data for API (using correct field names expected by backend)
                         const questionData = {
                             blockId: blockId,
-                            text: question.pregunta || question.text,
-                            options: question.opciones || question.options || [],
-                            correctAnswer: question.respuestaCorrecta || question.correctAnswer,
-                            explanation: question.explicacion || question.explanation || '',
-                            difficulty: question.dificultad || question.difficulty || 'medium',
-                            topic: question.tema || question.topic || '',
-                            type: question.tipo || question.type || 'multiple-choice'
+                            textoPregunta: question.pregunta || question.text,
+                            respuestas: question.opciones || question.options || [],
+                            explicacionRespuesta: question.explicacion || question.explanation || '',
+                            difficulty: question.dificultad || question.difficulty || 1,
+                            tema: question.tema || question.topic || 'General'
                         };
                         
                         try {
