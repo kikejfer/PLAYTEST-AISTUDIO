@@ -1022,21 +1022,36 @@ const QuestionGenerator = ({ currentUser, blocks, onSaveQuestions, onCreateBlock
     ]);
 };
 
-// Get current user from session
+// Get current user from session with authentication check
 const getCurrentUser = () => {
     try {
+        // Check for authentication token first
+        const authToken = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+        if (!authToken) {
+            console.warn('🔐 No authentication token found. User may not be logged in.');
+            return null; // Return null to indicate no authentication
+        }
+
         const sessionString = localStorage.getItem('playtest_session');
         if (sessionString) {
             const session = JSON.parse(sessionString);
             return {
                 id: session.userId,
-                nickname: session.nickname || session.username || 'Usuario'
+                nickname: session.nickname || session.username || 'Usuario',
+                isAuthenticated: true
             };
         }
     } catch (error) {
         console.error('Error getting current user:', error);
     }
-    return { id: 1, nickname: 'Usuario' }; // Fallback
+    
+    // Check if we at least have a token without session data
+    const authToken = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+    if (authToken) {
+        return { id: 1, nickname: 'Usuario', isAuthenticated: true };
+    }
+    
+    return null; // No authentication available
 };
 
 // Get blocks data using API service
@@ -2273,6 +2288,12 @@ const AddQuestionsApp = () => {
 
     const handleCreateBlock = async (blockName, questions, isPublic, observaciones) => {
         try {
+            // Check authentication before attempting API calls
+            const currentUser = getCurrentUser();
+            if (!currentUser || !currentUser.isAuthenticated) {
+                throw new Error('🔐 Debes estar autenticado para crear bloques. Por favor, inicia sesión.');
+            }
+
             if (typeof apiDataService !== 'undefined') {
                 const blockData = {
                     name: blockName,
@@ -2303,6 +2324,9 @@ const AddQuestionsApp = () => {
             console.log('Block created successfully');
         } catch (error) {
             console.error('Error creating block:', error);
+            if (error.message.includes('Invalid or expired token') || error.message.includes('403')) {
+                throw new Error('🔐 Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+            }
             throw error;
         }
     };
