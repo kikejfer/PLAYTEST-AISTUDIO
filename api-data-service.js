@@ -54,7 +54,7 @@ class APIDataService {
 
       try {
         // Debug logging for authorization issues
-        if (endpoint.includes('/games/')) {
+        if (endpoint.includes('/games/') || endpoint.includes('/questions')) {
           console.log('🔍 API Debug - URL:', url);
           console.log('🔍 API Debug - Token used:', token ? token.substring(0, 50) + '...' : 'null');
           console.log('🔍 API Debug - Headers:', finalOptions.headers);
@@ -63,7 +63,7 @@ class APIDataService {
         const response = await fetch(url, finalOptions);
         
         if (!response.ok) {
-          if (endpoint.includes('/games/')) {
+          if (endpoint.includes('/games/') || endpoint.includes('/questions')) {
             console.log('❌ API Debug - Response status:', response.status);
             console.log('❌ API Debug - Response headers:', Object.fromEntries(response.headers.entries()));
           }
