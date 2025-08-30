@@ -2956,16 +2956,12 @@
                 const creator = session.nickname || session.username || `User${session.userId}`;
                 console.log(`📝 Creating block: "${blockName}" by ${creator} with ${questions.length} questions`);
                 
-                // Prepare block data for creation
+                // Prepare block data for creation (only fields expected by backend)
                 const blockData = {
                     name: blockName,
                     description: `${blockName} - Creado por ${creator}`,
-                    creator: creator,
-                    creatorId: session.userId,
-                    totalPreguntas: questions.length,
                     isPublic: isPublic,
-                    observaciones: observaciones || `Bloque creado automáticamente con ${questions.length} preguntas`,
-                    questions: questions
+                    observaciones: observaciones || `Bloque creado automáticamente con ${questions.length} preguntas`
                 };
                 
                 try {
