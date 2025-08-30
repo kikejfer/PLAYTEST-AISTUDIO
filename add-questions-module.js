@@ -2405,14 +2405,20 @@ const AddQuestionsApp = () => {
         try {
             if (typeof apiDataService !== 'undefined') {
                 for (const question of questions) {
-                    await apiDataService.createQuestion({
+                    // Convert Spanish field names to English for backend compatibility
+                    const backendQuestionData = {
                         blockId: blockId,
-                        tema: question.tema,
-                        textoPregunta: question.textoPregunta,
-                        respuestas: question.respuestas,
-                        explicacionRespuesta: question.explicacionRespuesta,
-                        dificultad: question.dificultad || 1
-                    });
+                        topic: question.tema,
+                        questionText: question.textoPregunta,
+                        answers: question.respuestas.map(respuesta => ({
+                            answerText: respuesta.textoRespuesta,
+                            isCorrect: respuesta.esCorrecta
+                        })),
+                        explanation: question.explicacionRespuesta,
+                        difficulty: question.dificultad || 1
+                    };
+                    
+                    await apiDataService.createQuestion(backendQuestionData);
                 }
             }
             
