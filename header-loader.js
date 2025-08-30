@@ -1471,8 +1471,8 @@ async function loadRoleOptions() {
             { id: 'jugador', name: '🎮 Jugador', description: 'Participa en partidas y duelos', editable: true },
             { id: 'creador', name: '🎨 Creador de Contenido', description: 'Crea bloques y monetiza contenido', editable: true },
             { id: 'profesor', name: '👨‍🏫 Profesor', description: 'Gestiona estudiantes y clases', editable: true },
-            { id: 'administrador_secundario', name: '⚙️ Administrador Secundario', description: 'Gestión administrativa limitada (solo visible, no modificable)', editable: false },
-            { id: 'administrador_principal', name: '🔧 Administrador Principal', description: 'Gestión administrativa completa (solo visible, no modificable)', editable: false }
+            { id: 'administrador_secundario', name: '⚙️ Administrador Secundario', description: 'Gestión administrativa limitada', editable: false },
+            { id: 'administrador_principal', name: '🔧 Administrador Principal', description: 'Gestión administrativa completa', editable: false }
         ];
 
         // Crear checkboxes para cada rol
