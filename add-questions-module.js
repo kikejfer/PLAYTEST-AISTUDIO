@@ -77,6 +77,17 @@ const translations = {
         uploader_separator: "O sube un único fichero",
         uploader_batch_detected_files: 'Archivos Detectados en la Carpeta',
         uploader_batch_finish: 'Finalizar Subida Múltiple',
+        uploader_format_info_title: 'Formatos Soportados',
+        uploader_format_info_subtitle: 'Tu archivo debe usar uno de estos formatos:',
+        uploader_format_1_title: 'Formato 1: Separadores ## y @@',
+        uploader_format_1_desc: 'Pregunta##Respuesta1##Respuesta2##@@RespuestaCorrecta##Respuesta4',
+        uploader_format_1_example: '¿Cuál es la capital de España?##Barcelona##Valencia##@@Madrid##Sevilla',
+        uploader_format_2_title: 'Formato 2: Formato Estándar',
+        uploader_format_2_desc: 'Preguntas numeradas con respuestas marcadas con * para la correcta',
+        uploader_format_2_example: '1. ¿Cuál es la capital de España?\\na) Barcelona\\nb) Valencia\\n*c) Madrid\\nd) Sevilla',
+        uploader_filename_title: 'Formato de Nombres de Archivo',
+        uploader_filename_desc: 'Para subida múltiple: <strong>NombreBloque_NombreTema.txt</strong>',
+        uploader_filename_example: 'Ejemplo: Constitución_Título1.txt, Historia_Edad Media.txt',
         manual_form_title: 'Nueva Pregunta Manual',
         manual_form_question_text: 'Texto de la Pregunta',
         manual_form_answers: 'Respuestas (marca la correcta)',
@@ -1933,7 +1944,137 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
                     textAlign: 'center',
                     marginTop: '12px'
                 }
-            }, message)
+            }, message),
+            
+            // File format information section
+            React.createElement('div', {
+                key: 'format-info',
+                style: {
+                    marginTop: '32px',
+                    padding: '20px',
+                    background: '#0D1B2A',
+                    borderRadius: '10px',
+                    border: '1px solid #415A77'
+                }
+            }, [
+                React.createElement('h4', {
+                    key: 'info-title',
+                    style: { fontSize: '16px', fontWeight: '600', color: '#E0E1DD', marginBottom: '12px', textAlign: 'center' }
+                }, t('uploader_format_info_title')),
+                
+                React.createElement('p', {
+                    key: 'info-subtitle',
+                    style: { fontSize: '14px', color: '#778DA9', marginBottom: '16px', textAlign: 'center' }
+                }, t('uploader_format_info_subtitle')),
+                
+                React.createElement('div', {
+                    key: 'formats-grid',
+                    style: {
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                        gap: '16px',
+                        marginBottom: '20px'
+                    }
+                }, [
+                    // Format 1
+                    React.createElement('div', {
+                        key: 'format-1',
+                        style: {
+                            background: '#1B263B',
+                            padding: '16px',
+                            borderRadius: '8px',
+                            border: '1px solid #415A77'
+                        }
+                    }, [
+                        React.createElement('h5', {
+                            key: 'f1-title',
+                            style: { fontSize: '14px', fontWeight: '600', color: '#F59E0B', marginBottom: '8px' }
+                        }, t('uploader_format_1_title')),
+                        React.createElement('p', {
+                            key: 'f1-desc',
+                            style: { fontSize: '12px', color: '#778DA9', marginBottom: '8px' }
+                        }, t('uploader_format_1_desc')),
+                        React.createElement('code', {
+                            key: 'f1-example',
+                            style: {
+                                display: 'block',
+                                background: '#415A77',
+                                padding: '8px',
+                                borderRadius: '4px',
+                                fontSize: '11px',
+                                color: '#E0E1DD',
+                                wordBreak: 'break-word'
+                            }
+                        }, t('uploader_format_1_example'))
+                    ]),
+                    
+                    // Format 2
+                    React.createElement('div', {
+                        key: 'format-2',
+                        style: {
+                            background: '#1B263B',
+                            padding: '16px',
+                            borderRadius: '8px',
+                            border: '1px solid #415A77'
+                        }
+                    }, [
+                        React.createElement('h5', {
+                            key: 'f2-title',
+                            style: { fontSize: '14px', fontWeight: '600', color: '#10B981', marginBottom: '8px' }
+                        }, t('uploader_format_2_title')),
+                        React.createElement('p', {
+                            key: 'f2-desc',
+                            style: { fontSize: '12px', color: '#778DA9', marginBottom: '8px' }
+                        }, t('uploader_format_2_desc')),
+                        React.createElement('pre', {
+                            key: 'f2-example',
+                            style: {
+                                background: '#415A77',
+                                padding: '8px',
+                                borderRadius: '4px',
+                                fontSize: '11px',
+                                color: '#E0E1DD',
+                                whiteSpace: 'pre-wrap',
+                                wordBreak: 'break-word',
+                                margin: 0
+                            }
+                        }, t('uploader_format_2_example'))
+                    ])
+                ]),
+                
+                // Filename format
+                React.createElement('div', {
+                    key: 'filename-info',
+                    style: {
+                        background: '#1B263B',
+                        padding: '16px',
+                        borderRadius: '8px',
+                        border: '1px solid #415A77',
+                        textAlign: 'center'
+                    }
+                }, [
+                    React.createElement('h5', {
+                        key: 'fn-title',
+                        style: { fontSize: '14px', fontWeight: '600', color: '#3B82F6', marginBottom: '8px' }
+                    }, t('uploader_filename_title')),
+                    React.createElement('p', {
+                        key: 'fn-desc',
+                        style: { fontSize: '12px', color: '#778DA9', marginBottom: '8px' },
+                        dangerouslySetInnerHTML: { __html: t('uploader_filename_desc') }
+                    }),
+                    React.createElement('code', {
+                        key: 'fn-example',
+                        style: {
+                            display: 'inline-block',
+                            background: '#415A77',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            color: '#E0E1DD'
+                        }
+                    }, t('uploader_filename_example'))
+                ])
+            ])
         ])
     ]);
 };
