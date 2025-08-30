@@ -2405,18 +2405,14 @@ const AddQuestionsApp = () => {
         try {
             if (typeof apiDataService !== 'undefined') {
                 for (const question of questions) {
-                    // Convert Spanish field names to English for backend compatibility
+                    // Use Spanish field names like add-question.html (backend expects Spanish)
                     const backendQuestionData = {
-                        block_id: blockId,
-                        topic: question.tema,
-                        text_question: question.textoPregunta,
-                        explanation: question.explicacionRespuesta,
+                        blockId: blockId,
+                        tema: question.tema,
+                        textoPregunta: question.textoPregunta,
+                        respuestas: question.respuestas,
                         difficulty: question.dificultad || 1,
-                        // Send answers as separate array for backend to process
-                        answers: question.respuestas.map(respuesta => ({
-                            answer_text: respuesta.textoRespuesta,
-                            is_correct: respuesta.esCorrecta
-                        }))
+                        explicacionRespuesta: question.explicacionRespuesta || ''
                     };
                     
                     console.log('🔍 Sending question data to backend:', JSON.stringify(backendQuestionData, null, 2));
