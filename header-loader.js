@@ -1748,7 +1748,6 @@ function renderPersonalDataView(userData) {
         { key: 'first_name', label: 'Nombre', value: userData.first_name || 'No especificado' },
         { key: 'last_name', label: 'Apellidos', value: userData.last_name || 'No especificado' },
         { key: 'email', label: 'Email', value: userData.email || 'No especificado' },
-        { key: 'roles', label: 'Roles', value: Array.isArray(userData.roles) ? userData.roles.join(', ') : userData.role || 'No especificado' },
         { key: 'created_at', label: 'Fecha de registro', value: userData.created_at ? new Date(userData.created_at).toLocaleDateString('es-ES') : 'No disponible' }
     ];
 
@@ -1782,7 +1781,6 @@ function renderPersonalDataEdit(userData) {
 
     const readOnlyFields = [
         { key: 'nickname', label: 'Nickname', value: userData.nickname },
-        { key: 'roles', label: 'Roles', value: Array.isArray(userData.roles) ? userData.roles.join(', ') : userData.role || 'No especificado' },
         { key: 'created_at', label: 'Fecha de registro', value: userData.created_at ? new Date(userData.created_at).toLocaleDateString('es-ES') : 'No disponible' }
     ];
 
