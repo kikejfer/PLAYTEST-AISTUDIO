@@ -389,7 +389,86 @@
             gap: 8px;
         }
 
+        .optimization-section {
+            background: #1B263B;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #415A77;
+        }
 
+        .optimization-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .optimization-card {
+            background: #415A77;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #F59E0B;
+        }
+
+        .optimization-title {
+            font-weight: 600;
+            color: #E0E1DD;
+            margin-bottom: 8px;
+        }
+
+        .optimization-description {
+            font-size: 0.9rem;
+            color: #778DA9;
+            margin-bottom: 10px;
+        }
+
+        .optimization-impact {
+            font-size: 0.8rem;
+            color: #F59E0B;
+            font-weight: 600;
+        }
+
+        .pricing-section {
+            background: #1B263B;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #415A77;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .pricing-card {
+            background: #415A77;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .current-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #778DA9;
+            margin-bottom: 5px;
+        }
+
+        .suggested-price {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #10B981;
+            margin-bottom: 5px;
+        }
+
+        .price-change {
+            font-size: 0.9rem;
+            color: #778DA9;
+        }
 
         .content-actions {
             display: flex;
@@ -572,6 +651,25 @@
                     </div>
                 </div>
 
+                <!-- Sugerencias de Optimización -->
+                <div class="optimization-section">
+                    <h3 style="margin-bottom: 15px;">💡 Sugerencias de Optimización IA</h3>
+                    <p style="color: #666; margin-bottom: 15px;">Análisis automático de oportunidades de mejora basado en datos de rendimiento</p>
+                    
+                    <div class="optimization-cards" id="optimization-suggestions">
+                        <div class="loading">Generando sugerencias de optimización...</div>
+                    </div>
+                </div>
+
+                <!-- Optimización de Precios -->
+                <div class="pricing-section">
+                    <h3 style="margin-bottom: 15px;">💰 Optimización de Precios IA</h3>
+                    <p style="color: #666; margin-bottom: 15px;">Sugerencias de precios basadas en análisis de mercado y rendimiento</p>
+                    
+                    <div class="pricing-grid" id="pricing-suggestions">
+                        <div class="loading">Calculando precios óptimos...</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -585,6 +683,8 @@
         // Inicialización
         document.addEventListener('DOMContentLoaded', async () => {
             await loadContentAnalytics();
+            await loadOptimizationSuggestions();
+            await loadPricingSuggestions();
         });
 
         // Cambiar período de análisis
@@ -899,6 +999,143 @@
             }
         }
 
+        // Cargar sugerencias de optimización
+        async function loadOptimizationSuggestions() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                const response = await fetch(`${API_BASE_URL}/api/creators-panel/content/optimization-suggestions`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    renderOptimizationSuggestions(data);
+                }
+
+            } catch (error) {
+                console.error('Error cargando sugerencias:', error);
+                showError('optimization-suggestions', 'Error cargando sugerencias');
+            }
+        }
+
+        // Renderizar sugerencias de optimización
+        function renderOptimizationSuggestions(data) {
+            const container = document.getElementById('optimization-suggestions');
+            
+            const suggestions = [
+                ...data.lowCompletion?.map(block => ({
+                    title: `Mejorar "${block.name}"`,
+                    description: `Tasa de completado baja: ${block.avg_completion_rate?.toFixed(1)}%. Considera revisar la dificultad o añadir más explicaciones.`,
+                    impact: 'Alto impacto en retención'
+                })) || [],
+                ...data.highPotential?.map(block => ({
+                    title: `Monetizar "${block.name}"`,
+                    description: `Alto engagement (${block.avg_players} jugadores) pero bajo revenue. Oportunidad de monetización.`,
+                    impact: 'Alto potencial de ingresos'
+                })) || []
+            ];
+
+            if (suggestions.length === 0) {
+                container.innerHTML = `
+                    <div class="optimization-card">
+                        <div style="text-align: center; padding: 20px;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">✨</div>
+                            <div class="optimization-title">¡Excelente trabajo!</div>
+                            <div class="optimization-description">Todos tus bloques están optimizados. Continúa creando contenido de calidad.</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = suggestions.map(suggestion => `
+                <div class="optimization-card">
+                    <div class="optimization-title">${suggestion.title}</div>
+                    <div class="optimization-description">${suggestion.description}</div>
+                    <div class="optimization-impact">${suggestion.impact}</div>
+                </div>
+            `).join('');
+        }
+
+        // Cargar sugerencias de precios
+        async function loadPricingSuggestions() {
+            try {
+                const token = localStorage.getItem('authToken');
+                
+                // Obtener los primeros bloques para optimización de precios
+                const blockIds = contentAnalytics.slice(0, 6).map(item => item.block_id);
+                
+                const pricingSuggestions = await Promise.all(
+                    [...new Set(blockIds)].map(async blockId => {
+                        try {
+                            const response = await fetch(`/api/creators-panel/pricing/optimize/${blockId}`, {
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                            
+                            if (response.ok) {
+                                const data = await response.json();
+                                const block = contentAnalytics.find(item => item.block_id === blockId);
+                                return {
+                                    blockId,
+                                    blockName: block?.block_name || `Bloque ${blockId}`,
+                                    ...data.pricingSuggestion
+                                };
+                            }
+                        } catch (error) {
+                            console.warn(`Error obteniendo precio para bloque ${blockId}:`, error);
+                        }
+                        return null;
+                    })
+                );
+
+                renderPricingSuggestions(pricingSuggestions.filter(Boolean));
+
+            } catch (error) {
+                console.error('Error cargando precios:', error);
+                showError('pricing-suggestions', 'Error cargando sugerencias de precios');
+            }
+        }
+
+        // Renderizar sugerencias de precios
+        function renderPricingSuggestions(suggestions) {
+            const container = document.getElementById('pricing-suggestions');
+            
+            if (suggestions.length === 0) {
+                container.innerHTML = `
+                    <div class="pricing-card">
+                        <div style="text-align: center; padding: 20px;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">💰</div>
+                            <div style="font-weight: 600; margin-bottom: 5px;">Sin datos de pricing</div>
+                            <div style="color: #666;">Necesitas más datos de uso para generar sugerencias de precios</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = suggestions.map(suggestion => {
+                const change = suggestion.suggestedPrice - suggestion.currentPrice;
+                const changePercent = suggestion.currentPrice > 0 ? 
+                    ((change / suggestion.currentPrice) * 100).toFixed(1) : 0;
+                
+                return `
+                    <div class="pricing-card">
+                        <div style="font-weight: 600; margin-bottom: 10px;">${suggestion.blockName}</div>
+                        <div class="current-price">Actual: $${suggestion.currentPrice.toFixed(2)}</div>
+                        <div class="suggested-price">Sugerido: $${suggestion.suggestedPrice.toFixed(2)}</div>
+                        <div class="price-change">
+                            ${change >= 0 ? '📈' : '📉'} ${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePercent}%)
+                        </div>
+                        <div style="font-size: 0.8rem; color: #666; margin-top: 8px;">
+                            Confianza: ${(suggestion.confidenceLevel * 100).toFixed(0)}%
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
 
         // Funciones auxiliares
         function groupByBlock(analytics) {

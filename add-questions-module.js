@@ -1061,43 +1061,345 @@ const getBlocksData = async () => {
     ];
 };
 
-// Enhanced Question Uploader Component (simplified version for space)
+// Function to parse filename format: bloque_tema.txt
+const parseFilename = (filename) => {
+    const nameWithoutExt = filename.replace(/\.[^/.]+$/, ''); // Remove extension
+    const parts = nameWithoutExt.split('_');
+    
+    if (parts.length >= 2) {
+        const bloque = parts[0];
+        const tema = parts.slice(1).join('_'); // Join remaining parts in case tema has underscores
+        return { bloque, tema };
+    }
+    return { bloque: '', tema: '' };
+};
+
+// Function to parse question format from file content
+const parseQuestions = (content, bloque, tema) => {
+    console.log('🔍 Parsing content for:', bloque, '→', tema);
+    
+    const lines = content.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+    const questions = [];
+    
+    // FORMATO 1: Original con ## y @@ separators
+    if (content.includes('##')) {
+        console.log('🎯 Detected original format (## separators)');
+        
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            
+            if (line.includes('##')) {
+                const parts = line.split('##');
+                if (parts.length >= 2) {
+                    const questionText = parts[0].trim();
+                    const answerParts = parts.slice(1);
+                    
+                    if (!questionText || answerParts.length < 2) continue;
+                    
+                    const respuestas = answerParts.map(answerText => {
+                        const trimmedText = answerText.trim();
+                        return {
+                            textoRespuesta: trimmedText.startsWith('@@') ? trimmedText.substring(2).trim() : trimmedText,
+                            esCorrecta: trimmedText.startsWith('@@')
+                        };
+                    });
+                    
+                    if (respuestas.filter(r => r.esCorrecta).length !== 1) continue;
+                    
+                    let explicacionRespuesta = '';
+                    if (i + 1 < lines.length) {
+                        const nextLine = lines[i + 1].trim();
+                        if (nextLine.length > 0 && !nextLine.includes('##')) {
+                            explicacionRespuesta = nextLine;
+                            i++; // Skip explanation line in next iteration
+                        }
+                    }
+                    
+                    questions.push({
+                        bloque,
+                        tema,
+                        textoPregunta: questionText,
+                        respuestas: respuestas,
+                        explicacionRespuesta: explicacionRespuesta
+                    });
+                }
+            }
+        }
+    } else {
+        // FORMATO 2: Standard format with question patterns
+        console.log('🎯 Detected standard format (question patterns)');
+        
+        let currentQuestion = '';
+        let currentAnswers = [];
+        let currentExplanation = '';
+        
+        const questionPatterns = [
+            /^\d+[.)]\\s*(.+)$/,
+            /^Q\\d*[.:]\\s*(.+)$/i,
+            /^Question\\s*\\d*[.:]\\s*(.+)$/i,
+            /^Pregunta\\s*\\d*[.:]\\s*(.+)$/i
+        ];
+        
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            let questionMatch = null;
+            
+            for (const pattern of questionPatterns) {
+                questionMatch = line.match(pattern);
+                if (questionMatch) break;
+            }
+            
+            if (questionMatch) {
+                // Save previous question
+                if (currentQuestion && currentAnswers.length > 0) {
+                    questions.push({
+                        bloque,
+                        tema,
+                        textoPregunta: currentQuestion,
+                        respuestas: currentAnswers,
+                        explicacionRespuesta: currentExplanation
+                    });
+                }
+                
+                // Start new question
+                currentQuestion = questionMatch[1].trim();
+                currentAnswers = [];
+                currentExplanation = '';
+            }
+            // Answer patterns
+            else if (/^[*]?[a-zA-Z]\\)?[.\\-\\s]+(.+)$/i.test(line)) {
+                const isCorrect = line.startsWith('*');
+                let answerText = line.replace(/^[*]?[a-zA-Z]\\)?[.\\-\\s]*/i, '').trim();
+                
+                if (answerText) {
+                    currentAnswers.push({
+                        textoRespuesta: answerText,
+                        esCorrecta: isCorrect
+                    });
+                }
+            }
+            // Multi-line questions
+            else if (currentQuestion && !currentAnswers.length && line.length > 0) {
+                currentQuestion += ' ' + line;
+            }
+            // Possible explanation (after all answers)
+            else if (currentAnswers.length > 0 && line.length > 0) {
+                currentExplanation = line;
+            }
+        }
+        
+        // Save last question
+        if (currentQuestion && currentAnswers.length > 0) {
+            questions.push({
+                bloque,
+                tema,
+                textoPregunta: currentQuestion,
+                respuestas: currentAnswers,
+                explicacionRespuesta: currentExplanation
+            });
+        }
+    }
+    
+    console.log('✅ Total questions parsed:', questions.length);
+    return questions;
+};
+
+// Enhanced Question Uploader Component with Multiple File Support
 const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock }) => {
     const { t } = useLanguage();
     const [blockName, setBlockName] = useState('');
     const [topicName, setTopicName] = useState('');
-    const [file, setFile] = useState(null);
+    const [files, setFiles] = useState([]);
     const [status, setStatus] = useState('idle');
     const [message, setMessage] = useState('');
+    const [processedQuestions, setProcessedQuestions] = useState([]);
+    const [isProcessing, setIsProcessing] = useState(false);
+    
+    // Batch upload states
+    const [fileQueue, setFileQueue] = useState([]);
+    const [isBatchModeActive, setIsBatchModeActive] = useState(false);
+    const [selectedBatchFiles, setSelectedBatchFiles] = useState(new Set());
+    const [batchIsPublic, setBatchIsPublic] = useState(true);
+    const [reviewedQuestions, setReviewedQuestions] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const blockOptions = blocks.map(b => ({ id: b.id, label: b.nombreCorto || b.name || '' }));
+
+    const resetFullState = useCallback(() => {
+        setBlockName('');
+        setTopicName('');
+        setFiles([]);
+        setReviewedQuestions([]);
+        setStatus('idle');
+        setMessage('');
+        setIsLoading(false);
+        setFileQueue([]);
+        setIsBatchModeActive(false);
+        setSelectedBatchFiles(new Set());
+        setProcessedQuestions([]);
+    }, []);
 
     const handleFileChange = (event) => {
-        const selectedFile = event.target.files[0];
-        setFile(selectedFile);
+        const selectedFiles = Array.from(event.target.files);
+        setFiles(selectedFiles);
+        
+        // Auto-fill block and topic from first file if available
+        if (selectedFiles.length > 0) {
+            const firstFile = selectedFiles[0];
+            const parsed = parseFilename(firstFile.name);
+            
+            if (parsed.bloque && parsed.tema) {
+                setBlockName(parsed.bloque);
+                setTopicName(parsed.tema);
+            }
+        }
     };
 
+    const handleFolderSelect = (event) => {
+        if (event.target.files) {
+            resetFullState();
+            const files = Array.from(event.target.files);
+            const fileRegex = /^([^_]+)_([^_\\.]+)\\.txt$/i;
+            const newQueue = files.map(file => {
+                const match = file.name.match(fileRegex);
+                if (match) {
+                    const blockName = match[1].replace(/-/g, ' ').trim();
+                    const topicName = match[2].replace(/-/g, ' ').trim();
+                    
+                    if (!blockName || !topicName) {
+                        console.error(`🚨 Invalid filename format for ${file.name}`);
+                        return null;
+                    }
+                    
+                    const fileInfo = { file, blockName, topicName };
+                    console.log(`📂 ✅ VALIDATED file: ${file.name} -> Block: "${fileInfo.blockName}", Topic: "${fileInfo.topicName}"`);
+                    return fileInfo;
+                }
+                return null;
+            }).filter(Boolean);
+
+            if (newQueue.length > 0) {
+                setFileQueue(newQueue);
+                setIsBatchModeActive(true);
+            } else {
+                setMessage(t('uploader_batch_status_no_files'));
+                setStatus('error');
+            }
+        }
+        event.target.value = '';
+    };
+
+    const handleBatchFileSelectionChange = (fileName) => {
+        setSelectedBatchFiles(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(fileName)) newSet.delete(fileName);
+            else newSet.add(fileName);
+            return newSet;
+        });
+    };
+
+    const handleLoadSelectedBatchFiles = useCallback(async () => {
+        if (selectedBatchFiles.size === 0) return;
+        setIsLoading(true);
+        setStatus('idle');
+        let allParsedQuestions = [];
+        const filesToProcess = fileQueue.filter(f => selectedBatchFiles.has(f.file.name));
+
+        try {
+            for (const fileInfo of filesToProcess) {
+                const text = await fileInfo.file.text();
+                if (!text) continue;
+                
+                console.log(`📄 Processing file: ${fileInfo.file.name} with topic: "${fileInfo.topicName}"`);
+                const questions = parseQuestions(text, fileInfo.blockName, fileInfo.topicName);
+                allParsedQuestions.push(...questions);
+            }
+            
+            setProcessedQuestions(allParsedQuestions);
+            setMessage(`✅ Procesado completamente: ${allParsedQuestions.length} preguntas de ${filesToProcess.length} archivo(s)`);
+            setStatus('success');
+        } catch (error) {
+            console.error('Error processing files:', error);
+            setMessage('Error al procesar los archivos');
+            setStatus('error');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [selectedBatchFiles, fileQueue, t]);
+
     const handleLoadForReview = () => {
-        if (!file || !topicName.trim()) {
+        if (!topicName.trim() || files.length === 0) {
             setMessage(t('uploader_status_generic_error'));
             setStatus('error');
             return;
         }
         
+        setIsLoading(true);
+        setStatus('idle');
+        const file = files[0]; // Single file processing
         const reader = new FileReader();
+        
         reader.onload = (e) => {
             try {
-                const content = e.target.result;
-                // Basic parsing logic here
-                setMessage(`Archivo cargado: ${file.name}`);
+                const text = e.target?.result;
+                if (!text) throw new Error("File is empty or could not be read.");
+                const parsedQuestions = parseQuestions(text, blockName, topicName.trim());
+                if (parsedQuestions.length === 0) throw new Error(t('uploader_status_no_questions'));
+                setReviewedQuestions(parsedQuestions);
+                setMessage(t('uploader_status_loaded', { count: parsedQuestions.length }));
                 setStatus('success');
-            } catch (error) {
-                setMessage('Error al procesar el archivo');
+            } catch (err) {
+                setMessage(err.message);
                 setStatus('error');
+                setReviewedQuestions([]);
+            } finally {
+                setIsLoading(false);
+                setTimeout(() => {
+                    setStatus('idle');
+                    setMessage('');
+                }, 3000);
             }
         };
+        
+        reader.onerror = () => {
+            setMessage(t('uploader_status_read_error'));
+            setStatus('error');
+            setIsLoading(false);
+        };
+        
         reader.readAsText(file);
     };
 
-    const blockOptions = blocks.map(b => ({ id: b.id, label: b.nombreCorto || b.name || '' }));
+    const handleSaveProcessedQuestions = async () => {
+        try {
+            if (processedQuestions.length === 0) return;
+
+            const questionsByBlock = processedQuestions.reduce((acc, question) => {
+                if (!acc[question.bloque]) {
+                    acc[question.bloque] = [];
+                }
+                acc[question.bloque].push(question);
+                return acc;
+            }, {});
+
+            for (const [blockName, blockQuestions] of Object.entries(questionsByBlock)) {
+                const existingBlock = blocks.find(b => b.nombreCorto?.toLowerCase() === blockName.toLowerCase());
+                if (existingBlock) {
+                    await onSaveQuestions(existingBlock.id, blockQuestions);
+                } else {
+                    await onCreateBlock(blockName, blockQuestions, batchIsPublic, '');
+                }
+            }
+
+            setMessage(`¡Guardado exitoso! ${processedQuestions.length} preguntas procesadas.`);
+            setStatus('success');
+            setTimeout(resetFullState, 2000);
+        } catch (error) {
+            console.error('Error saving questions:', error);
+            setMessage('Error al guardar las preguntas');
+            setStatus('error');
+        }
+    };
 
     return React.createElement('div', {
         style: {
@@ -1114,89 +1416,507 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
         }, t('uploader_title')),
         
         React.createElement('div', {
-            key: 'form',
+            key: 'content',
             style: { display: 'flex', flexDirection: 'column', gap: '16px' }
         }, [
-            React.createElement('div', { key: 'block-field' }, [
-                React.createElement('label', { 
-                    key: 'label',
-                    style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
-                }, t('generator_block')),
-                React.createElement(Combobox, {
-                    key: 'combobox',
-                    options: blockOptions,
-                    value: blockName,
-                    onChange: setBlockName,
-                    placeholder: t('generator_block_placeholder')
-                })
-            ]),
-            
-            React.createElement('div', { key: 'topic-field' }, [
-                React.createElement('label', { 
-                    key: 'label',
-                    style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
-                }, t('generator_topic')),
-                React.createElement('input', {
-                    key: 'input',
-                    type: 'text',
-                    value: topicName,
-                    onChange: (e) => setTopicName(e.target.value),
+            // Batch upload section
+            React.createElement('div', { key: 'batch-upload' }, [
+                React.createElement('label', {
+                    key: 'folder-label',
+                    htmlFor: 'folder-upload',
                     style: {
                         width: '100%',
-                        background: '#0D1B2A',
-                        border: '1px solid #415A77',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: '16px',
+                        padding: '16px',
+                        border: '2px dashed #415A77',
                         borderRadius: '8px',
-                        padding: '8px 12px',
-                        color: '#E0E1DD',
-                        outline: 'none'
-                    },
-                    placeholder: t('generator_topic_placeholder')
-                })
-            ]),
-            
-            React.createElement('div', { key: 'file-field' }, [
-                React.createElement('label', { 
-                    key: 'label',
-                    style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
-                }, t('uploader_file_label')),
-                React.createElement('input', {
-                    key: 'input',
-                    type: 'file',
-                    accept: '.txt',
-                    onChange: handleFileChange,
-                    style: {
-                        width: '100%',
-                        background: '#0D1B2A',
-                        border: '1px solid #415A77',
-                        borderRadius: '8px',
-                        padding: '8px 12px',
-                        color: '#E0E1DD'
+                        cursor: (isBatchModeActive || isLoading) ? 'not-allowed' : 'pointer',
+                        opacity: (isBatchModeActive || isLoading) ? 0.6 : 1,
+                        transition: 'all 0.3s ease'
                     }
+                }, [
+                    React.createElement('svg', {
+                        key: 'folder-icon',
+                        xmlns: "http://www.w3.org/2000/svg",
+                        style: { height: '40px', width: '40px', color: '#778DA9', flexShrink: 0 },
+                        fill: "none",
+                        viewBox: "0 0 24 24",
+                        stroke: "currentColor",
+                        strokeWidth: "1.5"
+                    }, React.createElement('path', {
+                        strokeLinecap: "round",
+                        strokeLinejoin: "round",
+                        d: "M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
+                    })),
+                    React.createElement('div', {
+                        key: 'folder-text',
+                        style: { textAlign: 'left' }
+                    }, [
+                        React.createElement('span', {
+                            key: 'title',
+                            style: { fontWeight: 'bold', color: '#E0E1DD', display: 'block' }
+                        }, t('uploader_batch_title')),
+                        React.createElement('p', {
+                            key: 'description',
+                            style: { fontSize: '12px', color: '#778DA9', margin: 0 },
+                            dangerouslySetInnerHTML: { __html: t('uploader_batch_explanation') }
+                        })
+                    ])
+                ]),
+                React.createElement('input', {
+                    key: 'folder-input',
+                    id: 'folder-upload',
+                    type: 'file',
+                    webkitdirectory: "",
+                    directory: "",
+                    style: { position: 'absolute', left: '-9999px' },
+                    onChange: handleFolderSelect,
+                    disabled: isBatchModeActive || isLoading
                 })
             ]),
             
-            React.createElement('button', {
-                key: 'load-btn',
-                onClick: handleLoadForReview,
-                disabled: !file || !topicName.trim(),
+            // Batch file management
+            isBatchModeActive && processedQuestions.length === 0 && React.createElement('div', {
+                key: 'batch-management',
                 style: {
-                    width: '100%',
-                    background: (!file || !topicName.trim()) ? '#415A77' : '#3B82F6',
-                    color: 'white',
-                    fontWeight: 'bold',
-                    padding: '10px 16px',
+                    margin: '16px 0',
+                    padding: '16px',
+                    background: '#0D1B2A',
                     borderRadius: '8px',
-                    border: 'none',
-                    cursor: (!file || !topicName.trim()) ? 'not-allowed' : 'pointer'
+                    border: '1px solid #415A77'
                 }
-            }, t('uploader_button_load')),
+            }, [
+                React.createElement('div', {
+                    key: 'batch-header',
+                    style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }
+                }, [
+                    React.createElement('h4', {
+                        key: 'batch-title',
+                        style: { fontSize: '18px', fontWeight: '600', color: '#E0E1DD' }
+                    }, `${t('uploader_batch_detected_files')} (${fileQueue.length})`),
+                    React.createElement('button', {
+                        key: 'finish-btn',
+                        onClick: resetFullState,
+                        style: {
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            background: '#EF4444',
+                            color: 'white',
+                            padding: '4px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            cursor: 'pointer'
+                        }
+                    }, t('uploader_batch_finish'))
+                ]),
+                
+                // Block visibility for batch
+                currentUser && React.createElement('div', {
+                    key: 'batch-visibility',
+                    style: {
+                        marginBottom: '16px',
+                        background: '#1B263B',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '16px'
+                    }
+                }, [
+                    React.createElement('label', {
+                        key: 'visibility-label',
+                        style: { fontSize: '14px', fontWeight: '500', color: '#778DA9' }
+                    }, t('block_type') + ':'),
+                    React.createElement('div', {
+                        key: 'visibility-options',
+                        style: { display: 'flex', alignItems: 'center', gap: '16px', color: '#E0E1DD' }
+                    }, [
+                        React.createElement('label', {
+                            key: 'public-option',
+                            style: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }
+                        }, [
+                            React.createElement('input', {
+                                key: 'public-radio',
+                                type: 'radio',
+                                name: 'batch-block-visibility',
+                                checked: batchIsPublic,
+                                onChange: () => setBatchIsPublic(true),
+                                style: { height: '16px', width: '16px' }
+                            }),
+                            t('block_public')
+                        ]),
+                        React.createElement('label', {
+                            key: 'private-option',
+                            style: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }
+                        }, [
+                            React.createElement('input', {
+                                key: 'private-radio',
+                                type: 'radio',
+                                name: 'batch-block-visibility',
+                                checked: !batchIsPublic,
+                                onChange: () => setBatchIsPublic(false),
+                                style: { height: '16px', width: '16px' }
+                            }),
+                            t('block_private')
+                        ])
+                    ])
+                ]),
+                
+                // File list
+                fileQueue.length > 0 ? [
+                    React.createElement('div', {
+                        key: 'file-list',
+                        style: { maxHeight: '192px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '8px' }
+                    }, fileQueue.map((fileInfo, index) => 
+                        React.createElement('label', {
+                            key: index,
+                            style: {
+                                display: 'flex',
+                                alignItems: 'center',
+                                width: '100%',
+                                textAlign: 'left',
+                                padding: '8px',
+                                borderRadius: '6px',
+                                transition: 'background-color 0.3s',
+                                fontSize: '14px',
+                                background: '#1B263B',
+                                color: '#E0E1DD',
+                                cursor: 'pointer'
+                            }
+                        }, [
+                            React.createElement('input', {
+                                key: 'checkbox',
+                                type: 'checkbox',
+                                checked: selectedBatchFiles.has(fileInfo.file.name),
+                                onChange: () => handleBatchFileSelectionChange(fileInfo.file.name),
+                                style: { height: '16px', width: '16px', marginRight: '12px' }
+                            }),
+                            React.createElement('span', { key: 'filename' }, fileInfo.file.name)
+                        ])
+                    )),
+                    React.createElement('button', {
+                        key: 'load-selected-btn',
+                        onClick: handleLoadSelectedBatchFiles,
+                        disabled: selectedBatchFiles.size === 0 || isLoading,
+                        style: {
+                            width: '100%',
+                            marginTop: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: (selectedBatchFiles.size === 0 || isLoading) ? '#415A77' : '#3B82F6',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            padding: '10px 16px',
+                            borderRadius: '8px',
+                            border: 'none',
+                            cursor: (selectedBatchFiles.size === 0 || isLoading) ? 'not-allowed' : 'pointer'
+                        }
+                    }, isLoading ? t('uploader_parsing') : t('uploader_button_load_selected', { count: selectedBatchFiles.size }))
+                ] : React.createElement('div', {
+                    key: 'batch-complete',
+                    style: { textAlign: 'center', padding: '16px', color: '#778DA9' }
+                }, t('uploader_batch_status_complete'))
+            ]),
             
+            // Single file upload (when not in batch mode)
+            !isBatchModeActive && React.createElement('div', {
+                key: 'single-upload',
+                style: { display: 'flex', flexDirection: 'column', gap: '16px' }
+            }, [
+                React.createElement('div', {
+                    key: 'separator',
+                    style: { textAlign: 'center', color: '#778DA9', fontSize: '14px' }
+                }, t('uploader_separator')),
+                
+                React.createElement('div', {
+                    key: 'block-topic-fields',
+                    style: {
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                        gap: '16px'
+                    }
+                }, [
+                    React.createElement('div', { key: 'block-field' }, [
+                        React.createElement('label', {
+                            key: 'block-label',
+                            style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
+                        }, t('generator_block')),
+                        React.createElement(Combobox, {
+                            key: 'block-combobox',
+                            options: blockOptions,
+                            value: blockName,
+                            onChange: setBlockName,
+                            placeholder: t('generator_block_placeholder')
+                        })
+                    ]),
+                    React.createElement('div', { key: 'topic-field' }, [
+                        React.createElement('label', {
+                            key: 'topic-label',
+                            style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
+                        }, t('generator_topic')),
+                        React.createElement('input', {
+                            key: 'topic-input',
+                            type: 'text',
+                            value: topicName,
+                            onChange: (e) => setTopicName(e.target.value),
+                            style: {
+                                width: '100%',
+                                background: '#0D1B2A',
+                                border: '1px solid #415A77',
+                                borderRadius: '8px',
+                                padding: '8px 12px',
+                                color: '#E0E1DD',
+                                outline: 'none'
+                            },
+                            placeholder: t('generator_topic_placeholder')
+                        })
+                    ])
+                ]),
+                
+                React.createElement('div', { key: 'file-field' }, [
+                    React.createElement('label', {
+                        key: 'file-label',
+                        style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
+                    }, t('uploader_file_label')),
+                    React.createElement('input', {
+                        key: 'file-input',
+                        type: 'file',
+                        accept: '.txt',
+                        multiple: true,
+                        onChange: handleFileChange,
+                        style: {
+                            width: '100%',
+                            background: '#0D1B2A',
+                            border: '1px solid #415A77',
+                            borderRadius: '8px',
+                            padding: '8px 12px',
+                            color: '#E0E1DD'
+                        }
+                    })
+                ]),
+                
+                React.createElement('button', {
+                    key: 'load-btn',
+                    onClick: handleLoadForReview,
+                    disabled: files.length === 0 || !topicName.trim(),
+                    style: {
+                        width: '100%',
+                        background: (files.length === 0 || !topicName.trim()) ? '#415A77' : '#3B82F6',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        cursor: (files.length === 0 || !topicName.trim()) ? 'not-allowed' : 'pointer'
+                    }
+                }, t('uploader_button_load'))
+            ]),
+            
+            // Display processed questions (batch mode)
+            processedQuestions.length > 0 && React.createElement('div', {
+                key: 'processed-questions',
+                style: {
+                    marginTop: '24px',
+                    padding: '16px',
+                    background: '#0D1B2A',
+                    borderRadius: '8px',
+                    border: '1px solid #415A77'
+                }
+            }, [
+                React.createElement('h4', {
+                    key: 'questions-title',
+                    style: { fontSize: '18px', fontWeight: '600', color: '#E0E1DD', marginBottom: '16px' }
+                }, `Preguntas procesadas: ${processedQuestions.length}`),
+                
+                React.createElement('div', {
+                    key: 'questions-preview',
+                    style: { maxHeight: '300px', overflowY: 'auto', marginBottom: '16px' }
+                }, processedQuestions.slice(0, 5).map((question, index) =>
+                    React.createElement('div', {
+                        key: index,
+                        style: {
+                            padding: '12px',
+                            marginBottom: '8px',
+                            background: '#1B263B',
+                            borderRadius: '6px',
+                            fontSize: '14px'
+                        }
+                    }, [
+                        React.createElement('p', {
+                            key: 'question-text',
+                            style: { fontWeight: '600', marginBottom: '8px', color: '#E0E1DD' }
+                        }, `${index + 1}. ${question.textoPregunta}`),
+                        React.createElement('p', {
+                            key: 'block-topic',
+                            style: { fontSize: '12px', color: '#778DA9' }
+                        }, `Bloque: ${question.bloque} | Tema: ${question.tema}`)
+                    ])
+                )),
+                
+                processedQuestions.length > 5 && React.createElement('p', {
+                    key: 'more-questions',
+                    style: { fontSize: '12px', color: '#778DA9', textAlign: 'center', marginBottom: '16px' }
+                }, `... y ${processedQuestions.length - 5} preguntas más`),
+                
+                React.createElement('button', {
+                    key: 'save-all-btn',
+                    onClick: handleSaveProcessedQuestions,
+                    style: {
+                        width: '100%',
+                        background: '#10B981',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        cursor: 'pointer'
+                    }
+                }, 'Guardar Todas las Preguntas')
+            ]),
+            
+            // Display reviewed questions (single file mode)
+            reviewedQuestions.length > 0 && React.createElement('div', {
+                key: 'reviewed-questions',
+                style: {
+                    marginTop: '24px',
+                    padding: '16px',
+                    background: '#0D1B2A',
+                    borderRadius: '8px',
+                    border: '1px solid #415A77'
+                }
+            }, [
+                React.createElement('h4', {
+                    key: 'reviewed-title',
+                    style: { fontSize: '18px', fontWeight: '600', color: '#E0E1DD', marginBottom: '16px' }
+                }, t('uploader_review_title', { count: reviewedQuestions.length })),
+                
+                React.createElement('div', {
+                    key: 'reviewed-list',
+                    style: { maxHeight: '400px', overflowY: 'auto' }
+                }, reviewedQuestions.slice(0, 3).map((question, index) =>
+                    React.createElement('div', {
+                        key: index,
+                        style: {
+                            padding: '16px',
+                            marginBottom: '12px',
+                            background: '#1B263B',
+                            borderRadius: '8px',
+                            border: '1px solid #415A77'
+                        }
+                    }, [
+                        React.createElement('p', {
+                            key: 'question-text',
+                            style: { fontWeight: '600', marginBottom: '12px', color: '#E0E1DD' }
+                        }, `${index + 1}. ${question.textoPregunta}`),
+                        
+                        React.createElement('div', {
+                            key: 'answers',
+                            style: { marginBottom: '8px', paddingLeft: '16px' }
+                        }, question.respuestas.map((answer, answerIndex) =>
+                            React.createElement('div', {
+                                key: answerIndex,
+                                style: {
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    fontSize: '14px',
+                                    color: answer.esCorrecta ? '#10B981' : '#778DA9',
+                                    marginBottom: '4px'
+                                }
+                            }, [
+                                answer.esCorrecta
+                                    ? React.createElement(CheckCircleIcon, { key: 'correct-icon', style: { height: '16px', width: '16px', marginRight: '8px' } })
+                                    : React.createElement(XCircleIcon, { key: 'incorrect-icon', style: { height: '16px', width: '16px', marginRight: '8px' } }),
+                                React.createElement('span', { key: 'answer-text' }, answer.textoRespuesta)
+                            ])
+                        )),
+                        
+                        question.explicacionRespuesta && React.createElement('p', {
+                            key: 'explanation',
+                            style: {
+                                fontSize: '12px',
+                                fontStyle: 'italic',
+                                color: '#778DA9',
+                                paddingLeft: '16px',
+                                borderLeft: '2px solid #415A77',
+                                marginTop: '8px'
+                            }
+                        }, `Explicación: ${question.explicacionRespuesta}`)
+                    ])
+                )),
+                
+                React.createElement('div', {
+                    key: 'save-actions',
+                    style: { marginTop: '16px', display: 'flex', gap: '12px' }
+                }, [
+                    React.createElement('button', {
+                        key: 'clear-btn',
+                        onClick: () => {
+                            setReviewedQuestions([]);
+                            setFiles([]);
+                            setMessage('');
+                            setStatus('idle');
+                        },
+                        style: {
+                            flex: 1,
+                            background: '#415A77',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            padding: '10px 16px',
+                            borderRadius: '8px',
+                            border: 'none',
+                            cursor: 'pointer'
+                        }
+                    }, t('uploader_button_clear')),
+                    
+                    React.createElement('button', {
+                        key: 'save-reviewed-btn',
+                        onClick: async () => {
+                            try {
+                                const existingBlock = blocks.find(b => b.nombreCorto?.toLowerCase() === blockName.toLowerCase());
+                                if (existingBlock) {
+                                    await onSaveQuestions(existingBlock.id, reviewedQuestions);
+                                } else {
+                                    await onCreateBlock(blockName.trim(), reviewedQuestions, true, '');
+                                }
+                                setMessage(`¡Guardado exitoso! ${reviewedQuestions.length} preguntas.`);
+                                setStatus('success');
+                                setTimeout(() => {
+                                    setReviewedQuestions([]);
+                                    setFiles([]);
+                                    setMessage('');
+                                    setStatus('idle');
+                                }, 2000);
+                            } catch (error) {
+                                setMessage('Error al guardar las preguntas');
+                                setStatus('error');
+                            }
+                        },
+                        style: {
+                            flex: 2,
+                            background: '#10B981',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            padding: '10px 16px',
+                            borderRadius: '8px',
+                            border: 'none',
+                            cursor: 'pointer'
+                        }
+                    }, t('uploader_button_save_all'))
+                ])
+            ]),
+            
+            // Status message
             message && React.createElement('p', {
-                key: 'message',
-                style: { 
-                    fontSize: '14px', 
+                key: 'status-message',
+                style: {
+                    fontSize: '14px',
                     color: status === 'error' ? '#EF4444' : '#10B981',
-                    textAlign: 'center' 
+                    textAlign: 'center',
+                    marginTop: '12px'
                 }
             }, message)
         ])

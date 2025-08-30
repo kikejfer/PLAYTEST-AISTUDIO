@@ -1,0 +1,49 @@
+    <script>
+        // Use the shared Add Questions Module - No duplicated code needed!
+        console.log('🎯 Creators Panel: Using shared Add Questions Module');
+
+        // Global functions for tab management
+        window.showTab = function(tabId) {
+            // Hide all content sections
+            const allSections = document.querySelectorAll('.content-section');
+            allSections.forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Remove active class from all tab buttons
+            const allButtons = document.querySelectorAll('.tab-button');
+            allButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            const selectedTab = document.getElementById(tabId);
+            if (selectedTab) {
+                selectedTab.style.display = 'block';
+            }
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Mount React app if it's the add-questions tab using shared module
+            if (tabId === 'add-questions-tab') {
+                const contentDiv = document.getElementById('add-questions-content');
+                if (contentDiv && !contentDiv.hasChildNodes() && window.AddQuestionsModule) {
+                    window.AddQuestionsModule.mount('add-questions-content');
+                }
+            }
+        };
+        
+        // Initialize default tab view
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show default content (non-add-questions sections) by default
+            const allSections = document.querySelectorAll('.content-section');
+            allSections.forEach(section => {
+                if (section.id !== 'add-questions-tab') {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+        });
+    </script>

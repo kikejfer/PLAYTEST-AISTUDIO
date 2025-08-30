@@ -389,7 +389,86 @@
             gap: 8px;
         }
 
+        .optimization-section {
+            background: #1B263B;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #415A77;
+        }
 
+        .optimization-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .optimization-card {
+            background: #415A77;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #F59E0B;
+        }
+
+        .optimization-title {
+            font-weight: 600;
+            color: #E0E1DD;
+            margin-bottom: 8px;
+        }
+
+        .optimization-description {
+            font-size: 0.9rem;
+            color: #778DA9;
+            margin-bottom: 10px;
+        }
+
+        .optimization-impact {
+            font-size: 0.8rem;
+            color: #F59E0B;
+            font-weight: 600;
+        }
+
+        .pricing-section {
+            background: #1B263B;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #415A77;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .pricing-card {
+            background: #415A77;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .current-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #778DA9;
+            margin-bottom: 5px;
+        }
+
+        .suggested-price {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #10B981;
+            margin-bottom: 5px;
+        }
+
+        .price-change {
+            font-size: 0.9rem;
+            color: #778DA9;
+        }
 
         .content-actions {
             display: flex;
@@ -572,6 +651,25 @@
                     </div>
                 </div>
 
+                <!-- Sugerencias de Optimización -->
+                <div class="optimization-section">
+                    <h3 style="margin-bottom: 15px;">💡 Sugerencias de Optimización IA</h3>
+                    <p style="color: #666; margin-bottom: 15px;">Análisis automático de oportunidades de mejora basado en datos de rendimiento</p>
+                    
+                    <div class="optimization-cards" id="optimization-suggestions">
+                        <div class="loading">Generando sugerencias de optimización...</div>
+                    </div>
+                </div>
+
+                <!-- Optimización de Precios -->
+                <div class="pricing-section">
+                    <h3 style="margin-bottom: 15px;">💰 Optimización de Precios IA</h3>
+                    <p style="color: #666; margin-bottom: 15px;">Sugerencias de precios basadas en análisis de mercado y rendimiento</p>
+                    
+                    <div class="pricing-grid" id="pricing-suggestions">
+                        <div class="loading">Calculando precios óptimos...</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -585,6 +683,8 @@
         // Inicialización
         document.addEventListener('DOMContentLoaded', async () => {
             await loadContentAnalytics();
+            await loadOptimizationSuggestions();
+            await loadPricingSuggestions();
         });
 
         // Cambiar período de análisis
@@ -899,6 +999,143 @@
             }
         }
 
+        // Cargar sugerencias de optimización
+        async function loadOptimizationSuggestions() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                const response = await fetch(`${API_BASE_URL}/api/creators-panel/content/optimization-suggestions`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    renderOptimizationSuggestions(data);
+                }
+
+            } catch (error) {
+                console.error('Error cargando sugerencias:', error);
+                showError('optimization-suggestions', 'Error cargando sugerencias');
+            }
+        }
+
+        // Renderizar sugerencias de optimización
+        function renderOptimizationSuggestions(data) {
+            const container = document.getElementById('optimization-suggestions');
+            
+            const suggestions = [
+                ...data.lowCompletion?.map(block => ({
+                    title: `Mejorar "${block.name}"`,
+                    description: `Tasa de completado baja: ${block.avg_completion_rate?.toFixed(1)}%. Considera revisar la dificultad o añadir más explicaciones.`,
+                    impact: 'Alto impacto en retención'
+                })) || [],
+                ...data.highPotential?.map(block => ({
+                    title: `Monetizar "${block.name}"`,
+                    description: `Alto engagement (${block.avg_players} jugadores) pero bajo revenue. Oportunidad de monetización.`,
+                    impact: 'Alto potencial de ingresos'
+                })) || []
+            ];
+
+            if (suggestions.length === 0) {
+                container.innerHTML = `
+                    <div class="optimization-card">
+                        <div style="text-align: center; padding: 20px;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">✨</div>
+                            <div class="optimization-title">¡Excelente trabajo!</div>
+                            <div class="optimization-description">Todos tus bloques están optimizados. Continúa creando contenido de calidad.</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = suggestions.map(suggestion => `
+                <div class="optimization-card">
+                    <div class="optimization-title">${suggestion.title}</div>
+                    <div class="optimization-description">${suggestion.description}</div>
+                    <div class="optimization-impact">${suggestion.impact}</div>
+                </div>
+            `).join('');
+        }
+
+        // Cargar sugerencias de precios
+        async function loadPricingSuggestions() {
+            try {
+                const token = localStorage.getItem('authToken');
+                
+                // Obtener los primeros bloques para optimización de precios
+                const blockIds = contentAnalytics.slice(0, 6).map(item => item.block_id);
+                
+                const pricingSuggestions = await Promise.all(
+                    [...new Set(blockIds)].map(async blockId => {
+                        try {
+                            const response = await fetch(`/api/creators-panel/pricing/optimize/${blockId}`, {
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                            
+                            if (response.ok) {
+                                const data = await response.json();
+                                const block = contentAnalytics.find(item => item.block_id === blockId);
+                                return {
+                                    blockId,
+                                    blockName: block?.block_name || `Bloque ${blockId}`,
+                                    ...data.pricingSuggestion
+                                };
+                            }
+                        } catch (error) {
+                            console.warn(`Error obteniendo precio para bloque ${blockId}:`, error);
+                        }
+                        return null;
+                    })
+                );
+
+                renderPricingSuggestions(pricingSuggestions.filter(Boolean));
+
+            } catch (error) {
+                console.error('Error cargando precios:', error);
+                showError('pricing-suggestions', 'Error cargando sugerencias de precios');
+            }
+        }
+
+        // Renderizar sugerencias de precios
+        function renderPricingSuggestions(suggestions) {
+            const container = document.getElementById('pricing-suggestions');
+            
+            if (suggestions.length === 0) {
+                container.innerHTML = `
+                    <div class="pricing-card">
+                        <div style="text-align: center; padding: 20px;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">💰</div>
+                            <div style="font-weight: 600; margin-bottom: 5px;">Sin datos de pricing</div>
+                            <div style="color: #666;">Necesitas más datos de uso para generar sugerencias de precios</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = suggestions.map(suggestion => {
+                const change = suggestion.suggestedPrice - suggestion.currentPrice;
+                const changePercent = suggestion.currentPrice > 0 ? 
+                    ((change / suggestion.currentPrice) * 100).toFixed(1) : 0;
+                
+                return `
+                    <div class="pricing-card">
+                        <div style="font-weight: 600; margin-bottom: 10px;">${suggestion.blockName}</div>
+                        <div class="current-price">Actual: $${suggestion.currentPrice.toFixed(2)}</div>
+                        <div class="suggested-price">Sugerido: $${suggestion.suggestedPrice.toFixed(2)}</div>
+                        <div class="price-change">
+                            ${change >= 0 ? '📈' : '📉'} ${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePercent}%)
+                        </div>
+                        <div style="font-size: 0.8rem; color: #666; margin-top: 8px;">
+                            Confianza: ${(suggestion.confidenceLevel * 100).toFixed(0)}%
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
 
         // Funciones auxiliares
         function groupByBlock(analytics) {
@@ -1356,8 +1593,1487 @@
     <script src="add-questions-module.js"></script>
     
     <script>
-        // Use the shared Add Questions Module - No duplicated code needed!
+        // Use the shared Add Questions Module
         console.log('🎯 Creators Panel: Using shared Add Questions Module');
+
+        // Now using shared Add Questions Module instead of duplicated code
+        
+        // Global functions for tab management
+        const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock }) => {
+            const { t } = useLanguage();
+            const [blockName, setBlockName] = useState('');
+            const [topicName, setTopicName] = useState('');
+            const [files, setFiles] = useState([]);
+            const [uploadMode, setUploadMode] = useState('single'); // 'single' or 'multiple'
+            const [status, setStatus] = useState('idle');
+            const [message, setMessage] = useState('');
+            const [processedQuestions, setProcessedQuestions] = useState([]);
+            const [isProcessing, setIsProcessing] = useState(false);
+            const [processingProgress, setProcessingProgress] = useState(0);
+            const [processingStep, setProcessingStep] = useState('');
+            const [timeRemaining, setTimeRemaining] = useState(0);
+            const [startTime, setStartTime] = useState(null);
+
+            const blockOptions = blocks.map(b => ({ id: b.id, label: b.nombreCorto }));
+
+            // Function to parse filename format: bloque_tema.txt
+            const parseFilename = (filename) => {
+                const nameWithoutExt = filename.replace(/\.[^/.]+$/, ''); // Remove extension
+                const parts = nameWithoutExt.split('_');
+                
+                if (parts.length >= 2) {
+                    const bloque = parts[0];
+                    const tema = parts.slice(1).join('_'); // Join remaining parts in case tema has underscores
+                    return { bloque, tema };
+                }
+                return { bloque: '', tema: '' };
+            };
+
+            const handleFileChange = (event) => {
+                const selectedFiles = Array.from(event.target.files);
+                let filesToSet;
+                
+                if (uploadMode === 'single') {
+                    filesToSet = selectedFiles.slice(0, 1);
+                } else {
+                    filesToSet = selectedFiles;
+                }
+                
+                setFiles(filesToSet);
+                
+                // Auto-fill block and topic from first file if available
+                if (filesToSet.length > 0) {
+                    const firstFile = filesToSet[0];
+                    const parsed = parseFilename(firstFile.name);
+                    
+                    if (parsed.bloque && parsed.tema) {
+                        setBlockName(parsed.bloque);
+                        setTopicName(parsed.tema);
+                    }
+                }
+            };
+
+            const removeFile = (index) => {
+                const newFiles = files.filter((_, i) => i !== index);
+                setFiles(newFiles);
+            };
+
+            // Function to parse question format from file content (supports dual formats)
+            const parseQuestions = (content, bloque, tema) => {
+                console.log('🔍 Parsing content for:', bloque, '→', tema);
+                console.log('📄 Content length:', content.length);
+                
+                const lines = content.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+                console.log('📋 Total lines after filtering:', lines.length);
+                
+                const questions = [];
+                
+                // FORMATO 1: Original con ## y @@ separators
+                if (content.includes('##')) {
+                    console.log('🎯 Detected original format (## separators)');
+                    
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i];
+                        
+                        if (line.includes('##')) {
+                            const parts = line.split('##');
+                            if (parts.length >= 2) {
+                                const questionText = parts[0].trim();
+                                const answerParts = parts.slice(1);
+                                
+                                const respuestas = answerParts.map(part => {
+                                    const isCorrect = part.includes('@@');
+                                    const answerText = part.replace(/@@/g, '').trim();
+                                    return {
+                                        textoRespuesta: answerText,
+                                        esCorrecta: isCorrect
+                                    };
+                                });
+                                
+                                // Check for explanation on next line
+                                let explicacion = '';
+                                if (i + 1 < lines.length && !lines[i + 1].includes('##')) {
+                                    explicacion = lines[i + 1];
+                                    i++; // Skip explanation line
+                                }
+                                
+                                questions.push({
+                                    bloque,
+                                    tema,
+                                    textoPregunta: questionText,
+                                    respuestas: respuestas,
+                                    explicacionRespuesta: explicacion
+                                });
+                                
+                                console.log('✅ Parsed original format question:', questionText);
+                            }
+                        }
+                    }
+                }
+                // FORMATO 2: Estándar con números y letras
+                else {
+                    console.log('🎯 Detected standard format (numbered questions)');
+                    
+                    let currentQuestion = null;
+                    let currentAnswers = [];
+                    let currentExplanation = '';
+                    
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i];
+                        
+                        // Question patterns
+                        const questionPatterns = [
+                            /^\d+[.\-)\s]+(.+)$/,           // 1. Question, 1- Question, 1) Question
+                            /^[Pp]regunta\s*\d+[:\s]+(.+)$/,   // Pregunta 1: Question
+                            /^[Qq]\d+[:\s]+(.+)$/,           // Q1: Question
+                            /^\d+[:\s]+(.+)$/                // 1: Question
+                        ];
+                        
+                        let questionMatch = null;
+                        for (const pattern of questionPatterns) {
+                            questionMatch = line.match(pattern);
+                            if (questionMatch) break;
+                        }
+                        
+                        if (questionMatch) {
+                            // Save previous question
+                            if (currentQuestion && currentAnswers.length > 0) {
+                                questions.push({
+                                    bloque,
+                                    tema,
+                                    textoPregunta: currentQuestion,
+                                    respuestas: currentAnswers,
+                                    explicacionRespuesta: currentExplanation
+                                });
+                            }
+                            
+                            // Start new question
+                            currentQuestion = questionMatch[1].trim();
+                            currentAnswers = [];
+                            currentExplanation = '';
+                            console.log('✅ Found standard format question:', currentQuestion);
+                        }
+                        // Answer patterns
+                        else if (/^[*]?[a-zA-Z]\)?[.\-\s]+(.+)$/i.test(line)) {
+                            const isCorrect = line.startsWith('*');
+                            let answerText = line.replace(/^[*]?[a-zA-Z]\)?[.\-\s]*/i, '').trim();
+                            
+                            if (answerText) {
+                                currentAnswers.push({
+                                    textoRespuesta: answerText,
+                                    esCorrecta: isCorrect
+                                });
+                                console.log('📝 Found answer:', answerText, isCorrect ? '(CORRECT)' : '');
+                            }
+                        }
+                        // Multi-line questions
+                        else if (currentQuestion && !currentAnswers.length && line.length > 0) {
+                            currentQuestion += ' ' + line;
+                        }
+                        // Possible explanation (after all answers)
+                        else if (currentAnswers.length > 0 && line.length > 0) {
+                            currentExplanation = line;
+                            console.log('📖 Found explanation:', line);
+                        }
+                    }
+                    
+                    // Save last question
+                    if (currentQuestion && currentAnswers.length > 0) {
+                        questions.push({
+                            bloque,
+                            tema,
+                            textoPregunta: currentQuestion,
+                            respuestas: currentAnswers,
+                            explicacionRespuesta: currentExplanation
+                        });
+                    }
+                }
+                
+                console.log('✅ Total questions parsed:', questions.length);
+                return questions;
+            };
+
+            const handleLoadForReview = async () => {
+                if (files.length === 0) {
+                    setMessage('Por favor, selecciona al menos un fichero.');
+                    setStatus('error');
+                    return;
+                }
+                
+                // Check if files follow the naming convention
+                const validFiles = files.filter(file => {
+                    const parsed = parseFilename(file.name);
+                    return parsed.bloque && parsed.tema;
+                });
+                
+                if (validFiles.length === 0) {
+                    setMessage('Los archivos deben seguir el formato: bloque_tema.txt');
+                    setStatus('error');
+                    return;
+                }
+                
+                setIsProcessing(true);
+                setStatus('processing');
+                setProcessingProgress(0);
+                setProcessingStep('Iniciando procesamiento...');
+                setStartTime(Date.now());
+                setTimeRemaining(0);
+                
+                try {
+                    const allQuestions = [];
+                    const totalFiles = validFiles.length;
+                    const estimatedTimePerFile = 2000; // 2 seconds per file estimation
+                    
+                    setProcessingStep(`Procesando ${totalFiles} archivo(s)...`);
+                    
+                    for (let i = 0; i < validFiles.length; i++) {
+                        const file = validFiles[i];
+                        const parsed = parseFilename(file.name);
+                        
+                        // Update progress and time estimation
+                        const progressPercent = (i / totalFiles) * 100;
+                        setProcessingProgress(progressPercent);
+                        setProcessingStep(`Procesando archivo ${i + 1}/${totalFiles}: ${file.name}`);
+                        
+                        // Calculate time remaining
+                        const elapsed = Date.now() - startTime;
+                        const avgTimePerFile = elapsed / (i + 1);
+                        const remaining = Math.max(0, Math.ceil((totalFiles - i - 1) * avgTimePerFile / 1000));
+                        setTimeRemaining(remaining);
+                        
+                        // Read file content
+                        setProcessingStep(`Leyendo contenido: ${file.name}`);
+                        const content = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = (e) => resolve(e.target.result);
+                            reader.onerror = reject;
+                            reader.readAsText(file);
+                        });
+                        
+                        // Parse questions with small delay to show progress
+                        setProcessingStep(`Parseando preguntas: ${file.name}`);
+                        await new Promise(resolve => setTimeout(resolve, 100)); // Small delay for UI update
+                        
+                        const questions = parseQuestions(content, parsed.bloque, parsed.tema);
+                        allQuestions.push(...questions);
+                        
+                        console.log(`✅ Procesado ${file.name}: ${questions.length} preguntas`);
+                    }
+                    
+                    // Final progress update
+                    setProcessingProgress(100);
+                    setProcessingStep('Finalizando procesamiento...');
+                    setTimeRemaining(0);
+                    
+                    setProcessedQuestions(allQuestions);
+                    setMessage(`✅ Procesado completamente: ${allQuestions.length} preguntas de ${validFiles.length} archivo(s)`);
+                    setStatus('completed');
+                    
+                } catch (error) {
+                    console.error('Error processing files:', error);
+                    setMessage('Error al procesar los archivos');
+                    setStatus('error');
+                } finally {
+                    setIsProcessing(false);
+                    setProcessingProgress(0);
+                    setProcessingStep('');
+                    setTimeRemaining(0);
+                }
+            };
+
+            // Function to save processed questions to database
+            const handleSaveProcessedQuestions = async () => {
+                if (processedQuestions.length === 0) {
+                    alert('No hay preguntas para guardar');
+                    return;
+                }
+
+                // Start progress tracking
+                setIsProcessing(true);
+                setProcessingProgress(0);
+                setProcessingStep('Iniciando guardado de preguntas...');
+                setStatus('saving');
+                setMessage('Guardando preguntas en la base de datos...');
+
+                try {
+                    console.log(`🚀 Starting to save ${processedQuestions.length} questions...`);
+                    
+                    // Group questions by block
+                    const questionsByBlock = {};
+                    processedQuestions.forEach(q => {
+                        const blockName = q.bloque || 'Sin Clasificar';
+                        if (!questionsByBlock[blockName]) {
+                            questionsByBlock[blockName] = [];
+                        }
+                        questionsByBlock[blockName].push(q);
+                    });
+
+                    let totalSaved = 0;
+                    const blockResults = [];
+                    const totalQuestions = processedQuestions.length;
+                    const startTime = Date.now();
+
+                    // Process each block
+                    let blockIndex = 0;
+                    const totalBlocks = Object.keys(questionsByBlock).length;
+                    
+                    for (const [blockName, questions] of Object.entries(questionsByBlock)) {
+                        blockIndex++;
+                        setProcessingStep(`Procesando bloque ${blockIndex}/${totalBlocks}: ${blockName}`);
+                        console.log(`📦 Processing block: ${blockName} with ${questions.length} questions`);
+                        
+                        try {
+                            // Check if block exists
+                            let targetBlock = blocks.find(b => b.name === blockName || b.nombreCorto === blockName);
+                            
+                            if (!targetBlock) {
+                                // Create new block
+                                console.log(`🆕 Creating new block: ${blockName}`);
+                                const blockData = {
+                                    name: blockName,
+                                    description: `${blockName} - Bloque creado desde carga masiva`,
+                                    observaciones: `Creado automáticamente con ${questions.length} preguntas`,
+                                    isPublic: true
+                                };
+                                
+                                const response = await apiDataService.createBlock(blockData);
+                                targetBlock = response.block || response;
+                                console.log(`✅ Block created with ID: ${targetBlock.id}`);
+                            }
+
+                            // Save questions to block
+                            for (let i = 0; i < questions.length; i++) {
+                                const question = questions[i];
+                                // Prepare answers array correctly
+                                const respuestas = question.respuestas?.map(r => ({
+                                    textoRespuesta: r.texto || r.textoRespuesta || r,
+                                    esCorrecta: r.esCorrecta || false
+                                })) || [];
+
+                                // Ensure at least one correct answer
+                                if (respuestas.length > 0) {
+                                    const hasCorrect = respuestas.some(r => r.esCorrecta);
+                                    if (!hasCorrect) {
+                                        const correctIndex = question.respuestaCorrecta || 0;
+                                        if (correctIndex < respuestas.length) {
+                                            respuestas[correctIndex].esCorrecta = true;
+                                        }
+                                    }
+                                }
+
+                                const questionData = {
+                                    blockId: targetBlock.id,
+                                    textoPregunta: question.pregunta || question.textoPregunta,
+                                    tema: question.tema || 'General',
+                                    respuestas: respuestas, // Use 'respuestas' not 'respuestasPosibles'
+                                    explicacionRespuesta: question.explicacion || question.explicacionRespuesta || '',
+                                    difficulty: question.difficulty || 1
+                                };
+
+                                console.log(`💾 Saving question ${i + 1}/${questions.length} to block ${blockName}`);
+                                setProcessingStep(`Guardando pregunta ${totalSaved + 1}/${totalQuestions} en ${blockName}`);
+                                
+                                // Update progress based on total questions saved
+                                const progress = Math.round(((totalSaved + 1) / totalQuestions) * 100);
+                                setProcessingProgress(progress);
+                                
+                                // Calculate and update time remaining
+                                const elapsedTime = Date.now() - startTime;
+                                const avgTimePerQuestion = elapsedTime / (totalSaved + 1);
+                                const remainingQuestions = totalQuestions - (totalSaved + 1);
+                                const estimatedTimeRemaining = Math.round((remainingQuestions * avgTimePerQuestion) / 1000);
+                                setTimeRemaining(estimatedTimeRemaining);
+                                
+                                await apiDataService.createQuestion(questionData);
+                                totalSaved++;
+                                
+                                // Small delay to avoid overwhelming the server
+                                if (i < questions.length - 1) {
+                                    await new Promise(resolve => setTimeout(resolve, 50));
+                                }
+                            }
+                            
+                            blockResults.push({
+                                blockName,
+                                questionsCount: questions.length,
+                                success: true
+                            });
+                            
+                        } catch (blockError) {
+                            console.error(`❌ Error processing block ${blockName}:`, blockError);
+                            blockResults.push({
+                                blockName,
+                                questionsCount: questions.length,
+                                success: false,
+                                error: blockError.message
+                            });
+                        }
+                    }
+
+                    // Show results
+                    const successfulBlocks = blockResults.filter(r => r.success);
+                    const failedBlocks = blockResults.filter(r => !r.success);
+                    
+                    let message = `✅ Guardado completado!\n\n`;
+                    message += `📊 Resumen:\n`;
+                    message += `- Total de preguntas guardadas: ${totalSaved}\n`;
+                    message += `- Bloques procesados exitosamente: ${successfulBlocks.length}\n`;
+                    
+                    if (successfulBlocks.length > 0) {
+                        message += `\n✅ Bloques guardados:\n`;
+                        successfulBlocks.forEach(b => {
+                            message += `  • ${b.blockName}: ${b.questionsCount} preguntas\n`;
+                        });
+                    }
+                    
+                    if (failedBlocks.length > 0) {
+                        message += `\n❌ Bloques con errores:\n`;
+                        failedBlocks.forEach(b => {
+                            message += `  • ${b.blockName}: ${b.error}\n`;
+                        });
+                    }
+                    
+                    alert(message);
+                    
+                    // Clear processed questions after successful save
+                    if (totalSaved > 0) {
+                        setProcessedQuestions([]);
+                        setStatus('completed');
+                        setMessage(`✅ ${totalSaved} preguntas guardadas exitosamente`);
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error saving questions:', error);
+                    setStatus('error');
+                    setMessage(`Error al guardar las preguntas: ${error.message}`);
+                    alert(`Error al guardar las preguntas: ${error.message}`);
+                } finally {
+                    // Reset progress indicators
+                    setIsProcessing(false);
+                    setProcessingProgress(0);
+                    setProcessingStep('');
+                    setTimeRemaining(0);
+                }
+            };
+
+            return (
+                <div style={{ background: '#1B263B', padding: '24px', borderRadius: '12px', border: '1px solid #415A77' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <h3 style={{ color: '#E0E1DD', fontSize: '18px', fontWeight: 'bold', margin: 0 }}>
+                            📄 {t('uploader_title')}
+                        </h3>
+                    </div>
+
+                    {/* Formato Information */}
+                    <div style={{ marginBottom: '20px', background: '#0D1B2A', borderRadius: '8px', padding: '16px', border: '1px solid #415A77' }}>
+                        <h4 style={{ color: '#3B82F6', fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', margin: 0 }}>
+                            📋 Formatos de Archivo Soportados
+                        </h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '12px' }}>
+                            <div>
+                                <div style={{ color: '#10B981', fontWeight: 'bold', marginBottom: '8px' }}>
+                                    🎯 Formato Original (## y @@)
+                                </div>
+                                <div style={{ color: '#778DA9', fontFamily: 'monospace', fontSize: '11px', lineHeight: '1.4' }}>
+                                    Pregunta con explicación##Respuesta A##@@Respuesta B<br/>
+                                    Esta es la explicación para la pregunta 1.<br/>
+                                    <br/>
+                                    Pregunta sin explicación##@@Correcta##Incorrecta
+                                </div>
+                            </div>
+                            <div>
+                                <div style={{ color: '#10B981', fontWeight: 'bold', marginBottom: '8px' }}>
+                                    📝 Formato Estándar (Numerado)
+                                </div>
+                                <div style={{ color: '#778DA9', fontFamily: 'monospace', fontSize: '11px', lineHeight: '1.4' }}>
+                                    1. ¿Cuál es la capital de España?<br/>
+                                    a) Barcelona<br/>
+                                    *b) Madrid<br/>
+                                    c) Valencia<br/>
+                                    d) Sevilla<br/>
+                                    La capital de España es Madrid.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                        <div>
+                            <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                {t('generator_block')}
+                            </label>
+                            <Combobox 
+                                options={blockOptions} 
+                                value={blockName} 
+                                onChange={setBlockName} 
+                                placeholder={t('generator_block_placeholder')} 
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                {t('generator_topic')}
+                            </label>
+                            <input 
+                                type="text" 
+                                value={topicName} 
+                                onChange={(e) => setTopicName(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    background: '#0D1B2A',
+                                    border: '1px solid #415A77',
+                                    borderRadius: '6px',
+                                    padding: '8px 12px',
+                                    color: '#E0E1DD',
+                                    fontSize: '14px',
+                                    outline: 'none'
+                                }}
+                                placeholder={t('generator_topic_placeholder')}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Upload Mode Selector */}
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>
+                            Modo de Subida
+                        </label>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button
+                                type="button"
+                                onClick={() => setUploadMode('single')}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #415A77',
+                                    background: uploadMode === 'single' ? '#3B82F6' : '#0D1B2A',
+                                    color: uploadMode === 'single' ? 'white' : '#E0E1DD',
+                                    cursor: 'pointer',
+                                    fontSize: '14px'
+                                }}
+                            >
+                                📄 Archivo Único
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setUploadMode('multiple')}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #415A77',
+                                    background: uploadMode === 'multiple' ? '#3B82F6' : '#0D1B2A',
+                                    color: uploadMode === 'multiple' ? 'white' : '#E0E1DD',
+                                    cursor: 'pointer',
+                                    fontSize: '14px'
+                                }}
+                            >
+                                📁 Múltiples Archivos
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* File Upload Area */}
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                            {uploadMode === 'single' ? 'Subir Fichero (.txt)' : 'Subir Ficheros (.txt)'}
+                        </label>
+                        <div style={{
+                            border: '2px dashed #415A77',
+                            borderRadius: '8px',
+                            padding: '32px 16px',
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            background: files.length > 0 ? '#0D1B2A' : 'transparent'
+                        }}>
+                            <input 
+                                type="file" 
+                                accept=".txt" 
+                                multiple={uploadMode === 'multiple'}
+                                onChange={handleFileChange}
+                                style={{ display: 'none' }}
+                                id="file-upload"
+                            />
+                            <label htmlFor="file-upload" style={{ cursor: 'pointer', color: '#E0E1DD' }}>
+                                {files.length > 0 
+                                    ? `Seleccionado(s): ${files.length} archivo(s)` 
+                                    : `${t('uploader_file_prompt_1')} ${t('uploader_file_prompt_2')}`}
+                            </label>
+                        </div>
+                        
+                        {/* Selected Files List */}
+                        {files.length > 0 && (
+                            <div style={{ marginTop: '12px', background: '#0D1B2A', borderRadius: '6px', padding: '12px' }}>
+                                <div style={{ fontSize: '12px', color: '#778DA9', marginBottom: '8px' }}>
+                                    Archivos seleccionados ({files.length}):
+                                </div>
+                                {files.map((file, index) => {
+                                    const parsed = parseFilename(file.name);
+                                    return (
+                                        <div key={index} style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            padding: '8px 0',
+                                            borderBottom: index < files.length - 1 ? '1px solid #415A77' : 'none'
+                                        }}>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ color: '#E0E1DD', fontSize: '14px', marginBottom: '2px' }}>
+                                                    📄 {file.name}
+                                                </div>
+                                                {parsed.bloque && parsed.tema && (
+                                                    <div style={{ color: '#10B981', fontSize: '12px' }}>
+                                                        📚 {parsed.bloque} → 📖 {parsed.tema}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <span style={{ color: '#778DA9', fontSize: '12px', marginRight: '8px' }}>
+                                                {(file.size / 1024).toFixed(1)} KB
+                                            </span>
+                                            <button
+                                                onClick={() => removeFile(index)}
+                                                style={{
+                                                    background: '#EF4444',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '4px',
+                                                    width: '20px',
+                                                    height: '20px',
+                                                    cursor: 'pointer',
+                                                    fontSize: '12px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    <button 
+                        onClick={handleLoadForReview}
+                        disabled={files.length === 0 || isProcessing}
+                        style={{
+                            width: '100%',
+                            background: isProcessing ? '#778DA9' : (files.length === 0 ? '#415A77' : '#3B82F6'),
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '12px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            cursor: files.length === 0 || isProcessing ? 'not-allowed' : 'pointer',
+                            marginBottom: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px'
+                        }}
+                        onMouseOver={(e) => {
+                            if (!isProcessing && files.length > 0) {
+                                e.target.style.background = '#2563EB';
+                            }
+                        }}
+                        onMouseOut={(e) => {
+                            if (!isProcessing && files.length > 0) {
+                                e.target.style.background = '#3B82F6';
+                            }
+                        }}
+                    >
+                        {isProcessing && (
+                            <div style={{ 
+                                width: '16px', 
+                                height: '16px', 
+                                border: '2px solid #fff', 
+                                borderTop: '2px solid transparent', 
+                                borderRadius: '50%', 
+                                animation: 'spin 1s linear infinite' 
+                            }}></div>
+                        )}
+                        {isProcessing ? 'Procesando...' : 'Cargar y Procesar Preguntas'}
+                    </button>
+
+                    {/* Progress Bar - shown during processing */}
+                    {isProcessing && (
+                        <div style={{ marginBottom: '16px' }}>
+                            {/* Progress Bar */}
+                            <div style={{
+                                background: '#415A77',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                marginBottom: '8px'
+                            }}>
+                                <div style={{
+                                    background: 'linear-gradient(90deg, #3B82F6, #10B981)',
+                                    height: '8px',
+                                    width: `${processingProgress}%`,
+                                    transition: 'width 0.3s ease-in-out'
+                                }}></div>
+                            </div>
+                            
+                            {/* Progress Details */}
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                fontSize: '12px',
+                                color: '#778DA9'
+                            }}>
+                                <span>{processingStep}</span>
+                                <span>{Math.round(processingProgress)}%</span>
+                            </div>
+                            
+                            {/* Time Remaining */}
+                            {timeRemaining > 0 && (
+                                <div style={{
+                                    textAlign: 'center',
+                                    fontSize: '12px',
+                                    color: '#E0E1DD',
+                                    marginTop: '4px'
+                                }}>
+                                    ⏱️ Tiempo estimado restante: {timeRemaining}s
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {status !== 'idle' && (
+                        <div style={{ 
+                            padding: '12px', 
+                            borderRadius: '6px', 
+                            background: status === 'completed' ? '#10B981' : (status === 'error' ? '#EF4444' : '#3B82F6'),
+                            color: 'white',
+                            fontSize: '14px'
+                        }}>
+                            {message}
+                        </div>
+                    )}
+
+                    {/* Processed Questions Preview */}
+                    {processedQuestions.length > 0 && (
+                        <div style={{ marginTop: '20px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                <h4 style={{ color: '#E0E1DD', fontSize: '16px', fontWeight: 'bold', margin: 0 }}>
+                                    📋 Preguntas Procesadas ({processedQuestions.length})
+                                </h4>
+                                <button
+                                    onClick={async () => {
+                                        await handleSaveProcessedQuestions();
+                                    }}
+                                    style={{
+                                        background: '#10B981',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        padding: '8px 16px',
+                                        fontSize: '14px',
+                                        fontWeight: '500',
+                                        cursor: 'pointer'
+                                    }}
+                                    onMouseOver={(e) => e.target.style.background = '#059669'}
+                                    onMouseOut={(e) => e.target.style.background = '#10B981'}
+                                >
+                                    ✅ Confirmar y Guardar
+                                </button>
+                            </div>
+                            
+                            <div style={{ 
+                                background: '#0D1B2A', 
+                                borderRadius: '8px', 
+                                border: '1px solid #415A77',
+                                maxHeight: '400px',
+                                overflowY: 'auto'
+                            }}>
+                                {processedQuestions.slice(0, 5).map((question, index) => (
+                                    <div key={index} style={{ 
+                                        padding: '16px', 
+                                        borderBottom: index < Math.min(4, processedQuestions.length - 1) ? '1px solid #415A77' : 'none'
+                                    }}>
+                                        <div style={{ marginBottom: '8px' }}>
+                                            <span style={{ color: '#10B981', fontSize: '12px', fontWeight: 'bold' }}>
+                                                📚 {question.bloque} → 📖 {question.tema}
+                                            </span>
+                                        </div>
+                                        <div style={{ color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>
+                                            {index + 1}. {question.textoPregunta}
+                                        </div>
+                                        <div style={{ paddingLeft: '16px' }}>
+                                            {question.respuestas.map((respuesta, respIndex) => (
+                                                <div key={respIndex} style={{ 
+                                                    color: respuesta.esCorrecta ? '#10B981' : '#778DA9', 
+                                                    fontSize: '13px',
+                                                    marginBottom: '4px'
+                                                }}>
+                                                    {respuesta.esCorrecta ? '✅' : '⚪'} {String.fromCharCode(97 + respIndex)}) {respuesta.textoRespuesta}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                                {processedQuestions.length > 5 && (
+                                    <div style={{ 
+                                        padding: '12px', 
+                                        textAlign: 'center', 
+                                        color: '#778DA9', 
+                                        fontSize: '12px',
+                                        fontStyle: 'italic'
+                                    }}>
+                                        ... y {processedQuestions.length - 5} preguntas más
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // Simplified Manual Question Form
+        const ManualQuestionForm = ({ currentUser, blocks, onSaveQuestions, onCreateBlock }) => {
+            const { t } = useLanguage();
+            const [formState, setFormState] = useState({
+                blockName: '',
+                topicName: '',
+                questionText: '',
+                answers: [{ text: '', isCorrect: true }, { text: '', isCorrect: false }],
+                explanation: '',
+                isPublic: true
+            });
+            const [status, setStatus] = useState({ type: 'idle', message: '' });
+
+            const blockOptions = blocks.map(b => ({ id: b.id, label: b.nombreCorto }));
+
+            const handleInputChange = (e) => {
+                const { name, value, type, checked } = e.target;
+                setFormState(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+            };
+
+            const handleAnswerChange = (index, text) => {
+                const newAnswers = [...formState.answers];
+                newAnswers[index].text = text;
+                setFormState(prev => ({ ...prev, answers: newAnswers }));
+            };
+
+            const setCorrectAnswer = (index) => {
+                const newAnswers = formState.answers.map((ans, i) => ({ ...ans, isCorrect: i === index }));
+                setFormState(prev => ({ ...prev, answers: newAnswers }));
+            };
+
+            const addAnswer = () => {
+                if (formState.answers.length < 6) {
+                    setFormState(prev => ({ ...prev, answers: [...prev.answers, { text: '', isCorrect: false }] }));
+                }
+            };
+
+            const removeAnswer = (index) => {
+                if (formState.answers.length > 2) {
+                    const newAnswers = formState.answers.filter((_, i) => i !== index);
+                    if (!newAnswers.some(a => a.isCorrect) && newAnswers.length > 0) {
+                        newAnswers[0].isCorrect = true;
+                    }
+                    setFormState(prev => ({ ...prev, answers: newAnswers }));
+                }
+            };
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                if (!formState.blockName.trim() || !formState.topicName.trim() || !formState.questionText.trim() || 
+                    formState.answers.length < 2 || !formState.answers.some(a => a.isCorrect)) {
+                    setStatus({ type: 'error', message: 'Por favor, completa todos los campos requeridos.' });
+                    return;
+                }
+                setStatus({ type: 'success', message: '¡Pregunta añadida correctamente!' });
+                // Reset form
+                setFormState({
+                    blockName: '',
+                    topicName: '',
+                    questionText: '',
+                    answers: [{ text: '', isCorrect: true }, { text: '', isCorrect: false }],
+                    explanation: '',
+                    isPublic: true
+                });
+                setTimeout(() => setStatus({ type: 'idle', message: '' }), 3000);
+            };
+
+            return (
+                <div style={{ background: '#1B263B', padding: '24px', borderRadius: '12px', border: '1px solid #415A77' }}>
+                    <h3 style={{ color: '#E0E1DD', fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>
+                        ✍️ {t('manual_form_title')}
+                    </h3>
+                    
+                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <div>
+                                <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                    {t('generator_block')}
+                                </label>
+                                <Combobox 
+                                    options={blockOptions} 
+                                    value={formState.blockName} 
+                                    onChange={(value) => setFormState(prev => ({ ...prev, blockName: value }))} 
+                                    placeholder={t('generator_block_placeholder')} 
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                    {t('generator_topic')}
+                                </label>
+                                <input 
+                                    type="text" 
+                                    name="topicName"
+                                    value={formState.topicName} 
+                                    onChange={handleInputChange}
+                                    style={{
+                                        width: '100%',
+                                        background: '#0D1B2A',
+                                        border: '1px solid #415A77',
+                                        borderRadius: '6px',
+                                        padding: '8px 12px',
+                                        color: '#E0E1DD',
+                                        fontSize: '14px',
+                                        outline: 'none'
+                                    }}
+                                    placeholder={t('generator_topic_placeholder')}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                {t('manual_form_question_text')}
+                            </label>
+                            <textarea 
+                                name="questionText"
+                                value={formState.questionText} 
+                                onChange={handleInputChange}
+                                style={{
+                                    width: '100%',
+                                    background: '#0D1B2A',
+                                    border: '1px solid #415A77',
+                                    borderRadius: '6px',
+                                    padding: '8px 12px',
+                                    color: '#E0E1DD',
+                                    fontSize: '14px',
+                                    outline: 'none',
+                                    minHeight: '80px',
+                                    resize: 'vertical'
+                                }}
+                                placeholder="Escribe tu pregunta aquí..."
+                            />
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>
+                                {t('manual_form_answers')}
+                            </label>
+                            {formState.answers.map((answer, index) => (
+                                <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+                                    <input 
+                                        type="radio" 
+                                        name="correct-answer"
+                                        checked={answer.isCorrect}
+                                        onChange={() => setCorrectAnswer(index)}
+                                        style={{ marginRight: '8px' }}
+                                    />
+                                    <input 
+                                        type="text" 
+                                        value={answer.text} 
+                                        onChange={(e) => handleAnswerChange(index, e.target.value)}
+                                        style={{
+                                            flex: 1,
+                                            background: '#0D1B2A',
+                                            border: '1px solid #415A77',
+                                            borderRadius: '6px',
+                                            padding: '8px 12px',
+                                            color: '#E0E1DD',
+                                            fontSize: '14px',
+                                            outline: 'none'
+                                        }}
+                                        placeholder={`Respuesta ${index + 1}`}
+                                    />
+                                    {formState.answers.length > 2 && (
+                                        <button 
+                                            type="button" 
+                                            onClick={() => removeAnswer(index)}
+                                            style={{
+                                                background: '#EF4444',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                padding: '6px 8px',
+                                                cursor: 'pointer',
+                                                fontSize: '12px'
+                                            }}
+                                        >
+                                            ×
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                            {formState.answers.length < 6 && (
+                                <button 
+                                    type="button" 
+                                    onClick={addAnswer}
+                                    style={{
+                                        background: '#10B981',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        padding: '8px 12px',
+                                        cursor: 'pointer',
+                                        fontSize: '14px',
+                                        marginTop: '8px'
+                                    }}
+                                >
+                                    + {t('manual_form_add_answer')}
+                                </button>
+                            )}
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                Explicación (opcional)
+                            </label>
+                            <textarea 
+                                name="explanation"
+                                value={formState.explanation} 
+                                onChange={handleInputChange}
+                                style={{
+                                    width: '100%',
+                                    background: '#0D1B2A',
+                                    border: '1px solid #415A77',
+                                    borderRadius: '6px',
+                                    padding: '8px 12px',
+                                    color: '#E0E1DD',
+                                    fontSize: '14px',
+                                    outline: 'none',
+                                    minHeight: '60px',
+                                    resize: 'vertical'
+                                }}
+                                placeholder="Explica por qué esta es la respuesta correcta..."
+                            />
+                        </div>
+
+                        <button 
+                            type="submit"
+                            style={{
+                                background: '#3B82F6',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                padding: '12px',
+                                fontSize: '16px',
+                                fontWeight: '500',
+                                cursor: 'pointer'
+                            }}
+                            onMouseOver={(e) => e.target.style.background = '#2563EB'}
+                            onMouseOut={(e) => e.target.style.background = '#3B82F6'}
+                        >
+                            {t('manual_form_add_button')}
+                        </button>
+
+                        {status.type !== 'idle' && (
+                            <div style={{ 
+                                padding: '12px', 
+                                borderRadius: '6px', 
+                                background: status.type === 'success' ? '#10B981' : '#EF4444',
+                                color: 'white',
+                                fontSize: '14px'
+                            }}>
+                                {status.message}
+                            </div>
+                        )}
+                    </form>
+                </div>
+            );
+        };
+
+        // Simplified AI Generator
+        const QuestionGenerator = ({ currentUser, blocks, onSaveQuestions, onCreateBlock }) => {
+            const { t } = useLanguage();
+            const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
+            const [blockName, setBlockName] = useState('');
+            const [topicName, setTopicName] = useState('');
+            const [questionCount, setQuestionCount] = useState(5);
+            const [difficulty, setDifficulty] = useState(3);
+            const [isLoading, setIsLoading] = useState(false);
+
+            const blockOptions = blocks.map(b => ({ id: b.id, label: b.nombreCorto }));
+
+            useEffect(() => {
+                localStorage.setItem('gemini_api_key', apiKey);
+            }, [apiKey]);
+
+            const handleGenerate = () => {
+                if (!blockName.trim() || !topicName.trim()) {
+                    alert('Por favor, introduce un nombre de bloque y de tema.');
+                    return;
+                }
+                setIsLoading(true);
+                // Simulate API call
+                setTimeout(() => {
+                    setIsLoading(false);
+                    alert(`Simulación: ${questionCount} preguntas generadas para ${blockName} - ${topicName}`);
+                }, 2000);
+            };
+
+            return (
+                <div style={{ background: '#1B263B', padding: '24px', borderRadius: '12px', border: '1px solid #415A77' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <h3 style={{ color: '#E0E1DD', fontSize: '18px', fontWeight: 'bold', margin: 0 }}>
+                            ✨ {t('generator_title')}
+                        </h3>
+                        <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#778DA9', background: '#0D1B2A', padding: '4px 8px', borderRadius: '4px' }}>
+                            Hecho con Gemini
+                        </span>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div>
+                            <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                {t('generator_api_key')}
+                            </label>
+                            <input 
+                                type="password" 
+                                value={apiKey} 
+                                onChange={(e) => setApiKey(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    background: '#0D1B2A',
+                                    border: '1px solid #415A77',
+                                    borderRadius: '6px',
+                                    padding: '8px 12px',
+                                    color: '#E0E1DD',
+                                    fontSize: '14px',
+                                    outline: 'none'
+                                }}
+                                placeholder={t('generator_api_key_placeholder')}
+                                disabled={isLoading}
+                            />
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <div>
+                                <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                    {t('generator_block')}
+                                </label>
+                                <Combobox 
+                                    options={blockOptions} 
+                                    value={blockName} 
+                                    onChange={setBlockName} 
+                                    placeholder={t('generator_block_placeholder')} 
+                                    disabled={isLoading}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                    {t('generator_topic')}
+                                </label>
+                                <input 
+                                    type="text" 
+                                    value={topicName} 
+                                    onChange={(e) => setTopicName(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        background: '#0D1B2A',
+                                        border: '1px solid #415A77',
+                                        borderRadius: '6px',
+                                        padding: '8px 12px',
+                                        color: '#E0E1DD',
+                                        fontSize: '14px',
+                                        outline: 'none'
+                                    }}
+                                    placeholder={t('generator_topic_placeholder')}
+                                    disabled={isLoading}
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <div>
+                                <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                    Preguntas
+                                </label>
+                                <input 
+                                    type="number" 
+                                    value={questionCount} 
+                                    onChange={(e) => setQuestionCount(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                                    style={{
+                                        width: '100%',
+                                        background: '#0D1B2A',
+                                        border: '1px solid #415A77',
+                                        borderRadius: '6px',
+                                        padding: '8px 12px',
+                                        color: '#E0E1DD',
+                                        fontSize: '14px',
+                                        outline: 'none'
+                                    }}
+                                    disabled={isLoading}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', color: '#E0E1DD', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
+                                    Dificultad ({difficulty}/5)
+                                </label>
+                                <input 
+                                    type="range" 
+                                    min="1" 
+                                    max="5" 
+                                    value={difficulty} 
+                                    onChange={(e) => setDifficulty(parseInt(e.target.value, 10))}
+                                    style={{ width: '100%' }}
+                                    disabled={isLoading}
+                                />
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={handleGenerate}
+                            disabled={!blockName.trim() || !topicName.trim() || isLoading}
+                            style={{
+                                width: '100%',
+                                background: isLoading ? '#415A77' : '#3B82F6',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                padding: '12px',
+                                fontSize: '16px',
+                                fontWeight: '500',
+                                cursor: isLoading ? 'not-allowed' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px'
+                            }}
+                            onMouseOver={(e) => !isLoading && (e.target.style.background = '#2563EB')}
+                            onMouseOut={(e) => !isLoading && (e.target.style.background = '#3B82F6')}
+                        >
+                            {isLoading ? (
+                                <>
+                                    <div style={{ width: '16px', height: '16px', border: '2px solid #fff', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                                    {t('generator_button_generating')}
+                                </>
+                            ) : (
+                                t('generator_button_generate')
+                            )}
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // Main Add Questions App Component
+        const AddQuestionsApp = () => {
+            const { t } = useLanguage();
+            const [activeTab, setActiveTab] = useState('uploader'); // Default order: Subir Fichero first
+
+            const saveQuestionsToBlock = async (blockId, questions) => {
+                try {
+                    // CRITICAL: Validate topic preservation before saving
+                    if (questions.length === 0) {
+                        throw new Error('No questions to save');
+                    }
+                    
+                    console.log(`📝 [DEBUG] Saving ${questions.length} questions to block ${blockId}`);
+                    console.log(`📝 [DEBUG] Block ID type:`, typeof blockId, 'Value:', blockId);
+                    console.log(`📝 [DEBUG] Questions array:`, questions.slice(0, 2)); // Show first 2 questions
+                    
+                    const savedQuestions = [];
+                    
+                    for (let i = 0; i < questions.length; i++) {
+                        const question = questions[i];
+                        
+                        console.log(`📝 [DEBUG] Processing question ${i + 1}:`, {
+                            pregunta: question.pregunta?.substring(0, 50) + '...',
+                            tema: question.tema,
+                            opciones: question.opciones?.length || 0
+                        });
+                        
+                        // Prepare question data for API (using correct field names expected by backend)
+                        const questionData = {
+                            blockId: blockId,
+                            textoPregunta: question.textoPregunta || question.pregunta || question.text,
+                            respuestas: question.respuestas || (question.opciones || question.options || []).map(opcion => ({
+                                textoRespuesta: opcion.textoRespuesta || opcion.texto || opcion.text || opcion,
+                                esCorrecta: opcion.esCorrecta || opcion.isCorrect || false
+                            })),
+                            explicacionRespuesta: question.explicacionRespuesta || question.explicacion || question.explanation || '',
+                            difficulty: question.dificultad || question.difficulty || 1,
+                            tema: question.tema || question.topic || 'General'
+                        };
+                        
+                        console.log(`📝 [DEBUG] Question data prepared for API:`, {
+                            blockId: questionData.blockId,
+                            textoPregunta: questionData.textoPregunta?.substring(0, 50) + '...',
+                            tema: questionData.tema,
+                            respuestasCount: questionData.respuestas.length,
+                            respuestasSample: questionData.respuestas[0]
+                        });
+                        
+                        try {
+                            console.log(`🔄 [DEBUG] Calling apiDataService.createQuestion for question ${i + 1}...`);
+                            const savedQuestion = await apiDataService.createQuestion(questionData);
+                            console.log(`✅ [DEBUG] Question ${i + 1} saved successfully:`, savedQuestion);
+                            savedQuestions.push(savedQuestion);
+                        } catch (error) {
+                            console.error(`❌ [DEBUG] Error saving question ${i + 1}:`, error);
+                            console.error(`❌ [DEBUG] Error details:`, error.message, error.stack);
+                            console.error(`❌ [DEBUG] Failed question data:`, questionData);
+                            throw new Error(`Failed to save question ${i + 1}: ${error.message}`);
+                        }
+                    }
+                    
+                    console.log('✅ All questions successfully saved:', savedQuestions.length);
+                    return savedQuestions;
+                } catch (error) {
+                    console.error('❌ Error saving questions to block:', error);
+                    throw error;
+                }
+            };
+
+            const createBlockWithQuestions = async (blockName, questions, isPublic = true, observaciones = '') => {
+                const sessionString = localStorage.getItem('playtest_session');
+                const token = localStorage.getItem('playtest_auth_token');
+                
+                if (!sessionString || !token) {
+                  throw new Error("User not authenticated - no session or token");
+                }
+                
+                const session = JSON.parse(sessionString);
+                if (!session || !session.userId) {
+                  throw new Error("User not authenticated - invalid session");
+                }
+                
+                const creator = session.nickname || session.username || `User${session.userId}`;
+                console.log(`📝 [DEBUG] Creating block: "${blockName}" by ${creator} with ${questions.length} questions`);
+                console.log(`📝 [DEBUG] Session data:`, { userId: session.userId, nickname: session.nickname });
+                console.log(`📝 [DEBUG] Auth token present:`, !!token);
+                
+                // Prepare block data for creation (only fields expected by backend)
+                const blockData = {
+                    name: blockName,
+                    description: `${blockName} - Creado por ${creator}`,
+                    isPublic: isPublic,
+                    observaciones: observaciones || `Bloque creado automáticamente con ${questions.length} preguntas`
+                };
+                
+                console.log(`📝 [DEBUG] Block data for API:`, blockData);
+                
+                try {
+                    // Create the block
+                    console.log(`🔄 [DEBUG] Calling apiDataService.createBlock...`);
+                    const createdBlock = await apiDataService.createBlock(blockData);
+                    console.log('✅ [DEBUG] Block created successfully:', createdBlock);
+                    
+                    if (!createdBlock || !createdBlock.id) {
+                        throw new Error('Block creation failed - no block ID returned');
+                    }
+                    
+                    // Now save all questions to the created block
+                    console.log(`🔄 [DEBUG] Now saving ${questions.length} questions to block ID: ${createdBlock.id}`);
+                    if (questions && questions.length > 0) {
+                        try {
+                            const savedQuestions = await saveQuestionsToBlock(createdBlock.id, questions);
+                            console.log(`✅ [DEBUG] All questions saved successfully: ${savedQuestions.length} questions`);
+                        } catch (questionError) {
+                            console.error(`❌ [DEBUG] Failed to save questions:`, questionError);
+                            throw new Error(`Block created but failed to save questions: ${questionError.message}`);
+                        }
+                    } else {
+                        console.log(`⚠️ [DEBUG] No questions to save`);
+                    }
+                    
+                    console.log('✅ [DEBUG] Block creation process completed successfully');
+                    
+                    return { ...createdBlock, totalPreguntas: questions.length, questions: questions };
+                } catch (error) {
+                    console.error('❌ Error creating block:', error);
+                    throw error;
+                }
+            };
+
+            // Tab order as requested: Subir Fichero / Agregar Manualmente / Generar con IA
+            const tabs = [
+                { id: 'uploader', label: t('add_question_tab_uploader'), icon: '📄' },
+                { id: 'manual', label: t('add_question_tab_manual'), icon: '✍️' },
+                { id: 'generator', label: t('add_question_tab_generator'), icon: '✨' }
+            ];
+
+            return (
+                <div>
+                    {/* Tab Navigation */}
+                    <div style={{ marginBottom: '24px', borderBottom: '1px solid #415A77' }}>
+                        <nav style={{ display: 'flex', gap: '24px', paddingBottom: '0' }}>
+                            {tabs.map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        borderBottom: activeTab === tab.id ? '2px solid #3B82F6' : '2px solid transparent',
+                                        color: activeTab === tab.id ? '#3B82F6' : '#778DA9',
+                                        padding: '12px 8px',
+                                        fontSize: '14px',
+                                        fontWeight: '500',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px'
+                                    }}
+                                    onMouseOver={(e) => {
+                                        if (activeTab !== tab.id) {
+                                            e.target.style.color = '#E0E1DD';
+                                            e.target.style.borderBottomColor = '#415A77';
+                                        }
+                                    }}
+                                    onMouseOut={(e) => {
+                                        if (activeTab !== tab.id) {
+                                            e.target.style.color = '#778DA9';
+                                            e.target.style.borderBottomColor = 'transparent';
+                                        }
+                                    }}
+                                >
+                                    {tab.icon} {tab.label}
+                                </button>
+                            ))}
+                        </nav>
+                    </div>
+
+                    {/* Tab Content */}
+                    <div style={{ animation: 'fadeIn 0.3s ease-in-out' }}>
+                        {activeTab === 'uploader' && (
+                            <QuestionUploader 
+                                currentUser={mockCurrentUser} 
+                                blocks={mockBlocks} 
+                                onSaveQuestions={saveQuestionsToBlock} 
+                                onCreateBlock={createBlockWithQuestions} 
+                            />
+                        )}
+                        {activeTab === 'manual' && (
+                            <ManualQuestionForm 
+                                currentUser={mockCurrentUser} 
+                                blocks={mockBlocks} 
+                                onSaveQuestions={saveQuestionsToBlock} 
+                                onCreateBlock={createBlockWithQuestions} 
+                            />
+                        )}
+                        {activeTab === 'generator' && (
+                            <QuestionGenerator 
+                                currentUser={mockCurrentUser} 
+                                blocks={mockBlocks} 
+                                onSaveQuestions={saveQuestionsToBlock} 
+                                onCreateBlock={createBlockWithQuestions} 
+                            />
+                        )}
+                    </div>
+                </div>
+            );
+        };
 
         // Global functions for tab management
         window.showTab = function(tabId) {
