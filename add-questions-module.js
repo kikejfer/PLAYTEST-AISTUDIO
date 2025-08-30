@@ -2414,4 +2414,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-console.log('✅ Enhanced Add Questions Module loaded successfully');
+console.log('✅ Enhanced Add Questions Module loaded successfully - v1.2.0');
