@@ -2405,12 +2405,15 @@ const AddQuestionsApp = () => {
         try {
             if (typeof apiDataService !== 'undefined') {
                 for (const question of questions) {
-                    // Use Spanish field names like add-question.html (backend expects Spanish)
+                    // Use Spanish field names like add-question.html but keep answers transformation
                     const backendQuestionData = {
                         blockId: blockId,
                         tema: question.tema,
                         textoPregunta: question.textoPregunta,
-                        respuestas: question.respuestas,
+                        respuestas: question.respuestas.map(respuesta => ({
+                            textoRespuesta: respuesta.textoRespuesta,
+                            esCorrecta: respuesta.esCorrecta
+                        })),
                         difficulty: question.dificultad || 1,
                         explicacionRespuesta: question.explicacionRespuesta || ''
                     };
