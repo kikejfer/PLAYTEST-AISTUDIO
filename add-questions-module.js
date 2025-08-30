@@ -1509,7 +1509,7 @@ const ManualQuestionForm = ({ currentUser, blocks, onSaveQuestions, onCreateBloc
 
 // Main Add Questions Application Component
 const AddQuestionsApp = () => {
-    const [activeTab, setActiveTab] = useState('generator');
+    const [activeTab, setActiveTab] = useState('uploader');
     const [currentUser, setCurrentUser] = useState(null);
     const [blocks, setBlocks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -1617,9 +1617,9 @@ const AddQuestionsApp = () => {
                 marginBottom: '0'
             }
         }, [
-            ['generator', '🤖 ' + useLanguage().t('add_question_tab_generator')],
             ['uploader', '📁 ' + useLanguage().t('add_question_tab_uploader')],
-            ['manual', '✏️ ' + useLanguage().t('add_question_tab_manual')]
+            ['manual', '✏️ ' + useLanguage().t('add_question_tab_manual')],
+            ['generator', '🤖 ' + useLanguage().t('add_question_tab_generator')]
         ].map(([tabId, tabLabel]) =>
             React.createElement('button', {
                 key: tabId,
@@ -1647,14 +1647,6 @@ const AddQuestionsApp = () => {
                 padding: '0'
             }
         }, [
-            activeTab === 'generator' && React.createElement(QuestionGenerator, {
-                key: 'generator',
-                currentUser: currentUser,
-                blocks: blocks,
-                onSaveQuestions: handleSaveQuestions,
-                onCreateBlock: handleCreateBlock
-            }),
-            
             activeTab === 'uploader' && React.createElement(QuestionUploader, {
                 key: 'uploader',
                 currentUser: currentUser,
@@ -1665,6 +1657,14 @@ const AddQuestionsApp = () => {
             
             activeTab === 'manual' && React.createElement(ManualQuestionForm, {
                 key: 'manual',
+                currentUser: currentUser,
+                blocks: blocks,
+                onSaveQuestions: handleSaveQuestions,
+                onCreateBlock: handleCreateBlock
+            }),
+            
+            activeTab === 'generator' && React.createElement(QuestionGenerator, {
+                key: 'generator',
                 currentUser: currentUser,
                 blocks: blocks,
                 onSaveQuestions: handleSaveQuestions,
