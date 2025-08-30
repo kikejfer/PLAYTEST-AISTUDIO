@@ -37,6 +37,8 @@ class APIDataService {
       const url = `${baseUrl}${endpoint}`;
       const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
       const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+      console.log('🔍 userData for API call:', userData);
+      console.log('🔍 activeRole:', userData.activeRole);
       const defaultOptions = {
         headers: {
           'Content-Type': 'application/json',
