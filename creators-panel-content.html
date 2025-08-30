@@ -1385,8 +1385,8 @@
             // Mount React app if it's the add-questions tab using shared module
             if (tabId === 'add-questions-tab') {
                 const contentDiv = document.getElementById('add-questions-content');
-                if (contentDiv && !contentDiv.hasChildNodes() && window.AddQuestionsModule) {
-                    window.AddQuestionsModule.mount('add-questions-content');
+                if (contentDiv && !contentDiv.hasChildNodes() && window.mountAddQuestionsApp) {
+                    window.mountAddQuestionsApp('add-questions-content');
                 }
             }
         };
