@@ -673,7 +673,7 @@
         <div class="tabs-container">
             <div class="tabs-nav">
                 <button class="tab-button" onclick="window.location.href='teachers-panel-resources.html'">📚 Recursos</button>
-                <button class="tab-button" onclick="showAddQuestionsModal()">➕ Añadir Preguntas</button>
+                <button class="tab-button" onclick="showTab('add-questions-tab')">➕ Añadir Preguntas</button>
                 <button class="tab-button" onclick="window.location.href='teachers-panel-students.html'">👥 Gestión de Alumnos</button>
                 <button class="tab-button active">📅 Cronogramas</button>
                 <button class="tab-button" onclick="window.location.href='teachers-panel-tournaments.html'">🏆 Torneos</button>
@@ -682,6 +682,16 @@
             </div>
 
             <div class="tab-content">
+                <!-- Añadir Preguntas Tab Content -->
+                <div id="add-questions-tab" class="content-section" style="display: none;">
+                    <div class="section-header">
+                        <h2 class="section-title">➕ Añadir Preguntas</h2>
+                    </div>
+                    <div id="add-questions-content">
+                        <!-- React content will be mounted here -->
+                    </div>
+                </div>
+
                 <!-- Selector de Clase -->
                 <div class="class-selector">
                     <label class="form-label">Seleccionar Clase:</label>
@@ -1708,20 +1718,6 @@
         }
     </script>
 
-    <!-- Modal de Añadir Preguntas -->
-    <div id="add-questions-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
-        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 95%; max-width: 1200px; height: 85%; border: 1px solid #415A77; display: flex; flex-direction: column;" onclick="event.stopPropagation();">
-            <div style="padding: 24px; border-bottom: 1px solid #415A77; display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="color: #E0E1DD; font-size: 20px; font-weight: bold; margin: 0;">➕ Añadir Preguntas</h3>
-                <button onclick="closeModal('add-questions-modal')" style="background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
-            </div>
-            <div style="flex: 1; overflow: auto; padding: 24px;">
-                <div id="add-questions-content">
-                    <!-- React content will be mounted here -->
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- React CDN and Add Questions App -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -3060,18 +3056,53 @@
             );
         };
 
-        // Global functions for modal management (extending existing functionality)
-        if (!window.showAddQuestionsModal) {
-            window.showAddQuestionsModal = function() {
-                const modal = document.getElementById('add-questions-modal');
-                modal.style.display = 'flex';
+        // Global functions for tab management (extending existing functionality)
+        if (!window.showTab) {
+            window.showTab = function(tabId) {
+                // Hide all content sections
+                const allSections = document.querySelectorAll('.content-section');
+                allSections.forEach(section => {
+                    section.style.display = 'none';
+                });
                 
-                // Mount React app
-                const contentDiv = document.getElementById('add-questions-content');
-                const root = ReactDOM.createRoot(contentDiv);
-                root.render(React.createElement(AddQuestionsApp));
+                // Remove active class from all tab buttons
+                const allButtons = document.querySelectorAll('.tab-button');
+                allButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Show selected tab
+                const selectedTab = document.getElementById(tabId);
+                if (selectedTab) {
+                    selectedTab.style.display = 'block';
+                }
+                
+                // Add active class to clicked button
+                event.target.classList.add('active');
+                
+                // Mount React app if it's the add-questions tab
+                if (tabId === 'add-questions-tab') {
+                    const contentDiv = document.getElementById('add-questions-content');
+                    if (contentDiv && !contentDiv.hasChildNodes()) {
+                        const root = ReactDOM.createRoot(contentDiv);
+                        root.render(React.createElement(AddQuestionsApp));
+                    }
+                }
             };
         }
+        
+        // Initialize default tab view
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show default content (non-add-questions sections) by default
+            const allSections = document.querySelectorAll('.content-section');
+            allSections.forEach(section => {
+                if (section.id !== 'add-questions-tab') {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+        });
 
         // Add CSS animation (check if already exists)
         if (!document.querySelector('#add-questions-styles')) {
