@@ -36,14 +36,13 @@ class APIDataService {
       const baseUrl = urls[i];
       const url = `${baseUrl}${endpoint}`;
       const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-      const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
-      console.log('🔍 userData for API call:', userData);
-      console.log('🔍 activeRole:', userData.activeRole);
+      const activeRole = localStorage.getItem('activeRole');
+      console.log('🔍 activeRole from localStorage:', activeRole);
       const defaultOptions = {
         headers: {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` }),
-          ...(userData.activeRole && { 'X-Current-Role': userData.activeRole })
+          ...(activeRole && { 'X-Current-Role': activeRole })
         }
       };
 
