@@ -1411,7 +1411,7 @@ function createRoleModificationModal() {
                 
                 <div style="margin-bottom: 1.5rem;">
                     <p style="color: #778DA9; margin: 0 0 1rem 0; text-align: center; font-size: 0.9rem;">
-                        Selecciona los roles que deseas adoptar. Puedes tener múltiples roles activos.
+                        Selecciona los roles que deseas adoptar.
                     </p>
                 </div>
 
