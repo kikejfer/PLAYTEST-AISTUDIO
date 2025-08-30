@@ -2454,15 +2454,18 @@ const AddQuestionsApp = () => {
                 const block = await apiDataService.createBlock(blockData);
                 
                 // Add questions to the new block
+                console.log('🔍 Created block:', block);
                 for (const question of questions) {
-                    await apiDataService.createQuestion({
+                    const questionData = {
                         blockId: block.id,
                         tema: question.tema,
                         textoPregunta: question.textoPregunta,
                         respuestas: question.respuestas,
                         explicacionRespuesta: question.explicacionRespuesta,
                         difficulty: question.dificultad || 1
-                    });
+                    };
+                    console.log('🔍 Sending question to new block:', JSON.stringify(questionData, null, 2));
+                    await apiDataService.createQuestion(questionData);
                 }
             }
             
