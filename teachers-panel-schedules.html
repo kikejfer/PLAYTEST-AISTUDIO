@@ -2903,25 +2903,37 @@
                         throw new Error('No questions to save');
                     }
                     
-                    // CRITICAL: Ensure all questions have topics and log for verification
-                    const topicValidation = questions.map((q, idx) => ({
-                        index: idx,
-                        tema: q.tema,
-                        hasValidTopic: q.tema && q.tema.trim() !== ''
-                    }));
+                    console.log(`📝 Saving ${questions.length} questions to block ${blockId}`);
                     
-                    console.log('🔍 Topic Validation:', topicValidation);
+                    const savedQuestions = [];
                     
-                    const questionsWithoutTopics = topicValidation.filter(q => !q.hasValidTopic);
-                    if (questionsWithoutTopics.length > 0) {
-                        console.warn('⚠️ Questions without topics:', questionsWithoutTopics);
+                    for (let i = 0; i < questions.length; i++) {
+                        const question = questions[i];
+                        
+                        // Prepare question data for API
+                        const questionData = {
+                            blockId: blockId,
+                            text: question.pregunta || question.text,
+                            options: question.opciones || question.options || [],
+                            correctAnswer: question.respuestaCorrecta || question.correctAnswer,
+                            explanation: question.explicacion || question.explanation || '',
+                            difficulty: question.dificultad || question.difficulty || 'medium',
+                            topic: question.tema || question.topic || '',
+                            type: question.tipo || question.type || 'multiple-choice'
+                        };
+                        
+                        try {
+                            const savedQuestion = await apiDataService.createQuestion(questionData);
+                            savedQuestions.push(savedQuestion);
+                            console.log(`✅ Question ${i + 1}/${questions.length} saved`);
+                        } catch (error) {
+                            console.error(`❌ Error saving question ${i + 1}:`, error);
+                            throw new Error(`Failed to save question ${i + 1}: ${error.message}`);
+                        }
                     }
                     
-                    // Update questions in the block using API
-                    const updatedQuestions = await apiDataService.updateBlockQuestions(blockId, questions);
-                    console.log('✅ Questions successfully updated:', updatedQuestions);
-                    
-                    return updatedQuestions;
+                    console.log('✅ All questions successfully saved:', savedQuestions.length);
+                    return savedQuestions;
                 } catch (error) {
                     console.error('❌ Error saving questions to block:', error);
                     throw error;
