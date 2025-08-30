@@ -36,10 +36,12 @@ class APIDataService {
       const baseUrl = urls[i];
       const url = `${baseUrl}${endpoint}`;
       const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+      const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
       const defaultOptions = {
         headers: {
           'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` })
+          ...(token && { 'Authorization': `Bearer ${token}` }),
+          ...(userData.activeRole && { 'X-Current-Role': userData.activeRole })
         }
       };
 
