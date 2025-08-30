@@ -2410,12 +2410,13 @@ const AddQuestionsApp = () => {
                         block_id: blockId,
                         topic: question.tema,
                         text_question: question.textoPregunta,
+                        explanation: question.explicacionRespuesta,
+                        difficulty: question.dificultad || 1,
+                        // Send answers as separate array for backend to process
                         answers: question.respuestas.map(respuesta => ({
                             answer_text: respuesta.textoRespuesta,
                             is_correct: respuesta.esCorrecta
-                        })),
-                        explanation: question.explicacionRespuesta,
-                        difficulty: question.dificultad || 1
+                        }))
                     };
                     
                     console.log('🔍 Sending question data to backend:', JSON.stringify(backendQuestionData, null, 2));
