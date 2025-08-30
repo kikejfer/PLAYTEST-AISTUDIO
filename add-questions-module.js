@@ -2264,7 +2264,7 @@ const AddQuestionsApp = () => {
         try {
             if (typeof apiDataService !== 'undefined') {
                 for (const question of questions) {
-                    await apiDataService.saveQuestion({
+                    await apiDataService.createQuestion({
                         blockId: blockId,
                         tema: question.tema,
                         textoPregunta: question.textoPregunta,
@@ -2306,7 +2306,7 @@ const AddQuestionsApp = () => {
                 
                 // Add questions to the new block
                 for (const question of questions) {
-                    await apiDataService.saveQuestion({
+                    await apiDataService.createQuestion({
                         blockId: block.id,
                         tema: question.tema,
                         textoPregunta: question.textoPregunta,
