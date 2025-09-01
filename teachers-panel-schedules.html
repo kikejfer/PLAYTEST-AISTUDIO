@@ -11,6 +11,7 @@
     <script src="api-data-service.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="navigation-service.js"></script>
+    <script src="bloques-creados-component.js"></script>
     <style>
         * {
             margin: 0;
@@ -672,7 +673,7 @@
 
         <div class="tabs-container">
             <div class="tabs-nav">
-                <button class="tab-button" onclick="window.location.href='teachers-panel-resources.html'">📚 Recursos</button>
+                <button class="tab-button" onclick="showTab('recursos-tab')">📚 Recursos</button>
                 <button class="tab-button" onclick="showTab('add-questions-tab')">➕ Añadir Preguntas</button>
                 <button class="tab-button" onclick="window.location.href='teachers-panel-students.html'">👥 Gestión de Alumnos</button>
                 <button class="tab-button active">📅 Cronogramas</button>
@@ -682,6 +683,15 @@
             </div>
 
             <div class="tab-content">
+                <!-- Recursos Tab Content -->
+                <div id="recursos-tab" class="content-section" style="display: none;">
+                    <div class="section-header">
+                        <h2 class="section-title">📚 Recursos</h2>
+                        <p class="section-description">Gestiona tus bloques de preguntas y recursos educativos</p>
+                    </div>
+                    <div id="recursos-bloques-creados-container"></div>
+                </div>
+
                 <!-- Añadir Preguntas Tab Content -->
                 <div id="add-questions-tab" class="content-section" style="display: none;">
                     <div class="section-header">
@@ -3772,4 +3782,52 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Tab management
+        function showTab(tabId) {
+            // Hide all tabs
+            const allTabs = document.querySelectorAll('.content-section');
+            allTabs.forEach(tab => tab.style.display = 'none');
+            
+            // Remove active class from all buttons
+            const allButtons = document.querySelectorAll('.tab-button');
+            allButtons.forEach(button => button.classList.remove('active'));
+            
+            // Show selected tab
+            const selectedTab = document.getElementById(tabId);
+            if (selectedTab) {
+                selectedTab.style.display = 'block';
+            }
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Initialize components for specific tabs
+            if (tabId === 'recursos-tab') {
+                // Initialize Bloques Creados component for teachers (alumnos)
+                if (!window.recursosBloquesCreados) {
+                    window.recursosBloquesCreados = renderBloquesCreados('recursos-bloques-creados-container', 'alumnos');
+                } else {
+                    window.recursosBloquesCreados.refresh();
+                }
+            } else if (tabId === 'add-questions-tab') {
+                // Mount React app if it's the add-questions tab
+                const contentDiv = document.getElementById('add-questions-content');
+                if (contentDiv && !contentDiv.hasChildNodes() && window.mountAddQuestionsApp) {
+                    window.mountAddQuestionsApp('add-questions-content');
+                }
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📅 Teachers Panel Schedules page loaded');
+            
+            // Default behavior - show schedules content (cronogramas is active by default)
+            // Other content sections can be shown when their tabs are clicked
+        });
+    </script>
+</body>
+</html>
 

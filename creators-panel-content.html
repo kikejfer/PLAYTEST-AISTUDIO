@@ -11,6 +11,7 @@
     <script src="api-data-service.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="navigation-service.js"></script>
+    <script src="bloques-creados-component.js"></script>
     <style>
         * {
             margin: 0;
@@ -510,6 +511,11 @@
             </div>
 
             <div class="tab-content">
+                <!-- Bloques Creados Section -->
+                <div id="bloques-creados-section" class="content-section">
+                    <div id="bloques-creados-container"></div>
+                </div>
+
                 <!-- Añadir Preguntas Tab Content -->
                 <div id="add-questions-tab" class="content-section" style="display: none;">
                     <div id="add-questions-content">
@@ -1399,6 +1405,9 @@
                     section.style.display = 'none';
                 }
             });
+
+            // Initialize Bloques Creados section for creators (jugadores)
+            renderBloquesCreados('bloques-creados-container', 'jugadores');
         });
 
 

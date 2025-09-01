@@ -1060,6 +1060,33 @@ class APIDataService {
     return this.deleteBlock(blockId);
   }
 
+  // Get created blocks with statistics for Bloques Creados section
+  async fetchCreatedBlocksStats() {
+    try {
+      const blocksStats = await this.apiCall('/blocks/created-stats');
+      return this.simulateDelay(blocksStats);
+    } catch (error) {
+      console.warn('⚠️ /blocks/created-stats failed, trying fallback to /blocks/created:', error.message);
+      try {
+        // Fallback to main created blocks endpoint (without stats)
+        const allBlocks = await this.apiCall('/blocks/created');
+        // Transform to include empty stats structure
+        const blocksWithStats = allBlocks.map(block => ({
+          ...block,
+          stats: {
+            totalQuestions: block.questionCount || 0,
+            totalTopics: 0,
+            totalUsers: 0
+          }
+        }));
+        return this.simulateDelay(blocksWithStats);
+      } catch (fallbackError) {
+        console.error('❌ All blocks created endpoints failed, using empty array:', fallbackError.message);
+        return this.simulateDelay([]);
+      }
+    }
+  }
+
   async createChallenge(currentUser, challengedUser, gameConfig) {
     // Generate configuration metadata for challenges too
     let configurationMetadata = null;
