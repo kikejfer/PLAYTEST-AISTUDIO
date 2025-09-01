@@ -176,7 +176,7 @@
               return simulateDelay([]);
           }
       };
-      const createBlockWithQuestions = async (blockName, questions, isPublic = true, observaciones = '') => {
+      const createBlockWithQuestions = async (blockName, questions, isPublic = true, observaciones = '', tipoId = null, nivelId = null, estadoId = null) => {
           const sessionString = localStorage.getItem('playtest_session');
           const token = localStorage.getItem('playtest_auth_token');
           
@@ -196,7 +196,10 @@
               name: blockName,
               description: `${blockName} - Custom block created with questions`,
               observaciones: observaciones,
-              isPublic: isPublic
+              isPublic: isPublic,
+              tipo_id: tipoId,
+              nivel_id: nivelId,
+              estado_id: estadoId
           };
           
           const response = await apiDataService.createBlock(blockData);
@@ -336,6 +339,97 @@
 
       // --- INLINED: components ---
 
+      // Hook compartido para metadatos de bloques
+      const useBlockMetadata = () => {
+        const [blockMetadata, setBlockMetadata] = useState({ types: [], levels: [], states: [] });
+        const [selectedTipo, setSelectedTipo] = useState('');
+        const [selectedNivel, setSelectedNivel] = useState('');
+        const [selectedEstado, setSelectedEstado] = useState('');
+
+        useEffect(() => {
+            const loadMetadata = async () => {
+                try {
+                    const metadata = await apiDataService.fetchBlockMetadata();
+                    setBlockMetadata(metadata);
+                    console.log('✅ Loaded block metadata:', metadata);
+                } catch (error) {
+                    console.error('❌ Error loading block metadata:', error);
+                    setBlockMetadata({ types: [], levels: [], states: [] });
+                }
+            };
+            loadMetadata();
+        }, []);
+
+        const getMetadataIds = () => ({
+            tipoId: selectedTipo ? blockMetadata.types.find(t => t.name === selectedTipo)?.id : null,
+            nivelId: selectedNivel ? blockMetadata.levels.find(l => l.name === selectedNivel)?.id : null,
+            estadoId: selectedEstado ? blockMetadata.states.find(s => s.name === selectedEstado)?.id : null
+        });
+
+        const resetMetadata = () => {
+            setSelectedTipo('');
+            setSelectedNivel('');
+            setSelectedEstado('');
+        };
+
+        return {
+            blockMetadata,
+            selectedTipo, setSelectedTipo,
+            selectedNivel, setSelectedNivel,
+            selectedEstado, setSelectedEstado,
+            getMetadataIds,
+            resetMetadata
+        };
+      };
+
+      // Componente compartido para renderizar desplegables de metadatos
+      const BlockMetadataFields = ({ blockMetadata, selectedTipo, setSelectedTipo, selectedNivel, setSelectedNivel, selectedEstado, setSelectedEstado, disabled = false }) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-brand-accent mb-1">Tipo de bloque</label>
+            <select
+              value={selectedTipo}
+              onChange={(e) => setSelectedTipo(e.target.value)}
+              className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+              disabled={disabled}
+            >
+              <option value="">Seleccionar tipo...</option>
+              {blockMetadata.types.map(type => (
+                <option key={type.id} value={type.name}>{type.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-brand-accent mb-1">Nivel educativo</label>
+            <select
+              value={selectedNivel}
+              onChange={(e) => setSelectedNivel(e.target.value)}
+              className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+              disabled={disabled}
+            >
+              <option value="">Seleccionar nivel...</option>
+              {blockMetadata.levels.map(level => (
+                <option key={level.id} value={level.name}>{level.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-brand-accent mb-1">Carácter</label>
+            <select
+              value={selectedEstado}
+              onChange={(e) => setSelectedEstado(e.target.value)}
+              className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+              disabled={disabled}
+            >
+              <option value="">Seleccionar carácter...</option>
+              {blockMetadata.states.map(state => (
+                <option key={state.id} value={state.name}>{state.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      );
+
       const Combobox = ({ options, value, onChange, placeholder, disabled }) => {
           const [isOpen, setIsOpen] = useState(false);
           const containerRef = useRef(null);
@@ -355,6 +449,9 @@
         const [difficulty, setDifficulty] = useState(3);
         const [difficultyRange, setDifficultyRange] = useState(new Set());
         const [syllabusContent, setSyllabusContent] = useState('');
+        
+        // Use shared hook for metadata
+        const { blockMetadata, selectedTipo, setSelectedTipo, selectedNivel, setSelectedNivel, selectedEstado, setSelectedEstado, getMetadataIds, resetMetadata } = useBlockMetadata();
         const [syllabusFileName, setSyllabusFileName] = useState('');
         const [generatedQuestions, setGeneratedQuestions] = useState([]);
         const [isLoading, setIsLoading] = useState(false);
@@ -386,6 +483,22 @@
           if (!preselectedTopic) setTopicName('');
         }, [blockName, blocks, preselectedTopic]);
 
+        // Load block metadata on component mount
+        useEffect(() => {
+            const loadMetadata = async () => {
+                try {
+                    const metadata = await apiDataService.fetchBlockMetadata();
+                    setBlockMetadata(metadata);
+                    console.log('✅ Loaded block metadata:', metadata);
+                } catch (error) {
+                    console.error('❌ Error loading block metadata:', error);
+                    // Set fallback empty arrays
+                    setBlockMetadata({ types: [], levels: [], states: [] });
+                }
+            };
+            loadMetadata();
+        }, []);
+
         const handleGenerate = useCallback(async () => {
           if (!blockName.trim() || !topicName.trim()) { setError(t('generator_error_fields_missing')); return; }
           setIsLoading(true); setError(null); setGeneratedQuestions([]);
@@ -411,7 +524,12 @@
                   onSaveQuestions(existingBlock.id, generatedQuestions);
                   setSaveStatus('success'); setSaveMessage(t('generator_save_success_updated', {count: generatedQuestions.length, block: existingBlock.nombreCorto}));
               } else {
-                  onCreateBlock(trimmedBlockName, generatedQuestions, isPublic, observaciones);
+                  // Get selected IDs for metadata
+                  const tipoId = selectedTipo ? blockMetadata.types.find(t => t.name === selectedTipo)?.id : null;
+                  const nivelId = selectedNivel ? blockMetadata.levels.find(l => l.name === selectedNivel)?.id : null;
+                  const estadoId = selectedEstado ? blockMetadata.states.find(s => s.name === selectedEstado)?.id : null;
+                  
+                  onCreateBlock(trimmedBlockName, generatedQuestions, isPublic, observaciones, tipoId, nivelId, estadoId);
                   setSaveStatus('success'); setSaveMessage(t('generator_save_success_created', {count: generatedQuestions.length, block: trimmedBlockName}));
               }
               setTimeout(() => { setGeneratedQuestions([]); resetGenerator(); setSaveStatus('idle'); }, 2500);
@@ -465,6 +583,52 @@
                   />
                 </div>
               )}
+              {isNewBlock && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-brand-accent mb-1">Tipo de bloque</label>
+                    <select
+                      value={selectedTipo}
+                      onChange={(e) => setSelectedTipo(e.target.value)}
+                      className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+                      disabled={isUIBlocked}
+                    >
+                      <option value="">Seleccionar tipo...</option>
+                      {blockMetadata.types.map(type => (
+                        <option key={type.id} value={type.name}>{type.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-brand-accent mb-1">Nivel educativo</label>
+                    <select
+                      value={selectedNivel}
+                      onChange={(e) => setSelectedNivel(e.target.value)}
+                      className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+                      disabled={isUIBlocked}
+                    >
+                      <option value="">Seleccionar nivel...</option>
+                      {blockMetadata.levels.map(level => (
+                        <option key={level.id} value={level.name}>{level.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-brand-accent mb-1">Carácter</label>
+                    <select
+                      value={selectedEstado}
+                      onChange={(e) => setSelectedEstado(e.target.value)}
+                      className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"
+                      disabled={isUIBlocked}
+                    >
+                      <option value="">Seleccionar carácter...</option>
+                      {blockMetadata.states.map(state => (
+                        <option key={state.id} value={state.name}>{state.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
                 <div> <label htmlFor="q_count" className="block text-sm font-medium text-brand-accent mb-1">{t('generator_questions')}</label> <input type="number" id="q_count" value={questionCount} onChange={(e) => setQuestionCount(Math.max(1, parseInt(e.target.value, 10) || 1))} className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" disabled={isUIBlocked} /> </div>
                 <div> <label htmlFor="difficulty" className="block text-sm font-medium text-brand-accent mb-1">{t('generator_difficulty')} ({difficulty}/5)</label> <input type="range" id="difficulty" min="1" max="5" value={difficulty} onChange={(e) => setDifficulty(parseInt(e.target.value, 10))} className="w-full" disabled={isUIBlocked || difficultyRange.size > 0} /> </div>
@@ -492,6 +656,7 @@
 
       const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock, preselectedBlock, preselectedTopic }) => {
           const { t } = useLanguage();
+          const { blockMetadata, selectedTipo, setSelectedTipo, selectedNivel, setSelectedNivel, selectedEstado, setSelectedEstado, getMetadataIds } = useBlockMetadata();
           const [blockName, setBlockName] = useState('');
           const [topicName, setTopicName] = useState('');
           const [file, setFile] = useState(null);
@@ -694,7 +859,8 @@
                           if (existingBlock) {
                               await onSaveQuestions(existingBlock.id, questions);
                           } else {
-                              await onCreateBlock(originalName, questions, batchIsPublic, '');
+                              const { tipoId, nivelId, estadoId } = getMetadataIds();
+                              await onCreateBlock(originalName, questions, batchIsPublic, '', tipoId, nivelId, estadoId);
                           }
                       }
                       setMessage(t('uploader_batch_status_complete'));
@@ -706,7 +872,8 @@
                           await onSaveQuestions(existingBlock.id, questionsToSave);
                           setMessage(t('generator_save_success_updated', { count: questionsToSave.length, block: existingBlock.nombreCorto }));
                       } else {
-                          await onCreateBlock(trimmedBlockName, questionsToSave, isPublic, '');
+                          const { tipoId, nivelId, estadoId } = getMetadataIds();
+                          await onCreateBlock(trimmedBlockName, questionsToSave, isPublic, '', tipoId, nivelId, estadoId);
                           setMessage(t('generator_save_success_created', { count: questionsToSave.length, block: trimmedBlockName }));
                       }
                   }
@@ -765,19 +932,30 @@
                       <div className="space-y-4 mt-6">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_block')}</label> <Combobox options={blockOptions} value={blockName} onChange={setBlockName} placeholder={t('generator_block_placeholder')} disabled={isUIBlocked}/> </div> <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_topic')}</label> <Combobox options={availableTopics} value={topicName} onChange={setTopicName} placeholder={t('generator_topic_placeholder')} disabled={!blockName.trim() || isUIBlocked}/> </div> </div>
                           {isNewBlock && currentUser && (
-                            <div className="bg-brand-primary p-3 rounded-lg flex items-center gap-4">
-                                <label className="text-sm font-medium text-brand-accent">{t('block_type')}:</label>
-                                <div className="flex items-center gap-4 text-brand-light">
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                        <input type="radio" name="block-visibility-upl" checked={isPublic} onChange={() => setIsPublic(true)} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
-                                        {t('block_public')}
-                                    </label>
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                        <input type="radio" name="block-visibility-upl" checked={!isPublic} onChange={() => setIsPublic(false)} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
-                                        {t('block_private')}
-                                    </label>
-                                </div>
-                            </div>
+                            <>
+                              <div className="bg-brand-primary p-3 rounded-lg flex items-center gap-4">
+                                  <label className="text-sm font-medium text-brand-accent">{t('block_type')}:</label>
+                                  <div className="flex items-center gap-4 text-brand-light">
+                                      <label className="flex items-center gap-2 cursor-pointer">
+                                          <input type="radio" name="block-visibility-upl" checked={isPublic} onChange={() => setIsPublic(true)} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
+                                          {t('block_public')}
+                                      </label>
+                                      <label className="flex items-center gap-2 cursor-pointer">
+                                          <input type="radio" name="block-visibility-upl" checked={!isPublic} onChange={() => setIsPublic(false)} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
+                                          {t('block_private')}
+                                      </label>
+                                  </div>
+                              </div>
+                              <BlockMetadataFields
+                                  blockMetadata={blockMetadata}
+                                  selectedTipo={selectedTipo}
+                                  setSelectedTipo={setSelectedTipo}
+                                  selectedNivel={selectedNivel}
+                                  setSelectedNivel={setSelectedNivel}
+                                  selectedEstado={selectedEstado}
+                                  setSelectedEstado={setSelectedEstado}
+                              />
+                            </>
                           )}
                           <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('uploader_file_label')}</label> <div className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-brand-tertiary border-dashed rounded-md ${isBatchModeActive ? 'bg-brand-primary/50 opacity-50' : ''}`}> <div className="space-y-1 text-center"> <svg className="mx-auto h-12 w-12 text-brand-accent" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg> <div className="flex text-sm text-brand-accent"><label htmlFor="file-upload" className={`relative rounded-md font-medium text-brand-cta px-1 ${isUIBlocked || isBatchModeActive ? 'cursor-not-allowed' : 'hover:text-brand-cta-hover cursor-pointer bg-brand-primary'}`}><span>{t('uploader_file_prompt_1')}</span><input id="file-upload" name="file-upload" type="file" className="sr-only" accept=".txt" onChange={handleFileChange} disabled={isUIBlocked || isBatchModeActive}/></label><p className="pl-1">{t('uploader_file_prompt_2')}</p></div> <p className="text-xs text-brand-tertiary">{file && !isUIBlocked ? t('uploader_file_selected', {fileName: file.name}) : t('uploader_file_type')}</p> </div> </div> </div>
                           <div className="text-xs text-brand-accent bg-brand-primary p-4 rounded-lg"> <p className="font-semibold mb-2 text-sm text-brand-light">{t('uploader_format_guide')}</p> <ul className="list-disc list-inside space-y-1 mb-3"> <li>{t('uploader_format_line_1')} <code className="bg-brand-secondary px-1 py-0.5 rounded">##</code>.</li> <li>{t('uploader_format_line_2')} <code className="bg-brand-secondary px-1 py-0.5 rounded">@@</code>.</li> <li>{t('uploader_format_line_3')}</li> </ul> <p className="font-semibold text-sm text-brand-light">{t('uploader_example')}</p> <pre className="whitespace-pre-wrap font-mono leading-relaxed mt-1 p-2 bg-black/20 rounded">{`Pregunta con explicación##Respuesta A##@@Respuesta B\nEsta es la explicación para la pregunta 1.\n\nPregunta sin explicación##@@Correcta##Incorrecta`}</pre> </div>
@@ -821,6 +999,7 @@
 
       const ManualQuestionForm = ({ currentUser, blocks, onSaveQuestions, onCreateBlock, preselectedBlock, preselectedTopic, onDataChange }) => {
         const { t } = useLanguage();
+        const { blockMetadata, selectedTipo, setSelectedTipo, selectedNivel, setSelectedNivel, selectedEstado, setSelectedEstado, getMetadataIds } = useBlockMetadata();
         const initialAnswer = () => ({ text: '', isCorrect: false });
         const initialFormState = () => ({
             blockName: preselectedBlock || '',
@@ -912,7 +1091,8 @@
                 if (existingBlock) {
                     await onSaveQuestions(existingBlock.id, [newQuestion]);
                 } else {
-                    await onCreateBlock(trimmedBlockName, [newQuestion], formState.isPublic, '');
+                    const { tipoId, nivelId, estadoId } = getMetadataIds();
+                    await onCreateBlock(trimmedBlockName, [newQuestion], formState.isPublic, '', tipoId, nivelId, estadoId);
                 }
                 setStatus({ type: 'success', message: t('manual_form_save_success') });
                 handleDiscard();
@@ -937,19 +1117,30 @@
                         <div><label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_topic')}</label><Combobox options={availableTopics} value={formState.topicName} onChange={(val) => setFormState(p => ({...p, topicName: val}))} placeholder={t('generator_topic_placeholder')} disabled={!formState.blockName.trim()} /></div>
                     </div>
                     {isNewBlock && currentUser && (
-                      <div className="bg-brand-primary p-3 rounded-lg flex items-center gap-4">
-                          <label className="text-sm font-medium text-brand-accent">{t('block_type')}:</label>
-                          <div className="flex items-center gap-4 text-brand-light">
-                              <label className="flex items-center gap-2 cursor-pointer">
-                                  <input type="radio" name="block-visibility-manual" checked={formState.isPublic} onChange={() => setFormState(p => ({...p, isPublic: true}))} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
-                                  {t('block_public')}
-                              </label>
-                              <label className="flex items-center gap-2 cursor-pointer">
-                                  <input type="radio" name="block-visibility-manual" checked={!formState.isPublic} onChange={() => setFormState(p => ({...p, isPublic: false}))} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
-                                  {t('block_private')}
-                              </label>
-                          </div>
-                      </div>
+                      <>
+                        <div className="bg-brand-primary p-3 rounded-lg flex items-center gap-4">
+                            <label className="text-sm font-medium text-brand-accent">{t('block_type')}:</label>
+                            <div className="flex items-center gap-4 text-brand-light">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="block-visibility-manual" checked={formState.isPublic} onChange={() => setFormState(p => ({...p, isPublic: true}))} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
+                                    {t('block_public')}
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="block-visibility-manual" checked={!formState.isPublic} onChange={() => setFormState(p => ({...p, isPublic: false}))} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
+                                    {t('block_private')}
+                                </label>
+                            </div>
+                        </div>
+                        <BlockMetadataFields
+                            blockMetadata={blockMetadata}
+                            selectedTipo={selectedTipo}
+                            setSelectedTipo={setSelectedTipo}
+                            selectedNivel={selectedNivel}
+                            setSelectedNivel={setSelectedNivel}
+                            selectedEstado={selectedEstado}
+                            setSelectedEstado={setSelectedEstado}
+                        />
+                      </>
                     )}
                     <div><label htmlFor="questionText" className="block text-sm font-medium text-brand-accent mb-1">{t('manual_form_question_text')}</label><textarea id="questionText" name="questionText" rows="3" value={formState.questionText} onChange={handleInputChange} required className="w-full bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none"></textarea></div>
                     <div><label className="block text-sm font-medium text-brand-accent mb-1">{t('manual_form_answers')}</label>

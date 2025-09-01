@@ -150,6 +150,27 @@ class BloquesCreados {
                     line-height: 1.5;
                 }
 
+                .bc-block-metadata {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 12px;
+                    margin-bottom: 15px;
+                    padding: 8px 12px;
+                    background: #0F172A;
+                    border: 1px solid #334155;
+                    border-radius: 6px;
+                }
+
+                .bc-metadata-item {
+                    font-size: 12px;
+                    color: #94A3B8;
+                }
+
+                .bc-metadata-item strong {
+                    color: #E0E7FF;
+                    margin-right: 4px;
+                }
+
                 .bc-block-stats {
                     display: flex;
                     justify-content: space-between;
@@ -325,6 +346,20 @@ class BloquesCreados {
             <div class="bc-block-description">
                 ${block.description ? this.escapeHtml(block.description) : 'Sin descripción'}
             </div>
+            
+            ${block.metadata ? `
+            <div class="bc-block-metadata">
+                <span class="bc-metadata-item">
+                    <strong>Tipo:</strong> ${this.escapeHtml(block.metadata.tipo)}
+                </span>
+                <span class="bc-metadata-item">
+                    <strong>Nivel:</strong> ${this.escapeHtml(block.metadata.nivel)}
+                </span>
+                <span class="bc-metadata-item">
+                    <strong>Estado:</strong> ${this.escapeHtml(block.metadata.estado)}
+                </span>
+            </div>
+            ` : ''}
             
             <div class="bc-block-stats">
                 <div class="bc-stat-item">

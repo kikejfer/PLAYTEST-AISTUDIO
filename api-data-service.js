@@ -1087,6 +1087,65 @@ class APIDataService {
     }
   }
 
+  // Get block metadata for dropdowns
+  async fetchBlockMetadata() {
+    try {
+      const metadata = await this.apiCall('/blocks/metadata');
+      return this.simulateDelay(metadata);
+    } catch (error) {
+      console.warn('⚠️ /blocks/metadata failed, trying individual endpoints:', error.message);
+      try {
+        // Fallback to individual endpoints
+        const [types, levels, states] = await Promise.all([
+          this.apiCall('/blocks/types').catch(() => []),
+          this.apiCall('/blocks/levels').catch(() => []),
+          this.apiCall('/blocks/states').catch(() => [])
+        ]);
+        
+        return this.simulateDelay({
+          types: types || [],
+          levels: levels || [],
+          states: states || []
+        });
+      } catch (fallbackError) {
+        console.error('❌ All metadata endpoints failed, using empty arrays:', fallbackError.message);
+        return this.simulateDelay({
+          types: [],
+          levels: [],
+          states: []
+        });
+      }
+    }
+  }
+
+  // Get individual metadata arrays
+  async fetchBlockTypes() {
+    try {
+      return await this.apiCall('/blocks/types');
+    } catch (error) {
+      console.error('Error fetching block types:', error);
+      return [];
+    }
+  }
+
+  async fetchBlockLevels() {
+    try {
+      return await this.apiCall('/blocks/levels');
+    } catch (error) {
+      console.error('Error fetching block levels:', error);
+      return [];
+    }
+  }
+
+  async fetchBlockStates() {
+    try {
+      return await this.apiCall('/blocks/states');
+    } catch (error) {
+      console.error('Error fetching block states:', error);
+      return [];
+    }
+  }
+
   async createChallenge(currentUser, challengedUser, gameConfig) {
     // Generate configuration metadata for challenges too
     let configurationMetadata = null;
