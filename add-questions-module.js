@@ -418,7 +418,29 @@ const useBlockMetadata = () => {
                 console.log('✅ Loaded block metadata:', metadata);
             } catch (error) {
                 console.error('❌ Error loading block metadata:', error);
-                setBlockMetadata({ types: [], levels: [], states: [] });
+                // Fallback with test data so dropdowns always appear
+                const fallbackMetadata = {
+                    types: [
+                        { id: 1, name: 'Quiz' },
+                        { id: 2, name: 'Examen' },
+                        { id: 3, name: 'Práctica' },
+                        { id: 4, name: 'Teoría' }
+                    ],
+                    levels: [
+                        { id: 1, name: 'Primaria' },
+                        { id: 2, name: 'Secundaria' },
+                        { id: 3, name: 'Bachillerato' },
+                        { id: 4, name: 'Universidad' }
+                    ],
+                    states: [
+                        { id: 1, name: 'Obligatorio' },
+                        { id: 2, name: 'Opcional' },
+                        { id: 3, name: 'Complementario' },
+                        { id: 4, name: 'Refuerzo' }
+                    ]
+                };
+                setBlockMetadata(fallbackMetadata);
+                console.log('✅ Using fallback metadata for development:', fallbackMetadata);
             }
         };
         loadMetadata();
