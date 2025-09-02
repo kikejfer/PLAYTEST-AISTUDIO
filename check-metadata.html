@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Metadatos BD</title>
+    <!-- Remove dependency on api-data-service.js for standalone functionality -->
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #0D1B2A; color: #E0E1DD; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 20px; background: #1B263B; border-radius: 8px; }
+        .error { color: #ef4444; }
+        .success { color: #10b981; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { padding: 8px; border: 1px solid #415A77; text-align: left; }
+        th { background: #334155; }
+        button { background: #3B82F6; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #2563EB; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Verificador de Metadatos de la Base de Datos</h1>
+        
+        <button onclick="checkMetadata()">Verificar Metadatos</button>
+        
+        <div class="section">
+            <h2>Estado de la Conexión</h2>
+            <div id="connection-status">Haz clic en "Verificar Metadatos" para comenzar</div>
+        </div>
+        
+        <div class="section">
+            <h2>📋 Block Types (Tipos)</h2>
+            <div id="types-result">-</div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 Block Levels (Niveles)</h2>
+            <div id="levels-result">-</div>
+        </div>
+        
+        <div class="section">
+            <h2>⚡ Block States (Estados)</h2>
+            <div id="states-result">-</div>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 Endpoint de Metadatos Combinado</h2>
+            <div id="metadata-result">-</div>
+        </div>
+    </div>
+
+    <script>
+        async function checkMetadata() {
+            document.getElementById('connection-status').innerHTML = '🔄 Verificando conexión...';
+            
+            try {
+                // Test individual endpoints
+                await testEndpoint('/blocks/types', 'types-result');
+                await testEndpoint('/blocks/levels', 'levels-result'); 
+                await testEndpoint('/blocks/states', 'states-result');
+                
+                // Test combined metadata endpoint
+                await testMetadataEndpoint();
+                
+                document.getElementById('connection-status').innerHTML = '<span class="success">✅ Verificación completada</span>';
+                
+            } catch (error) {
+                document.getElementById('connection-status').innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+        
+        async function testEndpoint(path, resultId) {
+            try {
+                const response = await fetch(`https://playtest-backend.onrender.com/api${path}`);
+                const data = await response.json();
+                
+                if (response.ok && Array.isArray(data)) {
+                    document.getElementById(resultId).innerHTML = 
+                        `<span class="success">✅ ${data.length} registros encontrados</span>` + 
+                        (data.length > 0 ? createTable(data) : '<p>Tabla vacía</p>');
+                } else {
+                    document.getElementById(resultId).innerHTML = 
+                        `<span class="error">❌ Error: ${data.error || 'Respuesta inválida'}</span>`;
+                }
+            } catch (error) {
+                document.getElementById(resultId).innerHTML = 
+                    `<span class="error">❌ Error de conexión: ${error.message}</span>`;
+            }
+        }
+        
+        async function testMetadataEndpoint() {
+            try {
+                const response = await fetch('https://playtest-backend.onrender.com/api/blocks/metadata');
+                const data = await response.json();
+                
+                if (response.ok && data.types && data.levels && data.states) {
+                    const html = `
+                        <span class="success">✅ Endpoint combinado funciona</span>
+                        <p><strong>Types:</strong> ${data.types.length} registros</p>
+                        <p><strong>Levels:</strong> ${data.levels.length} registros</p>
+                        <p><strong>States:</strong> ${data.states.length} registros</p>
+                        <details>
+                            <summary>Ver datos completos</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    `;
+                    document.getElementById('metadata-result').innerHTML = html;
+                } else {
+                    document.getElementById('metadata-result').innerHTML = 
+                        `<span class="error">❌ Error: ${data.error || 'Formato de respuesta inválido'}</span>`;
+                }
+            } catch (error) {
+                document.getElementById('metadata-result').innerHTML = 
+                    `<span class="error">❌ Error de conexión: ${error.message}</span>`;
+            }
+        }
+        
+        function createTable(data) {
+            if (data.length === 0) return '<p>No hay datos</p>';
+            
+            const headers = Object.keys(data[0]);
+            let html = '<table><thead><tr>';
+            headers.forEach(header => html += `<th>${header}</th>`);
+            html += '</tr></thead><tbody>';
+            
+            data.forEach(row => {
+                html += '<tr>';
+                headers.forEach(header => html += `<td>${row[header] || '-'}</td>`);
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            return html;
+        }
+    </script>
+</body>
+</html>
