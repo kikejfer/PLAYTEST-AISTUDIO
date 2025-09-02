@@ -403,6 +403,160 @@ IMPORTANTE:
     }
 };
 
+// Hook compartido para metadatos de bloques
+const useBlockMetadata = () => {
+    const [blockMetadata, setBlockMetadata] = useState({ types: [], levels: [], states: [] });
+    const [selectedTipo, setSelectedTipo] = useState('');
+    const [selectedNivel, setSelectedNivel] = useState('');
+    const [selectedEstado, setSelectedEstado] = useState('');
+
+    useEffect(() => {
+        const loadMetadata = async () => {
+            try {
+                const metadata = await apiDataService.fetchBlockMetadata();
+                setBlockMetadata(metadata);
+                console.log('✅ Loaded block metadata:', metadata);
+            } catch (error) {
+                console.error('❌ Error loading block metadata:', error);
+                setBlockMetadata({ types: [], levels: [], states: [] });
+            }
+        };
+        loadMetadata();
+    }, []);
+
+    const getMetadataIds = () => ({
+        tipoId: selectedTipo ? blockMetadata.types.find(t => t.name === selectedTipo)?.id : null,
+        nivelId: selectedNivel ? blockMetadata.levels.find(l => l.name === selectedNivel)?.id : null,
+        estadoId: selectedEstado ? blockMetadata.states.find(s => s.name === selectedEstado)?.id : null
+    });
+
+    const resetMetadata = () => {
+        setSelectedTipo('');
+        setSelectedNivel('');
+        setSelectedEstado('');
+    };
+
+    return {
+        blockMetadata,
+        selectedTipo, setSelectedTipo,
+        selectedNivel, setSelectedNivel,
+        selectedEstado, setSelectedEstado,
+        getMetadataIds,
+        resetMetadata
+    };
+};
+
+// Componente compartido para renderizar desplegables de metadatos
+const BlockMetadataFields = ({ blockMetadata, selectedTipo, setSelectedTipo, selectedNivel, setSelectedNivel, selectedEstado, setSelectedEstado, disabled = false }) => 
+    React.createElement('div', {
+        style: {
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '16px',
+            marginBottom: '16px'
+        }
+    }, [
+        React.createElement('div', { key: 'tipo' }, [
+            React.createElement('label', {
+                key: 'tipo-label',
+                style: {
+                    display: 'block',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#778DA9',
+                    marginBottom: '4px'
+                }
+            }, 'Tipo de bloque'),
+            React.createElement('select', {
+                key: 'tipo-select',
+                value: selectedTipo,
+                onChange: (e) => setSelectedTipo(e.target.value),
+                disabled: disabled,
+                style: {
+                    width: '100%',
+                    background: '#0D1B2A',
+                    border: '1px solid #415A77',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    color: '#E0E1DD',
+                    fontSize: '14px',
+                    outline: 'none'
+                }
+            }, [
+                React.createElement('option', { key: 'tipo-empty', value: '' }, 'Seleccionar tipo...'),
+                ...blockMetadata.types.map(type => 
+                    React.createElement('option', { key: type.id, value: type.name }, type.name)
+                )
+            ])
+        ]),
+        React.createElement('div', { key: 'nivel' }, [
+            React.createElement('label', {
+                key: 'nivel-label',
+                style: {
+                    display: 'block',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#778DA9',
+                    marginBottom: '4px'
+                }
+            }, 'Nivel educativo'),
+            React.createElement('select', {
+                key: 'nivel-select',
+                value: selectedNivel,
+                onChange: (e) => setSelectedNivel(e.target.value),
+                disabled: disabled,
+                style: {
+                    width: '100%',
+                    background: '#0D1B2A',
+                    border: '1px solid #415A77',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    color: '#E0E1DD',
+                    fontSize: '14px',
+                    outline: 'none'
+                }
+            }, [
+                React.createElement('option', { key: 'nivel-empty', value: '' }, 'Seleccionar nivel...'),
+                ...blockMetadata.levels.map(level => 
+                    React.createElement('option', { key: level.id, value: level.name }, level.name)
+                )
+            ])
+        ]),
+        React.createElement('div', { key: 'estado' }, [
+            React.createElement('label', {
+                key: 'estado-label',
+                style: {
+                    display: 'block',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#778DA9',
+                    marginBottom: '4px'
+                }
+            }, 'Carácter'),
+            React.createElement('select', {
+                key: 'estado-select',
+                value: selectedEstado,
+                onChange: (e) => setSelectedEstado(e.target.value),
+                disabled: disabled,
+                style: {
+                    width: '100%',
+                    background: '#0D1B2A',
+                    border: '1px solid #415A77',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    color: '#E0E1DD',
+                    fontSize: '14px',
+                    outline: 'none'
+                }
+            }, [
+                React.createElement('option', { key: 'estado-empty', value: '' }, 'Seleccionar carácter...'),
+                ...blockMetadata.states.map(state => 
+                    React.createElement('option', { key: state.id, value: state.name }, state.name)
+                )
+            ])
+        ])
+    ]);
+
 // Enhanced Question Generator Component
 const QuestionGenerator = ({ currentUser, blocks, onSaveQuestions, onCreateBlock, preselectedBlock, preselectedTopic }) => {
     const { t } = useLanguage();
@@ -424,6 +578,9 @@ const QuestionGenerator = ({ currentUser, blocks, onSaveQuestions, onCreateBlock
     const [isPublic, setIsPublic] = useState(true);
     const [observaciones, setObservaciones] = useState('');
     const syllabusInputRef = useRef(null);
+    
+    // Use shared hook for metadata
+    const { blockMetadata, selectedTipo, setSelectedTipo, selectedNivel, setSelectedNivel, selectedEstado, setSelectedEstado, getMetadataIds, resetMetadata } = useBlockMetadata();
     
     const isNewBlock = useMemo(() => 
         blockName.trim() && !blocks.some(b => b.nombreCorto?.toLowerCase() === blockName.trim().toLowerCase() && b.creatorId === currentUser?.id),
@@ -499,7 +656,8 @@ const QuestionGenerator = ({ currentUser, blocks, onSaveQuestions, onCreateBlock
                 setSaveStatus('success'); 
                 setSaveMessage(t('generator_save_success_updated', {count: generatedQuestions.length, block: existingBlock.nombreCorto}));
             } else {
-                onCreateBlock(trimmedBlockName, generatedQuestions, isPublic, observaciones);
+                const { tipoId, nivelId, estadoId } = getMetadataIds();
+                onCreateBlock(trimmedBlockName, generatedQuestions, isPublic, observaciones, tipoId, nivelId, estadoId);
                 setSaveStatus('success'); 
                 setSaveMessage(t('generator_save_success_created', {count: generatedQuestions.length, block: trimmedBlockName}));
             }
@@ -767,6 +925,19 @@ const QuestionGenerator = ({ currentUser, blocks, onSaveQuestions, onCreateBlock
                     ])
                 ])
             ]),
+            
+            // Metadata fields for new blocks
+            isNewBlock && currentUser && React.createElement(BlockMetadataFields, {
+                key: 'block-metadata',
+                blockMetadata: blockMetadata,
+                selectedTipo: selectedTipo,
+                setSelectedTipo: setSelectedTipo,
+                selectedNivel: selectedNivel,
+                setSelectedNivel: setSelectedNivel,
+                selectedEstado: selectedEstado,
+                setSelectedEstado: setSelectedEstado,
+                disabled: isUIBlocked
+            }),
             
             // Observations for new blocks
             isNewBlock && React.createElement('div', { key: 'observations' }, [
@@ -1233,6 +1404,7 @@ const parseQuestions = (content, bloque, tema) => {
 // Enhanced Question Uploader Component with Multiple File Support
 const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock }) => {
     const { t } = useLanguage();
+    const { blockMetadata, selectedTipo, setSelectedTipo, selectedNivel, setSelectedNivel, selectedEstado, setSelectedEstado, getMetadataIds } = useBlockMetadata();
     const [blockName, setBlockName] = useState('');
     const [topicName, setTopicName] = useState('');
     const [files, setFiles] = useState([]);
@@ -1413,7 +1585,8 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
                 if (existingBlock) {
                     await onSaveQuestions(existingBlock.id, blockQuestions);
                 } else {
-                    await onCreateBlock(blockName, blockQuestions, batchIsPublic, '');
+                    const { tipoId, nivelId, estadoId } = getMetadataIds();
+                    await onCreateBlock(blockName, blockQuestions, batchIsPublic, '', tipoId, nivelId, estadoId);
                 }
             }
 
@@ -1590,6 +1763,19 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
                         ])
                     ])
                 ]),
+                
+                // Metadata fields for batch upload
+                currentUser && React.createElement(BlockMetadataFields, {
+                    key: 'batch-metadata',
+                    blockMetadata: blockMetadata,
+                    selectedTipo: selectedTipo,
+                    setSelectedTipo: setSelectedTipo,
+                    selectedNivel: selectedNivel,
+                    setSelectedNivel: setSelectedNivel,
+                    selectedEstado: selectedEstado,
+                    setSelectedEstado: setSelectedEstado,
+                    disabled: isLoading
+                }),
                 
                 // File list
                 fileQueue.length > 0 ? [
@@ -1906,7 +2092,8 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
                                 if (existingBlock) {
                                     await onSaveQuestions(existingBlock.id, reviewedQuestions);
                                 } else {
-                                    await onCreateBlock(blockName.trim(), reviewedQuestions, true, '');
+                                    const { tipoId, nivelId, estadoId } = getMetadataIds();
+                                    await onCreateBlock(blockName.trim(), reviewedQuestions, true, '', tipoId, nivelId, estadoId);
                                 }
                                 setMessage(`¡Guardado exitoso! ${reviewedQuestions.length} preguntas.`);
                                 setStatus('success');
@@ -2082,6 +2269,7 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
 // Enhanced Manual Question Form Component (simplified version for space)
 const ManualQuestionForm = ({ currentUser, blocks, onSaveQuestions, onCreateBlock }) => {
     const { t } = useLanguage();
+    const { blockMetadata, selectedTipo, setSelectedTipo, selectedNivel, setSelectedNivel, selectedEstado, setSelectedEstado, getMetadataIds } = useBlockMetadata();
     const [blockName, setBlockName] = useState('');
     const [topicName, setTopicName] = useState('');
     const [questionText, setQuestionText] = useState('');
@@ -2089,6 +2277,11 @@ const ManualQuestionForm = ({ currentUser, blocks, onSaveQuestions, onCreateBloc
     const [explanation, setExplanation] = useState('');
     const [status, setStatus] = useState('idle');
     const [message, setMessage] = useState('');
+    
+    const isNewBlock = useMemo(() => 
+        blockName.trim() && !blocks.some(b => b.nombreCorto?.toLowerCase() === blockName.trim().toLowerCase() && b.creatorId === currentUser?.id),
+        [blockName, blocks, currentUser?.id]
+    );
 
     const addAnswer = () => {
         setAnswers([...answers, { text: '', isCorrect: false }]);
@@ -2145,7 +2338,8 @@ const ManualQuestionForm = ({ currentUser, blocks, onSaveQuestions, onCreateBloc
             if (existingBlock) {
                 onSaveQuestions(existingBlock.id, [question]);
             } else {
-                onCreateBlock(blockName.trim(), [question], true, '');
+                const { tipoId, nivelId, estadoId } = getMetadataIds();
+                onCreateBlock(blockName.trim(), [question], true, '', tipoId, nivelId, estadoId);
             }
             
             setMessage(t('manual_form_save_success'));
@@ -2230,6 +2424,18 @@ const ManualQuestionForm = ({ currentUser, blocks, onSaveQuestions, onCreateBloc
                     })
                 ])
             ]),
+            
+            // Metadata fields for new blocks
+            isNewBlock && currentUser && React.createElement(BlockMetadataFields, {
+                key: 'metadata-fields',
+                blockMetadata: blockMetadata,
+                selectedTipo: selectedTipo,
+                setSelectedTipo: setSelectedTipo,
+                selectedNivel: selectedNivel,
+                setSelectedNivel: setSelectedNivel,
+                selectedEstado: selectedEstado,
+                setSelectedEstado: setSelectedEstado
+            }),
             
             // Question text
             React.createElement('div', { key: 'question' }, [
@@ -2435,7 +2641,7 @@ const AddQuestionsApp = () => {
         }
     };
 
-    const handleCreateBlock = async (blockName, questions, isPublic, observaciones) => {
+    const handleCreateBlock = async (blockName, questions, isPublic, observaciones, tipoId = null, nivelId = null, estadoId = null) => {
         try {
             // Check authentication before attempting API calls
             const currentUser = getCurrentUser();
@@ -2448,7 +2654,10 @@ const AddQuestionsApp = () => {
                     name: blockName,
                     description: `${blockName} - Custom block created with questions`,
                     observaciones: observaciones,
-                    isPublic: isPublic
+                    isPublic: isPublic,
+                    tipo_id: tipoId,
+                    nivel_id: nivelId,
+                    estado_id: estadoId
                 };
                 
                 const block = await apiDataService.createBlock(blockData);
