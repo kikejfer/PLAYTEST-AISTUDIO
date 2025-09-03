@@ -876,11 +876,19 @@ class BloquesCreados {
             ? 'https://playtest-backend.onrender.com' 
             : '';
         const token = localStorage.getItem('token');
+        const activeRole = localStorage.getItem('activeRole');
+        
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
+        
+        if (activeRole) {
+            headers['X-Current-Role'] = activeRole;
+        }
+        
         const response = await fetch(`${API_BASE_URL}/api/blocks/${blockId}/questions`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
+            headers
         });
 
         if (!response.ok) {
@@ -1093,12 +1101,20 @@ class BloquesCreados {
                 ? 'https://playtest-backend.onrender.com' 
                 : '';
             const token = localStorage.getItem('token');
+            const activeRole = localStorage.getItem('activeRole');
+            
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            if (activeRole) {
+                headers['X-Current-Role'] = activeRole;
+            }
+            
             const response = await fetch(`${API_BASE_URL}/api/blocks/${this.currentBlockId}/questions/${questionId}`, {
                 method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
+                headers,
                 body: JSON.stringify({
                     textoPregunta,
                     tema,
@@ -1143,12 +1159,20 @@ class BloquesCreados {
                 ? 'https://playtest-backend.onrender.com' 
                 : '';
             const token = localStorage.getItem('token');
+            const activeRole = localStorage.getItem('activeRole');
+            
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            if (activeRole) {
+                headers['X-Current-Role'] = activeRole;
+            }
+            
             const response = await fetch(`${API_BASE_URL}/api/blocks/${this.currentBlockId}/questions/${questionId}`, {
                 method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+                headers
             });
 
             if (!response.ok) {
