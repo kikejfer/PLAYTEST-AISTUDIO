@@ -836,36 +836,46 @@ const QuestionGenerator = ({ currentUser, blocks, onSaveQuestions, onCreateBlock
                 ])
             ]),
             
-            // Block field
-            React.createElement('div', { key: 'block' }, [
-                React.createElement('label', { 
-                    key: 'label',
-                    style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
-                }, t('generator_block')),
-                React.createElement(Combobox, {
-                    key: 'combobox',
-                    options: blockOptions,
-                    value: blockName,
-                    onChange: setBlockName,
-                    placeholder: t('generator_block_placeholder'),
-                    disabled: isUIBlocked
-                })
-            ]),
-            
-            // Topic field
-            React.createElement('div', { key: 'topic' }, [
-                React.createElement('label', { 
-                    key: 'label',
-                    style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
-                }, t('generator_topic')),
-                React.createElement(Combobox, {
-                    key: 'combobox',
-                    options: availableTopics,
-                    value: topicName,
-                    onChange: setTopicName,
-                    placeholder: t('generator_topic_placeholder'),
-                    disabled: !blockName.trim() || isUIBlocked
-                })
+            // Block and Topic fields grouped
+            React.createElement('div', {
+                key: 'block-topic-group',
+                style: {
+                    background: '#0D1B2A',
+                    padding: '16px',
+                    borderRadius: '8px',
+                    border: '1px solid #415A77',
+                    marginBottom: '16px'
+                }
+            }, [
+                React.createElement('div', { key: 'block', style: { marginBottom: '12px' } }, [
+                    React.createElement('label', { 
+                        key: 'label',
+                        style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
+                    }, t('generator_block')),
+                    React.createElement(Combobox, {
+                        key: 'combobox',
+                        options: blockOptions,
+                        value: blockName,
+                        onChange: setBlockName,
+                        placeholder: t('generator_block_placeholder'),
+                        disabled: isUIBlocked
+                    })
+                ]),
+                
+                React.createElement('div', { key: 'topic' }, [
+                    React.createElement('label', { 
+                        key: 'label',
+                        style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
+                    }, t('generator_topic')),
+                    React.createElement(Combobox, {
+                        key: 'combobox',
+                        options: availableTopics,
+                        value: topicName,
+                        onChange: setTopicName,
+                        placeholder: t('generator_topic_placeholder'),
+                        disabled: !blockName.trim() || isUIBlocked
+                    })
+                ])
             ]),
             
             
@@ -1736,43 +1746,53 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
                     style: { textAlign: 'center', color: '#778DA9', fontSize: '14px' }
                 }, t('uploader_separator')),
                 
-                // Block field
-                React.createElement('div', { key: 'block-field', style: { marginBottom: '16px' } }, [
-                    React.createElement('label', {
-                        key: 'block-label',
-                        style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
-                    }, t('generator_block')),
-                    React.createElement(Combobox, {
-                        key: 'block-combobox',
-                        options: blockOptions,
-                        value: blockName,
-                        onChange: setBlockName,
-                        placeholder: t('generator_block_placeholder')
-                    })
-                ]),
-                
-                // Topic field
-                React.createElement('div', { key: 'topic-field', style: { marginBottom: '16px' } }, [
-                    React.createElement('label', {
-                        key: 'topic-label',
-                        style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
-                    }, t('generator_topic')),
-                    React.createElement('input', {
-                        key: 'topic-input',
-                        type: 'text',
-                        value: topicName,
-                        onChange: (e) => setTopicName(e.target.value),
-                        style: {
-                            width: '100%',
-                            background: '#0D1B2A',
-                            border: '1px solid #415A77',
-                            borderRadius: '8px',
-                            padding: '8px 12px',
-                            color: '#E0E1DD',
-                            outline: 'none'
-                        },
-                        placeholder: t('generator_topic_placeholder')
-                    })
+                // Block and Topic fields grouped
+                React.createElement('div', {
+                    key: 'block-topic-group',
+                    style: {
+                        background: '#0D1B2A',
+                        padding: '16px',
+                        borderRadius: '8px',
+                        border: '1px solid #415A77',
+                        marginBottom: '16px'
+                    }
+                }, [
+                    React.createElement('div', { key: 'block-field', style: { marginBottom: '12px' } }, [
+                        React.createElement('label', {
+                            key: 'block-label',
+                            style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
+                        }, t('generator_block')),
+                        React.createElement(Combobox, {
+                            key: 'block-combobox',
+                            options: blockOptions,
+                            value: blockName,
+                            onChange: setBlockName,
+                            placeholder: t('generator_block_placeholder')
+                        })
+                    ]),
+                    
+                    React.createElement('div', { key: 'topic-field' }, [
+                        React.createElement('label', {
+                            key: 'topic-label',
+                            style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
+                        }, t('generator_topic')),
+                        React.createElement('input', {
+                            key: 'topic-input',
+                            type: 'text',
+                            value: topicName,
+                            onChange: (e) => setTopicName(e.target.value),
+                            style: {
+                                width: '100%',
+                                background: '#0D1B2A',
+                                border: '1px solid #415A77',
+                                borderRadius: '8px',
+                                padding: '8px 12px',
+                                color: '#E0E1DD',
+                                outline: 'none'
+                            },
+                            placeholder: t('generator_topic_placeholder')
+                        })
+                    ])
                 ]),
                 
                 React.createElement('div', { key: 'file-field' }, [
@@ -2265,43 +2285,53 @@ const ManualQuestionForm = ({ currentUser, blocks, onSaveQuestions, onCreateBloc
             key: 'form',
             style: { display: 'flex', flexDirection: 'column', gap: '16px' }
         }, [
-            // Block field
-            React.createElement('div', { key: 'block', style: { marginBottom: '16px' } }, [
-                React.createElement('label', { 
-                    key: 'label',
-                    style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
-                }, t('generator_block')),
-                React.createElement(Combobox, {
-                    key: 'combobox',
-                    options: blockOptions,
-                    value: blockName,
-                    onChange: setBlockName,
-                    placeholder: t('generator_block_placeholder')
-                })
-            ]),
-            
-            // Topic field
-            React.createElement('div', { key: 'topic', style: { marginBottom: '16px' } }, [
-                React.createElement('label', { 
-                    key: 'label',
-                    style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
-                }, t('generator_topic')),
-                React.createElement('input', {
-                    key: 'input',
-                    type: 'text',
-                    value: topicName,
-                    onChange: (e) => setTopicName(e.target.value),
-                    style: {
-                        width: '100%',
-                        background: '#0D1B2A',
-                        border: '1px solid #415A77',
-                        borderRadius: '8px',
-                        padding: '8px 12px',
-                        color: '#E0E1DD',
-                        outline: 'none'
-                    },
-                    placeholder: t('generator_topic_placeholder')
-                })
+            // Block and Topic fields grouped
+            React.createElement('div', {
+                key: 'block-topic-group',
+                style: {
+                    background: '#0D1B2A',
+                    padding: '16px',
+                    borderRadius: '8px',
+                    border: '1px solid #415A77',
+                    marginBottom: '16px'
+                }
+            }, [
+                React.createElement('div', { key: 'block', style: { marginBottom: '12px' } }, [
+                    React.createElement('label', { 
+                        key: 'label',
+                        style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
+                    }, t('generator_block')),
+                    React.createElement(Combobox, {
+                        key: 'combobox',
+                        options: blockOptions,
+                        value: blockName,
+                        onChange: setBlockName,
+                        placeholder: t('generator_block_placeholder')
+                    })
+                ]),
+                
+                React.createElement('div', { key: 'topic' }, [
+                    React.createElement('label', { 
+                        key: 'label',
+                        style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
+                    }, t('generator_topic')),
+                    React.createElement('input', {
+                        key: 'input',
+                        type: 'text',
+                        value: topicName,
+                        onChange: (e) => setTopicName(e.target.value),
+                        style: {
+                            width: '100%',
+                            background: '#0D1B2A',
+                            border: '1px solid #415A77',
+                            borderRadius: '8px',
+                            padding: '8px 12px',
+                            color: '#E0E1DD',
+                            outline: 'none'
+                        },
+                        placeholder: t('generator_topic_placeholder')
+                    })
+                ])
             ]),
             
             // Metadata fields for new blocks

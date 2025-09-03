@@ -676,7 +676,6 @@
                 <button class="tab-button active" onclick="showTab('recursos-tab')">📚 Recursos</button>
                 <button class="tab-button" onclick="showTab('add-questions-tab')">➕ Añadir Preguntas</button>
                 <button class="tab-button" onclick="window.location.href='teachers-panel-students.html'">👥 Gestión de Alumnos</button>
-                <button class="tab-button" onclick="showTab('cronogramas-tab')">📅 Cronogramas</button>
                 <button class="tab-button" onclick="window.location.href='teachers-panel-tournaments.html'">🏆 Torneos</button>
                 <button class="tab-button" onclick="window.location.href='teachers-panel-analytics.html'">📊 Analytics</button>
                 <button class="tab-button" onclick="window.location.href='teachers-panel-interventions.html'">🎯 Intervenciones</button>
@@ -695,47 +694,6 @@
                     </div>
                 </div>
 
-                <!-- Cronogramas Académicos -->
-                <div class="section">
-                    <div class="section-header">
-                        <h2 class="section-title">📅 Cronogramas Académicos</h2>
-                        <button class="btn btn-primary" onclick="openScheduleModal()" id="create-schedule-btn" disabled>
-                            ➕ Crear Cronograma
-                        </button>
-                    </div>
-
-                    <div class="schedules-grid" id="schedules-container">
-                        <div class="empty-state">
-                            <span class="icon">📅</span>
-                            <h3>Selecciona una clase</h3>
-                            <p>Elige una clase para ver y gestionar sus cronogramas académicos</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Guía de Ritmo (Pacing Guide) -->
-                <div class="pacing-guide" id="pacing-guide-section" style="display: none;">
-                    <h3 style="margin-bottom: 15px;">⏱️ Guía de Ritmo Semanal</h3>
-                    <p style="color: #856404; margin-bottom: 15px;">Distribución de contenido adaptada al progreso de la clase</p>
-                    
-                    <div id="pacing-container">
-                        <div class="loading">Generando guía de ritmo...</div>
-                    </div>
-                </div>
-
-                <!-- Asignaciones de Contenido -->
-                <div class="assignments-section" id="assignments-section" style="display: none;">
-                    <div class="section-header">
-                        <h3 class="section-title">📝 Asignaciones de Contenido</h3>
-                        <button class="btn btn-success" onclick="openAssignmentModal()">
-                            ➕ Nueva Asignación
-                        </button>
-                    </div>
-                    
-                    <div class="assignments-grid" id="assignments-container">
-                        <div class="loading">Cargando asignaciones...</div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
