@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="panel-type" content="PCC">
+    <meta name="header-container" content="header-container">
+    <title>Analytics de Mercado - Panel de Creadores | LumiQuiz</title>
+    <link rel="stylesheet" href="header-styles.css">
+    <script src="header-loader.js"></script>
+    <script src="api-data-service.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="navigation-service.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0D1B2A;
+            min-height: 100vh;
+            color: #E0E1DD;
+            padding-top: 80px;
+        }
+
+        /* User header styles - fixed position */
+        .user-header {
+            background: #415A77;
+            color: #E0E1DD;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #3B82F6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .user-details h4 {
+            margin: 0;
+            font-size: 14px;
+            color: #E0E1DD;
+        }
+
+        .user-details p {
+            margin: 0;
+            font-size: 12px;
+            color: #778DA9;
+        }
+
+        .logout-btn {
+            background: #EF4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #DC2626;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 1px solid #415A77;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            color: #3B82F6;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #E0E1DD;
+        }
+
+        .tabs-container {
+            background: #1B263B;
+            border: 1px solid #415A77;
+            border-radius: 10px;
+            padding: 0;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .tabs-nav {
+            display: flex;
+            background: #415A77;
+            border-bottom: 1px solid #778DA9;
+            overflow-x: auto;
+        }
+
+        .tab-button {
+            flex: none;
+            padding: 15px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #778DA9;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: fit-content;
+        }
+
+        .tab-button.active {
+            color: #E0E1DD;
+            background: #1B263B;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .tab-button:hover {
+            color: #E0E1DD;
+            background: rgba(27, 38, 59, 0.7);
+        }
+
+        .tab-content {
+            padding: 20px;
+        }
+
+        .content-section {
+            background: #1B263B;
+            border: 1px solid #415A77;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: #3B82F6;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .period-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .period-btn {
+            padding: 8px 16px;
+            border: 1px solid #415A77;
+            background: #0D1B2A;
+            color: #E0E1DD;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .period-btn:hover {
+            background: #415A77;
+        }
+
+        .period-btn.active {
+            background: #3B82F6;
+            border-color: #3B82F6;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .chart-container {
+            background: #0D1B2A;
+            border: 1px solid #415A77;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .chart-header {
+            margin-bottom: 15px;
+        }
+
+        .chart-title {
+            color: #E0E1DD;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .chart-subtitle {
+            color: #778DA9;
+            font-size: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #3B82F6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563EB;
+        }
+
+        .blocks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #778DA9;
+            padding: 40px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div id="header-container"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>📊 Analytics de Mercado</h1>
+            <p>Análisis detallado de performance y engagement de tus contenidos</p>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-nav">
+                <button class="tab-button active" onclick="window.location.href='creators-panel-content.html'">📚 Contenido</button>
+                <button class="tab-button" onclick="showTab('add-questions-tab')">➕ Añadir Preguntas</button>
+                <button class="tab-button" onclick="window.location.href='creators-panel-statistics.html'">📊 Estadísticas</button>
+                <button class="tab-button" onclick="window.location.href='creators-panel-tournaments.html'">🏆 Torneos</button>
+                <button class="tab-button" onclick="window.location.href='creators-panel-monetization.html'">💰 Monetización</button>
+                <button class="tab-button" onclick="window.location.href='creators-panel-marketing.html'">📢 Marketing</button>
+                <button class="tab-button active" onclick="window.location.href='creators-panel-analytics.html'">📊 Analytics de Mercado</button>
+            </div>
+
+            <div class="tab-content">
+                <!-- Analytics de Contenido -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">📊 Analytics de Contenido</h2>
+                        <div class="period-selector">
+                            <button class="period-btn active" onclick="changePeriod('7')">7 días</button>
+                            <button class="period-btn" onclick="changePeriod('30')">30 días</button>
+                            <button class="period-btn" onclick="changePeriod('90')">90 días</button>
+                        </div>
+                    </div>
+
+                    <div class="analytics-grid">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <div class="chart-title">Performance por Bloque</div>
+                                <div class="chart-subtitle">Revenue vs Engagement</div>
+                            </div>
+                            <canvas id="performanceChart" width="400" height="300"></canvas>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <div class="chart-title">Tasa de Finalización</div>
+                                <div class="chart-subtitle">Por categoría de contenido</div>
+                            </div>
+                            <canvas id="completionChart" width="400" height="300"></canvas>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <div class="chart-title">Tendencias de Engagement</div>
+                                <div class="chart-subtitle">Últimas 4 semanas</div>
+                            </div>
+                            <canvas id="engagementTrendChart" width="400" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mis Bloques con IA -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">🧠 Mis Bloques con IA</h2>
+                        <button class="btn btn-primary" onclick="refreshAIAnalysis()">
+                            🔄 Actualizar Análisis IA
+                        </button>
+                    </div>
+
+                    <div class="blocks-grid" id="blocks-container">
+                        <div class="loading">Cargando análisis de bloques...</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentPeriod = '30';
+        let contentAnalytics = [];
+        let charts = {};
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadContentAnalytics();
+        });
+
+        // Cambiar período de análisis
+        async function changePeriod(period) {
+            currentPeriod = period;
+            
+            // Actualizar botones activos
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            await loadContentAnalytics();
+        }
+
+        // Cargar analytics de contenido
+        async function loadContentAnalytics() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const response = await fetch(`/api/analytics/content?period=${currentPeriod}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    contentAnalytics = await response.json();
+                    updateCharts();
+                } else {
+                    console.error('Error al cargar analytics:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error al cargar analytics:', error);
+            }
+        }
+
+        // Actualizar gráficos
+        function updateCharts() {
+            updatePerformanceChart();
+            updateCompletionChart();
+            updateEngagementTrendChart();
+        }
+
+        // Gráfico de performance por bloque
+        function updatePerformanceChart() {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            if (charts.performance) {
+                charts.performance.destroy();
+            }
+
+            charts.performance = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Bloques',
+                        data: contentAnalytics.performance || [],
+                        backgroundColor: '#3B82F6',
+                        borderColor: '#3B82F6',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#E0E1DD'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Engagement (%)',
+                                color: '#E0E1DD'
+                            },
+                            ticks: {
+                                color: '#778DA9'
+                            },
+                            grid: {
+                                color: '#415A77'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Revenue (€)',
+                                color: '#E0E1DD'
+                            },
+                            ticks: {
+                                color: '#778DA9'
+                            },
+                            grid: {
+                                color: '#415A77'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico de tasa de finalización
+        function updateCompletionChart() {
+            const ctx = document.getElementById('completionChart').getContext('2d');
+            
+            if (charts.completion) {
+                charts.completion.destroy();
+            }
+
+            charts.completion = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: contentAnalytics.completionLabels || ['Matemáticas', 'Ciencias', 'Historia', 'Idiomas'],
+                    datasets: [{
+                        data: contentAnalytics.completionData || [85, 72, 68, 90],
+                        backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'],
+                        borderColor: '#0D1B2A',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#E0E1DD'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico de tendencias de engagement
+        function updateEngagementTrendChart() {
+            const ctx = document.getElementById('engagementTrendChart').getContext('2d');
+            
+            if (charts.engagementTrend) {
+                charts.engagementTrend.destroy();
+            }
+
+            charts.engagementTrend = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: contentAnalytics.trendLabels || ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+                    datasets: [{
+                        label: 'Engagement',
+                        data: contentAnalytics.trendData || [65, 70, 68, 75],
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#E0E1DD'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#778DA9'
+                            },
+                            grid: {
+                                color: '#415A77'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#778DA9'
+                            },
+                            grid: {
+                                color: '#415A77'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Actualizar análisis IA
+        async function refreshAIAnalysis() {
+            const container = document.getElementById('blocks-container');
+            container.innerHTML = '<div class="loading">Actualizando análisis de IA...</div>';
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/ai/analyze-blocks', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const analysis = await response.json();
+                    displayAIAnalysis(analysis);
+                } else {
+                    container.innerHTML = '<div class="loading">Error al cargar análisis de IA</div>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                container.innerHTML = '<div class="loading">Error al cargar análisis de IA</div>';
+            }
+        }
+
+        // Mostrar análisis de IA
+        function displayAIAnalysis(analysis) {
+            const container = document.getElementById('blocks-container');
+            
+            if (!analysis || analysis.length === 0) {
+                container.innerHTML = '<div class="loading">No hay análisis disponibles</div>';
+                return;
+            }
+
+            container.innerHTML = analysis.map(block => `
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">${block.title}</div>
+                        <div class="chart-subtitle">Score IA: ${block.aiScore}/100</div>
+                    </div>
+                    <div style="color: #778DA9; font-size: 14px; line-height: 1.5;">
+                        ${block.analysis}
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <div style="background: #0D1B2A; padding: 10px; border-radius: 6px; border-left: 4px solid #3B82F6;">
+                            <strong style="color: #3B82F6;">Recomendaciones:</strong>
+                            <ul style="margin: 5px 0 0 20px; color: #E0E1DD;">
+                                ${block.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

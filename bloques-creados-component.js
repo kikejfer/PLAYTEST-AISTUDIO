@@ -383,6 +383,11 @@ class BloquesCreados {
             console.log('🔍 Loading created blocks with stats...');
             this.blocksData = await apiDataService.fetchCreatedBlocksStats();
             console.log('✅ Loaded blocks:', this.blocksData);
+            console.log('🔍 First block metadata IDs:', this.blocksData[0] ? {
+                tipo_id: this.blocksData[0].tipo_id,
+                nivel_id: this.blocksData[0].nivel_id, 
+                estado_id: this.blocksData[0].estado_id
+            } : 'No blocks');
             
             this.displayBlocks();
         } catch (error) {
@@ -535,11 +540,16 @@ class BloquesCreados {
             console.log('🔍 Loading metadata for filters...');
             const metadata = await apiDataService.fetchBlockMetadata();
             console.log('✅ Loaded metadata:', metadata);
+            console.log('🔍 Types:', metadata.types?.length || 0);
+            console.log('🔍 Levels:', metadata.levels?.length || 0); 
+            console.log('🔍 States:', metadata.states?.length || 0);
             
             // Poblar filtros
             this.populateFilterSelect(`bc-filter-tipo-${this.containerId}`, metadata.types);
             this.populateFilterSelect(`bc-filter-nivel-${this.containerId}`, metadata.levels);
             this.populateFilterSelect(`bc-filter-caracter-${this.containerId}`, metadata.states);
+            
+            console.log('✅ Filters populated successfully');
             
         } catch (error) {
             console.error('❌ Error loading metadata for filters:', error);
@@ -570,25 +580,39 @@ class BloquesCreados {
         const caracterFilter = document.getElementById(`bc-filter-caracter-${this.containerId}`)?.value;
         
         console.log('🔍 Applying filters:', { tipoFilter, nivelFilter, caracterFilter });
+        console.log('🔍 Total blocks available for filtering:', this.blocksData?.length);
+        console.log('🔍 Sample block data for filtering:', this.blocksData?.[0]);
         
-        if (!this.blocksData) return;
+        if (!this.blocksData) {
+            console.log('❌ No blocks data available for filtering');
+            return;
+        }
         
-        let filteredBlocks = this.blocksData;
+        let filteredBlocks = [...this.blocksData];
         
         // Aplicar filtros
         if (tipoFilter) {
+            console.log(`🔍 Filtering by tipo_id: ${tipoFilter}`);
+            const beforeCount = filteredBlocks.length;
             filteredBlocks = filteredBlocks.filter(block => block.tipo_id == tipoFilter);
+            console.log(`🔍 After tipo filter: ${beforeCount} → ${filteredBlocks.length}`);
         }
         
         if (nivelFilter) {
+            console.log(`🔍 Filtering by nivel_id: ${nivelFilter}`);
+            const beforeCount = filteredBlocks.length;
             filteredBlocks = filteredBlocks.filter(block => block.nivel_id == nivelFilter);
+            console.log(`🔍 After nivel filter: ${beforeCount} → ${filteredBlocks.length}`);
         }
         
         if (caracterFilter) {
+            console.log(`🔍 Filtering by estado_id: ${caracterFilter}`);
+            const beforeCount = filteredBlocks.length;
             filteredBlocks = filteredBlocks.filter(block => block.estado_id == caracterFilter);
+            console.log(`🔍 After caracter filter: ${beforeCount} → ${filteredBlocks.length}`);
         }
         
-        console.log(`✅ Filtered ${filteredBlocks.length} blocks from ${this.blocksData.length} total`);
+        console.log(`✅ Final filtered result: ${filteredBlocks.length} blocks from ${this.blocksData.length} total`);
         
         // Mostrar bloques filtrados
         this.displayFilteredBlocks(filteredBlocks);
