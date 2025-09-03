@@ -1043,22 +1043,137 @@ class BloquesCreados {
     }
 
     async saveQuestion(questionId) {
-        // Implementar guardado de pregunta
-        console.log('Saving question:', questionId);
-        // TODO: Implementar lógica de guardado
+        if (!this.currentBlockId) {
+            alert('Error: No hay un bloque seleccionado');
+            return;
+        }
+
+        try {
+            console.log('💾 Saving question:', questionId);
+            
+            // Obtener datos del formulario
+            const textoPregunta = document.getElementById(`bc-edit-text-${questionId}`).value.trim();
+            const tema = document.getElementById(`bc-edit-topic-${questionId}`).value.trim();
+            const difficulty = parseInt(document.getElementById(`bc-edit-difficulty-${questionId}`).value);
+            const explicacionRespuesta = document.getElementById(`bc-edit-explanation-${questionId}`).value.trim();
+            
+            if (!textoPregunta) {
+                alert('El texto de la pregunta es obligatorio');
+                return;
+            }
+
+            // Obtener todas las respuestas
+            const answersContainer = document.getElementById(`bc-edit-answers-${questionId}`);
+            const answerItems = answersContainer.querySelectorAll('.bc-answer-item');
+            
+            const respuestas = Array.from(answerItems).map(item => {
+                const checkbox = item.querySelector('.bc-answer-checkbox');
+                const input = item.querySelector('.bc-answer-text');
+                return {
+                    textoRespuesta: input.value.trim(),
+                    esCorrecta: checkbox.checked
+                };
+            }).filter(r => r.textoRespuesta); // Filtrar respuestas vacías
+
+            if (respuestas.length === 0) {
+                alert('Debe haber al menos una respuesta');
+                return;
+            }
+
+            const hasCorrectAnswer = respuestas.some(r => r.esCorrecta);
+            if (!hasCorrectAnswer) {
+                alert('Debe marcar al menos una respuesta como correcta');
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/blocks/${this.currentBlockId}/questions/${questionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    textoPregunta,
+                    tema,
+                    difficulty,
+                    explicacionRespuesta: explicacionRespuesta || null,
+                    respuestas
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Error al guardar la pregunta');
+            }
+
+            console.log('✅ Question saved successfully');
+            alert('Pregunta guardada correctamente');
+            
+            // Cancelar edición y recargar preguntas
+            this.cancelEditQuestion(questionId);
+            await this.reloadCurrentBlockQuestions();
+            
+        } catch (error) {
+            console.error('❌ Error saving question:', error);
+            alert('Error al guardar la pregunta: ' + error.message);
+        }
     }
 
     async deleteQuestion(questionId) {
         if (!confirm('¿Estás seguro de que quieres eliminar esta pregunta?')) {
             return;
         }
-        // TODO: Implementar eliminación
-        console.log('Deleting question:', questionId);
+
+        if (!this.currentBlockId) {
+            alert('Error: No hay un bloque seleccionado');
+            return;
+        }
+
+        try {
+            console.log('🗑️ Deleting question:', questionId);
+            
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/blocks/${this.currentBlockId}/questions/${questionId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Error al eliminar la pregunta');
+            }
+
+            console.log('✅ Question deleted successfully');
+            alert('Pregunta eliminada correctamente');
+            
+            // Recargar preguntas
+            await this.reloadCurrentBlockQuestions();
+            
+        } catch (error) {
+            console.error('❌ Error deleting question:', error);
+            alert('Error al eliminar la pregunta: ' + error.message);
+        }
+    }
+
+    async reloadCurrentBlockQuestions() {
+        if (!this.currentBlockId) return;
+        
+        try {
+            const questions = await this.fetchBlockQuestions(this.currentBlockId);
+            this.displayQuestions(questions);
+        } catch (error) {
+            console.error('❌ Error reloading questions:', error);
+        }
     }
 
     updateAnswerCorrect(answerId, isCorrect) {
-        // TODO: Implementar actualización de respuesta correcta
-        console.log('Update answer correct:', answerId, isCorrect);
+        // Esta función se usa solo para la interfaz de edición local
+        // Los cambios se guardan cuando se presiona "Guardar"
+        console.log('🔄 Update answer correct (local):', answerId, isCorrect);
     }
 }
 
