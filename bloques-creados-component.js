@@ -878,12 +878,17 @@ class BloquesCreados {
         const token = localStorage.getItem('token');
         const activeRole = localStorage.getItem('activeRole');
         
+        // Validar que el token existe y no es la string "null"
+        if (!token || token === 'null' || token === 'undefined') {
+            throw new Error('No valid authentication token found. Please login again.');
+        }
+        
         const headers = {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
         };
         
-        if (activeRole) {
+        if (activeRole && activeRole !== 'null' && activeRole !== 'undefined') {
             headers['X-Current-Role'] = activeRole;
         }
         
@@ -1103,12 +1108,17 @@ class BloquesCreados {
             const token = localStorage.getItem('token');
             const activeRole = localStorage.getItem('activeRole');
             
+            // Validar que el token existe y no es la string "null"
+            if (!token || token === 'null' || token === 'undefined') {
+                throw new Error('No valid authentication token found. Please login again.');
+            }
+            
             const headers = {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
             
-            if (activeRole) {
+            if (activeRole && activeRole !== 'null' && activeRole !== 'undefined') {
                 headers['X-Current-Role'] = activeRole;
             }
             
@@ -1161,12 +1171,17 @@ class BloquesCreados {
             const token = localStorage.getItem('token');
             const activeRole = localStorage.getItem('activeRole');
             
+            // Validar que el token existe y no es la string "null"
+            if (!token || token === 'null' || token === 'undefined') {
+                throw new Error('No valid authentication token found. Please login again.');
+            }
+            
             const headers = {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
             
-            if (activeRole) {
+            if (activeRole && activeRole !== 'null' && activeRole !== 'undefined') {
                 headers['X-Current-Role'] = activeRole;
             }
             
