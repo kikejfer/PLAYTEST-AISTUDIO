@@ -100,6 +100,24 @@ class BloquesCreados {
                     
                     <div id="bc-blocks-grid-${this.containerId}" class="bc-blocks-grid" style="display: none;"></div>
                 </div>
+                
+                <!-- Editor de Preguntas (solo para profesores) -->
+                <div id="bc-questions-editor-${this.containerId}" class="bc-questions-editor" style="display: none;">
+                    <div class="bc-editor-header">
+                        <h3 id="bc-editor-title-${this.containerId}">Editor de Preguntas</h3>
+                        <button onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.closeQuestionsEditor()" class="bc-btn-close">
+                            ✕ Cerrar
+                        </button>
+                    </div>
+                    
+                    <div id="bc-editor-loading-${this.containerId}" class="bc-loading" style="display: none;">
+                        <p>Cargando preguntas...</p>
+                    </div>
+                    
+                    <div id="bc-questions-list-${this.containerId}" class="bc-questions-list">
+                        <!-- Las preguntas se cargarán aquí -->
+                    </div>
+                </div>
             </div>
 
             <style>
@@ -371,6 +389,166 @@ class BloquesCreados {
                 .bc-clear-filters:hover {
                     background: #B91C1C;
                 }
+                
+                .bc-clickable-title {
+                    cursor: pointer;
+                    transition: color 0.3s ease;
+                }
+                
+                .bc-clickable-title:hover {
+                    color: #3B82F6 !important;
+                    text-decoration: underline;
+                }
+                
+                /* Estilos del Editor de Preguntas */
+                .bc-questions-editor {
+                    background: #1E293B;
+                    border-radius: 8px;
+                    border: 1px solid #334155;
+                    margin-top: 20px;
+                    overflow: hidden;
+                }
+                
+                .bc-editor-header {
+                    background: #0F172A;
+                    padding: 15px 20px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    border-bottom: 1px solid #334155;
+                }
+                
+                .bc-editor-header h3 {
+                    color: #3B82F6;
+                    margin: 0;
+                    font-size: 18px;
+                }
+                
+                .bc-btn-close {
+                    background: #DC2626;
+                    color: white;
+                    border: none;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    transition: background 0.3s ease;
+                }
+                
+                .bc-btn-close:hover {
+                    background: #B91C1C;
+                }
+                
+                .bc-questions-list {
+                    padding: 20px;
+                    max-height: 600px;
+                    overflow-y: auto;
+                }
+                
+                .bc-question-item {
+                    background: #0F172A;
+                    border: 1px solid #334155;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin-bottom: 15px;
+                }
+                
+                .bc-question-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 10px;
+                }
+                
+                .bc-question-title {
+                    color: #3B82F6;
+                    font-size: 14px;
+                    font-weight: 600;
+                }
+                
+                .bc-question-actions {
+                    display: flex;
+                    gap: 5px;
+                }
+                
+                .bc-question-text {
+                    background: #1E293B;
+                    border: 1px solid #475569;
+                    color: #E2E8F0;
+                    padding: 10px;
+                    border-radius: 6px;
+                    width: 100%;
+                    min-height: 60px;
+                    resize: vertical;
+                    font-family: inherit;
+                }
+                
+                .bc-question-text:focus {
+                    outline: none;
+                    border-color: #3B82F6;
+                }
+                
+                .bc-answers-list {
+                    margin-top: 10px;
+                }
+                
+                .bc-answer-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-bottom: 8px;
+                }
+                
+                .bc-answer-checkbox {
+                    width: 18px;
+                    height: 18px;
+                }
+                
+                .bc-answer-text {
+                    background: #1E293B;
+                    border: 1px solid #475569;
+                    color: #E2E8F0;
+                    padding: 8px 12px;
+                    border-radius: 4px;
+                    flex: 1;
+                    font-size: 13px;
+                }
+                
+                .bc-answer-text:focus {
+                    outline: none;
+                    border-color: #3B82F6;
+                }
+                
+                .bc-btn-edit, .bc-btn-save, .bc-btn-cancel {
+                    background: #3B82F6;
+                    color: white;
+                    border: none;
+                    padding: 6px 10px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 11px;
+                    transition: background 0.3s ease;
+                }
+                
+                .bc-btn-save {
+                    background: #10B981;
+                }
+                
+                .bc-btn-cancel {
+                    background: #6B7280;
+                }
+                
+                .bc-btn-edit:hover {
+                    background: #2563EB;
+                }
+                
+                .bc-btn-save:hover {
+                    background: #059669;
+                }
+                
+                .bc-btn-cancel:hover {
+                    background: #4B5563;
+                }
             </style>
         `;
     }
@@ -427,9 +605,15 @@ class BloquesCreados {
         const statusText = block.isPublic ? 'Público' : 'Privado';
         const userLabel = this.labels[this.userType] || 'Usuarios';
         
+        // Diferentes acciones según el tipo de usuario
+        const isTeacher = this.userType === 'alumnos'; // PPF (profesores)
+        
         card.innerHTML = `
             <div class="bc-block-header">
-                <h3 class="bc-block-title">${this.escapeHtml(block.name)}</h3>
+                <h3 class="bc-block-title ${isTeacher ? 'bc-clickable-title' : ''}" 
+                    ${isTeacher ? `onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.loadQuestionsEditor(${block.id}, '${this.escapeHtml(block.name)}')"` : ''}>
+                    ${this.escapeHtml(block.name)}
+                </h3>
                 <span class="bc-block-status ${statusClass}">${statusText}</span>
             </div>
             
@@ -467,9 +651,11 @@ class BloquesCreados {
             </div>
             
             <div class="bc-block-actions">
-                <button class="bc-action-btn bc-btn-view" onclick="bloquesCreados_${this.containerId}.viewBlock(${block.id})">Ver</button>
-                <button class="bc-action-btn bc-btn-edit" onclick="bloquesCreados_${this.containerId}.editBlock(${block.id})">Editar</button>
-                <button class="bc-action-btn bc-btn-delete" onclick="bloquesCreados_${this.containerId}.deleteBlock(${block.id}, '${this.escapeHtml(block.name)}')">Eliminar</button>
+                ${!isTeacher ? `
+                    <button class="bc-action-btn bc-btn-view" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.viewBlock(${block.id})">Ver</button>
+                    <button class="bc-action-btn bc-btn-edit" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.editBlock(${block.id})">Editar</button>
+                ` : ''}
+                <button class="bc-action-btn bc-btn-delete" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.deleteBlock(${block.id}, '${this.escapeHtml(block.name)}')">Eliminar</button>
             </div>
         `;
         
@@ -648,6 +834,231 @@ class BloquesCreados {
     async refresh() {
         await this.loadCreatedBlocks();
         await this.loadMetadataFilters();
+    }
+
+    // Editor de Preguntas - Solo para profesores
+    async loadQuestionsEditor(blockId, blockName) {
+        if (this.userType !== 'alumnos') return; // Solo profesores
+
+        console.log(`🔍 Loading questions editor for block: ${blockId}`);
+        
+        // Mostrar editor y ocultar lista de bloques
+        document.getElementById(`bc-blocks-container-${this.containerId}`).style.display = 'none';
+        document.getElementById(`bc-questions-editor-${this.containerId}`).style.display = 'block';
+        
+        // Actualizar título
+        document.getElementById(`bc-editor-title-${this.containerId}`).textContent = `Editor de Preguntas - ${blockName}`;
+        
+        // Mostrar loading
+        document.getElementById(`bc-editor-loading-${this.containerId}`).style.display = 'block';
+        
+        try {
+            const questions = await this.fetchBlockQuestions(blockId);
+            this.currentBlockId = blockId;
+            this.displayQuestions(questions);
+        } catch (error) {
+            console.error('❌ Error loading questions:', error);
+            alert('Error al cargar las preguntas: ' + error.message);
+            this.closeQuestionsEditor();
+        } finally {
+            document.getElementById(`bc-editor-loading-${this.containerId}`).style.display = 'none';
+        }
+    }
+
+    closeQuestionsEditor() {
+        document.getElementById(`bc-questions-editor-${this.containerId}`).style.display = 'none';
+        document.getElementById(`bc-blocks-container-${this.containerId}`).style.display = 'block';
+        this.currentBlockId = null;
+    }
+
+    async fetchBlockQuestions(blockId) {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/blocks/${blockId}/questions`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch questions');
+        }
+
+        return await response.json();
+    }
+
+    displayQuestions(questions) {
+        const container = document.getElementById(`bc-questions-list-${this.containerId}`);
+        this.currentQuestions = questions; // Guardar para uso posterior
+        
+        if (!questions || questions.length === 0) {
+            container.innerHTML = '<div style="text-align: center; color: #6B7280; padding: 40px;">No hay preguntas en este bloque</div>';
+            return;
+        }
+
+        container.innerHTML = questions.map((question, index) => 
+            this.createQuestionItem(question, index)
+        ).join('');
+    }
+
+    createQuestionItem(question, index) {
+        const answers = question.answers || [];
+        
+        return `
+            <div class="bc-question-item" id="bc-question-${question.id}">
+                <div class="bc-question-header">
+                    <span class="bc-question-title">Pregunta ${index + 1}</span>
+                    <div class="bc-question-actions">
+                        <button class="bc-btn-edit" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.editQuestion(${question.id})">Editar</button>
+                        <button class="bc-action-btn bc-btn-delete" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.deleteQuestion(${question.id})">Eliminar</button>
+                    </div>
+                </div>
+                
+                <div class="bc-question-content" id="bc-content-${question.id}">
+                    <div class="bc-question-view">
+                        <div style="margin-bottom: 10px;">
+                            <strong>Pregunta:</strong>
+                            <div style="background: #0F172A; padding: 10px; border-radius: 6px; margin-top: 5px;">
+                                ${this.escapeHtml(question.text_question)}
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 10px;">
+                            <strong>Tema:</strong> ${this.escapeHtml(question.topic || 'Sin tema')}
+                        </div>
+                        
+                        <div style="margin-bottom: 10px;">
+                            <strong>Dificultad:</strong> ${question.difficulty || 'No especificada'}
+                        </div>
+                        
+                        ${question.explanation ? `
+                        <div style="margin-bottom: 10px;">
+                            <strong>Explicación:</strong>
+                            <div style="background: #0F172A; padding: 10px; border-radius: 6px; margin-top: 5px;">
+                                ${this.escapeHtml(question.explanation)}
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <div>
+                            <strong>Respuestas:</strong>
+                            <div style="margin-top: 8px;">
+                                ${answers.map(answer => `
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                        <span style="color: ${answer.is_correct ? '#10B981' : '#6B7280'};">
+                                            ${answer.is_correct ? '✓' : '○'}
+                                        </span>
+                                        <span>${this.escapeHtml(answer.answer_text)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bc-question-edit" id="bc-edit-${question.id}" style="display: none;">
+                        <!-- Formulario de edición se carga aquí -->
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    editQuestion(questionId) {
+        const question = this.getQuestionById(questionId);
+        if (!question) return;
+
+        const editContainer = document.getElementById(`bc-edit-${questionId}`);
+        const viewContainer = editContainer.previousElementSibling;
+        
+        viewContainer.style.display = 'none';
+        editContainer.style.display = 'block';
+        
+        editContainer.innerHTML = this.createQuestionEditForm(question);
+    }
+
+    createQuestionEditForm(question) {
+        const answers = question.answers || [];
+        
+        return `
+            <div style="space-y: 15px;">
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Pregunta:</label>
+                    <textarea class="bc-question-text" id="bc-edit-text-${question.id}">${this.escapeHtml(question.text_question)}</textarea>
+                </div>
+                
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Tema:</label>
+                    <input type="text" class="bc-answer-text" id="bc-edit-topic-${question.id}" value="${this.escapeHtml(question.topic || '')}" style="width: 200px;">
+                </div>
+                
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Dificultad:</label>
+                    <select class="bc-answer-text" id="bc-edit-difficulty-${question.id}" style="width: 150px;">
+                        <option value="1" ${question.difficulty == 1 ? 'selected' : ''}>1 - Fácil</option>
+                        <option value="2" ${question.difficulty == 2 ? 'selected' : ''}>2 - Medio</option>
+                        <option value="3" ${question.difficulty == 3 ? 'selected' : ''}>3 - Difícil</option>
+                        <option value="4" ${question.difficulty == 4 ? 'selected' : ''}>4 - Muy Difícil</option>
+                        <option value="5" ${question.difficulty == 5 ? 'selected' : ''}>5 - Experto</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Explicación (opcional):</label>
+                    <textarea class="bc-question-text" id="bc-edit-explanation-${question.id}" style="min-height: 40px;">${this.escapeHtml(question.explanation || '')}</textarea>
+                </div>
+                
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Respuestas:</label>
+                    <div class="bc-answers-list" id="bc-edit-answers-${question.id}">
+                        ${answers.map((answer, index) => `
+                            <div class="bc-answer-item" data-answer-id="${answer.id}">
+                                <input type="checkbox" class="bc-answer-checkbox" ${answer.is_correct ? 'checked' : ''} 
+                                       onchange="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.updateAnswerCorrect(${answer.id}, this.checked)">
+                                <input type="text" class="bc-answer-text" value="${this.escapeHtml(answer.answer_text)}" 
+                                       data-answer-id="${answer.id}" placeholder="Respuesta ${index + 1}">
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+                    <button class="bc-btn-save" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.saveQuestion(${question.id})">Guardar</button>
+                    <button class="bc-btn-cancel" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.cancelEditQuestion(${question.id})">Cancelar</button>
+                </div>
+            </div>
+        `;
+    }
+
+    getQuestionById(questionId) {
+        // Implementar búsqueda en los datos cargados
+        return this.currentQuestions?.find(q => q.id === questionId);
+    }
+
+    cancelEditQuestion(questionId) {
+        const editContainer = document.getElementById(`bc-edit-${questionId}`);
+        const viewContainer = editContainer.previousElementSibling;
+        
+        editContainer.style.display = 'none';
+        viewContainer.style.display = 'block';
+    }
+
+    async saveQuestion(questionId) {
+        // Implementar guardado de pregunta
+        console.log('Saving question:', questionId);
+        // TODO: Implementar lógica de guardado
+    }
+
+    async deleteQuestion(questionId) {
+        if (!confirm('¿Estás seguro de que quieres eliminar esta pregunta?')) {
+            return;
+        }
+        // TODO: Implementar eliminación
+        console.log('Deleting question:', questionId);
+    }
+
+    updateAnswerCorrect(answerId, isCorrect) {
+        // TODO: Implementar actualización de respuesta correcta
+        console.log('Update answer correct:', answerId, isCorrect);
     }
 }
 
