@@ -874,7 +874,7 @@ class BloquesCreados {
     async fetchBlockQuestions(blockId) {
         // Force Render backend for now since we're using Render+Aiven setup
         const API_BASE_URL = 'https://playtest-backend.onrender.com';
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('token');
         const activeRole = localStorage.getItem('activeRole');
         
         // Debug token information
@@ -1115,7 +1115,7 @@ class BloquesCreados {
 
             // Force Render backend for now since we're using Render+Aiven setup
             const API_BASE_URL = 'https://playtest-backend.onrender.com';
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('token');
             const activeRole = localStorage.getItem('activeRole');
             
             // Validar que el token existe y no es la string "null"
@@ -1177,7 +1177,7 @@ class BloquesCreados {
             
             // Force Render backend for now since we're using Render+Aiven setup
             const API_BASE_URL = 'https://playtest-backend.onrender.com';
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('token');
             const activeRole = localStorage.getItem('activeRole');
             
             // Validar que el token existe y no es la string "null"
