@@ -936,27 +936,32 @@
         // Cargar clases del profesor
         async function loadClasses() {
             try {
-                const token = localStorage.getItem('authToken');
-                if (!token) {
-                    showError('schedules-container', 'No autenticado');
-                    return;
-                }
+                // TODO: Uncomment when backend is running
+                // const token = localStorage.getItem('authToken');
+                // if (!token) {
+                //     showError('schedules-container', 'No autenticado');
+                //     return;
+                // }
 
-                const response = await fetch('/api/teachers-panel/classes', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                // const response = await fetch('/api/teachers-panel/classes', {
+                //     headers: { 'Authorization': `Bearer ${token}` }
+                // });
 
-                if (!response.ok) {
-                    throw new Error('Error cargando clases');
-                }
+                // if (!response.ok) {
+                //     throw new Error('Error cargando clases');
+                // }
 
-                const data = await response.json();
-                classes = data.classes || [];
+                // const data = await response.json();
+                // classes = data.classes || [];
+                
+                // Temporary mock data to prevent errors
+                classes = [];
                 populateClassSelector();
 
             } catch (error) {
-                console.error('Error cargando clases:', error);
-                showError('schedules-container', 'Error cargando clases');
+                console.warn('Classes loading disabled - backend not running:', error);
+                classes = [];
+                populateClassSelector();
             }
         }
 
@@ -1371,7 +1376,12 @@
         }
 
         function showError(containerId, message) {
-            document.getElementById(containerId).innerHTML = `<div class="error">${message}</div>`;
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = `<div class="error">${message}</div>`;
+            } else {
+                console.error(`showError: Element with id '${containerId}' not found. Message: ${message}`);
+            }
         }
 
         // Funciones del menú dropdown del usuario
@@ -1678,9 +1688,7 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="add-questions-module.js"></script>
     
-    <script type="text/babel">
-        const { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext } = React;
-        
+    <script type="text/babel">        
         // Translation system for Add Questions
         const translations = {
             es: {

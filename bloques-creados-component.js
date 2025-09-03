@@ -61,26 +61,26 @@ class BloquesCreados {
                 <div class="bc-filters">
                     <div class="bc-filter-group">
                         <label for="bc-filter-tipo-${this.containerId}">Tipo de Bloque:</label>
-                        <select id="bc-filter-tipo-${this.containerId}" onchange="window.bloquesCreados_${this.containerId}?.applyFilters()">
+                        <select id="bc-filter-tipo-${this.containerId}" onchange="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.applyFilters()">
                             <option value="">Todos los tipos</option>
                         </select>
                     </div>
                     
                     <div class="bc-filter-group">
                         <label for="bc-filter-nivel-${this.containerId}">Nivel:</label>
-                        <select id="bc-filter-nivel-${this.containerId}" onchange="window.bloquesCreados_${this.containerId}?.applyFilters()">
+                        <select id="bc-filter-nivel-${this.containerId}" onchange="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.applyFilters()">
                             <option value="">Todos los niveles</option>
                         </select>
                     </div>
                     
                     <div class="bc-filter-group">
                         <label for="bc-filter-caracter-${this.containerId}">Carácter:</label>
-                        <select id="bc-filter-caracter-${this.containerId}" onchange="window.bloquesCreados_${this.containerId}?.applyFilters()">
+                        <select id="bc-filter-caracter-${this.containerId}" onchange="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.applyFilters()">
                             <option value="">Todos los caracteres</option>
                         </select>
                     </div>
                     
-                    <button onclick="window.bloquesCreados_${this.containerId}?.clearFilters()" class="bc-clear-filters">
+                    <button onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.clearFilters()" class="bc-clear-filters">
                         🗑️ Limpiar Filtros
                     </button>
                 </div>
@@ -657,8 +657,9 @@ function renderBloquesCreados(containerId, userType = 'jugadores') {
     
     const instance = new BloquesCreados(containerId, userType);
     
-    // Make instance globally available for button callbacks
-    window[`bloquesCreados_${containerId}`] = instance;
+    // Make instance globally available for button callbacks with valid JS identifier
+    const globalName = `bloquesCreados_${containerId.replace(/[-]/g, '_')}`;
+    window[globalName] = instance;
     
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {
