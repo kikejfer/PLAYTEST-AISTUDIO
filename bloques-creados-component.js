@@ -872,8 +872,11 @@ class BloquesCreados {
     }
 
     async fetchBlockQuestions(blockId) {
+        const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+            ? 'https://playtest-backend.onrender.com' 
+            : '';
         const token = localStorage.getItem('token');
-        const response = await fetch(`/api/blocks/${blockId}/questions`, {
+        const response = await fetch(`${API_BASE_URL}/api/blocks/${blockId}/questions`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -1086,8 +1089,11 @@ class BloquesCreados {
                 return;
             }
 
+            const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                ? 'https://playtest-backend.onrender.com' 
+                : '';
             const token = localStorage.getItem('token');
-            const response = await fetch(`/api/blocks/${this.currentBlockId}/questions/${questionId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/blocks/${this.currentBlockId}/questions/${questionId}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -1133,8 +1139,11 @@ class BloquesCreados {
         try {
             console.log('🗑️ Deleting question:', questionId);
             
+            const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                ? 'https://playtest-backend.onrender.com' 
+                : '';
             const token = localStorage.getItem('token');
-            const response = await fetch(`/api/blocks/${this.currentBlockId}/questions/${questionId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/blocks/${this.currentBlockId}/questions/${questionId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
