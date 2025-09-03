@@ -877,8 +877,20 @@ class BloquesCreados {
         const token = localStorage.getItem('token');
         const activeRole = localStorage.getItem('activeRole');
         
+        // Debug token information
+        console.log('🔍 Token debug:', { 
+            token: token ? `${token.substring(0, 20)}...` : token,
+            type: typeof token,
+            length: token ? token.length : 0,
+            isNull: token === null,
+            isStringNull: token === 'null',
+            isUndefined: token === 'undefined',
+            isEmpty: !token
+        });
+        
         // Validar que el token existe y no es la string "null"
         if (!token || token === 'null' || token === 'undefined') {
+            console.error('❌ Token validation failed:', token);
             throw new Error('No valid authentication token found. Please login again.');
         }
         
