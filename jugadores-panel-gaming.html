@@ -1672,15 +1672,28 @@
         // Componente AvailableBlocks completo (funcionalidades de available-blocks.html)
         const AvailableBlocksComponent = () => {
             const [availableBlocks, setAvailableBlocks] = useState([]);
+            const [filteredBlocks, setFilteredBlocks] = useState([]);
             const [loadedBlockIds, setLoadedBlockIds] = useState([]);
             const [isLoading, setIsLoading] = useState(true);
             const [searchTerm, setSearchTerm] = useState('');
             const [loadingActions, setLoadingActions] = useState({});
             const [message, setMessage] = useState('');
+            
+            // Filtros de metadata
+            const [blockMetadata, setBlockMetadata] = useState({ types: [], levels: [], states: [] });
+            const [selectedTipo, setSelectedTipo] = useState('');
+            const [selectedNivel, setSelectedNivel] = useState('');
+            const [selectedEstado, setSelectedEstado] = useState('');
 
             useEffect(() => {
                 loadData();
+                loadMetadata();
             }, []);
+
+            // Aplicar filtros cuando cambien los valores
+            useEffect(() => {
+                applyFilters();
+            }, [availableBlocks, searchTerm, selectedTipo, selectedNivel, selectedEstado]);
 
             const loadData = async () => {
                 try {
@@ -1741,10 +1754,52 @@
                 }
             };
 
-            const filteredBlocks = availableBlocks.filter(block =>
-                block.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                block.creatorNickname?.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+            const loadMetadata = async () => {
+                try {
+                    console.log('🔍 Loading metadata for filters...');
+                    const metadata = await window.apiDataService.fetchBlockMetadata();
+                    console.log('✅ Loaded metadata:', metadata);
+                    setBlockMetadata(metadata);
+                } catch (error) {
+                    console.error('❌ Error loading metadata for filters:', error);
+                }
+            };
+
+            const applyFilters = () => {
+                if (!availableBlocks.length) {
+                    setFilteredBlocks([]);
+                    return;
+                }
+
+                let filtered = availableBlocks.filter(block =>
+                    block.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    block.creatorNickname?.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+
+                // Aplicar filtros de metadata
+                if (selectedTipo) {
+                    filtered = filtered.filter(block => block.tipo_id == selectedTipo);
+                }
+                
+                if (selectedNivel) {
+                    filtered = filtered.filter(block => block.nivel_id == selectedNivel);
+                }
+                
+                if (selectedEstado) {
+                    filtered = filtered.filter(block => block.estado_id == selectedEstado);
+                }
+
+                console.log(`🔍 Filtered ${filtered.length} blocks from ${availableBlocks.length} total`);
+                setFilteredBlocks(filtered);
+            };
+
+            const clearFilters = () => {
+                console.log('🗑️ Clearing all filters');
+                setSearchTerm('');
+                setSelectedTipo('');
+                setSelectedNivel('');
+                setSelectedEstado('');
+            };
 
             if (isLoading) {
                 return React.createElement('div', { 
@@ -1796,6 +1851,88 @@
                         d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                     }))
                 ])),
+
+                // Filtros de Metadata
+                React.createElement('div', {
+                    key: 'metadata-filters',
+                    className: "mb-6 p-4 bg-slate-700 rounded-lg border border-slate-600"
+                }, [
+                    React.createElement('h4', {
+                        key: 'filters-title',
+                        className: "text-sm font-medium text-gray-300 mb-3"
+                    }, '🔍 Filtros'),
+                    
+                    React.createElement('div', {
+                        key: 'filters-grid',
+                        className: "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4"
+                    }, [
+                        // Filtro Tipo
+                        React.createElement('div', { key: 'tipo-filter' }, [
+                            React.createElement('label', {
+                                key: 'tipo-label',
+                                className: "block text-xs text-gray-400 mb-1"
+                            }, 'Tipo de Bloque'),
+                            React.createElement('select', {
+                                key: 'tipo-select',
+                                value: selectedTipo,
+                                onChange: (e) => setSelectedTipo(e.target.value),
+                                className: "w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-md text-white text-sm focus:outline-none focus:border-blue-500"
+                            }, [
+                                React.createElement('option', { key: 'tipo-all', value: '' }, 'Todos los tipos'),
+                                ...blockMetadata.types.map(tipo => 
+                                    React.createElement('option', { key: `tipo-${tipo.id}`, value: tipo.id }, tipo.name)
+                                )
+                            ])
+                        ]),
+                        
+                        // Filtro Nivel
+                        React.createElement('div', { key: 'nivel-filter' }, [
+                            React.createElement('label', {
+                                key: 'nivel-label',
+                                className: "block text-xs text-gray-400 mb-1"
+                            }, 'Nivel'),
+                            React.createElement('select', {
+                                key: 'nivel-select',
+                                value: selectedNivel,
+                                onChange: (e) => setSelectedNivel(e.target.value),
+                                className: "w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-md text-white text-sm focus:outline-none focus:border-blue-500"
+                            }, [
+                                React.createElement('option', { key: 'nivel-all', value: '' }, 'Todos los niveles'),
+                                ...blockMetadata.levels.map(nivel => 
+                                    React.createElement('option', { key: `nivel-${nivel.id}`, value: nivel.id }, nivel.name)
+                                )
+                            ])
+                        ]),
+                        
+                        // Filtro Carácter/Estado
+                        React.createElement('div', { key: 'estado-filter' }, [
+                            React.createElement('label', {
+                                key: 'estado-label',
+                                className: "block text-xs text-gray-400 mb-1"
+                            }, 'Carácter'),
+                            React.createElement('select', {
+                                key: 'estado-select',
+                                value: selectedEstado,
+                                onChange: (e) => setSelectedEstado(e.target.value),
+                                className: "w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-md text-white text-sm focus:outline-none focus:border-blue-500"
+                            }, [
+                                React.createElement('option', { key: 'estado-all', value: '' }, 'Todos los caracteres'),
+                                ...blockMetadata.states.map(estado => 
+                                    React.createElement('option', { key: `estado-${estado.id}`, value: estado.id }, estado.name)
+                                )
+                            ])
+                        ]),
+                        
+                        // Botón limpiar filtros
+                        React.createElement('div', { key: 'clear-filter-container', className: "flex items-end" }, [
+                            React.createElement('button', {
+                                key: 'clear-filters-btn',
+                                onClick: clearFilters,
+                                className: "w-full px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+                            }, '🗑️ Limpiar')
+                        ])
+                    ])
+                ]),
 
                 // Blocks grid
                 filteredBlocks.length === 0 ? React.createElement('div', {

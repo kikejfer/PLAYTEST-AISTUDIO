@@ -914,7 +914,7 @@
                   {/* SINGLE UPLOAD / BATCH LOAD UI */}
                   {reviewedQuestions.length === 0 && !isBatchModeActive && (
                       <div className="space-y-4 mt-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_block')}</label> <Combobox options={blockOptions} value={blockName} onChange={setBlockName} placeholder={t('generator_block_placeholder')} disabled={isUIBlocked}/> </div> <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_topic')}</label> <Combobox options={availableTopics} value={topicName} onChange={setTopicName} placeholder={t('generator_topic_placeholder')} disabled={!blockName.trim() || isUIBlocked}/> </div> </div>
+                          <div className="space-y-4"> <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_block')}</label> <Combobox options={blockOptions} value={blockName} onChange={setBlockName} placeholder={t('generator_block_placeholder')} disabled={isUIBlocked}/> </div> <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_topic')}</label> <Combobox options={availableTopics} value={topicName} onChange={setTopicName} placeholder={t('generator_topic_placeholder')} disabled={!blockName.trim() || isUIBlocked}/> </div> </div>
                           {isNewBlock && currentUser && (
                             <>
                               <BlockMetadataFields
@@ -1083,7 +1083,7 @@
                     <h3 className="text-xl font-bold text-brand-light">{t('manual_form_title')}</h3>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-4">
                         <div><label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_block')}</label><Combobox options={blockOptions} value={formState.blockName} onChange={(val) => setFormState(p => ({...p, blockName: val}))} placeholder={t('generator_block_placeholder')} /></div>
                         <div><label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_topic')}</label><Combobox options={availableTopics} value={formState.topicName} onChange={(val) => setFormState(p => ({...p, topicName: val}))} placeholder={t('generator_topic_placeholder')} disabled={!formState.blockName.trim()} /></div>
                     </div>

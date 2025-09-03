@@ -22,6 +22,7 @@ class BloquesCreados {
             await this.loadUserData();
             this.render();
             await this.loadCreatedBlocks();
+            await this.loadMetadataFilters();
         } catch (error) {
             console.error('Error initializing BloquesCreados:', error);
             this.showError('Error al inicializar la sección: ' + error.message);
@@ -55,6 +56,34 @@ class BloquesCreados {
         container.innerHTML = `
             <div class="bloques-creados-section">
                 <h2 class="section-title">📦 Bloques Creados</h2>
+                
+                <!-- Filtros de Metadata -->
+                <div class="bc-filters">
+                    <div class="bc-filter-group">
+                        <label for="bc-filter-tipo-${this.containerId}">Tipo de Bloque:</label>
+                        <select id="bc-filter-tipo-${this.containerId}" onchange="window.bloquesCreados_${this.containerId}?.applyFilters()">
+                            <option value="">Todos los tipos</option>
+                        </select>
+                    </div>
+                    
+                    <div class="bc-filter-group">
+                        <label for="bc-filter-nivel-${this.containerId}">Nivel:</label>
+                        <select id="bc-filter-nivel-${this.containerId}" onchange="window.bloquesCreados_${this.containerId}?.applyFilters()">
+                            <option value="">Todos los niveles</option>
+                        </select>
+                    </div>
+                    
+                    <div class="bc-filter-group">
+                        <label for="bc-filter-caracter-${this.containerId}">Carácter:</label>
+                        <select id="bc-filter-caracter-${this.containerId}" onchange="window.bloquesCreados_${this.containerId}?.applyFilters()">
+                            <option value="">Todos los caracteres</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="window.bloquesCreados_${this.containerId}?.clearFilters()" class="bc-clear-filters">
+                        🗑️ Limpiar Filtros
+                    </button>
+                </div>
                 
                 <div id="bc-loading-${this.containerId}" class="bc-loading" style="display: none;">
                     <p>Cargando bloques...</p>
@@ -286,6 +315,62 @@ class BloquesCreados {
                 .bc-btn-primary:hover {
                     background: #2563EB;
                 }
+
+                /* Estilos para filtros */
+                .bc-filters {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 15px;
+                    margin-bottom: 20px;
+                    padding: 15px;
+                    background: #0F172A;
+                    border-radius: 8px;
+                    border: 1px solid #334155;
+                }
+
+                .bc-filter-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 5px;
+                }
+
+                .bc-filter-group label {
+                    font-size: 12px;
+                    color: #94A3B8;
+                    font-weight: 500;
+                }
+
+                .bc-filter-group select {
+                    background: #1E293B;
+                    border: 1px solid #475569;
+                    color: #E2E8F0;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    outline: none;
+                    transition: border-color 0.3s ease;
+                }
+
+                .bc-filter-group select:focus {
+                    border-color: #3B82F6;
+                }
+
+                .bc-clear-filters {
+                    background: #DC2626;
+                    color: white;
+                    border: none;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    height: fit-content;
+                    margin-top: auto;
+                    transition: background 0.3s ease;
+                }
+
+                .bc-clear-filters:hover {
+                    background: #B91C1C;
+                }
             </style>
         `;
     }
@@ -445,9 +530,100 @@ class BloquesCreados {
         return div.innerHTML;
     }
 
+    async loadMetadataFilters() {
+        try {
+            console.log('🔍 Loading metadata for filters...');
+            const metadata = await apiDataService.fetchBlockMetadata();
+            console.log('✅ Loaded metadata:', metadata);
+            
+            // Poblar filtros
+            this.populateFilterSelect(`bc-filter-tipo-${this.containerId}`, metadata.types);
+            this.populateFilterSelect(`bc-filter-nivel-${this.containerId}`, metadata.levels);
+            this.populateFilterSelect(`bc-filter-caracter-${this.containerId}`, metadata.states);
+            
+        } catch (error) {
+            console.error('❌ Error loading metadata for filters:', error);
+        }
+    }
+
+    populateFilterSelect(selectId, options) {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        
+        // Limpiar opciones existentes (excepto la primera "Todos")
+        while (select.children.length > 1) {
+            select.removeChild(select.lastChild);
+        }
+        
+        // Agregar nuevas opciones
+        options.forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option.id;
+            optionElement.textContent = option.name;
+            select.appendChild(optionElement);
+        });
+    }
+
+    applyFilters() {
+        const tipoFilter = document.getElementById(`bc-filter-tipo-${this.containerId}`)?.value;
+        const nivelFilter = document.getElementById(`bc-filter-nivel-${this.containerId}`)?.value;
+        const caracterFilter = document.getElementById(`bc-filter-caracter-${this.containerId}`)?.value;
+        
+        console.log('🔍 Applying filters:', { tipoFilter, nivelFilter, caracterFilter });
+        
+        if (!this.blocksData) return;
+        
+        let filteredBlocks = this.blocksData;
+        
+        // Aplicar filtros
+        if (tipoFilter) {
+            filteredBlocks = filteredBlocks.filter(block => block.tipo_id == tipoFilter);
+        }
+        
+        if (nivelFilter) {
+            filteredBlocks = filteredBlocks.filter(block => block.nivel_id == nivelFilter);
+        }
+        
+        if (caracterFilter) {
+            filteredBlocks = filteredBlocks.filter(block => block.estado_id == caracterFilter);
+        }
+        
+        console.log(`✅ Filtered ${filteredBlocks.length} blocks from ${this.blocksData.length} total`);
+        
+        // Mostrar bloques filtrados
+        this.displayFilteredBlocks(filteredBlocks);
+    }
+
+    displayFilteredBlocks(blocks) {
+        const blocksGrid = document.getElementById(`bc-blocks-grid-${this.containerId}`);
+        const emptyState = document.getElementById(`bc-empty-state-${this.containerId}`);
+
+        if (!blocks || blocks.length === 0) {
+            emptyState.style.display = 'block';
+            blocksGrid.style.display = 'none';
+            return;
+        }
+
+        emptyState.style.display = 'none';
+        blocksGrid.style.display = 'grid';
+
+        blocksGrid.innerHTML = blocks.map(block => this.createBlockCard(block)).join('');
+    }
+
+    clearFilters() {
+        console.log('🗑️ Clearing all filters');
+        
+        document.getElementById(`bc-filter-tipo-${this.containerId}`).value = '';
+        document.getElementById(`bc-filter-nivel-${this.containerId}`).value = '';
+        document.getElementById(`bc-filter-caracter-${this.containerId}`).value = '';
+        
+        this.displayBlocks();
+    }
+
     // Public method to refresh data
     async refresh() {
         await this.loadCreatedBlocks();
+        await this.loadMetadataFilters();
     }
 }
 
