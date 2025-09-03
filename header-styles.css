@@ -16,12 +16,12 @@
 
 /* Estilos para el contenido principal con padding para el header fijo */
 .main-content {
-    padding-top: 60px; /* Ajustar según altura del header */
+    padding-top: 100px; /* Ajustar según altura del header */
 }
 
 /* Asegurar que el padding del body tenga en cuenta el header fijo */
 body.with-fixed-header {
-    padding-top: 60px;
+    padding-top: 100px;
 }
 
 /* Responsive design para el header */
@@ -47,6 +47,6 @@ body.with-fixed-header {
     
     .main-content,
     body.with-fixed-header {
-        padding-top: 100px; /* Más espacio en móvil */
+        padding-top: 140px; /* Más espacio en móvil */
     }
 }
