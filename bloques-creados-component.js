@@ -872,9 +872,8 @@ class BloquesCreados {
     }
 
     async fetchBlockQuestions(blockId) {
-        const API_BASE_URL = window.location.hostname.includes('onrender.com') 
-            ? 'https://playtest-backend.onrender.com' 
-            : '';
+        // Force Render backend for now since we're using Render+Aiven setup
+        const API_BASE_URL = 'https://playtest-backend.onrender.com';
         const token = localStorage.getItem('token');
         const activeRole = localStorage.getItem('activeRole');
         
@@ -1102,9 +1101,8 @@ class BloquesCreados {
                 return;
             }
 
-            const API_BASE_URL = window.location.hostname.includes('onrender.com') 
-                ? 'https://playtest-backend.onrender.com' 
-                : '';
+            // Force Render backend for now since we're using Render+Aiven setup
+            const API_BASE_URL = 'https://playtest-backend.onrender.com';
             const token = localStorage.getItem('token');
             const activeRole = localStorage.getItem('activeRole');
             
@@ -1165,9 +1163,8 @@ class BloquesCreados {
         try {
             console.log('🗑️ Deleting question:', questionId);
             
-            const API_BASE_URL = window.location.hostname.includes('onrender.com') 
-                ? 'https://playtest-backend.onrender.com' 
-                : '';
+            // Force Render backend for now since we're using Render+Aiven setup
+            const API_BASE_URL = 'https://playtest-backend.onrender.com';
             const token = localStorage.getItem('token');
             const activeRole = localStorage.getItem('activeRole');
             
