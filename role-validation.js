@@ -181,7 +181,11 @@ function showAccessDeniedMessage(attemptedPanel, userRoles) {
                 ">
                     Ir al Panel Correcto
                 </button>
-                <button onclick="window.location.href='index.html'" style="
+                <button onclick="
+                    localStorage.clear();
+                    window.location.href='index.html';
+                    window.location.reload();
+                " style="
                     background: #6B7280;
                     color: white;
                     border: none;

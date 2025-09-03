@@ -554,21 +554,6 @@
                 <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_block')}</label> <Combobox options={blockOptions} value={blockName} onChange={setBlockName} placeholder={t('generator_block_placeholder')} disabled={isUIBlocked} /> </div>
                 <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_topic')}</label> <Combobox options={availableTopics} value={topicName} onChange={setTopicName} placeholder={t('generator_topic_placeholder')} disabled={!blockName.trim() || isUIBlocked} /> </div>
               </div>
-              {isNewBlock && currentUser && (
-                <div className="bg-brand-primary p-3 rounded-lg flex items-center gap-4">
-                    <label className="text-sm font-medium text-brand-accent">{t('block_type')}:</label>
-                    <div className="flex items-center gap-4 text-brand-light">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="block-visibility-gen" checked={isPublic} onChange={() => setIsPublic(true)} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
-                            {t('block_public')}
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="block-visibility-gen" checked={!isPublic} onChange={() => setIsPublic(false)} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
-                            {t('block_private')}
-                        </label>
-                    </div>
-                </div>
-              )}
               {isNewBlock && (
                 <div>
                   <label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_observations')}</label>
@@ -932,19 +917,6 @@
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_block')}</label> <Combobox options={blockOptions} value={blockName} onChange={setBlockName} placeholder={t('generator_block_placeholder')} disabled={isUIBlocked}/> </div> <div> <label className="block text-sm font-medium text-brand-accent mb-1">{t('generator_topic')}</label> <Combobox options={availableTopics} value={topicName} onChange={setTopicName} placeholder={t('generator_topic_placeholder')} disabled={!blockName.trim() || isUIBlocked}/> </div> </div>
                           {isNewBlock && currentUser && (
                             <>
-                              <div className="bg-brand-primary p-3 rounded-lg flex items-center gap-4">
-                                  <label className="text-sm font-medium text-brand-accent">{t('block_type')}:</label>
-                                  <div className="flex items-center gap-4 text-brand-light">
-                                      <label className="flex items-center gap-2 cursor-pointer">
-                                          <input type="radio" name="block-visibility-upl" checked={isPublic} onChange={() => setIsPublic(true)} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
-                                          {t('block_public')}
-                                      </label>
-                                      <label className="flex items-center gap-2 cursor-pointer">
-                                          <input type="radio" name="block-visibility-upl" checked={!isPublic} onChange={() => setIsPublic(false)} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
-                                          {t('block_private')}
-                                      </label>
-                                  </div>
-                              </div>
                               <BlockMetadataFields
                                   blockMetadata={blockMetadata}
                                   selectedTipo={selectedTipo}
@@ -1117,19 +1089,6 @@
                     </div>
                     {isNewBlock && currentUser && (
                       <>
-                        <div className="bg-brand-primary p-3 rounded-lg flex items-center gap-4">
-                            <label className="text-sm font-medium text-brand-accent">{t('block_type')}:</label>
-                            <div className="flex items-center gap-4 text-brand-light">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="block-visibility-manual" checked={formState.isPublic} onChange={() => setFormState(p => ({...p, isPublic: true}))} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
-                                    {t('block_public')}
-                                </label>
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="block-visibility-manual" checked={!formState.isPublic} onChange={() => setFormState(p => ({...p, isPublic: false}))} className="h-4 w-4 text-brand-cta bg-brand-secondary border-brand-tertiary focus:ring-brand-cta"/>
-                                    {t('block_private')}
-                                </label>
-                            </div>
-                        </div>
                         <BlockMetadataFields
                             blockMetadata={blockMetadata}
                             selectedTipo={selectedTipo}

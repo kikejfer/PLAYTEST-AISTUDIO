@@ -875,56 +875,6 @@ const QuestionGenerator = ({ currentUser, blocks, onSaveQuestions, onCreateBlock
                 ])
             ]),
             
-            // Block visibility for new blocks
-            isNewBlock && currentUser && React.createElement('div', {
-                key: 'block-visibility',
-                style: {
-                    background: '#0D1B2A',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '16px'
-                }
-            }, [
-                React.createElement('label', {
-                    key: 'label',
-                    style: { fontSize: '14px', fontWeight: '500', color: '#778DA9' }
-                }, t('block_type') + ':'),
-                React.createElement('div', {
-                    key: 'radio-group',
-                    style: { display: 'flex', alignItems: 'center', gap: '16px', color: '#E0E1DD' }
-                }, [
-                    React.createElement('label', {
-                        key: 'public',
-                        style: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }
-                    }, [
-                        React.createElement('input', {
-                            key: 'radio',
-                            type: 'radio',
-                            name: 'block-visibility-gen',
-                            checked: isPublic,
-                            onChange: () => setIsPublic(true),
-                            style: { height: '16px', width: '16px' }
-                        }),
-                        t('block_public')
-                    ]),
-                    React.createElement('label', {
-                        key: 'private',
-                        style: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }
-                    }, [
-                        React.createElement('input', {
-                            key: 'radio',
-                            type: 'radio',
-                            name: 'block-visibility-gen',
-                            checked: !isPublic,
-                            onChange: () => setIsPublic(false),
-                            style: { height: '16px', width: '16px' }
-                        }),
-                        t('block_private')
-                    ])
-                ])
-            ]),
             
             // Metadata fields for new blocks
             isNewBlock && currentUser && React.createElement(BlockMetadataFields, {
@@ -1712,57 +1662,6 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
                     }, t('uploader_batch_finish'))
                 ]),
                 
-                // Block visibility for batch
-                currentUser && React.createElement('div', {
-                    key: 'batch-visibility',
-                    style: {
-                        marginBottom: '16px',
-                        background: '#1B263B',
-                        padding: '12px',
-                        borderRadius: '8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '16px'
-                    }
-                }, [
-                    React.createElement('label', {
-                        key: 'visibility-label',
-                        style: { fontSize: '14px', fontWeight: '500', color: '#778DA9' }
-                    }, t('block_type') + ':'),
-                    React.createElement('div', {
-                        key: 'visibility-options',
-                        style: { display: 'flex', alignItems: 'center', gap: '16px', color: '#E0E1DD' }
-                    }, [
-                        React.createElement('label', {
-                            key: 'public-option',
-                            style: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }
-                        }, [
-                            React.createElement('input', {
-                                key: 'public-radio',
-                                type: 'radio',
-                                name: 'batch-block-visibility',
-                                checked: batchIsPublic,
-                                onChange: () => setBatchIsPublic(true),
-                                style: { height: '16px', width: '16px' }
-                            }),
-                            t('block_public')
-                        ]),
-                        React.createElement('label', {
-                            key: 'private-option',
-                            style: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }
-                        }, [
-                            React.createElement('input', {
-                                key: 'private-radio',
-                                type: 'radio',
-                                name: 'batch-block-visibility',
-                                checked: !batchIsPublic,
-                                onChange: () => setBatchIsPublic(false),
-                                style: { height: '16px', width: '16px' }
-                            }),
-                            t('block_private')
-                        ])
-                    ])
-                ]),
                 
                 // Metadata fields for batch upload
                 currentUser && React.createElement(BlockMetadataFields, {
