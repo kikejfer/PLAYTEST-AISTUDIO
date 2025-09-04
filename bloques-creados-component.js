@@ -909,10 +909,6 @@ class BloquesCreados {
                     <button class="bc-action-btn bc-btn-view" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.viewBlock(${block.id})">Ver</button>
                     <button class="bc-action-btn bc-btn-delete" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.unloadBlock(${block.id}, '${this.escapeHtml(block.name)}')">Eliminar</button>
                 ` : `
-                    ${isCreator ? `
-                        <button class="bc-action-btn bc-btn-view" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.viewBlock(${block.id})">Ver</button>
-                        <button class="bc-action-btn bc-btn-edit" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.editBlock(${block.id})">Editar</button>
-                    ` : ''}
                     <button class="bc-action-btn bc-btn-delete" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.deleteBlock(${block.id}, '${this.escapeHtml(block.name)}')">Eliminar</button>
                 `}
             </div>
