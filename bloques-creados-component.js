@@ -111,7 +111,7 @@ class BloquesCreados {
                     <div id="bc-blocks-grid-${this.containerId}" class="bc-blocks-grid" style="display: none;"></div>
                 </div>
                 
-                <!-- Editor de Preguntas (solo para profesores) -->
+                <!-- Editor de Preguntas/Contenido del Bloque -->
                 <div id="bc-questions-editor-${this.containerId}" class="bc-questions-editor" style="display: none;">
                     <div class="bc-editor-header">
                         <h3 id="bc-editor-title-${this.containerId}">Editor de Preguntas</h3>
@@ -854,11 +854,13 @@ class BloquesCreados {
         const isCreator = this.userType === 'jugadores'; // PCC (creadores)
         const isStudent = this.userType === 'estudiantes'; // PJG (estudiantes)
         const canEditQuestions = (isTeacher || isCreator) && this.displayMode === 'created'; // Only for created blocks
+        const canViewContent = isStudent; // Students can view content in both loaded and available blocks
         
         card.innerHTML = `
             <div class="bc-block-header">
-                <h3 class="bc-block-title ${canEditQuestions ? 'bc-clickable-title' : ''}" 
-                    ${canEditQuestions ? `onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.loadQuestionsEditor(${block.id}, '${this.escapeHtml(block.name)}')"` : ''}>
+                <h3 class="bc-block-title ${canEditQuestions || canViewContent ? 'bc-clickable-title' : ''}" 
+                    ${canEditQuestions ? `onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.loadQuestionsEditor(${block.id}, '${this.escapeHtml(block.name)}')"` : 
+                      canViewContent ? `onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.loadBlockContentViewer(${block.id}, '${this.escapeHtml(block.name)}')"` : ''}>
                     ${this.escapeHtml(block.name)}
                 </h3>
                 <span class="bc-block-status ${statusClass}">${statusText}</span>
@@ -1111,17 +1113,31 @@ class BloquesCreados {
         await this.loadMetadataFilters();
     }
 
+    // Contenido del Bloque - Para estudiantes (PJG)
+    async loadBlockContentViewer(blockId, blockName) {
+        // Permitir acceso a estudiantes
+        if (this.userType !== 'estudiantes') return;
+        
+        console.log(`🔍 Loading block content viewer for block: ${blockId} (${blockName})`);
+        return this.loadBlockEditor(blockId, blockName, 'viewer');
+    }
+
     // Editor de Preguntas - Para profesores (PPF) y creadores (PCC)
     async loadQuestionsEditor(blockId, blockName) {
         // Permitir acceso a profesores (alumnos) y creadores (jugadores)
         if (this.userType !== 'alumnos' && this.userType !== 'jugadores') return;
-
-        console.log(`🔍 Loading questions editor for block: ${blockId} (${blockName})`);
         
+        console.log(`🔍 Loading questions editor for block: ${blockId} (${blockName})`);
+        return this.loadBlockEditor(blockId, blockName, 'editor');
+    }
+
+    // Método unificado para cargar editor/viewer
+    async loadBlockEditor(blockId, blockName, mode = 'editor') {
         // Limpiar cualquier estado previo
         this.currentBlockId = null;
         this.currentQuestions = [];
         this.currentBlockData = null;
+        this.currentMode = mode;
         
         // Mostrar editor y ocultar lista de bloques
         const blocksContainer = document.getElementById(`bc-blocks-container-${this.containerId}`);
@@ -1140,8 +1156,9 @@ class BloquesCreados {
         blocksContainer.style.display = 'none';
         editorContainer.style.display = 'block';
         
-        // Actualizar título
-        titleElement.textContent = `Editor de Preguntas - ${blockName}`;
+        // Actualizar título según el modo
+        const title = mode === 'viewer' ? `Contenido Bloque - ${blockName}` : `Editor de Preguntas - ${blockName}`;
+        titleElement.textContent = title;
         
         // Limpiar contenido anterior y mostrar loading
         questionsListElement.innerHTML = '';
@@ -1150,10 +1167,17 @@ class BloquesCreados {
         try {
             console.log('🔄 Fetching block data and questions...');
             
+            // Determinar el límite de preguntas según el modo y el displayMode
+            let questionLimit = null;
+            if (mode === 'viewer') {
+                // Para estudiantes: todas las preguntas en bloques cargados, 5 en disponibles
+                questionLimit = this.displayMode === 'loaded' ? null : 5;
+            }
+            
             // Cargar datos del bloque y preguntas en paralelo
             const [blockData, questions] = await Promise.all([
                 this.fetchBlockData(blockId),
-                this.fetchBlockQuestions(blockId)
+                this.fetchBlockQuestions(blockId, questionLimit)
             ]);
             
             // Guardar el estado ANTES de mostrar
@@ -1161,8 +1185,8 @@ class BloquesCreados {
             this.currentBlockData = blockData;
             
             console.log('✅ Block data and questions fetched, displaying...');
-            this.displayBlockCharacteristics(blockData);
-            this.displayQuestions(questions);
+            this.displayBlockCharacteristics(blockData, mode);
+            this.displayQuestions(questions, mode);
             
         } catch (error) {
             console.error('❌ Error loading block editor:', error);
@@ -1179,7 +1203,7 @@ class BloquesCreados {
         this.currentBlockId = null;
     }
 
-    async fetchBlockQuestions(blockId) {
+    async fetchBlockQuestions(blockId, limit = null) {
         // Force Render backend for now since we're using Render+Aiven setup
         const API_BASE_URL = 'https://playtest-backend.onrender.com';
         const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('token');
@@ -1211,7 +1235,8 @@ class BloquesCreados {
             headers['X-Current-Role'] = activeRole;
         }
         
-        const response = await fetch(`${API_BASE_URL}/api/blocks/${blockId}/questions`, {
+        const url = limit ? `${API_BASE_URL}/api/blocks/${blockId}/questions?limit=${limit}` : `${API_BASE_URL}/api/blocks/${blockId}/questions`;
+        const response = await fetch(url, {
             headers
         });
 
@@ -1287,7 +1312,7 @@ class BloquesCreados {
         return await response.json();
     }
 
-    displayBlockCharacteristics(blockData) {
+    displayBlockCharacteristics(blockData, mode = 'editor') {
         const container = document.getElementById(`bc-block-characteristics-${this.containerId}`);
         
         if (!container) {
@@ -1304,9 +1329,11 @@ class BloquesCreados {
         container.innerHTML = `
             <div class="bc-block-char-header">
                 <h3 class="bc-block-char-title">📋 Características del Bloque</h3>
+                ${mode === 'editor' ? `
                 <div class="bc-question-actions">
                     <button class="bc-btn-edit" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.editBlockCharacteristics()">Editar</button>
                 </div>
+                ` : ''}
             </div>
             
             <div class="bc-block-char-content" id="bc-block-char-view-${this.containerId}">
@@ -1594,7 +1621,7 @@ class BloquesCreados {
         }
     }
 
-    displayQuestions(questions) {
+    displayQuestions(questions, mode = 'editor') {
         const container = document.getElementById(`bc-questions-list-${this.containerId}`);
         
         // Guardar las preguntas ANTES de procesarlas
@@ -1616,11 +1643,11 @@ class BloquesCreados {
         console.log('✅ Sample question:', questions[0]);
 
         container.innerHTML = questions.map((question, index) => 
-            this.createQuestionItem(question, index)
+            this.createQuestionItem(question, index, mode)
         ).join('');
     }
 
-    createQuestionItem(question, index) {
+    createQuestionItem(question, index, mode = 'editor') {
         // Manejo robusto de las respuestas con múltiples formatos posibles
         const answers = question.respuestas || question.answers || [];
         const tema = question.tema || question.topic || 'Sin tema';
@@ -1640,10 +1667,12 @@ class BloquesCreados {
                     <span class="bc-question-title">
                         Pregunta ${index + 1} - <span class="bc-question-meta">${this.escapeHtml(tema)} (Dificultad: ${dificultad})</span>
                     </span>
+                    ${mode === 'editor' ? `
                     <div class="bc-question-actions">
                         <button class="bc-btn-edit" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.editQuestion(${question.id})">Editar</button>
                         <button class="bc-action-btn bc-btn-delete" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.deleteQuestion(${question.id})">Eliminar</button>
                     </div>
+                    ` : ''}
                 </div>
                 
                 <div class="bc-question-content" id="bc-content-${question.id}">

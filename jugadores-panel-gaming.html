@@ -2297,7 +2297,10 @@
                     return `
                         <div style="background: #0F172A; border: 1px solid #334155; border-radius: 8px; padding: 24px; transition: all 0.3s ease; min-height: 200px;">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
-                                <h3 style="font-size: 16px; font-weight: 600; color: #E0E7FF; margin: 0; flex: 1; line-height: 1.25;">${block.name}</h3>
+                                <h3 onclick="viewAvailableBlockContent(${block.id}, '${block.name}', ${isLoaded})" 
+                                    style="font-size: 16px; font-weight: 600; color: #E0E7FF; margin: 0; flex: 1; line-height: 1.25; cursor: pointer; transition: color 0.3s ease;" 
+                                    onmouseover="this.style.color='#3B82F6'; this.style.textDecoration='underline';" 
+                                    onmouseout="this.style.color='#E0E7FF'; this.style.textDecoration='none';">${block.name}</h3>
                                 ${isLoaded ? '<span style="font-size: 12px; background: rgba(16, 185, 129, 0.2); color: #10B981; padding: 4px 8px; border-radius: 12px;">Cargado</span>' : ''}
                             </div>
                             
@@ -2344,6 +2347,55 @@
                     } catch (error) {
                         console.error('Error handling block action:', error);
                         alert('Error al procesar la acción. Inténtalo de nuevo.');
+                    }
+                };
+
+                // Función para ver el contenido de bloques disponibles
+                window.viewAvailableBlockContent = async (blockId, blockName, isLoaded) => {
+                    try {
+                        // Crear contenedor para el viewer si no existe
+                        let viewerContainer = document.getElementById('available-blocks-content-viewer');
+                        if (!viewerContainer) {
+                            viewerContainer = document.createElement('div');
+                            viewerContainer.id = 'available-blocks-content-viewer';
+                            viewerContainer.style.display = 'none';
+                            document.getElementById('available-blocks-pjg-container').parentNode.appendChild(viewerContainer);
+                        }
+
+                        // Ocultar la lista de bloques disponibles y mostrar el viewer
+                        document.getElementById('available-blocks-pjg-container').style.display = 'none';
+                        viewerContainer.style.display = 'block';
+
+                        // Crear una instancia temporal del componente BloquesCreados para el viewer
+                        if (typeof BloquesCreados !== 'undefined') {
+                            viewerContainer.innerHTML = '<div id="temp-available-block-viewer"></div>';
+                            
+                            const tempViewer = new BloquesCreados('temp-available-block-viewer', 'estudiantes', 'available');
+                            tempViewer.initialize().then(() => {
+                                // Cargar directamente el contenido del bloque
+                                tempViewer.loadBlockContentViewer(blockId, blockName);
+                            });
+
+                            // Actualizar el botón de cierre para volver a la lista de disponibles
+                            const checkAndUpdateCloseButton = () => {
+                                const closeButton = document.querySelector('#temp-available-block-viewer .bc-btn-close');
+                                if (closeButton) {
+                                    closeButton.onclick = () => {
+                                        viewerContainer.style.display = 'none';
+                                        document.getElementById('available-blocks-pjg-container').style.display = 'block';
+                                    };
+                                } else {
+                                    setTimeout(checkAndUpdateCloseButton, 100);
+                                }
+                            };
+                            checkAndUpdateCloseButton();
+
+                        } else {
+                            alert('Error: BloquesCreados component not available');
+                        }
+                    } catch (error) {
+                        console.error('Error viewing block content:', error);
+                        alert('Error al cargar el contenido del bloque.');
                     }
                 };
 
