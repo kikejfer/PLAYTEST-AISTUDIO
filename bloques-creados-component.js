@@ -1335,8 +1335,12 @@ class BloquesCreados {
             const metadata = await this.fetchBlockMetadata();
             metadataOptions = metadata;
             console.log('✅ Metadata fetched for form:', metadataOptions);
+            console.log('🔍 Types:', metadataOptions.types);
+            console.log('🔍 Levels:', metadataOptions.levels);
+            console.log('🔍 States:', metadataOptions.states);
         } catch (error) {
             console.error('❌ Error loading metadata:', error);
+            console.error('❌ Metadata error details:', error.message);
         }
 
         return `
@@ -1408,6 +1412,8 @@ class BloquesCreados {
         const API_BASE_URL = 'https://playtest-backend.onrender.com';
         const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('token');
         
+        console.log('🔍 Fetching block metadata...');
+        
         if (!token || token === 'null' || token === 'undefined') {
             throw new Error('No valid authentication token found');
         }
@@ -1419,11 +1425,18 @@ class BloquesCreados {
             }
         });
 
+        console.log('🔍 Metadata response status:', response.status);
+        
         if (!response.ok) {
-            throw new Error('Failed to fetch block metadata');
+            const errorText = await response.text();
+            console.error('❌ Metadata fetch failed:', response.status, errorText);
+            throw new Error(`Failed to fetch block metadata: ${response.status}`);
         }
 
-        return await response.json();
+        const data = await response.json();
+        console.log('🔍 Raw metadata from server:', data);
+        
+        return data;
     }
 
     cancelEditBlockCharacteristics() {
