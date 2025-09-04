@@ -38,7 +38,8 @@
       "Bash(del \"C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\test-roles.js\")",
       "Bash(timeout:*)",
       "Bash(del \"C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\playtest-backend\\test-principal-endpoint.js\")",
-      "Bash(start creators-panel-content.html)"
+      "Bash(start creators-panel-content.html)",
+      "Read(/C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\playtest-backend/**)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
