@@ -114,6 +114,11 @@ class BloquesCreados {
                         <p>Cargando preguntas...</p>
                     </div>
                     
+                    <!-- Características del Bloque -->
+                    <div id="bc-block-characteristics-${this.containerId}" class="bc-block-characteristics">
+                        <!-- Se cargarán las características aquí -->
+                    </div>
+                    
                     <div id="bc-questions-list-${this.containerId}" class="bc-questions-list">
                         <!-- Las preguntas se cargarán aquí -->
                     </div>
@@ -617,6 +622,149 @@ class BloquesCreados {
                 .bc-btn-cancel:hover {
                     background: #4B5563;
                 }
+                
+                /* Estilos para Características del Bloque */
+                .bc-block-characteristics {
+                    background: #0F172A;
+                    border: 1px solid #334155;
+                    border-radius: 8px;
+                    padding: 20px;
+                    margin-bottom: 20px;
+                }
+                
+                .bc-block-char-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 15px;
+                    padding-bottom: 10px;
+                    border-bottom: 1px solid #334155;
+                }
+                
+                .bc-block-char-title {
+                    color: #F59E0B;
+                    font-size: 16px;
+                    font-weight: 600;
+                    margin: 0;
+                }
+                
+                .bc-block-char-content {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 20px;
+                }
+                
+                .bc-block-char-left {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                }
+                
+                .bc-block-char-right {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                }
+                
+                .bc-char-field {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 5px;
+                }
+                
+                .bc-char-label {
+                    color: #E2E8F0;
+                    font-size: 12px;
+                    font-weight: 600;
+                }
+                
+                .bc-char-value {
+                    color: #CBD5E1;
+                    font-size: 13px;
+                    background: #1E293B;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    border: 1px solid #475569;
+                }
+                
+                .bc-char-textarea {
+                    min-height: 60px;
+                    resize: vertical;
+                }
+                
+                .bc-topics-list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    max-height: 120px;
+                    overflow-y: auto;
+                }
+                
+                .bc-topic-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    background: #1E293B;
+                    padding: 6px 10px;
+                    border-radius: 4px;
+                    border: 1px solid #475569;
+                }
+                
+                .bc-topic-name {
+                    color: #E2E8F0;
+                    font-size: 12px;
+                    flex: 1;
+                }
+                
+                .bc-topic-count {
+                    color: #3B82F6;
+                    font-size: 11px;
+                    font-weight: 600;
+                    background: #1E40AF;
+                    padding: 2px 6px;
+                    border-radius: 3px;
+                }
+                
+                .bc-char-edit-form {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 15px;
+                }
+                
+                .bc-char-edit-field {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 5px;
+                }
+                
+                .bc-char-edit-input {
+                    background: #1E293B;
+                    border: 1px solid #475569;
+                    color: #E2E8F0;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    font-size: 13px;
+                    outline: none;
+                    transition: border-color 0.3s ease;
+                }
+                
+                .bc-char-edit-input:focus {
+                    border-color: #3B82F6;
+                }
+                
+                .bc-char-edit-textarea {
+                    min-height: 80px;
+                    resize: vertical;
+                    font-family: inherit;
+                }
+                
+                .bc-char-edit-actions {
+                    grid-column: 1 / -1;
+                    display: flex;
+                    gap: 10px;
+                    justify-content: flex-end;
+                    margin-top: 10px;
+                }
             </style>
         `;
     }
@@ -913,6 +1061,7 @@ class BloquesCreados {
         // Limpiar cualquier estado previo
         this.currentBlockId = null;
         this.currentQuestions = [];
+        this.currentBlockData = null;
         
         // Mostrar editor y ocultar lista de bloques
         const blocksContainer = document.getElementById(`bc-blocks-container-${this.containerId}`);
@@ -939,18 +1088,25 @@ class BloquesCreados {
         loadingElement.style.display = 'block';
         
         try {
-            console.log('🔄 Fetching questions...');
-            const questions = await this.fetchBlockQuestions(blockId);
+            console.log('🔄 Fetching block data and questions...');
+            
+            // Cargar datos del bloque y preguntas en paralelo
+            const [blockData, questions] = await Promise.all([
+                this.fetchBlockData(blockId),
+                this.fetchBlockQuestions(blockId)
+            ]);
             
             // Guardar el estado ANTES de mostrar
             this.currentBlockId = blockId;
+            this.currentBlockData = blockData;
             
-            console.log('✅ Questions fetched, displaying...');
+            console.log('✅ Block data and questions fetched, displaying...');
+            this.displayBlockCharacteristics(blockData);
             this.displayQuestions(questions);
             
         } catch (error) {
-            console.error('❌ Error loading questions:', error);
-            alert('Error al cargar las preguntas: ' + error.message);
+            console.error('❌ Error loading block editor:', error);
+            alert('Error al cargar el editor del bloque: ' + error.message);
             this.closeQuestionsEditor();
         } finally {
             loadingElement.style.display = 'none';
@@ -1037,6 +1193,332 @@ class BloquesCreados {
         const data = await response.json();
         // El endpoint ahora devuelve un array simple de strings con los nombres de los temas
         return Array.isArray(data) ? data : [];
+    }
+
+    async fetchBlockData(blockId) {
+        // Force Render backend for now since we're using Render+Aiven setup
+        const API_BASE_URL = 'https://playtest-backend.onrender.com';
+        const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('token');
+        const activeRole = localStorage.getItem('activeRole');
+        
+        // Validar que el token existe y no es la string "null"
+        if (!token || token === 'null' || token === 'undefined') {
+            throw new Error('No valid authentication token found. Please login again.');
+        }
+        
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
+        
+        if (activeRole && activeRole !== 'null' && activeRole !== 'undefined') {
+            headers['X-Current-Role'] = activeRole;
+        }
+        
+        // Obtener datos completos del bloque incluyendo estadísticas
+        const response = await fetch(`${API_BASE_URL}/api/blocks/${blockId}/complete-data`, {
+            headers
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch block data');
+        }
+
+        return await response.json();
+    }
+
+    displayBlockCharacteristics(blockData) {
+        const container = document.getElementById(`bc-block-characteristics-${this.containerId}`);
+        
+        if (!container) {
+            console.error('❌ Block characteristics container not found');
+            return;
+        }
+
+        console.log('✅ Displaying block characteristics:', blockData);
+
+        // Preparar datos de temas y estadísticas
+        const topics = blockData.topics || [];
+        const totalQuestions = blockData.totalQuestions || 0;
+
+        container.innerHTML = `
+            <div class="bc-block-char-header">
+                <h3 class="bc-block-char-title">📋 Características del Bloque</h3>
+                <div class="bc-question-actions">
+                    <button class="bc-btn-edit" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.editBlockCharacteristics()">Editar</button>
+                </div>
+            </div>
+            
+            <div class="bc-block-char-content" id="bc-block-char-view-${this.containerId}">
+                <div class="bc-block-char-left">
+                    <div class="bc-char-field">
+                        <label class="bc-char-label">Nombre del Bloque</label>
+                        <div class="bc-char-value">${this.escapeHtml(blockData.name || 'Sin nombre')}</div>
+                    </div>
+                    
+                    <div class="bc-char-field">
+                        <label class="bc-char-label">Descripción</label>
+                        <div class="bc-char-value bc-char-textarea">${this.escapeHtml(blockData.description || 'Sin descripción')}</div>
+                    </div>
+                    
+                    <div class="bc-char-field">
+                        <label class="bc-char-label">Observaciones</label>
+                        <div class="bc-char-value bc-char-textarea">${this.escapeHtml(blockData.observaciones || 'Sin observaciones')}</div>
+                    </div>
+                </div>
+                
+                <div class="bc-block-char-right">
+                    <div class="bc-char-field">
+                        <label class="bc-char-label">Total de Preguntas</label>
+                        <div class="bc-char-value" style="color: #3B82F6; font-weight: 600;">${totalQuestions}</div>
+                    </div>
+                    
+                    <div class="bc-char-field">
+                        <label class="bc-char-label">Temas y Preguntas por Tema</label>
+                        <div class="bc-topics-list">
+                            ${topics.length > 0 ? topics.map(topic => `
+                                <div class="bc-topic-item">
+                                    <span class="bc-topic-name">${this.escapeHtml(topic.topic || topic.name)}</span>
+                                    <span class="bc-topic-count">${topic.total_questions || topic.count || 0}</span>
+                                </div>
+                            `).join('') : '<div class="bc-topic-item"><span class="bc-topic-name" style="color: #6B7280; font-style: italic;">No hay temas definidos</span></div>'}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bc-block-char-edit" id="bc-block-char-edit-${this.containerId}" style="display: none;">
+                <!-- Formulario de edición se carga aquí -->
+            </div>
+        `;
+    }
+
+    async editBlockCharacteristics() {
+        if (!this.currentBlockData) {
+            console.error('❌ No block data available');
+            return;
+        }
+
+        const viewContainer = document.getElementById(`bc-block-char-view-${this.containerId}`);
+        const editContainer = document.getElementById(`bc-block-char-edit-${this.containerId}`);
+        
+        if (!viewContainer || !editContainer) {
+            console.error('❌ Block characteristics containers not found');
+            return;
+        }
+        
+        // Mostrar loading mientras se carga el formulario
+        editContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #6B7280;">Cargando formulario de edición...</div>';
+        viewContainer.style.display = 'none';
+        editContainer.style.display = 'block';
+        
+        try {
+            const formHtml = await this.createBlockCharacteristicsEditForm(this.currentBlockData);
+            editContainer.innerHTML = formHtml;
+        } catch (error) {
+            console.error('❌ Error creating block characteristics edit form:', error);
+            editContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #DC2626;">Error al cargar el formulario de edición</div>';
+        }
+    }
+
+    async createBlockCharacteristicsEditForm(blockData) {
+        console.log('🔧 Creating block characteristics edit form for:', blockData);
+        
+        // Obtener metadata disponible desde el API
+        let metadataOptions = {
+            tipos: [],
+            niveles: [],
+            estados: []
+        };
+        
+        try {
+            const metadata = await this.fetchBlockMetadata();
+            metadataOptions = metadata;
+            console.log('✅ Metadata fetched for form:', metadataOptions);
+        } catch (error) {
+            console.error('❌ Error loading metadata:', error);
+        }
+
+        return `
+            <div class="bc-char-edit-form">
+                <div class="bc-char-edit-field">
+                    <label class="bc-char-label">Nombre del Bloque</label>
+                    <input type="text" class="bc-char-edit-input" id="bc-edit-block-name-${this.containerId}" 
+                           value="${this.escapeHtml(blockData.name || '')}" placeholder="Nombre del bloque">
+                </div>
+                
+                <div class="bc-char-edit-field">
+                    <label class="bc-char-label">Tipo</label>
+                    <select class="bc-char-edit-input" id="bc-edit-block-tipo-${this.containerId}">
+                        <option value="">Sin especificar</option>
+                        ${metadataOptions.types?.map(tipo => `
+                            <option value="${tipo.id}" ${blockData.tipo_id == tipo.id ? 'selected' : ''}>
+                                ${this.escapeHtml(tipo.name)}
+                            </option>
+                        `).join('') || ''}
+                    </select>
+                </div>
+                
+                <div class="bc-char-edit-field">
+                    <label class="bc-char-label">Nivel</label>
+                    <select class="bc-char-edit-input" id="bc-edit-block-nivel-${this.containerId}">
+                        <option value="">Sin especificar</option>
+                        ${metadataOptions.levels?.map(nivel => `
+                            <option value="${nivel.id}" ${blockData.nivel_id == nivel.id ? 'selected' : ''}>
+                                ${this.escapeHtml(nivel.name)}
+                            </option>
+                        `).join('') || ''}
+                    </select>
+                </div>
+                
+                <div class="bc-char-edit-field">
+                    <label class="bc-char-label">Estado</label>
+                    <select class="bc-char-edit-input" id="bc-edit-block-estado-${this.containerId}">
+                        <option value="">Sin especificar</option>
+                        ${metadataOptions.states?.map(estado => `
+                            <option value="${estado.id}" ${blockData.estado_id == estado.id ? 'selected' : ''}>
+                                ${this.escapeHtml(estado.name)}
+                            </option>
+                        `).join('') || ''}
+                    </select>
+                </div>
+                
+                <div class="bc-char-edit-field" style="grid-column: 1 / -1;">
+                    <label class="bc-char-label">Descripción</label>
+                    <textarea class="bc-char-edit-input bc-char-edit-textarea" id="bc-edit-block-description-${this.containerId}" 
+                              placeholder="Descripción del bloque">${this.escapeHtml(blockData.description || '')}</textarea>
+                </div>
+                
+                <div class="bc-char-edit-field" style="grid-column: 1 / -1;">
+                    <label class="bc-char-label">Observaciones</label>
+                    <textarea class="bc-char-edit-input bc-char-edit-textarea" id="bc-edit-block-observaciones-${this.containerId}" 
+                              placeholder="Observaciones adicionales">${this.escapeHtml(blockData.observaciones || '')}</textarea>
+                </div>
+                
+                <div class="bc-char-edit-actions">
+                    <button class="bc-btn-save" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.saveBlockCharacteristics()">Guardar</button>
+                    <button class="bc-btn-cancel" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.cancelEditBlockCharacteristics()">Cancelar</button>
+                </div>
+            </div>
+        `;
+    }
+
+    async fetchBlockMetadata() {
+        // Force Render backend for now since we're using Render+Aiven setup
+        const API_BASE_URL = 'https://playtest-backend.onrender.com';
+        const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('token');
+        
+        if (!token || token === 'null' || token === 'undefined') {
+            throw new Error('No valid authentication token found');
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/api/blocks/metadata`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch block metadata');
+        }
+
+        return await response.json();
+    }
+
+    cancelEditBlockCharacteristics() {
+        const viewContainer = document.getElementById(`bc-block-char-view-${this.containerId}`);
+        const editContainer = document.getElementById(`bc-block-char-edit-${this.containerId}`);
+        
+        if (viewContainer && editContainer) {
+            editContainer.style.display = 'none';
+            viewContainer.style.display = 'block';
+        }
+    }
+
+    async saveBlockCharacteristics() {
+        if (!this.currentBlockId) {
+            alert('Error: No hay un bloque seleccionado');
+            return;
+        }
+
+        try {
+            console.log('💾 Saving block characteristics for block:', this.currentBlockId);
+            
+            // Obtener datos del formulario
+            const name = document.getElementById(`bc-edit-block-name-${this.containerId}`).value.trim();
+            const description = document.getElementById(`bc-edit-block-description-${this.containerId}`).value.trim();
+            const observaciones = document.getElementById(`bc-edit-block-observaciones-${this.containerId}`).value.trim();
+            const tipoId = document.getElementById(`bc-edit-block-tipo-${this.containerId}`).value || null;
+            const nivelId = document.getElementById(`bc-edit-block-nivel-${this.containerId}`).value || null;
+            const estadoId = document.getElementById(`bc-edit-block-estado-${this.containerId}`).value || null;
+            
+            if (!name) {
+                alert('El nombre del bloque es obligatorio');
+                return;
+            }
+
+            // Force Render backend for now since we're using Render+Aiven setup
+            const API_BASE_URL = 'https://playtest-backend.onrender.com';
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('token');
+            const activeRole = localStorage.getItem('activeRole');
+            
+            // Validar que el token existe y no es la string "null"
+            if (!token || token === 'null' || token === 'undefined') {
+                throw new Error('No valid authentication token found. Please login again.');
+            }
+            
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            if (activeRole && activeRole !== 'null' && activeRole !== 'undefined') {
+                headers['X-Current-Role'] = activeRole;
+            }
+            
+            const response = await fetch(`${API_BASE_URL}/api/blocks/${this.currentBlockId}`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify({
+                    name,
+                    description,
+                    observaciones,
+                    tipo_id: tipoId ? parseInt(tipoId) : null,
+                    nivel_id: nivelId ? parseInt(nivelId) : null,
+                    estado_id: estadoId ? parseInt(estadoId) : null,
+                    isPublic: this.currentBlockData.isPublic // Mantener estado público
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Error al guardar las características del bloque');
+            }
+
+            console.log('✅ Block characteristics saved successfully');
+            alert('Características del bloque guardadas correctamente');
+            
+            // Cancelar edición y recargar datos del bloque
+            this.cancelEditBlockCharacteristics();
+            await this.reloadCurrentBlockData();
+            
+        } catch (error) {
+            console.error('❌ Error saving block characteristics:', error);
+            alert('Error al guardar las características del bloque: ' + error.message);
+        }
+    }
+
+    async reloadCurrentBlockData() {
+        if (!this.currentBlockId) return;
+        
+        try {
+            const blockData = await this.fetchBlockData(this.currentBlockId);
+            this.currentBlockData = blockData;
+            this.displayBlockCharacteristics(blockData);
+        } catch (error) {
+            console.error('❌ Error reloading block data:', error);
+        }
     }
 
     displayQuestions(questions) {
