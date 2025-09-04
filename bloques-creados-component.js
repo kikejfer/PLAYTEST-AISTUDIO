@@ -823,11 +823,13 @@ class BloquesCreados {
         
         // Diferentes acciones según el tipo de usuario
         const isTeacher = this.userType === 'alumnos'; // PPF (profesores)
+        const isCreator = this.userType === 'jugadores'; // PCC (creadores)
+        const canEditQuestions = isTeacher || isCreator; // Ambos pueden editar preguntas
         
         card.innerHTML = `
             <div class="bc-block-header">
-                <h3 class="bc-block-title ${isTeacher ? 'bc-clickable-title' : ''}" 
-                    ${isTeacher ? `onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.loadQuestionsEditor(${block.id}, '${this.escapeHtml(block.name)}')"` : ''}>
+                <h3 class="bc-block-title ${canEditQuestions ? 'bc-clickable-title' : ''}" 
+                    ${canEditQuestions ? `onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.loadQuestionsEditor(${block.id}, '${this.escapeHtml(block.name)}')"` : ''}>
                     ${this.escapeHtml(block.name)}
                 </h3>
                 <span class="bc-block-status ${statusClass}">${statusText}</span>
@@ -867,7 +869,7 @@ class BloquesCreados {
             </div>
             
             <div class="bc-block-actions">
-                ${!isTeacher ? `
+                ${isCreator ? `
                     <button class="bc-action-btn bc-btn-view" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.viewBlock(${block.id})">Ver</button>
                     <button class="bc-action-btn bc-btn-edit" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.editBlock(${block.id})">Editar</button>
                 ` : ''}
@@ -1052,9 +1054,10 @@ class BloquesCreados {
         await this.loadMetadataFilters();
     }
 
-    // Editor de Preguntas - Solo para profesores
+    // Editor de Preguntas - Para profesores (PPF) y creadores (PCC)
     async loadQuestionsEditor(blockId, blockName) {
-        if (this.userType !== 'alumnos') return; // Solo profesores
+        // Permitir acceso a profesores (alumnos) y creadores (jugadores)
+        if (this.userType !== 'alumnos' && this.userType !== 'jugadores') return;
 
         console.log(`🔍 Loading questions editor for block: ${blockId} (${blockName})`);
         
