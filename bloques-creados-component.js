@@ -95,7 +95,6 @@ class BloquesCreados {
                     <div id="bc-empty-state-${this.containerId}" class="bc-empty-state" style="display: none;">
                         <h3>No has creado ningún bloque aún</h3>
                         <p>Los bloques que crees aparecerán aquí con estadísticas detalladas</p>
-                        <a href="add-question.html" class="bc-btn-primary">Crear tu primer bloque</a>
                     </div>
                     
                     <div id="bc-blocks-grid-${this.containerId}" class="bc-blocks-grid" style="display: none;"></div>
