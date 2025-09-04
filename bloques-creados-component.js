@@ -61,7 +61,12 @@ class BloquesCreados {
 
         container.innerHTML = `
             <div class="bloques-creados-section">
-                <h2 class="section-title">📦 Bloques Creados</h2>
+                <h2 class="section-title">
+                    ${this.displayMode === 'loaded' 
+                        ? '<img src="./Imagenes/Cargados.png" alt="Cargados" style="height: 24px; width: 24px; display: inline-block; margin-right: 8px;"> Bloques Cargados' 
+                        : '📦 Bloques Creados'
+                    }
+                </h2>
                 
                 <!-- Filtros de Metadata -->
                 <div class="bc-filters">
@@ -902,7 +907,7 @@ class BloquesCreados {
             <div class="bc-block-actions">
                 ${this.displayMode === 'loaded' ? `
                     <button class="bc-action-btn bc-btn-view" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.viewBlock(${block.id})">Ver</button>
-                    <button class="bc-action-btn bc-btn-delete" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.unloadBlock(${block.id}, '${this.escapeHtml(block.name)}')">Descargar</button>
+                    <button class="bc-action-btn bc-btn-delete" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.unloadBlock(${block.id}, '${this.escapeHtml(block.name)}')">Eliminar</button>
                 ` : `
                     ${isCreator ? `
                         <button class="bc-action-btn bc-btn-view" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.viewBlock(${block.id})">Ver</button>
@@ -947,22 +952,22 @@ class BloquesCreados {
     }
 
     async unloadBlock(blockId, blockName) {
-        if (!confirm(`¿Estás seguro de que quieres descargar el bloque "${blockName}"?\\n\\nEsto lo eliminará de tu lista de bloques cargados.`)) {
+        if (!confirm(`¿Estás seguro de que quieres eliminar el bloque "${blockName}" de tu lista?\\n\\nEsto solo lo eliminará de tus bloques cargados, el bloque original se mantendrá.`)) {
             return;
         }
 
         try {
-            console.log('Unloading block:', blockId);
+            console.log('Removing block from loaded blocks:', blockId);
             await apiDataService.unloadBlockForUser(blockId);
             
             // Remove from local data and refresh display
             this.blocksData = this.blocksData.filter(block => block.id !== blockId);
             this.displayBlocks();
             
-            alert('Bloque descargado correctamente');
+            alert('Bloque eliminado de tu lista correctamente');
         } catch (error) {
-            console.error('Error unloading block:', error);
-            alert('Error al descargar el bloque: ' + error.message);
+            console.error('Error removing block from loaded blocks:', error);
+            alert('Error al eliminar el bloque de tu lista: ' + error.message);
         }
     }
 
