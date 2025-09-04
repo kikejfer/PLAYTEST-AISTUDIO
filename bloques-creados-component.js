@@ -840,28 +840,52 @@ class BloquesCreados {
     async loadQuestionsEditor(blockId, blockName) {
         if (this.userType !== 'alumnos') return; // Solo profesores
 
-        console.log(`🔍 Loading questions editor for block: ${blockId}`);
+        console.log(`🔍 Loading questions editor for block: ${blockId} (${blockName})`);
+        
+        // Limpiar cualquier estado previo
+        this.currentBlockId = null;
+        this.currentQuestions = [];
         
         // Mostrar editor y ocultar lista de bloques
-        document.getElementById(`bc-blocks-container-${this.containerId}`).style.display = 'none';
-        document.getElementById(`bc-questions-editor-${this.containerId}`).style.display = 'block';
+        const blocksContainer = document.getElementById(`bc-blocks-container-${this.containerId}`);
+        const editorContainer = document.getElementById(`bc-questions-editor-${this.containerId}`);
+        const loadingElement = document.getElementById(`bc-editor-loading-${this.containerId}`);
+        const titleElement = document.getElementById(`bc-editor-title-${this.containerId}`);
+        const questionsListElement = document.getElementById(`bc-questions-list-${this.containerId}`);
+        
+        // Verificar que todos los elementos existen
+        if (!blocksContainer || !editorContainer || !loadingElement || !titleElement || !questionsListElement) {
+            console.error('❌ Missing DOM elements for questions editor');
+            alert('Error en la interfaz del editor de preguntas');
+            return;
+        }
+        
+        blocksContainer.style.display = 'none';
+        editorContainer.style.display = 'block';
         
         // Actualizar título
-        document.getElementById(`bc-editor-title-${this.containerId}`).textContent = `Editor de Preguntas - ${blockName}`;
+        titleElement.textContent = `Editor de Preguntas - ${blockName}`;
         
-        // Mostrar loading
-        document.getElementById(`bc-editor-loading-${this.containerId}`).style.display = 'block';
+        // Limpiar contenido anterior y mostrar loading
+        questionsListElement.innerHTML = '';
+        loadingElement.style.display = 'block';
         
         try {
+            console.log('🔄 Fetching questions...');
             const questions = await this.fetchBlockQuestions(blockId);
+            
+            // Guardar el estado ANTES de mostrar
             this.currentBlockId = blockId;
+            
+            console.log('✅ Questions fetched, displaying...');
             this.displayQuestions(questions);
+            
         } catch (error) {
             console.error('❌ Error loading questions:', error);
             alert('Error al cargar las preguntas: ' + error.message);
             this.closeQuestionsEditor();
         } finally {
-            document.getElementById(`bc-editor-loading-${this.containerId}`).style.display = 'none';
+            loadingElement.style.display = 'none';
         }
     }
 
@@ -916,12 +940,24 @@ class BloquesCreados {
 
     displayQuestions(questions) {
         const container = document.getElementById(`bc-questions-list-${this.containerId}`);
-        this.currentQuestions = questions; // Guardar para uso posterior
+        
+        // Guardar las preguntas ANTES de procesarlas
+        this.currentQuestions = questions || [];
+        
+        // Verificar que el contenedor existe
+        if (!container) {
+            console.error('❌ Questions container not found:', `bc-questions-list-${this.containerId}`);
+            return;
+        }
         
         if (!questions || questions.length === 0) {
             container.innerHTML = '<div style="text-align: center; color: #6B7280; padding: 40px;">No hay preguntas en este bloque</div>';
             return;
         }
+
+        // Log para debugging
+        console.log('✅ Displaying questions:', questions.length);
+        console.log('✅ Sample question:', questions[0]);
 
         container.innerHTML = questions.map((question, index) => 
             this.createQuestionItem(question, index)
@@ -929,7 +965,16 @@ class BloquesCreados {
     }
 
     createQuestionItem(question, index) {
-        const answers = question.answers || [];
+        // Manejo robusto de las respuestas con múltiples formatos posibles
+        const answers = question.respuestas || question.answers || [];
+        
+        // Log para debugging de la estructura de datos
+        console.log(`🔍 Creating question item ${index + 1}:`, {
+            id: question.id,
+            text: question.textoPregunta || question.text_question,
+            answers: answers.length,
+            sampleAnswer: answers[0]
+        });
         
         return `
             <div class="bc-question-item" id="bc-question-${question.id}">
@@ -946,23 +991,23 @@ class BloquesCreados {
                         <div style="margin-bottom: 10px;">
                             <strong>Pregunta:</strong>
                             <div style="background: #0F172A; padding: 10px; border-radius: 6px; margin-top: 5px;">
-                                ${this.escapeHtml(question.text_question)}
+                                ${this.escapeHtml(question.textoPregunta || question.text_question || 'Sin texto de pregunta')}
                             </div>
                         </div>
                         
                         <div style="margin-bottom: 10px;">
-                            <strong>Tema:</strong> ${this.escapeHtml(question.topic || 'Sin tema')}
+                            <strong>Tema:</strong> ${this.escapeHtml(question.tema || question.topic || 'Sin tema')}
                         </div>
                         
                         <div style="margin-bottom: 10px;">
                             <strong>Dificultad:</strong> ${question.difficulty || 'No especificada'}
                         </div>
                         
-                        ${question.explanation ? `
+                        ${(question.explicacionRespuesta || question.explanation) ? `
                         <div style="margin-bottom: 10px;">
                             <strong>Explicación:</strong>
                             <div style="background: #0F172A; padding: 10px; border-radius: 6px; margin-top: 5px;">
-                                ${this.escapeHtml(question.explanation)}
+                                ${this.escapeHtml(question.explicacionRespuesta || question.explanation)}
                             </div>
                         </div>
                         ` : ''}
@@ -970,14 +1015,14 @@ class BloquesCreados {
                         <div>
                             <strong>Respuestas:</strong>
                             <div style="margin-top: 8px;">
-                                ${answers.map(answer => `
+                                ${answers.length > 0 ? answers.map(answer => `
                                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
-                                        <span style="color: ${answer.is_correct ? '#10B981' : '#6B7280'};">
-                                            ${answer.is_correct ? '✓' : '○'}
+                                        <span style="color: ${answer.is_correct || answer.esCorrecta ? '#10B981' : '#6B7280'};">
+                                            ${answer.is_correct || answer.esCorrecta ? '✓' : '○'}
                                         </span>
-                                        <span>${this.escapeHtml(answer.answer_text)}</span>
+                                        <span>${this.escapeHtml(answer.answer_text || answer.textoRespuesta || 'Sin texto de respuesta')}</span>
                                     </div>
-                                `).join('')}
+                                `).join('') : '<div style="color: #6B7280;">No hay respuestas disponibles</div>'}
                             </div>
                         </div>
                     </div>
