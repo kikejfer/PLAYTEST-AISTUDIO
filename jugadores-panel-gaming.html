@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="header-styles.css">
     <script src="header-loader.js"></script>
     <script src="api-data-service.js"></script>
+    <script src="bloques-creados-component.js"></script>
     
     <!-- CDN de React y Babel para compatibilidad con el código de index.html -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -221,7 +222,7 @@
             <div class="section">
                 <h2 class="section-title"><img src="./Imagenes/Cargados.png" alt="Cargados" style="height: 24px; width: 24px; display: inline-block; margin-right: 8px;"> Bloques Cargados</h2>
                 <div class="section-content">
-                    <div id="loaded-blocks-content"></div>
+                    <div id="loaded-blocks-pjg-container"></div>
                 </div>
             </div>
 
@@ -229,7 +230,7 @@
             <div class="section">
                 <h2 class="section-title"><img src="./Imagenes/Disponibles.png" alt="Disponibles" style="height: 24px; width: 24px; display: inline-block; margin-right: 8px;"> Bloques Disponibles</h2>
                 <div class="section-content">
-                    <div id="available-blocks-content"></div>
+                    <div id="available-blocks-pjg-container"></div>
                 </div>
             </div>
         </div>
@@ -2270,32 +2271,127 @@
             ]);
         };
 
+        // Crear componente de Bloques Disponibles mejorado
+        const createAvailableBlocksComponent = async () => {
+            const container = document.getElementById('available-blocks-pjg-container');
+            if (!container || !window.apiDataService) return;
+
+            try {
+                // Mostrar loading
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #778DA9;">
+                        <div style="animation: spin 1s linear infinite; border: 2px solid #415A77; border-top: 2px solid #3B82F6; border-radius: 50%; width: 40px; height: 40px; margin: 0 auto 20px;"></div>
+                        <p>Cargando bloques disponibles...</p>
+                    </div>
+                    <style>
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                    </style>
+                `;
+
+                // Cargar datos
+                const blocks = await window.apiDataService.fetchAvailableBlocks();
+                const profile = await window.apiDataService.getUserProfile();
+                const loadedBlockIds = profile.loadedBlocks || [];
+
+                // Crear HTML mejorado
+                const blocksHTML = blocks.map(block => {
+                    const isLoaded = loadedBlockIds.includes(block.id);
+                    return `
+                        <div style="background: #0F172A; border: 1px solid #334155; border-radius: 8px; padding: 24px; transition: all 0.3s ease; min-height: 200px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                                <h3 style="font-size: 16px; font-weight: 600; color: #E0E7FF; margin: 0; flex: 1; line-height: 1.25;">${block.name}</h3>
+                                ${isLoaded ? '<span style="font-size: 12px; background: rgba(16, 185, 129, 0.2); color: #10B981; padding: 4px 8px; border-radius: 12px;">Cargado</span>' : ''}
+                            </div>
+                            
+                            <p style="color: #CBD5E1; font-size: 12px; margin-bottom: 16px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                ${block.description || 'Sin descripción'}
+                            </p>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; font-size: 12px;">
+                                <div style="color: #CBD5E1;">
+                                    <span style="font-weight: 500;">Preguntas:</span> ${block.questionCount || 0}
+                                </div>
+                                <div style="color: #CBD5E1;">
+                                    <span style="font-weight: 500;">Temas:</span> ${block.stats?.totalTopics || 0}
+                                </div>
+                                <div style="color: #CBD5E1;">
+                                    <span style="font-weight: 500;">Usuarios:</span> ${block.stats?.totalUsers || 0}
+                                </div>
+                                <div style="color: #CBD5E1;">
+                                    <span style="font-weight: 500;">Creador:</span> ${block.creatorNickname || 'Usuario'}
+                                </div>
+                            </div>
+                            
+                            <button onclick="handleBlockAction(${block.id}, ${isLoaded})" 
+                                style="width: 100%; padding: 10px 16px; border-radius: 6px; font-weight: 500; transition: all 0.3s ease; border: none; cursor: pointer; 
+                                ${isLoaded 
+                                    ? 'background: rgba(239, 68, 68, 0.2); color: #EF4444;' 
+                                    : 'background: #3B82F6; color: white;'
+                                }">
+                                ${isLoaded ? 'Descargar' : 'Cargar'}
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+
+                // Renderizar
+                container.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                        ${blocksHTML}
+                    </div>
+                `;
+
+                // Función para manejar acciones de carga/descarga
+                window.handleBlockAction = async (blockId, isLoaded) => {
+                    try {
+                        if (isLoaded) {
+                            await window.apiDataService.unloadBlock(blockId);
+                        } else {
+                            await window.apiDataService.loadBlock(blockId);
+                        }
+                        // Recargar componente
+                        await createAvailableBlocksComponent();
+                    } catch (error) {
+                        console.error('Error handling block action:', error);
+                        alert('Error al procesar la acción. Inténtalo de nuevo.');
+                    }
+                };
+
+            } catch (error) {
+                console.error('Error loading available blocks:', error);
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #EF4444;">
+                        <p>Error al cargar los bloques disponibles</p>
+                        <button onclick="createAvailableBlocksComponent()" style="margin-top: 10px; padding: 8px 16px; background: #3B82F6; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Reintentar
+                        </button>
+                    </div>
+                `;
+            }
+        };
+
         // Renderizar componentes específicos en pestañas después de que React esté disponible
         const initializeTabComponents = () => {
-            // Renderizar Bloques Cargados COMPLETO en su pestaña
-            const loadedBlocksContainer = document.getElementById('loaded-blocks-content');
-            if (loadedBlocksContainer) {
-                const loadedBlocksRoot = ReactDOM.createRoot(loadedBlocksContainer);
-                loadedBlocksRoot.render(
-                    React.createElement(LanguageProvider, {}, 
-                        React.createElement(UserContext.Provider, { value: { currentUser: JSON.parse(localStorage.getItem('playtest_session') || '{}') } },
-                            React.createElement(TabBlocksComponent)
-                        )
-                    )
-                );
+            // Inicializar Bloques Cargados con el componente actualizado
+            if (document.getElementById('loaded-blocks-pjg-container')) {
+                // Esperar a que BloquesCreados esté disponible
+                const initLoadedBlocks = () => {
+                    if (typeof BloquesCreados !== 'undefined') {
+                        window.bloquesCreados_loaded_pjg = new BloquesCreados('loaded-blocks-pjg-container', 'estudiantes', 'loaded');
+                        window.bloquesCreados_loaded_pjg.initialize();
+                    } else {
+                        setTimeout(initLoadedBlocks, 500);
+                    }
+                };
+                initLoadedBlocks();
             }
 
-            // Renderizar Bloques Disponibles COMPLETO en su pestaña
-            const availableBlocksContainer = document.getElementById('available-blocks-content');
-            if (availableBlocksContainer) {
-                const availableBlocksRoot = ReactDOM.createRoot(availableBlocksContainer);
-                availableBlocksRoot.render(
-                    React.createElement(LanguageProvider, {}, 
-                        React.createElement(UserContext.Provider, { value: { currentUser: JSON.parse(localStorage.getItem('playtest_session') || '{}') } },
-                            React.createElement(AvailableBlocksComponent)
-                        )
-                    )
-                );
+            // Inicializar Bloques Disponibles con componente mejorado
+            if (document.getElementById('available-blocks-pjg-container')) {
+                createAvailableBlocksComponent();
             }
 
             // Renderizar Juegos Activos COMPLETO en su sección
