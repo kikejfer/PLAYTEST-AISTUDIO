@@ -1035,8 +1035,8 @@ class BloquesCreados {
         }
 
         const data = await response.json();
-        // Extraer solo los nombres de los temas
-        return data.map(topic => topic.name || topic.topic_name || topic);
+        // El endpoint ahora devuelve un array simple de strings con los nombres de los temas
+        return Array.isArray(data) ? data : [];
     }
 
     displayQuestions(questions) {
@@ -1159,20 +1159,47 @@ class BloquesCreados {
         const answers = question.respuestas || question.answers || [];
         
         // Obtener temas disponibles del bloque actual
-        let topicOptions = '';
+        let topicOptions = '<option value="">Sin tema</option>';
         try {
             const topics = await this.fetchBlockTopics(this.currentBlockId);
-            topicOptions = topics.map(topic => `
-                <option value="${this.escapeHtml(topic)}" ${(question.tema || question.topic) === topic ? 'selected' : ''}>
-                    ${this.escapeHtml(topic)}
-                </option>
-            `).join('');
+            console.log('🔍 Topics fetched for dropdown:', topics);
+            
+            if (topics && topics.length > 0) {
+                const currentTopicValue = question.tema || question.topic || '';
+                
+                topicOptions = topics.map(topic => `
+                    <option value="${this.escapeHtml(topic)}" ${currentTopicValue === topic ? 'selected' : ''}>
+                        ${this.escapeHtml(topic)}
+                    </option>
+                `).join('');
+                
+                // Si el tema actual no está en la lista, agregarlo como primera opción
+                if (currentTopicValue && !topics.includes(currentTopicValue)) {
+                    topicOptions = `<option value="${this.escapeHtml(currentTopicValue)}" selected>${this.escapeHtml(currentTopicValue)}</option>` + topicOptions;
+                }
+                
+                // Agregar opción "Sin tema" al inicio
+                topicOptions = '<option value="">Sin tema</option>' + topicOptions;
+            } else {
+                console.log('⚠️ No topics found, using fallback');
+                // Fallback: usar el tema actual si existe
+                const currentTopic = question.tema || question.topic || '';
+                if (currentTopic) {
+                    topicOptions = `
+                        <option value="">Sin tema</option>
+                        <option value="${this.escapeHtml(currentTopic)}" selected>${this.escapeHtml(currentTopic)}</option>
+                    `;
+                }
+            }
         } catch (error) {
             console.error('❌ Error loading topics:', error);
             // Fallback: usar el tema actual si existe
             const currentTopic = question.tema || question.topic || '';
             if (currentTopic) {
-                topicOptions = `<option value="${this.escapeHtml(currentTopic)}" selected>${this.escapeHtml(currentTopic)}</option>`;
+                topicOptions = `
+                    <option value="">Sin tema</option>
+                    <option value="${this.escapeHtml(currentTopic)}" selected>${this.escapeHtml(currentTopic)}</option>
+                `;
             }
         }
         
