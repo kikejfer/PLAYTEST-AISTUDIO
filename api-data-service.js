@@ -1060,6 +1060,14 @@ class APIDataService {
     return this.deleteBlock(blockId);
   }
 
+  // Unload/Remove a block from user's loaded blocks
+  async unloadBlockForUser(blockId) {
+    const response = await this.apiCall(`/blocks/${blockId}/unload`, {
+      method: 'DELETE'
+    });
+    return this.simulateDelay(response);
+  }
+
   // Get created blocks with statistics for Bloques Creados section
   async fetchCreatedBlocksStats() {
     try {
@@ -1082,6 +1090,33 @@ class APIDataService {
         return this.simulateDelay(blocksWithStats);
       } catch (fallbackError) {
         console.error('❌ All blocks created endpoints failed, using empty array:', fallbackError.message);
+        return this.simulateDelay([]);
+      }
+    }
+  }
+
+  // Get loaded blocks with statistics for Bloques Cargados section (PJG)
+  async fetchLoadedBlocksStats() {
+    try {
+      const blocksStats = await this.apiCall('/blocks/loaded-stats');
+      return this.simulateDelay(blocksStats);
+    } catch (error) {
+      console.warn('⚠️ /blocks/loaded-stats failed, trying fallback to /blocks/loaded:', error.message);
+      try {
+        // Fallback to main loaded blocks endpoint (without stats)
+        const allBlocks = await this.apiCall('/blocks/loaded');
+        // Transform to include empty stats structure
+        const blocksWithStats = allBlocks.map(block => ({
+          ...block,
+          stats: {
+            totalQuestions: block.questionCount || 0,
+            totalTopics: 0,
+            loadedAt: block.loadedAt || null
+          }
+        }));
+        return this.simulateDelay(blocksWithStats);
+      } catch (fallbackError) {
+        console.error('❌ All blocks loaded endpoints failed, using empty array:', fallbackError.message);
         return this.simulateDelay([]);
       }
     }

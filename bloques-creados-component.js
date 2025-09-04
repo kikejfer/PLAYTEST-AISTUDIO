@@ -4,16 +4,18 @@
  */
 
 class BloquesCreados {
-    constructor(containerId, userType = 'jugadores') {
+    constructor(containerId, userType = 'jugadores', displayMode = 'created') {
         this.containerId = containerId;
-        this.userType = userType; // 'alumnos' o 'jugadores'
+        this.userType = userType; // 'alumnos', 'jugadores', or 'estudiantes'
+        this.displayMode = displayMode; // 'created' or 'loaded'
         this.blocksData = [];
         this.currentUser = null;
         
         // Labels según el tipo de usuario
         this.labels = {
             'alumnos': 'Alumnos',
-            'jugadores': 'Jugadores'
+            'jugadores': 'Jugadores',
+            'estudiantes': 'Estudiantes'
         };
     }
 
@@ -21,7 +23,11 @@ class BloquesCreados {
         try {
             await this.loadUserData();
             this.render();
-            await this.loadCreatedBlocks();
+            if (this.displayMode === 'loaded') {
+                await this.loadLoadedBlocks();
+            } else {
+                await this.loadCreatedBlocks();
+            }
             await this.loadMetadataFilters();
         } catch (error) {
             console.error('Error initializing BloquesCreados:', error);
@@ -93,8 +99,8 @@ class BloquesCreados {
                 
                 <div id="bc-blocks-container-${this.containerId}">
                     <div id="bc-empty-state-${this.containerId}" class="bc-empty-state" style="display: none;">
-                        <h3>No has creado ningún bloque aún</h3>
-                        <p>Los bloques que crees aparecerán aquí con estadísticas detalladas</p>
+                        <h3>${this.displayMode === 'loaded' ? 'No tienes bloques cargados aún' : 'No has creado ningún bloque aún'}</h3>
+                        <p>${this.displayMode === 'loaded' ? 'Los bloques que cargues aparecerán aquí con estadísticas detalladas' : 'Los bloques que crees aparecerán aquí con estadísticas detalladas'}</p>
                     </div>
                     
                     <div id="bc-blocks-grid-${this.containerId}" class="bc-blocks-grid" style="display: none;"></div>
@@ -791,6 +797,24 @@ class BloquesCreados {
         }
     }
 
+    async loadLoadedBlocks() {
+        this.showLoading(true);
+        this.hideError();
+
+        try {
+            console.log('🔍 Loading loaded blocks for user...');
+            this.blocksData = await apiDataService.fetchLoadedBlocksStats();
+            console.log('✅ Loaded blocks:', this.blocksData);
+            
+            this.displayBlocks();
+        } catch (error) {
+            console.error('❌ Error loading loaded blocks:', error);
+            this.showError('Error al cargar los bloques cargados: ' + error.message);
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
     displayBlocks() {
         const blocksGrid = document.getElementById(`bc-blocks-grid-${this.containerId}`);
         const emptyState = document.getElementById(`bc-empty-state-${this.containerId}`);
@@ -823,7 +847,8 @@ class BloquesCreados {
         // Diferentes acciones según el tipo de usuario
         const isTeacher = this.userType === 'alumnos'; // PPF (profesores)
         const isCreator = this.userType === 'jugadores'; // PCC (creadores)
-        const canEditQuestions = isTeacher || isCreator; // Ambos pueden editar preguntas
+        const isStudent = this.userType === 'estudiantes'; // PJG (estudiantes)
+        const canEditQuestions = (isTeacher || isCreator) && this.displayMode === 'created'; // Only for created blocks
         
         card.innerHTML = `
             <div class="bc-block-header">
@@ -861,18 +886,30 @@ class BloquesCreados {
                     <span class="bc-stat-number">${block.stats?.totalQuestions || 0}</span>
                     <span class="bc-stat-label">Preguntas</span>
                 </div>
+                ${this.displayMode === 'loaded' ? `
+                <div class="bc-stat-item">
+                    <span class="bc-stat-number">${block.loadedAt ? new Date(block.loadedAt).toLocaleDateString('es-ES') : 'N/A'}</span>
+                    <span class="bc-stat-label">Cargado</span>
+                </div>
+                ` : `
                 <div class="bc-stat-item">
                     <span class="bc-stat-number">${block.stats?.totalUsers || 0}</span>
                     <span class="bc-stat-label">${userLabel}</span>
                 </div>
+                `}
             </div>
             
             <div class="bc-block-actions">
-                ${isCreator ? `
+                ${this.displayMode === 'loaded' ? `
                     <button class="bc-action-btn bc-btn-view" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.viewBlock(${block.id})">Ver</button>
-                    <button class="bc-action-btn bc-btn-edit" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.editBlock(${block.id})">Editar</button>
-                ` : ''}
-                <button class="bc-action-btn bc-btn-delete" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.deleteBlock(${block.id}, '${this.escapeHtml(block.name)}')">Eliminar</button>
+                    <button class="bc-action-btn bc-btn-delete" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.unloadBlock(${block.id}, '${this.escapeHtml(block.name)}')">Descargar</button>
+                ` : `
+                    ${isCreator ? `
+                        <button class="bc-action-btn bc-btn-view" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.viewBlock(${block.id})">Ver</button>
+                        <button class="bc-action-btn bc-btn-edit" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.editBlock(${block.id})">Editar</button>
+                    ` : ''}
+                    <button class="bc-action-btn bc-btn-delete" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.deleteBlock(${block.id}, '${this.escapeHtml(block.name)}')">Eliminar</button>
+                `}
             </div>
         `;
         
@@ -906,6 +943,26 @@ class BloquesCreados {
         } catch (error) {
             console.error('Error deleting block:', error);
             alert('Error al eliminar el bloque: ' + error.message);
+        }
+    }
+
+    async unloadBlock(blockId, blockName) {
+        if (!confirm(`¿Estás seguro de que quieres descargar el bloque "${blockName}"?\\n\\nEsto lo eliminará de tu lista de bloques cargados.`)) {
+            return;
+        }
+
+        try {
+            console.log('Unloading block:', blockId);
+            await apiDataService.unloadBlockForUser(blockId);
+            
+            // Remove from local data and refresh display
+            this.blocksData = this.blocksData.filter(block => block.id !== blockId);
+            this.displayBlocks();
+            
+            alert('Bloque descargado correctamente');
+        } catch (error) {
+            console.error('Error unloading block:', error);
+            alert('Error al descargar el bloque: ' + error.message);
         }
     }
 

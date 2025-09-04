@@ -260,9 +260,9 @@
                       const actionLoading = loadingActions[block.id];
                       
                       return (
-                        <div key={block.id} className="bg-brand-primary p-5 rounded-lg border border-brand-tertiary hover:border-brand-accent transition-colors">
-                          <div className="flex justify-between items-start mb-3">
-                            <h3 className="font-semibold text-brand-light text-lg leading-tight">{block.name}</h3>
+                        <div key={block.id} className="bg-brand-primary p-6 rounded-lg border border-brand-tertiary hover:border-brand-accent transition-colors min-h-[200px]">
+                          <div className="flex justify-between items-start mb-4">
+                            <h3 className="font-semibold text-brand-light text-base leading-tight">{block.name}</h3>
                             {isLoaded && (
                               <span className="text-xs bg-brand-success/20 text-green-300 px-2 py-1 rounded-full">
                                 {t('loaded')}
@@ -270,17 +270,23 @@
                             )}
                           </div>
                           
-                          <p className="text-brand-accent text-sm mb-3 line-clamp-2">
+                          <p className="text-brand-accent text-xs mb-4 line-clamp-3 leading-relaxed">
                             {block.description || 'Sin descripción'}
                           </p>
                           
-                          <div className="flex justify-between items-center mb-4">
-                            <span className="text-xs text-brand-accent">
-                              {t('questions_count', { count: block.questionCount || 0 })}
-                            </span>
-                            <span className="text-xs text-brand-accent">
-                              {t('by_user', { user: block.creatorNickname || 'Usuario' })}
-                            </span>
+                          <div className="grid grid-cols-2 gap-2 mb-4 text-xs">
+                            <div className="text-brand-accent">
+                              <span className="font-medium">Preguntas:</span> {block.questionCount || 0}
+                            </div>
+                            <div className="text-brand-accent">
+                              <span className="font-medium">Temas:</span> {block.stats?.totalTopics || 0}
+                            </div>
+                            <div className="text-brand-accent">
+                              <span className="font-medium">Usuarios:</span> {block.stats?.totalUsers || 0}
+                            </div>
+                            <div className="text-brand-accent">
+                              <span className="font-medium">Creador:</span> {block.creatorNickname || 'Usuario'}
+                            </div>
                           </div>
                           
                           <button
