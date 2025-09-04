@@ -449,8 +449,9 @@ class BloquesCreados {
                     background: #0F172A;
                     border: 1px solid #334155;
                     border-radius: 8px;
-                    padding: 15px;
-                    margin-bottom: 15px;
+                    padding: 12px;
+                    margin-bottom: 12px;
+                    font-size: 13px;
                 }
                 
                 .bc-question-header {
@@ -462,13 +463,80 @@ class BloquesCreados {
                 
                 .bc-question-title {
                     color: #3B82F6;
-                    font-size: 14px;
+                    font-size: 13px;
                     font-weight: 600;
+                }
+                
+                .bc-question-meta {
+                    color: #94A3B8;
+                    font-weight: 400;
+                    font-size: 12px;
                 }
                 
                 .bc-question-actions {
                     display: flex;
                     gap: 5px;
+                }
+                
+                .bc-question-text-display {
+                    background: #1E293B;
+                    padding: 10px;
+                    border-radius: 6px;
+                    margin-bottom: 12px;
+                    color: #E2E8F0;
+                    font-size: 13px;
+                    line-height: 1.4;
+                }
+                
+                .bc-answers-display {
+                    margin-bottom: 12px;
+                }
+                
+                .bc-answer-display {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 8px;
+                    margin-bottom: 6px;
+                    padding: 6px;
+                    background: #1E293B;
+                    border-radius: 4px;
+                }
+                
+                .bc-answer-indicator {
+                    flex-shrink: 0;
+                    font-weight: 600;
+                    font-size: 14px;
+                    margin-top: 1px;
+                }
+                
+                .bc-answer-indicator.bc-correct {
+                    color: #10B981;
+                }
+                
+                .bc-answer-indicator.bc-incorrect {
+                    color: #6B7280;
+                }
+                
+                .bc-answer-text-display {
+                    color: #E2E8F0;
+                    font-size: 12px;
+                    line-height: 1.3;
+                }
+                
+                .bc-explanation-display {
+                    background: #1E293B;
+                    padding: 10px;
+                    border-radius: 6px;
+                    color: #E2E8F0;
+                    font-size: 12px;
+                    line-height: 1.4;
+                    border-left: 3px solid #F59E0B;
+                }
+                
+                .bc-no-answers {
+                    color: #6B7280;
+                    font-style: italic;
+                    font-size: 12px;
                 }
                 
                 .bc-question-text {
@@ -938,6 +1006,39 @@ class BloquesCreados {
         return await response.json();
     }
 
+    async fetchBlockTopics(blockId) {
+        // Force Render backend for now since we're using Render+Aiven setup
+        const API_BASE_URL = 'https://playtest-backend.onrender.com';
+        const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('token');
+        const activeRole = localStorage.getItem('activeRole');
+        
+        // Validar que el token existe y no es la string "null"
+        if (!token || token === 'null' || token === 'undefined') {
+            throw new Error('No valid authentication token found. Please login again.');
+        }
+        
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
+        
+        if (activeRole && activeRole !== 'null' && activeRole !== 'undefined') {
+            headers['X-Current-Role'] = activeRole;
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/api/blocks/${blockId}/topics`, {
+            headers
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch block topics');
+        }
+
+        const data = await response.json();
+        // Extraer solo los nombres de los temas
+        return data.map(topic => topic.name || topic.topic_name || topic);
+    }
+
     displayQuestions(questions) {
         const container = document.getElementById(`bc-questions-list-${this.containerId}`);
         
@@ -967,6 +1068,8 @@ class BloquesCreados {
     createQuestionItem(question, index) {
         // Manejo robusto de las respuestas con múltiples formatos posibles
         const answers = question.respuestas || question.answers || [];
+        const tema = question.tema || question.topic || 'Sin tema';
+        const dificultad = question.difficulty || 'No especificada';
         
         // Log para debugging de la estructura de datos
         console.log(`🔍 Creating question item ${index + 1}:`, {
@@ -979,7 +1082,9 @@ class BloquesCreados {
         return `
             <div class="bc-question-item" id="bc-question-${question.id}">
                 <div class="bc-question-header">
-                    <span class="bc-question-title">Pregunta ${index + 1}</span>
+                    <span class="bc-question-title">
+                        Pregunta ${index + 1} - <span class="bc-question-meta">${this.escapeHtml(tema)} (Dificultad: ${dificultad})</span>
+                    </span>
                     <div class="bc-question-actions">
                         <button class="bc-btn-edit" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.editQuestion(${question.id})">Editar</button>
                         <button class="bc-action-btn bc-btn-delete" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.deleteQuestion(${question.id})">Eliminar</button>
@@ -988,43 +1093,29 @@ class BloquesCreados {
                 
                 <div class="bc-question-content" id="bc-content-${question.id}">
                     <div class="bc-question-view">
-                        <div style="margin-bottom: 10px;">
-                            <strong>Pregunta:</strong>
-                            <div style="background: #0F172A; padding: 10px; border-radius: 6px; margin-top: 5px;">
-                                ${this.escapeHtml(question.textoPregunta || question.text_question || 'Sin texto de pregunta')}
-                            </div>
+                        <!-- Texto de la pregunta -->
+                        <div class="bc-question-text-display">
+                            ${this.escapeHtml(question.textoPregunta || question.text_question || 'Sin texto de pregunta')}
                         </div>
                         
-                        <div style="margin-bottom: 10px;">
-                            <strong>Tema:</strong> ${this.escapeHtml(question.tema || question.topic || 'Sin tema')}
+                        <!-- Respuestas -->
+                        <div class="bc-answers-display">
+                            ${answers.length > 0 ? answers.map(answer => `
+                                <div class="bc-answer-display">
+                                    <span class="bc-answer-indicator ${answer.is_correct || answer.esCorrecta ? 'bc-correct' : 'bc-incorrect'}">
+                                        ${answer.is_correct || answer.esCorrecta ? '✓' : '○'}
+                                    </span>
+                                    <span class="bc-answer-text-display">${this.escapeHtml(answer.answer_text || answer.textoRespuesta || 'Sin texto de respuesta')}</span>
+                                </div>
+                            `).join('') : '<div class="bc-no-answers">No hay respuestas disponibles</div>'}
                         </div>
                         
-                        <div style="margin-bottom: 10px;">
-                            <strong>Dificultad:</strong> ${question.difficulty || 'No especificada'}
-                        </div>
-                        
+                        <!-- Explicación (si existe) -->
                         ${(question.explicacionRespuesta || question.explanation) ? `
-                        <div style="margin-bottom: 10px;">
-                            <strong>Explicación:</strong>
-                            <div style="background: #0F172A; padding: 10px; border-radius: 6px; margin-top: 5px;">
-                                ${this.escapeHtml(question.explicacionRespuesta || question.explanation)}
-                            </div>
+                        <div class="bc-explanation-display">
+                            <strong>Explicación:</strong> ${this.escapeHtml(question.explicacionRespuesta || question.explanation)}
                         </div>
                         ` : ''}
-                        
-                        <div>
-                            <strong>Respuestas:</strong>
-                            <div style="margin-top: 8px;">
-                                ${answers.length > 0 ? answers.map(answer => `
-                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
-                                        <span style="color: ${answer.is_correct || answer.esCorrecta ? '#10B981' : '#6B7280'};">
-                                            ${answer.is_correct || answer.esCorrecta ? '✓' : '○'}
-                                        </span>
-                                        <span>${this.escapeHtml(answer.answer_text || answer.textoRespuesta || 'Sin texto de respuesta')}</span>
-                                    </div>
-                                `).join('') : '<div style="color: #6B7280;">No hay respuestas disponibles</div>'}
-                            </div>
-                        </div>
                     </div>
                     
                     <div class="bc-question-edit" id="bc-edit-${question.id}" style="display: none;">
@@ -1035,58 +1126,96 @@ class BloquesCreados {
         `;
     }
 
-    editQuestion(questionId) {
+    async editQuestion(questionId) {
         const question = this.getQuestionById(questionId);
-        if (!question) return;
+        if (!question) {
+            console.error('❌ Question not found:', questionId);
+            return;
+        }
 
         const editContainer = document.getElementById(`bc-edit-${questionId}`);
         const viewContainer = editContainer.previousElementSibling;
         
+        if (!editContainer || !viewContainer) {
+            console.error('❌ Edit containers not found for question:', questionId);
+            return;
+        }
+        
+        // Mostrar loading mientras se carga el formulario
+        editContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #6B7280;">Cargando formulario de edición...</div>';
         viewContainer.style.display = 'none';
         editContainer.style.display = 'block';
         
-        editContainer.innerHTML = this.createQuestionEditForm(question);
+        try {
+            const formHtml = await this.createQuestionEditForm(question);
+            editContainer.innerHTML = formHtml;
+        } catch (error) {
+            console.error('❌ Error creating edit form:', error);
+            editContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #DC2626;">Error al cargar el formulario de edición</div>';
+        }
     }
 
-    createQuestionEditForm(question) {
-        const answers = question.answers || [];
+    async createQuestionEditForm(question) {
+        const answers = question.respuestas || question.answers || [];
+        
+        // Obtener temas disponibles del bloque actual
+        let topicOptions = '';
+        try {
+            const topics = await this.fetchBlockTopics(this.currentBlockId);
+            topicOptions = topics.map(topic => `
+                <option value="${this.escapeHtml(topic)}" ${(question.tema || question.topic) === topic ? 'selected' : ''}>
+                    ${this.escapeHtml(topic)}
+                </option>
+            `).join('');
+        } catch (error) {
+            console.error('❌ Error loading topics:', error);
+            // Fallback: usar el tema actual si existe
+            const currentTopic = question.tema || question.topic || '';
+            if (currentTopic) {
+                topicOptions = `<option value="${this.escapeHtml(currentTopic)}" selected>${this.escapeHtml(currentTopic)}</option>`;
+            }
+        }
         
         return `
-            <div style="space-y: 15px;">
+            <div style="display: flex; flex-direction: column; gap: 15px;">
                 <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Pregunta:</label>
-                    <textarea class="bc-question-text" id="bc-edit-text-${question.id}">${this.escapeHtml(question.text_question)}</textarea>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #E2E8F0; font-size: 12px;">Pregunta:</label>
+                    <textarea class="bc-question-text" id="bc-edit-text-${question.id}">${this.escapeHtml(question.textoPregunta || question.text_question || '')}</textarea>
+                </div>
+                
+                <div style="display: flex; gap: 15px;">
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #E2E8F0; font-size: 12px;">Tema:</label>
+                        <select class="bc-answer-text" id="bc-edit-topic-${question.id}" style="width: 100%;">
+                            ${topicOptions || '<option value="">Sin tema</option>'}
+                        </select>
+                    </div>
+                    
+                    <div style="flex: 0 0 150px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #E2E8F0; font-size: 12px;">Dificultad:</label>
+                        <select class="bc-answer-text" id="bc-edit-difficulty-${question.id}" style="width: 100%;">
+                            <option value="1" ${question.difficulty == 1 ? 'selected' : ''}>1 - Fácil</option>
+                            <option value="2" ${question.difficulty == 2 ? 'selected' : ''}>2 - Medio</option>
+                            <option value="3" ${question.difficulty == 3 ? 'selected' : ''}>3 - Difícil</option>
+                            <option value="4" ${question.difficulty == 4 ? 'selected' : ''}>4 - Muy Difícil</option>
+                            <option value="5" ${question.difficulty == 5 ? 'selected' : ''}>5 - Experto</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Tema:</label>
-                    <input type="text" class="bc-answer-text" id="bc-edit-topic-${question.id}" value="${this.escapeHtml(question.topic || '')}" style="width: 200px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #E2E8F0; font-size: 12px;">Explicación (opcional):</label>
+                    <textarea class="bc-question-text" id="bc-edit-explanation-${question.id}" style="min-height: 60px;">${this.escapeHtml(question.explicacionRespuesta || question.explanation || '')}</textarea>
                 </div>
                 
                 <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Dificultad:</label>
-                    <select class="bc-answer-text" id="bc-edit-difficulty-${question.id}" style="width: 150px;">
-                        <option value="1" ${question.difficulty == 1 ? 'selected' : ''}>1 - Fácil</option>
-                        <option value="2" ${question.difficulty == 2 ? 'selected' : ''}>2 - Medio</option>
-                        <option value="3" ${question.difficulty == 3 ? 'selected' : ''}>3 - Difícil</option>
-                        <option value="4" ${question.difficulty == 4 ? 'selected' : ''}>4 - Muy Difícil</option>
-                        <option value="5" ${question.difficulty == 5 ? 'selected' : ''}>5 - Experto</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Explicación (opcional):</label>
-                    <textarea class="bc-question-text" id="bc-edit-explanation-${question.id}" style="min-height: 40px;">${this.escapeHtml(question.explanation || '')}</textarea>
-                </div>
-                
-                <div>
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Respuestas:</label>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #E2E8F0; font-size: 12px;">Respuestas:</label>
                     <div class="bc-answers-list" id="bc-edit-answers-${question.id}">
                         ${answers.map((answer, index) => `
                             <div class="bc-answer-item" data-answer-id="${answer.id}">
-                                <input type="checkbox" class="bc-answer-checkbox" ${answer.is_correct ? 'checked' : ''} 
+                                <input type="checkbox" class="bc-answer-checkbox" ${answer.is_correct || answer.esCorrecta ? 'checked' : ''} 
                                        onchange="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.updateAnswerCorrect(${answer.id}, this.checked)">
-                                <input type="text" class="bc-answer-text" value="${this.escapeHtml(answer.answer_text)}" 
+                                <input type="text" class="bc-answer-text" value="${this.escapeHtml(answer.answer_text || answer.textoRespuesta || '')}" 
                                        data-answer-id="${answer.id}" placeholder="Respuesta ${index + 1}">
                             </div>
                         `).join('')}
@@ -1125,7 +1254,7 @@ class BloquesCreados {
             
             // Obtener datos del formulario
             const textoPregunta = document.getElementById(`bc-edit-text-${questionId}`).value.trim();
-            const tema = document.getElementById(`bc-edit-topic-${questionId}`).value.trim();
+            const tema = document.getElementById(`bc-edit-topic-${questionId}`).value;
             const difficulty = parseInt(document.getElementById(`bc-edit-difficulty-${questionId}`).value);
             const explicacionRespuesta = document.getElementById(`bc-edit-explanation-${questionId}`).value.trim();
             
