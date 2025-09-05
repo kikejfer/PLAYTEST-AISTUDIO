@@ -2266,7 +2266,11 @@
             ]);
         };
 
-        // Crear componente de Bloques Disponibles mejorado
+        // Datos globales para los bloques disponibles
+        let availableBlocksData = [];
+        let availableBlocksMetadata = null;
+
+        // Crear componente de Bloques Disponibles mejorado con filtros
         const createAvailableBlocksComponent = async () => {
             const container = document.getElementById('available-blocks-pjg-container');
             if (!container || !window.apiDataService) return;
@@ -2286,53 +2290,57 @@
                     </style>
                 `;
 
-                // Cargar datos
-                const blocks = await window.apiDataService.fetchAvailableBlocks();
-                const profile = await window.apiDataService.getUserProfile();
+                // Cargar datos en paralelo
+                const [blocks, profile, metadata] = await Promise.all([
+                    window.apiDataService.fetchAvailableBlocks(),
+                    window.apiDataService.getUserProfile(),
+                    window.apiDataService.fetchBlockMetadata()
+                ]);
+                
+                availableBlocksData = blocks;
+                availableBlocksMetadata = metadata;
                 const loadedBlockIds = profile.loadedBlocks || [];
 
-                // Crear HTML mejorado
-                const blocksHTML = blocks.map(block => {
-                    const isLoaded = loadedBlockIds.includes(block.id);
-                    return `
-                        <div style="background: #0F172A; border: 1px solid #334155; border-radius: 8px; padding: 24px; transition: all 0.3s ease; min-height: 200px;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
-                                <h3 onclick="viewAvailableBlockContent(${block.id}, '${block.name}', ${isLoaded})" 
-                                    style="font-size: 16px; font-weight: 600; color: #E0E7FF; margin: 0; flex: 1; line-height: 1.25; cursor: pointer; transition: color 0.3s ease;" 
-                                    onmouseover="this.style.color='#3B82F6'; this.style.textDecoration='underline';" 
-                                    onmouseout="this.style.color='#E0E7FF'; this.style.textDecoration='none';">${block.name}</h3>
-                                ${isLoaded ? '<span style="font-size: 12px; background: rgba(16, 185, 129, 0.2); color: #10B981; padding: 4px 8px; border-radius: 12px;">Cargado</span>' : ''}
-                            </div>
-                            
-                            <p style="color: #CBD5E1; font-size: 14px; margin-bottom: 12px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-                                ${block.description || 'Sin descripción'}
-                            </p>
-                            
-                            <div style="margin-bottom: 16px; font-size: 13px; color: #CBD5E1; display: flex; flex-wrap: wrap; gap: 8px 16px;">
-                                <span><strong>Preguntas:</strong> ${block.questionCount || 0}</span>
-                                <span><strong>Temas:</strong> ${block.stats?.totalTopics || 0}</span>
-                                <span><strong>Usuarios:</strong> ${block.stats?.totalUsers || 0}</span>
-                                <span><strong>Creador:</strong> ${block.creatorNickname || 'Usuario'}</span>
-                            </div>
-                            
-                            <button onclick="handleBlockAction(${block.id}, ${isLoaded})" 
-                                style="width: 100%; padding: 10px 16px; border-radius: 6px; font-weight: 500; transition: all 0.3s ease; border: none; cursor: pointer; 
-                                ${isLoaded 
-                                    ? 'background: rgba(239, 68, 68, 0.2); color: #EF4444;' 
-                                    : 'background: #3B82F6; color: white;'
-                                }">
-                                ${isLoaded ? 'Descargar' : 'Cargar'}
-                            </button>
-                        </div>
-                    `;
-                }).join('');
-
-                // Renderizar
+                // Renderizar estructura con filtros
                 container.innerHTML = `
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
-                        ${blocksHTML}
+                    <!-- Filtros de Metadata -->
+                    <div class="ab-filters" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; padding: 15px; background: #0F172A; border-radius: 8px; border: 1px solid #334155;">
+                        <div class="ab-filter-group" style="display: flex; flex-direction: column; gap: 5px;">
+                            <label style="font-size: 12px; color: #94A3B8; font-weight: 500;">Tipo de Bloque:</label>
+                            <select id="ab-filter-tipo" onchange="applyAvailableBlocksFilters()" style="background: #1E293B; border: 1px solid #475569; color: #E2E8F0; padding: 8px 12px; border-radius: 6px; font-size: 14px; outline: none; transition: border-color 0.3s ease;">
+                                <option value="">Todos los tipos</option>
+                            </select>
+                        </div>
+                        
+                        <div class="ab-filter-group" style="display: flex; flex-direction: column; gap: 5px;">
+                            <label style="font-size: 12px; color: #94A3B8; font-weight: 500;">Nivel:</label>
+                            <select id="ab-filter-nivel" onchange="applyAvailableBlocksFilters()" style="background: #1E293B; border: 1px solid #475569; color: #E2E8F0; padding: 8px 12px; border-radius: 6px; font-size: 14px; outline: none; transition: border-color 0.3s ease;">
+                                <option value="">Todos los niveles</option>
+                            </select>
+                        </div>
+                        
+                        <div class="ab-filter-group" style="display: flex; flex-direction: column; gap: 5px;">
+                            <label style="font-size: 12px; color: #94A3B8; font-weight: 500;">Carácter:</label>
+                            <select id="ab-filter-caracter" onchange="applyAvailableBlocksFilters()" style="background: #1E293B; border: 1px solid #475569; color: #E2E8F0; padding: 8px 12px; border-radius: 6px; font-size: 14px; outline: none; transition: border-color 0.3s ease;">
+                                <option value="">Todos los caracteres</option>
+                            </select>
+                        </div>
+                        
+                        <button onclick="clearAvailableBlocksFilters()" style="background: #DC2626; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; height: fit-content; margin-top: auto; transition: background 0.3s ease;">
+                            🗑️ Limpiar Filtros
+                        </button>
+                    </div>
+                    
+                    <div id="available-blocks-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                        <!-- Los bloques se cargarán aquí -->
                     </div>
                 `;
+
+                // Poblar filtros con metadata
+                populateAvailableBlocksFilters(metadata);
+                
+                // Mostrar todos los bloques inicialmente
+                displayAvailableBlocks(blocks, loadedBlockIds);
 
                 // Función para manejar acciones de carga/descarga
                 window.handleBlockAction = async (blockId, isLoaded) => {
@@ -2342,8 +2350,35 @@
                         } else {
                             await window.apiDataService.loadBlock(blockId);
                         }
-                        // Recargar componente
-                        await createAvailableBlocksComponent();
+                        // Recargar datos y actualizar la vista manteniendo filtros aplicados
+                        const [updatedBlocks, updatedProfile] = await Promise.all([
+                            window.apiDataService.fetchAvailableBlocks(),
+                            window.apiDataService.getUserProfile()
+                        ]);
+                        
+                        availableBlocksData = updatedBlocks;
+                        
+                        // Aplicar los filtros actuales a los nuevos datos
+                        const tipoFilter = document.getElementById('ab-filter-tipo')?.value;
+                        const nivelFilter = document.getElementById('ab-filter-nivel')?.value;
+                        const caracterFilter = document.getElementById('ab-filter-caracter')?.value;
+                        
+                        let filteredBlocks = [...availableBlocksData];
+                        
+                        if (tipoFilter) {
+                            filteredBlocks = filteredBlocks.filter(block => block.tipo_id == tipoFilter);
+                        }
+                        
+                        if (nivelFilter) {
+                            filteredBlocks = filteredBlocks.filter(block => block.nivel_id == nivelFilter);
+                        }
+                        
+                        if (caracterFilter) {
+                            filteredBlocks = filteredBlocks.filter(block => block.estado_id == caracterFilter);
+                        }
+                        
+                        await displayAvailableBlocks(filteredBlocks, updatedProfile.loadedBlocks);
+                        
                     } catch (error) {
                         console.error('Error handling block action:', error);
                         alert('Error al procesar la acción. Inténtalo de nuevo.');
@@ -2412,6 +2447,145 @@
             }
         };
 
+        // Función para poblar los filtros de bloques disponibles
+        const populateAvailableBlocksFilters = (metadata) => {
+            const tipoSelect = document.getElementById('ab-filter-tipo');
+            const nivelSelect = document.getElementById('ab-filter-nivel');
+            const caracterSelect = document.getElementById('ab-filter-caracter');
+            
+            // Poblar filtros de tipo
+            if (tipoSelect && metadata.types) {
+                metadata.types.forEach(tipo => {
+                    const option = document.createElement('option');
+                    option.value = tipo.id;
+                    option.textContent = tipo.name;
+                    tipoSelect.appendChild(option);
+                });
+            }
+            
+            // Poblar filtros de nivel
+            if (nivelSelect && metadata.levels) {
+                metadata.levels.forEach(nivel => {
+                    const option = document.createElement('option');
+                    option.value = nivel.id;
+                    option.textContent = nivel.name;
+                    nivelSelect.appendChild(option);
+                });
+            }
+            
+            // Poblar filtros de carácter (estado)
+            if (caracterSelect && metadata.states) {
+                metadata.states.forEach(estado => {
+                    const option = document.createElement('option');
+                    option.value = estado.id;
+                    option.textContent = estado.name;
+                    caracterSelect.appendChild(option);
+                });
+            }
+        };
+
+        // Función para mostrar bloques disponibles
+        const displayAvailableBlocks = async (blocks, loadedBlockIds) => {
+            const grid = document.getElementById('available-blocks-grid');
+            if (!grid) return;
+            
+            // Obtener perfil actualizado si no se proporciona loadedBlockIds
+            if (!loadedBlockIds) {
+                const profile = await window.apiDataService.getUserProfile();
+                loadedBlockIds = profile.loadedBlocks || [];
+            }
+            
+            const blocksHTML = blocks.map(block => {
+                const isLoaded = loadedBlockIds.includes(block.id);
+                return `
+                    <div style="background: #0F172A; border: 1px solid #334155; border-radius: 8px; padding: 24px; transition: all 0.3s ease; min-height: 200px;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                            <h3 onclick="viewAvailableBlockContent(${block.id}, '${block.name}', ${isLoaded})" 
+                                style="font-size: 16px; font-weight: 600; color: #E0E7FF; margin: 0; flex: 1; line-height: 1.25; cursor: pointer; transition: color 0.3s ease;" 
+                                onmouseover="this.style.color='#3B82F6'; this.style.textDecoration='underline';" 
+                                onmouseout="this.style.color='#E0E7FF'; this.style.textDecoration='none';">${block.name}</h3>
+                            ${isLoaded ? '<span style="font-size: 12px; background: rgba(16, 185, 129, 0.2); color: #10B981; padding: 4px 8px; border-radius: 12px;">Cargado</span>' : ''}
+                        </div>
+                        
+                        <p style="color: #CBD5E1; font-size: 14px; margin-bottom: 12px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                            ${block.description || 'Sin descripción'}
+                        </p>
+                        
+                        ${block.metadata ? `
+                        <div style="margin-bottom: 12px; font-size: 12px; color: #94A3B8; display: flex; flex-wrap: wrap; gap: 8px 16px; background: #1E293B; padding: 8px; border-radius: 6px;">
+                            <span><strong>Tipo:</strong> ${block.metadata.tipo || 'N/A'}</span>
+                            <span><strong>Nivel:</strong> ${block.metadata.nivel || 'N/A'}</span>
+                            <span><strong>Estado:</strong> ${block.metadata.estado || 'N/A'}</span>
+                        </div>
+                        ` : ''}
+                        
+                        <div style="margin-bottom: 16px; font-size: 13px; color: #CBD5E1; display: flex; flex-wrap: wrap; gap: 8px 16px;">
+                            <span><strong>Preguntas:</strong> ${block.questionCount || 0}</span>
+                            <span><strong>Temas:</strong> ${block.stats?.totalTopics || 0}</span>
+                            <span><strong>Usuarios:</strong> ${block.stats?.totalUsers || 0}</span>
+                            <span><strong>Creador:</strong> ${block.creatorNickname || 'Usuario'}</span>
+                        </div>
+                        
+                        <button onclick="handleBlockAction(${block.id}, ${isLoaded})" 
+                            style="width: 100%; padding: 10px 16px; border-radius: 6px; font-weight: 500; transition: all 0.3s ease; border: none; cursor: pointer; 
+                            ${isLoaded 
+                                ? 'background: rgba(239, 68, 68, 0.2); color: #EF4444;' 
+                                : 'background: #3B82F6; color: white;'
+                            }">
+                            ${isLoaded ? 'Descargar' : 'Cargar'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            
+            grid.innerHTML = blocksHTML;
+        };
+
+        // Función para aplicar filtros a bloques disponibles
+        const applyAvailableBlocksFilters = async () => {
+            const tipoFilter = document.getElementById('ab-filter-tipo')?.value;
+            const nivelFilter = document.getElementById('ab-filter-nivel')?.value;
+            const caracterFilter = document.getElementById('ab-filter-caracter')?.value;
+            
+            console.log('🔍 Applying available blocks filters:', { tipoFilter, nivelFilter, caracterFilter });
+            
+            if (!availableBlocksData || availableBlocksData.length === 0) {
+                console.log('❌ No available blocks data for filtering');
+                return;
+            }
+            
+            let filteredBlocks = [...availableBlocksData];
+            
+            // Aplicar filtros
+            if (tipoFilter) {
+                filteredBlocks = filteredBlocks.filter(block => block.tipo_id == tipoFilter);
+            }
+            
+            if (nivelFilter) {
+                filteredBlocks = filteredBlocks.filter(block => block.nivel_id == nivelFilter);
+            }
+            
+            if (caracterFilter) {
+                filteredBlocks = filteredBlocks.filter(block => block.estado_id == caracterFilter);
+            }
+            
+            console.log(`✅ Filtered available blocks: ${filteredBlocks.length} from ${availableBlocksData.length} total`);
+            
+            // Mostrar bloques filtrados
+            await displayAvailableBlocks(filteredBlocks);
+        };
+
+        // Función para limpiar filtros de bloques disponibles
+        const clearAvailableBlocksFilters = async () => {
+            console.log('🗑️ Clearing available blocks filters');
+            
+            document.getElementById('ab-filter-tipo').value = '';
+            document.getElementById('ab-filter-nivel').value = '';
+            document.getElementById('ab-filter-caracter').value = '';
+            
+            await displayAvailableBlocks(availableBlocksData);
+        };
+
         // Renderizar componentes específicos en pestañas después de que React esté disponible
         const initializeTabComponents = () => {
             // Inicializar Bloques Cargados con el componente actualizado
@@ -2419,8 +2593,8 @@
                 // Esperar a que BloquesCreados esté disponible
                 const initLoadedBlocks = () => {
                     if (typeof BloquesCreados !== 'undefined') {
-                        window.bloquesCreados_loaded_pjg = new BloquesCreados('loaded-blocks-pjg-container', 'estudiantes', 'loaded');
-                        window.bloquesCreados_loaded_pjg.initialize();
+                        window.bloquesCreados_loaded_blocks_pjg_container = new BloquesCreados('loaded-blocks-pjg-container', 'estudiantes', 'loaded');
+                        window.bloquesCreados_loaded_blocks_pjg_container.initialize();
                     } else {
                         setTimeout(initLoadedBlocks, 500);
                     }

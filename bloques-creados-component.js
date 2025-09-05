@@ -28,7 +28,9 @@ class BloquesCreados {
             } else {
                 await this.loadCreatedBlocks();
             }
-            await this.loadMetadataFilters();
+            if (this.displayMode !== 'loaded' && this.displayMode !== 'available') {
+                await this.loadMetadataFilters();
+            }
         } catch (error) {
             console.error('Error initializing BloquesCreados:', error);
             this.showError('Error al inicializar la sección: ' + error.message);
@@ -61,14 +63,17 @@ class BloquesCreados {
 
         container.innerHTML = `
             <div class="bloques-creados-section">
+                ${this.displayMode !== 'available' ? `
                 <h2 class="section-title">
                     ${this.displayMode === 'loaded' 
                         ? '<img src="./Imagenes/Cargados.png" alt="Cargados" style="height: 24px; width: 24px; display: inline-block; margin-right: 8px;"> Bloques Cargados' 
                         : '📦 Bloques Creados'
                     }
                 </h2>
+                ` : ''}
                 
-                <!-- Filtros de Metadata -->
+                <!-- Filtros de Metadata - Solo para bloques creados, no para cargados ni disponibles -->
+                ${this.displayMode !== 'loaded' && this.displayMode !== 'available' ? `
                 <div class="bc-filters">
                     <div class="bc-filter-group">
                         <label for="bc-filter-tipo-${this.containerId}">Tipo de Bloque:</label>
@@ -95,6 +100,7 @@ class BloquesCreados {
                         🗑️ Limpiar Filtros
                     </button>
                 </div>
+                ` : ''}
                 
                 <div id="bc-loading-${this.containerId}" class="bc-loading" style="display: none;">
                     <p>Cargando bloques...</p>
@@ -102,6 +108,7 @@ class BloquesCreados {
                 
                 <div id="bc-error-${this.containerId}" class="bc-error" style="display: none;"></div>
                 
+                ${this.displayMode !== 'available' ? `
                 <div id="bc-blocks-container-${this.containerId}">
                     <div id="bc-empty-state-${this.containerId}" class="bc-empty-state" style="display: none;">
                         <h3>${this.displayMode === 'loaded' ? 'No tienes bloques cargados aún' : 'No has creado ningún bloque aún'}</h3>
@@ -110,6 +117,11 @@ class BloquesCreados {
                     
                     <div id="bc-blocks-grid-${this.containerId}" class="bc-blocks-grid" style="display: none;"></div>
                 </div>
+                ` : `
+                <div id="bc-blocks-container-${this.containerId}" style="display: none;">
+                    <!-- Oculto para disponibles - se va directo al editor -->
+                </div>
+                `}
                 
                 <!-- Editor de Preguntas/Contenido del Bloque -->
                 <div id="bc-questions-editor-${this.containerId}" class="bc-questions-editor" style="display: none;">
@@ -854,7 +866,7 @@ class BloquesCreados {
         const isCreator = this.userType === 'jugadores'; // PCC (creadores)
         const isStudent = this.userType === 'estudiantes'; // PJG (estudiantes)
         const canEditQuestions = (isTeacher || isCreator) && this.displayMode === 'created'; // Only for created blocks
-        const canViewContent = isStudent; // Students can view content in both loaded and available blocks
+        const canViewContent = isStudent || (this.displayMode === 'loaded'); // Students can view content, and anyone can view loaded blocks
         
         card.innerHTML = `
             <div class="bc-block-header">
@@ -1113,12 +1125,23 @@ class BloquesCreados {
         await this.loadMetadataFilters();
     }
 
-    // Contenido del Bloque - Para estudiantes (PJG)
+    // Contenido del Bloque - Para estudiantes (PJG) y bloques cargados
     async loadBlockContentViewer(blockId, blockName) {
-        // Permitir acceso a estudiantes
-        if (this.userType !== 'estudiantes') return;
+        console.log(`🔍 loadBlockContentViewer called:`, {
+            blockId,
+            blockName,
+            userType: this.userType,
+            displayMode: this.displayMode,
+            hasAccess: this.userType === 'estudiantes' || this.displayMode === 'loaded'
+        });
         
-        console.log(`🔍 Loading block content viewer for block: ${blockId} (${blockName})`);
+        // Permitir acceso a estudiantes o para bloques cargados
+        if (this.userType !== 'estudiantes' && this.displayMode !== 'loaded') {
+            console.log('❌ Access denied to loadBlockContentViewer');
+            return;
+        }
+        
+        console.log(`✅ Loading block content viewer for block: ${blockId} (${blockName})`);
         return this.loadBlockEditor(blockId, blockName, 'viewer');
     }
 
@@ -1190,7 +1213,24 @@ class BloquesCreados {
             
         } catch (error) {
             console.error('❌ Error loading block editor:', error);
-            alert('Error al cargar el editor del bloque: ' + error.message);
+            console.error('❌ Error details:', {
+                blockId,
+                blockName,
+                mode,
+                userType: this.userType,
+                displayMode: this.displayMode,
+                error: error.message,
+                stack: error.stack
+            });
+            
+            // Show more specific error message
+            const errorMsg = error.message.includes('authentication') || error.message.includes('token') 
+                ? 'Error de autenticación. Por favor, inicia sesión nuevamente.' 
+                : error.message.includes('403') 
+                    ? 'No tienes permisos para acceder a este contenido.'
+                    : `Error al cargar el contenido del bloque: ${error.message}`;
+                    
+            alert(errorMsg);
             this.closeQuestionsEditor();
         } finally {
             loadingElement.style.display = 'none';
@@ -1241,10 +1281,20 @@ class BloquesCreados {
         });
 
         if (!response.ok) {
-            throw new Error('Failed to fetch questions');
+            const errorText = await response.text();
+            console.error(`❌ Error fetching block questions:`, {
+                status: response.status,
+                statusText: response.statusText,
+                url,
+                headers,
+                response: errorText
+            });
+            throw new Error(`Failed to fetch questions: ${response.status} ${response.statusText}`);
         }
 
-        return await response.json();
+        const data = await response.json();
+        console.log(`✅ Successfully fetched ${data.length || 0} questions for block ${blockId}`);
+        return data;
     }
 
     async fetchBlockTopics(blockId) {
