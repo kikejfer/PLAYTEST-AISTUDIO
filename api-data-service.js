@@ -1076,6 +1076,20 @@ class APIDataService {
     return this.simulateDelay(response);
   }
 
+  // Get all topics for a specific block from topic_answers table
+  async fetchBlockTopics(blockId) {
+    try {
+      console.log(`🔍 fetchBlockTopics: Getting topics for block ${blockId}`);
+      const topics = await this.apiCall(`/blocks/${blockId}/topics`);
+      console.log(`✅ fetchBlockTopics: Got ${topics.length} topics for block ${blockId}`);
+      return this.simulateDelay(topics);
+    } catch (error) {
+      console.warn(`⚠️ fetchBlockTopics failed for block ${blockId}:`, error.message);
+      // Return empty array if endpoint doesn't exist yet
+      return this.simulateDelay([]);
+    }
+  }
+
   // Get created blocks with statistics for Bloques Creados section
   async fetchCreatedBlocksStats() {
     try {

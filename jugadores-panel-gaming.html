@@ -323,15 +323,41 @@
         // Componente TopicSelectionModal
         const TopicSelectionModal = ({ block, existingSelection, onSave, onClose }) => {
             const { t } = useLanguage();
-            const uniqueTopics = useMemo(() => {
-                if (!block || !block.questions) return [];
-                return [...new Set(block.questions.map(q => q.tema).filter(Boolean))].sort();
-            }, [block]);
+            const [uniqueTopics, setUniqueTopics] = useState([]);
+            const [isLoadingTopics, setIsLoadingTopics] = useState(true);
+            const [selectedTopics, setSelectedTopics] = useState(new Set());
 
-            const [selectedTopics, setSelectedTopics] = useState(() => {
-                if (existingSelection === 'all') return new Set(uniqueTopics);
-                return new Set(existingSelection || []);
-            });
+            // Cargar temas desde la API cuando se monta el componente
+            useEffect(() => {
+                const loadTopics = async () => {
+                    if (!block || !window.apiDataService) return;
+                    
+                    setIsLoadingTopics(true);
+                    try {
+                        console.log(`🔍 Loading topics for block ${block.id} from topic_answers table`);
+                        const topics = await window.apiDataService.fetchBlockTopics(block.id);
+                        
+                        // Extraer nombres únicos de temas y ordenarlos
+                        const topicNames = [...new Set(topics.map(topic => topic.name || topic.topic || topic).filter(Boolean))].sort();
+                        setUniqueTopics(topicNames);
+                        console.log(`✅ Loaded ${topicNames.length} unique topics for block ${block.id}:`, topicNames);
+                        
+                        // Establecer selección inicial
+                        if (existingSelection === 'all') {
+                            setSelectedTopics(new Set(topicNames));
+                        } else {
+                            setSelectedTopics(new Set(existingSelection || []));
+                        }
+                    } catch (error) {
+                        console.error(`❌ Error loading topics for block ${block.id}:`, error);
+                        setUniqueTopics([]);
+                    } finally {
+                        setIsLoadingTopics(false);
+                    }
+                };
+                
+                loadTopics();
+            }, [block, existingSelection]);
 
             const handleToggleTopic = (topic) => {
                 setSelectedTopics(prev => {
@@ -385,36 +411,48 @@
                 React.createElement('div', {
                     key: 'content',
                     className: "p-6 max-h-96 overflow-y-auto"
-                }, uniqueTopics.length > 0 ? [
-                    React.createElement('button', {
-                        key: 'select-all',
-                        onClick: handleSelectAll,
-                        className: "w-full text-sm font-semibold bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-md transition-colors mb-4"
-                    }, `${selectedTopics.size === uniqueTopics.length ? t('topic_modal_deselect_all') : t('topic_modal_select_all')} (${uniqueTopics.length})`),
+                }, isLoadingTopics ? 
                     React.createElement('div', {
-                        key: 'topics',
-                        className: "space-y-2"
-                    }, uniqueTopics.map(topic =>
-                        React.createElement('label', {
-                            key: topic,
-                            className: "flex items-center p-3 rounded-md hover:bg-slate-700 cursor-pointer transition-colors"
-                        }, [
-                            React.createElement('input', {
-                                key: 'checkbox',
-                                type: "checkbox",
-                                checked: selectedTopics.has(topic),
-                                onChange: () => handleToggleTopic(topic),
-                                className: "h-4 w-4 rounded border-slate-600 text-blue-600 bg-slate-800 focus:ring-blue-600 focus:ring-2"
-                            }),
-                            React.createElement('span', {
-                                key: 'label',
-                                className: "ml-3 text-white"
-                            }, topic)
-                        ])
-                    ))
-                ] : React.createElement('p', {
-                    className: "text-center text-gray-400 py-8"
-                }, t('topic_modal_no_topics'))),
+                        className: "text-center text-gray-400 py-8"
+                    }, [
+                        React.createElement('div', {
+                            key: 'spinner',
+                            className: "animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
+                        }),
+                        React.createElement('p', {
+                            key: 'text'
+                        }, 'Cargando temas...')
+                    ]) :
+                    uniqueTopics.length > 0 ? [
+                        React.createElement('button', {
+                            key: 'select-all',
+                            onClick: handleSelectAll,
+                            className: "w-full text-sm font-semibold bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-md transition-colors mb-4"
+                        }, `${selectedTopics.size === uniqueTopics.length ? t('topic_modal_deselect_all') : t('topic_modal_select_all')} (${uniqueTopics.length})`),
+                        React.createElement('div', {
+                            key: 'topics',
+                            className: "space-y-2"
+                        }, uniqueTopics.map(topic =>
+                            React.createElement('label', {
+                                key: topic,
+                                className: "flex items-center p-3 rounded-md hover:bg-slate-700 cursor-pointer transition-colors"
+                            }, [
+                                React.createElement('input', {
+                                    key: 'checkbox',
+                                    type: "checkbox",
+                                    checked: selectedTopics.has(topic),
+                                    onChange: () => handleToggleTopic(topic),
+                                    className: "h-4 w-4 rounded border-slate-600 text-blue-600 bg-slate-800 focus:ring-blue-600 focus:ring-2"
+                                }),
+                                React.createElement('span', {
+                                    key: 'label',
+                                    className: "ml-3 text-white"
+                                }, topic)
+                            ])
+                        ))
+                    ] : React.createElement('p', {
+                        className: "text-center text-gray-400 py-8"
+                    }, t('topic_modal_no_topics'))),
                 React.createElement('div', {
                     key: 'footer',
                     className: "p-4 bg-slate-900 flex justify-end gap-3 rounded-b-xl"
@@ -427,8 +465,13 @@
                     React.createElement('button', {
                         key: 'save',
                         onClick: handleSave,
-                        className: "py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors"
-                    }, t('topic_modal_save'))
+                        disabled: isLoadingTopics,
+                        className: `py-2 px-4 rounded-lg font-bold transition-colors ${
+                            isLoadingTopics 
+                                ? 'bg-slate-600 text-gray-400 cursor-not-allowed' 
+                                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        }`
+                    }, isLoadingTopics ? 'Cargando...' : t('topic_modal_save'))
                 ])
             ]));
         };

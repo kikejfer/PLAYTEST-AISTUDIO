@@ -972,7 +972,7 @@ class BloquesCreados {
     }
 
     async unloadBlock(blockId, blockName) {
-        if (!confirm(`¿Estás seguro de que quieres eliminar el bloque "${blockName}" de tu lista?\\n\\nEsto solo lo eliminará de tus bloques cargados, el bloque original se mantendrá.`)) {
+        if (!confirm(`¿Estás seguro de que quieres eliminar el bloque "${blockName}" de tu lista?\n\nEsto solo lo eliminará de tus bloques cargados, el bloque original se mantendrá.`)) {
             return;
         }
 
