@@ -23,11 +23,16 @@ class BloquesCreados {
         try {
             await this.loadUserData();
             this.render();
-            if (this.displayMode === 'loaded') {
-                await this.loadLoadedBlocks();
-            } else {
-                await this.loadCreatedBlocks();
+            
+            // Para 'available' mode, no cargar bloques - se va directo al editor
+            if (this.displayMode !== 'available') {
+                if (this.displayMode === 'loaded') {
+                    await this.loadLoadedBlocks();
+                } else {
+                    await this.loadCreatedBlocks();
+                }
             }
+            
             if (this.displayMode !== 'loaded' && this.displayMode !== 'available') {
                 await this.loadMetadataFilters();
             }
@@ -833,8 +838,19 @@ class BloquesCreados {
     }
 
     displayBlocks() {
+        // Para 'available' mode, no mostrar la lista de bloques - se va directo al editor
+        if (this.displayMode === 'available') {
+            console.log('📝 Skipping displayBlocks for available mode - goes direct to editor');
+            return;
+        }
+        
         const blocksGrid = document.getElementById(`bc-blocks-grid-${this.containerId}`);
         const emptyState = document.getElementById(`bc-empty-state-${this.containerId}`);
+
+        if (!blocksGrid || !emptyState) {
+            console.error('❌ Required DOM elements not found for displayBlocks');
+            return;
+        }
 
         if (!this.blocksData || this.blocksData.length === 0) {
             emptyState.style.display = 'block';
