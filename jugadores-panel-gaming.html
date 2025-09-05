@@ -2346,9 +2346,9 @@
                 window.handleBlockAction = async (blockId, isLoaded) => {
                     try {
                         if (isLoaded) {
-                            await window.apiDataService.unloadBlock(blockId);
+                            await window.apiDataService.unloadBlockForUser(blockId);
                         } else {
-                            await window.apiDataService.loadBlock(blockId);
+                            await window.apiDataService.loadBlockForUser(blockId);
                         }
                         // Recargar datos y actualizar la vista manteniendo filtros aplicados
                         const [updatedBlocks, updatedProfile] = await Promise.all([

@@ -1060,7 +1060,15 @@ class APIDataService {
     return this.deleteBlock(blockId);
   }
 
-  // Unload/Remove a block from user's loaded blocks
+  // Load a block for current user (assign block to user in user_loaded_blocks table)
+  async loadBlockForUser(blockId) {
+    const response = await this.apiCall(`/blocks/${blockId}/load-user`, {
+      method: 'POST'
+    });
+    return this.simulateDelay(response);
+  }
+
+  // Unload/Remove a block from user's loaded blocks (remove assignment from user_loaded_blocks table)  
   async unloadBlockForUser(blockId) {
     const response = await this.apiCall(`/blocks/${blockId}/unload`, {
       method: 'DELETE'
