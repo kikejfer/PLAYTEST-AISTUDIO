@@ -23,6 +23,15 @@ CREATE TABLE user_profiles (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- User loaded blocks table (many-to-many relationship)
+CREATE TABLE user_loaded_blocks (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    block_id INTEGER REFERENCES blocks(id) ON DELETE CASCADE,
+    loaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, block_id)
+);
+
 -- Blocks table (temas/bloques de preguntas)
 CREATE TABLE blocks (
     id SERIAL PRIMARY KEY,
@@ -105,6 +114,8 @@ CREATE INDEX idx_game_players_game_id ON game_players(game_id);
 CREATE INDEX idx_game_players_user_id ON game_players(user_id);
 CREATE INDEX idx_user_sessions_token ON user_sessions(session_token);
 CREATE INDEX idx_user_sessions_user_id ON user_sessions(user_id);
+CREATE INDEX idx_user_loaded_blocks_user_id ON user_loaded_blocks(user_id);
+CREATE INDEX idx_user_loaded_blocks_block_id ON user_loaded_blocks(block_id);
 
 -- Example initial data
 INSERT INTO users (nickname, password_hash) VALUES 
