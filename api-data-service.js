@@ -1060,17 +1060,17 @@ class APIDataService {
     return this.deleteBlock(blockId);
   }
 
-  // Load a block for current user (assign block to user in user_loaded_blocks table)
+  // Load a block for current user (assign block to user in user_profiles.loaded_blocks)
   async loadBlockForUser(blockId) {
-    const response = await this.apiCall(`/blocks/${blockId}/load-user`, {
+    const response = await this.apiCall(`/blocks/${blockId}/load`, {
       method: 'POST'
     });
     return this.simulateDelay(response);
   }
 
-  // Unload/Remove a block from user's loaded blocks (remove assignment from user_loaded_blocks table)  
+  // Unload/Remove a block from user's loaded blocks (remove assignment from user_profiles.loaded_blocks)  
   async unloadBlockForUser(blockId) {
-    const response = await this.apiCall(`/blocks/${blockId}/unload`, {
+    const response = await this.apiCall(`/blocks/${blockId}/load`, {
       method: 'DELETE'
     });
     return this.simulateDelay(response);
