@@ -1459,7 +1459,19 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
         const filesToProcess = fileQueue.filter(f => selectedBatchFiles.has(f.file.name));
 
         try {
+            const totalFiles = filesToProcess.length;
+            let currentFile = 0;
+
             for (const fileInfo of filesToProcess) {
+                currentFile++;
+                
+                // Update progress message for file processing
+                setMessage(t('uploader_batch_status_progress', { 
+                    current: currentFile, 
+                    total: totalFiles, 
+                    fileName: fileInfo.file.name 
+                }));
+
                 const text = await fileInfo.file.text();
                 if (!text) continue;
                 
@@ -1469,7 +1481,7 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
             }
             
             setProcessedQuestions(allParsedQuestions);
-            setMessage(`✅ Procesado completamente: ${allParsedQuestions.length} preguntas de ${filesToProcess.length} archivo(s)`);
+            setMessage(`✅ Procesado completamente: ${allParsedQuestions.length} preguntas de ${totalFiles} archivo(s)`);
             setStatus('success');
         } catch (error) {
             console.error('Error processing files:', error);
@@ -1539,34 +1551,35 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
                 return acc;
             }, {});
 
-            let processedCount = 0;
+            const blockKeys = Object.keys(questionsByBlock);
+            const totalBlocks = blockKeys.length;
+            let currentBlock = 0;
 
-            for (const [blockName, blockQuestions] of Object.entries(questionsByBlock)) {
+            for (const blockName of blockKeys) {
+                currentBlock++;
+                const blockQuestions = questionsByBlock[blockName];
+                
+                // Update progress message for block processing
+                setMessage(t('uploader_batch_status_progress', { 
+                    current: currentBlock, 
+                    total: totalBlocks, 
+                    fileName: blockName 
+                }));
+
                 const existingBlock = blocks.find(b => b.nombreCorto?.toLowerCase() === blockName.toLowerCase());
                 
-                // Procesar cada pregunta individualmente para actualizar progreso
-                for (let i = 0; i < blockQuestions.length; i++) {
-                    const questionBatch = [blockQuestions[i]]; // Una pregunta a la vez
-                    
-                    if (existingBlock) {
-                        await onSaveQuestions(existingBlock.id, questionBatch);
-                    } else if (i === 0) { // Solo crear el bloque una vez
-                        const { tipoId, nivelId, estadoId } = getMetadataIds();
-                        await onCreateBlock(blockName, questionBatch, batchIsPublic, '', tipoId, nivelId, estadoId);
-                    } else {
-                        // Para preguntas restantes del bloque nuevo, usar el ID del bloque recién creado
-                        const newBlock = blocks.find(b => b.nombreCorto?.toLowerCase() === blockName.toLowerCase());
-                        if (newBlock) {
-                            await onSaveQuestions(newBlock.id, questionBatch);
-                        }
-                    }
-                    
-                    processedCount++;
-                    setSaveProgress(prev => ({ ...prev, current: processedCount }));
-                    
-                    // Pequeña pausa para visualizar el progreso
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                if (existingBlock) {
+                    await onSaveQuestions(existingBlock.id, blockQuestions);
+                } else {
+                    const { tipoId, nivelId, estadoId } = getMetadataIds();
+                    await onCreateBlock(blockName, blockQuestions, batchIsPublic, '', tipoId, nivelId, estadoId);
                 }
+                
+                // Update progress based on blocks completed
+                setSaveProgress(prev => ({ 
+                    ...prev, 
+                    current: currentBlock * (processedQuestions.length / totalBlocks)
+                }));
             }
 
             setSaveProgress({ current: processedQuestions.length, total: processedQuestions.length, isActive: false });
