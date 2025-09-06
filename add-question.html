@@ -263,7 +263,7 @@
           
           return { ...createdBlock, totalPreguntas: questions.length, questions: questions };
       };
-      const saveQuestionsToBlock = async (blockId, questions) => {
+      const saveQuestionsToBlock = async (blockId, questions, setMessageCallback = null) => {
           try {
               // CRITICAL: Validate topic preservation before saving
               if (questions.length === 0) {
@@ -286,6 +286,16 @@
               
               console.log('✅ Topic validation passed. Unique topics in batch:', [...new Set(questions.map(q => q.tema))]);
               
+              // Show progress for large batches
+              if (setMessageCallback && questions.length > 10) {
+                  const uniqueTopics = [...new Set(questions.map(q => q.tema))];
+                  setMessageCallback(t('uploader_batch_status_progress', { 
+                      current: 1, 
+                      total: 1, 
+                      fileName: `${questions.length} questions (${uniqueTopics.length} topics)` 
+                  }));
+              }
+              
               // Format questions for bulk API
               const formattedQuestions = questions.map(question => {
                   // CRITICAL: Never allow tema to be undefined, null, empty, or 'General' 
@@ -305,7 +315,7 @@
               console.log(`💾 Saving ${questions.length} questions using bulk API to block ${blockId}`);
               console.log(`📊 Topics in batch: ${[...new Set(formattedQuestions.map(q => q.tema))].join(', ')}`);
               
-              // Use bulk API instead of individual calls
+              // Use bulk API - single call for all questions
               const result = await apiDataService.createQuestionsBulk(blockId, formattedQuestions);
               
               console.log('✅ All questions saved successfully via bulk API');
@@ -908,7 +918,7 @@
                       if (!trimmedBlockName) throw new Error("Block name is required.");
                       const existingBlock = blocks.find(b => b.nombreCorto.toLowerCase() === trimmedBlockName.toLowerCase() && b.creatorId === currentUser.id);
                       if (existingBlock) {
-                          await onSaveQuestions(existingBlock.id, questionsToSave);
+                          await onSaveQuestions(existingBlock.id, questionsToSave, setMessage);
                           setMessage(t('generator_save_success_updated', { count: questionsToSave.length, block: existingBlock.nombreCorto }));
                       } else {
                           const { tipoId, nivelId, estadoId } = getMetadataIds();
