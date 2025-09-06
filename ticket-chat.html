@@ -563,14 +563,21 @@
             
             <div class="status-controls" id="status-controls" style="display: none;">
                 <select class="status-select" id="status-select">
-                    <option value="abierto">Abierto</option>
-                    <option value="en_progreso">En Progreso</option>
-                    <option value="esperando_respuesta">Esperando Respuesta</option>
-                    <option value="resuelto">Resuelto</option>
-                    <option value="cerrado">Cerrado</option>
+                    <option value="open">Abierto</option>
+                    <option value="in_progress">En Progreso</option>
+                    <option value="waiting_user">Esperando Usuario</option>
+                    <option value="resolved">Resuelto</option>
+                    <option value="closed">Cerrado</option>
+                    <option value="escalated">Escalado</option>
                 </select>
                 <button class="btn-update-status" onclick="updateTicketStatus()">
                     Actualizar Estado
+                </button>
+                <button class="btn-update-status" onclick="assignToSelf()" style="margin-top: 5px; background: #28a745;">
+                    Asignar a Mí
+                </button>
+                <button class="btn-update-status" onclick="escalateTicket()" style="margin-top: 5px; background: #dc3545;">
+                    Escalar Ticket
                 </button>
             </div>
         </div>
@@ -661,7 +668,7 @@
             try {
                 // Obtener ID del ticket desde la URL
                 const urlParams = new URLSearchParams(window.location.search);
-                currentTicketId = urlParams.get('ticketId');
+                currentTicketId = urlParams.get('ticketId') || urlParams.get('ticket');
                 
                 if (!currentTicketId) {
                     showError('ID de ticket no especificado');
@@ -725,7 +732,7 @@
 
         async function loadTicketDetails() {
             try {
-                const response = await fetch(`/api/communication/tickets/${currentTicketId}`, {
+                const response = await fetch(`/api/support/tickets/${currentTicketId}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
@@ -741,8 +748,10 @@
 
                 const data = await response.json();
                 renderTicketInfo(data.ticket);
-                renderMessages(data.messages);
-                renderAttachments(data.attachments);
+                renderMessages(data.comments);
+                if (data.related_tickets && data.related_tickets.length > 0) {
+                    renderRelatedTickets(data.related_tickets);
+                }
 
                 // Auto-scroll al final
                 scrollToBottom();
@@ -755,9 +764,9 @@
 
         function renderTicketInfo(ticket) {
             document.getElementById('ticket-number').textContent = ticket.ticket_number;
-            document.getElementById('ticket-title').textContent = ticket.title;
+            document.getElementById('ticket-title').textContent = ticket.subject;
             document.getElementById('ticket-status').textContent = ticket.status.replace('_', ' ').toUpperCase();
-            document.getElementById('chat-title').textContent = `${ticket.ticket_number} - ${ticket.title}`;
+            document.getElementById('chat-title').textContent = `${ticket.ticket_number} - ${ticket.subject}`;
 
             // Actualizar selector de estado
             document.getElementById('status-select').value = ticket.status;
@@ -776,19 +785,27 @@
                     </div>
                     <div class="info-item">
                         <span class="info-label">Categoría:</span>
-                        <span class="info-value">${ticket.category_name}</span>
+                        <span class="info-value">${ticket.category_name || 'Sin categoría'}</span>
                     </div>
+                    ${ticket.escalation_level > 0 ? `
                     <div class="info-item">
-                        <span class="info-label">Tipo:</span>
-                        <span class="info-value">${ticket.origin_type === 'global' ? 'Soporte Técnico' : 'Problema de Bloque'}</span>
+                        <span class="info-label">Escalación:</span>
+                        <span class="info-value" style="color: #dc3545; font-weight: 600;">Nivel ${ticket.escalation_level}</span>
                     </div>
+                    ` : ''}
+                    ${ticket.group_name ? `
+                    <div class="info-item">
+                        <span class="info-label">Grupo:</span>
+                        <span class="info-value">${ticket.group_name}</span>
+                    </div>
+                    ` : ''}
                 </div>
 
                 <div class="info-section">
                     <h4>👥 Participantes</h4>
                     <div class="info-item">
                         <span class="info-label">Reportado por:</span>
-                        <span class="info-value">${ticket.creator_nickname}</span>
+                        <span class="info-value">${ticket.user_nickname}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Asignado a:</span>
@@ -810,7 +827,7 @@
                     </div>
                     <div class="info-item">
                         <span class="info-label">Última actividad:</span>
-                        <span class="info-value">${formatDate(ticket.last_activity)}</span>
+                        <span class="info-value">${formatDate(ticket.updated_at)}</span>
                     </div>
                     ${ticket.resolved_at ? `
                     <div class="info-item">
@@ -837,31 +854,42 @@
                 <div class="info-section">
                     <h4>📈 Estadísticas</h4>
                     <div class="info-item">
-                        <span class="info-label">Mensajes:</span>
-                        <span class="info-value">${ticket.message_count}</span>
+                        <span class="info-label">Comentarios:</span>
+                        <span class="info-value">${ticket.comments_count || 0}</span>
                     </div>
+                    ${ticket.satisfaction_rating ? `
                     <div class="info-item">
-                        <span class="info-label">Adjuntos:</span>
-                        <span class="info-value">${ticket.attachment_count}</span>
+                        <span class="info-label">Satisfacción:</span>
+                        <span class="info-value">${'⭐'.repeat(ticket.satisfaction_rating)} (${ticket.satisfaction_rating}/5)</span>
                     </div>
+                    ` : ''}
+                    ${ticket.due_date ? `
+                    <div class="info-item">
+                        <span class="info-label">Fecha límite:</span>
+                        <span class="info-value" style="${new Date(ticket.due_date) < new Date() ? 'color: #dc3545;' : ''}">
+                            ${formatDate(ticket.due_date)}
+                        </span>
+                    </div>
+                    ` : ''}
                 </div>
             `;
 
             document.getElementById('ticket-info').innerHTML = infoHTML;
         }
 
-        function renderMessages(messages) {
+        function renderMessages(comments) {
             const messagesArea = document.getElementById('messages-area');
             
-            if (messages.length === 0) {
-                messagesArea.innerHTML = '<div class="loading">No hay mensajes en esta conversación.</div>';
+            if (comments.length === 0) {
+                messagesArea.innerHTML = '<div class="loading">No hay comentarios en este ticket.</div>';
                 return;
             }
 
-            const messagesHTML = messages.map(message => {
-                const isOwn = message.sender_id === currentUser.id;
-                const isSystem = message.is_system;
-                const isInternal = message.is_internal;
+            const messagesHTML = comments.map(comment => {
+                const isOwn = comment.user_id === currentUser.id;
+                const isSystem = comment.user_type === 'system';
+                const isInternal = comment.is_internal;
+                const isAgent = ['agent', 'admin'].includes(comment.user_type);
                 
                 let messageClass = 'message';
                 if (isOwn) messageClass += ' own';
@@ -871,14 +899,25 @@
                 return `
                     <div class="${messageClass}">
                         <div class="message-header">
-                            <span class="sender-name">${message.sender_nickname}</span>
-                            <span class="message-time">${formatTime(message.created_at)}</span>
-                            ${message.edited_at ? '<span class="edited-marker">(editado)</span>' : ''}
+                            <span class="sender-name">
+                                ${comment.user_nickname}
+                                ${isAgent ? '👨‍💼' : '👤'}
+                                ${comment.template_name ? ` (plantilla: ${comment.template_name})` : ''}
+                            </span>
+                            <span class="message-time">${formatTime(comment.created_at)}</span>
+                            ${comment.is_solution ? '<span style="color: #28a745; font-weight: 600;">✅ Solución</span>' : ''}
                         </div>
                         <div class="message-content">
-                            ${formatMessageText(message.message_text)}
-                            ${renderMessageAttachments(message.id)}
+                            ${formatMessageText(comment.content)}
+                            ${renderCommentAttachments(comment.attachments)}
                         </div>
+                        ${canModerate && !comment.is_solution && comment.user_type !== 'system' ? `
+                        <div style="margin-top: 8px; font-size: 12px;">
+                            <button onclick="markAsSolution(${comment.id})" style="background: #28a745; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer;">
+                                Marcar como solución
+                            </button>
+                        </div>
+                        ` : ''}
                     </div>
                 `;
             }).join('');
@@ -945,12 +984,17 @@
                     formData.append('attachments', file);
                 });
 
-                const response = await fetch(`/api/communication/tickets/${currentTicketId}/messages`, {
+                const response = await fetch(`/api/support/tickets/${currentTicketId}/comments`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
                     },
-                    body: formData
+                    body: JSON.stringify({
+                        content: message,
+                        is_internal: isInternalNote,
+                        attachments: [] // TODO: Handle file uploads
+                    })
                 });
 
                 if (response.ok) {
@@ -983,7 +1027,7 @@
             const newStatus = document.getElementById('status-select').value;
             
             try {
-                const response = await fetch(`/api/communication/tickets/${currentTicketId}/status`, {
+                const response = await fetch(`/api/support/tickets/${currentTicketId}`, {
                     method: 'PATCH',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -1133,6 +1177,124 @@
         function showError(message) {
             document.getElementById('messages-area').innerHTML = 
                 `<div class="error">❌ ${message}</div>`;
+        }
+
+        function renderRelatedTickets(relatedTickets) {
+            if (relatedTickets.length === 0) return;
+
+            const relatedHTML = `
+                <div class="info-section">
+                    <h4>🔗 Tickets Relacionados</h4>
+                    ${relatedTickets.map(ticket => `
+                        <div class="info-item">
+                            <span class="info-label">${ticket.ticket_number}:</span>
+                            <span class="info-value">
+                                <a href="ticket-chat.html?ticket=${ticket.id}" style="color: #667eea;">
+                                    ${ticket.subject}
+                                </a>
+                                <small style="color: #666; display: block;">
+                                    ${ticket.status.replace('_', ' ').toUpperCase()}
+                                </small>
+                            </span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            document.getElementById('ticket-info').innerHTML += relatedHTML;
+        }
+
+        function renderCommentAttachments(attachments) {
+            if (!attachments || attachments.length === 0) return '';
+            
+            return `
+                <div class="message-attachments">
+                    ${attachments.map(attachment => `
+                        <a href="${attachment.url}" class="attachment-item" target="_blank">
+                            📎 ${attachment.filename}
+                        </a>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        async function markAsSolution(commentId) {
+            try {
+                const response = await fetch(`/api/support/tickets/${currentTicketId}/comments/${commentId}/solution`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ is_solution: true })
+                });
+
+                if (response.ok) {
+                    await loadTicketDetails();
+                } else {
+                    throw new Error('Error marcando como solución');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al marcar como solución: ' + error.message);
+            }
+        }
+
+        async function assignToSelf() {
+            try {
+                const response = await fetch(`/api/support/tickets/${currentTicketId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        assigned_to: currentUser.id,
+                        status: 'in_progress'
+                    })
+                });
+
+                if (response.ok) {
+                    await loadTicketDetails();
+                } else {
+                    throw new Error('Error asignando ticket');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al asignar ticket: ' + error.message);
+            }
+        }
+
+        async function escalateTicket() {
+            if (!confirm('¿Estás seguro de que quieres escalar este ticket? Esto notificará a los administradores.')) {
+                return;
+            }
+
+            try {
+                const reason = prompt('Motivo de la escalación:');
+                if (!reason) return;
+
+                const response = await fetch(`/api/support/tickets/${currentTicketId}/escalate`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        escalation_reason: reason,
+                        escalation_type: 'manual'
+                    })
+                });
+
+                if (response.ok) {
+                    await loadTicketDetails();
+                } else {
+                    throw new Error('Error escalando ticket');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al escalar ticket: ' + error.message);
+            }
         }
 
         function showEmojiPicker() {

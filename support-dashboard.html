@@ -1132,41 +1132,129 @@
         }
 
         async function loadTickets() {
-            // Implementar carga de tickets
-            document.getElementById('tickets-content').innerHTML = `
-                <div style="text-align: center; padding: 40px; color: #666;">
-                    <h3>🎫 Sistema de Tickets</h3>
-                    <p>Implementación en desarrollo...</p>
-                </div>
-            `;
+            try {
+                const filters = {
+                    status: document.getElementById('ticket-status').value,
+                    priority: document.getElementById('ticket-priority').value,
+                    category_id: document.getElementById('ticket-category').value,
+                    search: document.getElementById('ticket-search').value,
+                    limit: 20,
+                    offset: 0
+                };
+
+                const queryParams = new URLSearchParams();
+                Object.keys(filters).forEach(key => {
+                    if (filters[key]) queryParams.append(key, filters[key]);
+                });
+
+                const response = await fetch(`/api/support/tickets?${queryParams}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    renderTicketsTable(data.tickets, data.pagination);
+                } else {
+                    throw new Error('Error cargando tickets');
+                }
+            } catch (error) {
+                console.error('Error cargando tickets:', error);
+                document.getElementById('tickets-content').innerHTML = `
+                    <div class="alert-card alert-warning">
+                        <div class="alert-icon">⚠️</div>
+                        <div class="alert-content">
+                            <h4>Error cargando tickets</h4>
+                            <p>No se pudieron cargar los tickets. Intenta de nuevo.</p>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         async function loadGroups() {
-            // Implementar carga de grupos
-            document.getElementById('groups-content').innerHTML = `
-                <div style="text-align: center; padding: 40px; color: #666;">
-                    <h3>👥 Gestión de Grupos</h3>
-                    <p>Implementación en desarrollo...</p>
-                </div>
-            `;
+            try {
+                const response = await fetch('/api/support/groups?status=active&limit=50', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    renderGroupsTable(data.groups);
+                } else {
+                    throw new Error('Error cargando grupos');
+                }
+            } catch (error) {
+                console.error('Error cargando grupos:', error);
+                document.getElementById('groups-content').innerHTML = `
+                    <div class="alert-card alert-warning">
+                        <div class="alert-icon">⚠️</div>
+                        <div class="alert-content">
+                            <h4>Error cargando grupos</h4>
+                            <p>No se pudieron cargar los grupos. Intenta de nuevo.</p>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         async function loadKnowledgeBase() {
-            document.getElementById('knowledge-content').innerHTML = `
-                <div style="text-align: center; padding: 40px; color: #666;">
-                    <h3>📚 Base de Conocimiento</h3>
-                    <p>Implementación en desarrollo...</p>
-                </div>
-            `;
+            try {
+                const response = await fetch('/api/support/knowledge-base?status=published&limit=20', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    renderKnowledgeBaseArticles(data.articles);
+                } else {
+                    throw new Error('Error cargando base de conocimiento');
+                }
+            } catch (error) {
+                console.error('Error cargando base de conocimiento:', error);
+                document.getElementById('knowledge-content').innerHTML = `
+                    <div class="alert-card alert-warning">
+                        <div class="alert-icon">⚠️</div>
+                        <div class="alert-content">
+                            <h4>Error cargando base de conocimiento</h4>
+                            <p>No se pudieron cargar los artículos. Intenta de nuevo.</p>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         async function loadAnalytics() {
-            document.getElementById('analytics-content').innerHTML = `
-                <div style="text-align: center; padding: 40px; color: #666;">
-                    <h3>📈 Analytics y Reportes</h3>
-                    <p>Implementación en desarrollo...</p>
-                </div>
-            `;
+            try {
+                const response = await fetch('/api/support/dashboard/metrics', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    renderAnalytics(data);
+                } else {
+                    throw new Error('Error cargando analytics');
+                }
+            } catch (error) {
+                console.error('Error cargando analytics:', error);
+                document.getElementById('analytics-content').innerHTML = `
+                    <div class="alert-card alert-warning">
+                        <div class="alert-icon">⚠️</div>
+                        <div class="alert-content">
+                            <h4>Error cargando analytics</h4>
+                            <p>No se pudieron cargar los datos analíticos. Intenta de nuevo.</p>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         async function loadSettings() {
@@ -1243,9 +1331,208 @@
             document.getElementById('notification').classList.remove('show');
         }
 
+        function renderTicketsTable(tickets, pagination) {
+            if (tickets.length === 0) {
+                document.getElementById('tickets-content').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <h3>🎫 No hay tickets</h3>
+                        <p>No se encontraron tickets con los filtros aplicados.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const ticketsHTML = `
+                <div class="groups-section">
+                    <table class="groups-table">
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Título</th>
+                                <th>Usuario</th>
+                                <th>Estado</th>
+                                <th>Prioridad</th>
+                                <th>Categoría</th>
+                                <th>Asignado a</th>
+                                <th>Creado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tickets.map(ticket => `
+                                <tr onclick="viewTicketDetails(${ticket.id})" style="cursor: pointer;">
+                                    <td><strong>${ticket.ticket_number}</strong></td>
+                                    <td>
+                                        <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                            ${ticket.subject}
+                                        </div>
+                                        ${ticket.is_overdue ? '<small style="color: #dc3545;">⏰ Vencido</small>' : ''}
+                                    </td>
+                                    <td>${ticket.user_nickname}</td>
+                                    <td>
+                                        <span class="priority-badge priority-${ticket.status.replace('_', '-')}">
+                                            ${ticket.status.replace('_', ' ').toUpperCase()}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="priority-badge priority-${ticket.priority}">
+                                            ${ticket.priority.toUpperCase()}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        ${ticket.category_name ? 
+                                            `<span class="category-badge" style="background-color: ${ticket.category_color}">
+                                                ${ticket.category_name}
+                                            </span>` : 'Sin categoría'}
+                                    </td>
+                                    <td>${ticket.assigned_nickname || 'Sin asignar'}</td>
+                                    <td>${new Date(ticket.created_at).toLocaleDateString('es-ES')}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); assignTicket(${ticket.id})">
+                                            Asignar
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 20px; display: flex; justify-content: between; align-items: center;">
+                        <p>Mostrando ${tickets.length} de ${pagination.total} tickets</p>
+                        <div>
+                            <button class="btn btn-sm btn-secondary" onclick="loadMoreTickets('prev')" 
+                                    ${pagination.offset === 0 ? 'disabled' : ''}>
+                                Anterior
+                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="loadMoreTickets('next')" 
+                                    ${pagination.offset + pagination.limit >= pagination.total ? 'disabled' : ''}>
+                                Siguiente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('tickets-content').innerHTML = ticketsHTML;
+        }
+
+        function renderGroupsTable(groups) {
+            if (groups.length === 0) {
+                document.getElementById('groups-content').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <h3>👥 No hay grupos activos</h3>
+                        <p>No se encontraron grupos de tickets activos.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const groupsHTML = `
+                <div class="groups-section">
+                    <table class="groups-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre del Grupo</th>
+                                <th>Categoría</th>
+                                <th>Total Tickets</th>
+                                <th>Usuarios Afectados</th>
+                                <th>Prioridad</th>
+                                <th>Asignado a</th>
+                                <th>Tiempo Promedio</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${groups.map(group => `
+                                <tr onclick="viewGroupDetails(${group.id})" style="cursor: pointer;">
+                                    <td>
+                                        <strong>${group.group_name}</strong>
+                                        <small style="display: block; color: #666;">
+                                            ${group.group_description || 'Sin descripción'}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        ${group.category_name ? 
+                                            `<span class="category-badge" style="background-color: ${group.category_color}">
+                                                ${group.category_name}
+                                            </span>` : 'Sin categoría'}
+                                    </td>
+                                    <td>
+                                        <strong>${group.actual_tickets}</strong>
+                                    </td>
+                                    <td>${group.unique_users}</td>
+                                    <td>
+                                        <span class="priority-badge priority-${group.group_priority}">
+                                            ${group.group_priority.toUpperCase()}
+                                        </span>
+                                    </td>
+                                    <td>${group.assigned_nickname || 'Sin asignar'}</td>
+                                    <td>
+                                        ${group.avg_resolution_hours ? 
+                                            `${group.avg_resolution_hours.toFixed(1)}h` : 'N/A'}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); manageGroup(${group.id})">
+                                            Gestionar
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('groups-content').innerHTML = groupsHTML;
+        }
+
+        function renderKnowledgeBaseArticles(articles) {
+            if (articles.length === 0) {
+                document.getElementById('knowledge-content').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <h3>📚 No hay artículos</h3>
+                        <p>No se encontraron artículos en la base de conocimiento.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const articlesHTML = `
+                <div class="groups-section">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;">
+                        ${articles.map(article => `
+                            <div class="metric-card" onclick="viewArticle(${article.id})" style="cursor: pointer; text-align: left;">
+                                <h4 style="color: #333; margin-bottom: 10px; font-size: 1.1em;">
+                                    ${article.title}
+                                </h4>
+                                <p style="color: #666; font-size: 14px; margin-bottom: 15px; line-height: 1.4;">
+                                    ${article.summary || article.content.substring(0, 150) + '...'}
+                                </p>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    ${article.category_name ? 
+                                        `<span class="category-badge" style="background-color: #667eea;">
+                                            ${article.category_name}
+                                        </span>` : '<span></span>'}
+                                    <small style="color: #666;">
+                                        Por ${article.author_nickname}
+                                    </small>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #666;">
+                                    <span>👀 ${article.views_count} vistas</span>
+                                    <span>👍 ${article.helpful_votes} útil</span>
+                                    <span>📅 ${new Date(article.created_at).toLocaleDateString('es-ES')}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('knowledge-content').innerHTML = articlesHTML;
+        }
+
         // Funciones placeholder para futuras implementaciones
         function applyTicketFilters() {
-            showNotification('Filtros', 'Aplicando filtros de tickets...', 'info');
+            loadTickets();
         }
 
         function clearTicketFilters() {
@@ -1260,8 +1547,138 @@
             showNotification('Artículo', 'Abriendo editor de artículos...', 'info');
         }
 
+        function renderAnalytics(data) {
+            const analyticsHTML = `
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">${data.metrics.today_tickets || 0}</div>
+                        <div class="metric-label">Tickets Hoy</div>
+                        <div class="metric-change positive">+${((data.metrics.today_tickets / data.metrics.open_tickets) * 100).toFixed(1)}%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${data.metrics.today_resolved || 0}</div>
+                        <div class="metric-label">Resueltos Hoy</div>
+                        <div class="metric-change positive">Productividad</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${data.metrics.avg_satisfaction ? data.metrics.avg_satisfaction.toFixed(1) : 'N/A'}</div>
+                        <div class="metric-label">Satisfacción</div>
+                        <div class="metric-change ${(data.metrics.avg_satisfaction || 0) >= 4 ? 'positive' : 'negative'}">
+                            ${(data.metrics.avg_satisfaction || 0) >= 4 ? 'Excelente' : 'Mejorable'}
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${data.metrics.avg_resolution_hours ? data.metrics.avg_resolution_hours.toFixed(1) : 'N/A'}h</div>
+                        <div class="metric-label">Tiempo Promedio</div>
+                        <div class="metric-change ${(data.metrics.avg_resolution_hours || 0) < 24 ? 'positive' : 'negative'}">
+                            SLA ${(data.metrics.avg_resolution_hours || 0) < 24 ? 'OK' : 'Riesgo'}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="charts-section">
+                    <div class="chart-card">
+                        <h3 class="chart-title">📊 Reporte de Categorías</h3>
+                        <table class="groups-table">
+                            <thead>
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Total Tickets</th>
+                                    <th>Tiempo Promedio</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(data.categories || []).map(cat => `
+                                    <tr>
+                                        <td>
+                                            <span class="category-badge" style="background-color: ${cat.color}">
+                                                ${cat.category_name}
+                                            </span>
+                                        </td>
+                                        <td><strong>${cat.ticket_count}</strong></td>
+                                        <td>${cat.avg_resolution_hours ? cat.avg_resolution_hours.toFixed(1) + 'h' : 'N/A'}</td>
+                                        <td>
+                                            <span class="priority-badge ${cat.avg_resolution_hours && cat.avg_resolution_hours < 24 ? 'priority-low' : 'priority-medium'}">
+                                                ${cat.avg_resolution_hours && cat.avg_resolution_hours < 24 ? 'Óptimo' : 'Normal'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-title">📈 Tendencias Semanales</h3>
+                        <div style="padding: 20px;">
+                            ${(data.trends || []).map(trend => `
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                                    <span><strong>${new Date(trend.date).toLocaleDateString('es-ES')}</strong></span>
+                                    <span style="color: #dc3545;">📥 ${trend.tickets_created}</span>
+                                    <span style="color: #28a745;">✅ ${trend.tickets_resolved}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('analytics-content').innerHTML = analyticsHTML;
+        }
+
+        function viewTicketDetails(ticketId) {
+            // Redirect to ticket detail page or open modal
+            window.location.href = `ticket-chat.html?ticket=${ticketId}`;
+        }
+
+        function assignTicket(ticketId) {
+            showNotification('Asignación', `Asignando ticket ${ticketId}...`, 'info');
+            // TODO: Implement assignment logic
+        }
+
+        function viewGroupDetails(groupId) {
+            showNotification('Grupo', `Cargando detalles del grupo ${groupId}...`, 'info');
+            // TODO: Implement group details view
+        }
+
+        function manageGroup(groupId) {
+            showNotification('Gestión', `Gestionando grupo ${groupId}...`, 'info');
+            // TODO: Implement group management
+        }
+
+        function viewArticle(articleId) {
+            showNotification('Artículo', `Cargando artículo ${articleId}...`, 'info');
+            // TODO: Implement article view
+        }
+
+        function loadMoreTickets(direction) {
+            showNotification('Paginación', `Cargando ${direction === 'next' ? 'siguientes' : 'anteriores'} tickets...`, 'info');
+            // TODO: Implement pagination
+        }
+
         function generateReport() {
-            showNotification('Reporte', 'Generando reporte analítico...', 'info');
+            showNotification('Reporte', 'Generando reporte analítico completo...', 'info');
+            // TODO: Implement report generation
+            setTimeout(() => {
+                const reportData = `
+                    data:text/csv;charset=utf-8,
+                    Reporte de Soporte Técnico - ${new Date().toLocaleDateString('es-ES')}
+                    Tickets Abiertos,${dashboardData.metrics?.open_tickets || 0}
+                    Tickets Escalados,${dashboardData.metrics?.escalated_tickets || 0}
+                    Satisfacción Promedio,${dashboardData.metrics?.avg_satisfaction || 'N/A'}
+                    Tiempo Promedio Resolución,${dashboardData.metrics?.avg_resolution_hours || 'N/A'}h
+                `;
+                
+                const encodedUri = encodeURI(reportData);
+                const link = document.createElement('a');
+                link.setAttribute('href', encodedUri);
+                link.setAttribute('download', `reporte_soporte_${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showNotification('Reporte', 'Reporte CSV descargado exitosamente', 'success');
+            }, 2000);
         }
 
         // Cleanup al salir

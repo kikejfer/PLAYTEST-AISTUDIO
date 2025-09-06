@@ -290,11 +290,12 @@
             text-transform: capitalize;
         }
 
-        .status-abierto { background: #e3f2fd; color: #1976d2; }
-        .status-en_progreso { background: #fff3e0; color: #f57c00; }
-        .status-esperando_respuesta { background: #fce4ec; color: #c2185b; }
-        .status-resuelto { background: #e8f5e8; color: #388e3c; }
-        .status-cerrado { background: #f5f5f5; color: #757575; }
+        .status-open { background: #e3f2fd; color: #1976d2; }
+        .status-in_progress { background: #fff3e0; color: #f57c00; }
+        .status-waiting_user { background: #fce4ec; color: #c2185b; }
+        .status-resolved { background: #e8f5e8; color: #388e3c; }
+        .status-closed { background: #f5f5f5; color: #757575; }
+        .status-escalated { background: #ffebee; color: #d32f2f; font-weight: 600; }
 
         .priority-indicator {
             width: 8px;
@@ -303,9 +304,11 @@
             display: inline-block;
         }
 
-        .priority-baja { background: #4caf50; }
-        .priority-media { background: #ff9800; }
-        .priority-alta { background: #f44336; }
+        .priority-low { background: #4caf50; }
+        .priority-medium { background: #ff9800; }
+        .priority-high { background: #f44336; }
+        .priority-critical { background: #ad1457; }
+        .priority-urgent { background: #b71c1c; }
 
         .ticket-preview {
             margin-top: 10px;
@@ -507,24 +510,44 @@
                     <label>Estado</label>
                     <select id="status-filter" class="form-control">
                         <option value="">Todos los estados</option>
-                        <option value="abierto">Abierto</option>
-                        <option value="en_progreso">En Progreso</option>
-                        <option value="esperando_respuesta">Esperando Respuesta</option>
-                        <option value="resuelto">Resuelto</option>
-                        <option value="cerrado">Cerrado</option>
+                        <option value="open">Abierto</option>
+                        <option value="in_progress">En Progreso</option>
+                        <option value="waiting_user">Esperando Usuario</option>
+                        <option value="resolved">Resuelto</option>
+                        <option value="closed">Cerrado</option>
+                        <option value="escalated">Escalado</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label>Prioridad</label>
                     <select id="priority-filter" class="form-control">
                         <option value="">Todas las prioridades</option>
-                        <option value="alta">Alta</option>
-                        <option value="media">Media</option>
-                        <option value="baja">Baja</option>
+                        <option value="low">Baja</option>
+                        <option value="medium">Media</option>
+                        <option value="high">Alta</option>
+                        <option value="critical">Crítica</option>
+                        <option value="urgent">Urgente</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Categoría</label>
+                    <select id="category-filter" class="form-control">
+                        <option value="">Todas las categorías</option>
+                        <!-- Se cargan dinámicamente -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Escalación</label>
+                    <select id="escalation-filter" class="form-control">
+                        <option value="">Todos los niveles</option>
+                        <option value="0">Sin escalar</option>
+                        <option value="1">Escalado Nivel 1</option>
+                        <option value="2">Escalado Nivel 2</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <button class="btn btn-primary" onclick="applyFilters()">Filtrar</button>
+                    <button class="btn btn-secondary" onclick="clearFilters()" style="margin-top: 5px;">Limpiar</button>
                 </div>
             </div>
         </div>
@@ -556,7 +579,9 @@
         let currentFilters = {
             search: '',
             status: '',
-            priority: ''
+            priority: '',
+            category_id: '',
+            escalation_level: ''
         };
         let tickets = [];
         let notifications = [];
@@ -578,6 +603,7 @@
                 }
 
                 await Promise.all([
+                    loadCategories(),
                     loadTickets(),
                     loadNotifications(),
                     loadStats()
@@ -589,6 +615,36 @@
             }
         }
 
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/support/categories', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const categoryFilter = document.getElementById('category-filter');
+                    
+                    // Limpiar opciones existentes (excepto la primera)
+                    while (categoryFilter.children.length > 1) {
+                        categoryFilter.removeChild(categoryFilter.lastChild);
+                    }
+                    
+                    // Agregar categorías
+                    data.categories.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category.id;
+                        option.textContent = category.name;
+                        categoryFilter.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error cargando categorías:', error);
+            }
+        }
+
         async function loadTickets(page = 1) {
             try {
                 const params = new URLSearchParams({
@@ -597,7 +653,7 @@
                     ...currentFilters
                 });
 
-                const response = await fetch(`/api/communication/tickets?${params}`, {
+                const response = await fetch(`/api/support/tickets?${params}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
@@ -609,12 +665,13 @@
 
                 const data = await response.json();
                 tickets = data.tickets;
-                currentPage = data.pagination.page;
-                totalPages = data.pagination.pages;
+                currentPage = data.pagination ? data.pagination.offset / data.pagination.limit + 1 : 1;
+                totalPages = data.pagination ? data.pagination.pages : 1;
 
                 renderTickets(tickets);
                 renderPagination(data.pagination);
                 updateResultsInfo(data.pagination);
+                await loadStats(); // Actualizar estadísticas con los nuevos datos
 
             } catch (error) {
                 console.error('Error cargando tickets:', error);
@@ -624,7 +681,7 @@
 
         async function loadNotifications() {
             try {
-                const response = await fetch('/api/communication/notifications?limit=5', {
+                const response = await fetch('/api/support/notifications?limit=5&is_read=false', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
@@ -641,16 +698,45 @@
         }
 
         async function loadStats() {
-            // Calcular estadísticas básicas desde los tickets cargados
-            // En una implementación completa, esto vendría del backend
-            const stats = {
-                total: tickets.length,
-                open: tickets.filter(t => ['abierto', 'en_progreso'].includes(t.status)).length,
-                resolved: tickets.filter(t => t.status === 'resuelto').length,
-                avgResponseTime: '2h' // Placeholder
-            };
+            try {
+                // Primero intentar obtener estadísticas del backend
+                const response = await fetch('/api/support/dashboard/metrics', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
 
-            updateStatsDisplay(stats);
+                if (response.ok) {
+                    const data = await response.json();
+                    const stats = {
+                        total: data.metrics.open_tickets + data.metrics.today_resolved || 0,
+                        open: data.metrics.open_tickets || 0,
+                        resolved: data.metrics.today_resolved || 0,
+                        avgResponseTime: data.metrics.avg_resolution_hours ? 
+                            `${data.metrics.avg_resolution_hours.toFixed(1)}h` : 'N/A'
+                    };
+                    updateStatsDisplay(stats);
+                } else {
+                    // Fallback: calcular desde los tickets cargados
+                    const stats = {
+                        total: tickets.length,
+                        open: tickets.filter(t => ['open', 'in_progress'].includes(t.status)).length,
+                        resolved: tickets.filter(t => ['resolved', 'closed'].includes(t.status)).length,
+                        avgResponseTime: 'N/A'
+                    };
+                    updateStatsDisplay(stats);
+                }
+            } catch (error) {
+                console.error('Error cargando estadísticas:', error);
+                // Fallback en caso de error
+                const stats = {
+                    total: tickets.length,
+                    open: tickets.filter(t => ['open', 'in_progress'].includes(t.status)).length,
+                    resolved: tickets.filter(t => ['resolved', 'closed'].includes(t.status)).length,
+                    avgResponseTime: 'N/A'
+                };
+                updateStatsDisplay(stats);
+            }
         }
 
         function renderNotifications(notifications, unreadCount) {
@@ -709,7 +795,7 @@
                     <div class="ticket-header">
                         <div>
                             <div class="ticket-number">${ticket.ticket_number}</div>
-                            <div class="ticket-title">${ticket.title}</div>
+                            <div class="ticket-title">${ticket.subject}</div>
                         </div>
                         <div class="ticket-status status-${ticket.status}">
                             ${ticket.status.replace('_', ' ')}
@@ -719,33 +805,39 @@
                     <div class="ticket-meta">
                         <span class="priority-indicator priority-${ticket.priority}"></span>
                         <span>Prioridad: ${ticket.priority}</span>
-                        <span>Categoría: ${ticket.category_name}</span>
-                        <span>Tipo: ${ticket.origin_type === 'global' ? 'Técnico' : 'Bloque'}</span>
+                        <span>Categoría: ${ticket.category_name || 'Sin categoría'}</span>
+                        ${ticket.escalation_level > 0 ? 
+                            `<span style="color: #dc3545; font-weight: 600;">🚨 Escalado (Nivel ${ticket.escalation_level})</span>` 
+                            : ''
+                        }
                         ${ticket.assigned_nickname ? 
                             `<span>Asignado a: ${ticket.assigned_nickname}</span>` 
                             : '<span>Sin asignar</span>'
                         }
                     </div>
                     
-                    ${ticket.last_message ? `
                     <div class="ticket-preview">
-                        <strong>Último mensaje:</strong> ${truncateText(ticket.last_message, 120)}
+                        <strong>Descripción:</strong> ${truncateText(ticket.description, 120)}
                     </div>
-                    ` : ''}
                     
                     <div class="ticket-stats">
                         <div class="stat-item">
-                            💬 <span>${ticket.message_count} mensajes</span>
+                            💬 <span>${ticket.comments_count || 0} comentarios</span>
+                        </div>
+                        ${ticket.group_name ? `
+                        <div class="stat-item">
+                            👥 <span>Grupo: ${ticket.group_name}</span>
+                        </div>
+                        ` : ''}
+                        <div class="stat-item">
+                            🕒 <span>Creado: ${formatRelativeTime(ticket.created_at)}</span>
                         </div>
                         <div class="stat-item">
-                            📎 <span>${ticket.attachment_count} adjuntos</span>
+                            🔄 <span>Actualizado: ${formatRelativeTime(ticket.updated_at)}</span>
                         </div>
-                        <div class="stat-item">
-                            🕒 <span>Actualizado: ${formatRelativeTime(ticket.last_activity)}</span>
-                        </div>
-                        ${ticket.block_name ? `
-                        <div class="stat-item">
-                            📝 <span>Bloque: ${ticket.block_name}</span>
+                        ${ticket.is_overdue ? `
+                        <div class="stat-item" style="color: #dc3545;">
+                            ⏰ <span>Vencido</span>
                         </div>
                         ` : ''}
                     </div>
@@ -850,17 +942,52 @@
                 currentPage = 1;
                 loadTickets(1);
             });
+
+            document.getElementById('category-filter').addEventListener('change', function() {
+                currentFilters.category_id = this.value;
+                currentPage = 1;
+                loadTickets(1);
+            });
+
+            document.getElementById('escalation-filter').addEventListener('change', function() {
+                currentFilters.escalation_level = this.value;
+                currentPage = 1;
+                loadTickets(1);
+            });
         }
 
         function applyFilters() {
             const searchInput = document.getElementById('search-input');
             const statusFilter = document.getElementById('status-filter');
             const priorityFilter = document.getElementById('priority-filter');
+            const categoryFilter = document.getElementById('category-filter');
+            const escalationFilter = document.getElementById('escalation-filter');
 
             currentFilters = {
                 search: searchInput.value,
                 status: statusFilter.value,
-                priority: priorityFilter.value
+                priority: priorityFilter.value,
+                category_id: categoryFilter.value,
+                escalation_level: escalationFilter.value
+            };
+
+            currentPage = 1;
+            loadTickets(1);
+        }
+
+        function clearFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('status-filter').value = '';
+            document.getElementById('priority-filter').value = '';
+            document.getElementById('category-filter').value = '';
+            document.getElementById('escalation-filter').value = '';
+            
+            currentFilters = {
+                search: '',
+                status: '',
+                priority: '',
+                category_id: '',
+                escalation_level: ''
             };
 
             currentPage = 1;
@@ -883,11 +1010,13 @@
         async function handleNotificationClick(notificationId, actionUrl) {
             try {
                 // Marcar como leída
-                await fetch(`/api/communication/notifications/${notificationId}/read`, {
+                await fetch(`/api/support/notifications/${notificationId}`, {
                     method: 'PATCH',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    }
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ is_read: true })
                 });
 
                 // Recargar notificaciones
@@ -905,8 +1034,8 @@
 
         async function markAllNotificationsRead() {
             try {
-                await fetch('/api/communication/notifications/read-all', {
-                    method: 'PATCH',
+                await fetch('/api/support/notifications/mark-all-read', {
+                    method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
