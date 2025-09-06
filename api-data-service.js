@@ -479,6 +479,18 @@ class APIDataService {
     return this.simulateDelay(response);
   }
 
+  // Bulk create questions for better performance and consistency
+  async createQuestionsBulk(blockId, questions) {
+    const response = await this.apiCall('/questions/bulk', {
+      method: 'POST',
+      body: JSON.stringify({
+        blockId: blockId,
+        questions: questions
+      })
+    });
+    return this.simulateDelay(response);
+  }
+
   async updateQuestion(questionId, questionData) {
     const response = await this.apiCall(`/questions/${questionId}`, {
       method: 'PUT',

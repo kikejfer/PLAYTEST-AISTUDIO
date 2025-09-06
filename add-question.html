@@ -286,33 +286,30 @@
               
               console.log('✅ Topic validation passed. Unique topics in batch:', [...new Set(questions.map(q => q.tema))]);
               
-              for (let i = 0; i < questions.length; i++) {
-                  const question = questions[i];
-                  
+              // Format questions for bulk API
+              const formattedQuestions = questions.map(question => {
                   // CRITICAL: Never allow tema to be undefined, null, empty, or 'General' 
                   if (!question.tema || question.tema.trim() === '' || question.tema === 'General') {
-                      throw new Error(`CRITICAL ERROR: Question ${i + 1} has invalid topic: "${question.tema}". Topic separation functionality compromised.`);
+                      throw new Error(`CRITICAL ERROR: Question has invalid topic: "${question.tema}". Topic separation functionality compromised.`);
                   }
                   
-                  const questionData = {
-                      blockId: blockId,
+                  return {
                       textoPregunta: question.textoPregunta || question.pregunta,
                       tema: question.tema.trim(), // CRITICAL: Preserve exact topic from filename parsing
                       respuestas: question.respuestas || [],
                       difficulty: question.dificultad || question.difficulty || 1,
                       explicacionRespuesta: question.explicacionRespuesta || ''
                   };
-                  
-                  console.log(`💾 Saving question ${i + 1}/${questions.length} with topic: "${questionData.tema}"`);
-                  await apiDataService.createQuestion(questionData);
-                  
-                  // Add small delay to avoid rate limiting
-                  if (i < questions.length - 1) {
-                      await new Promise(resolve => setTimeout(resolve, 100));
-                  }
-              }
-              console.log('✅ All questions saved successfully');
-              return simulateDelay({ message: 'Questions added successfully.' });
+              });
+              
+              console.log(`💾 Saving ${questions.length} questions using bulk API to block ${blockId}`);
+              console.log(`📊 Topics in batch: ${[...new Set(formattedQuestions.map(q => q.tema))].join(', ')}`);
+              
+              // Use bulk API instead of individual calls
+              const result = await apiDataService.createQuestionsBulk(blockId, formattedQuestions);
+              
+              console.log('✅ All questions saved successfully via bulk API');
+              return result;
           } catch (error) {
               console.error('Error saving questions:', error);
               throw new Error('Failed to save questions to block');
@@ -340,7 +337,7 @@
       // --- INLINED: components ---
 
       // Hook compartido para metadatos de bloques
-      const useBlockMetadata = () => {
+      const useBlockMetadata = (blocks = [], selectedBlockName = '') => {
         const [blockMetadata, setBlockMetadata] = useState({ types: [], levels: [], states: [] });
         const [selectedTipo, setSelectedTipo] = useState('');
         const [selectedNivel, setSelectedNivel] = useState('');
@@ -359,6 +356,39 @@
             };
             loadMetadata();
         }, []);
+
+        // Auto-populate metadata when existing block is selected
+        useEffect(() => {
+            if (selectedBlockName && blocks.length > 0 && blockMetadata.types.length > 0) {
+                const existingBlock = blocks.find(b => 
+                    b.nombreCorto && b.nombreCorto.toLowerCase() === selectedBlockName.toLowerCase()
+                );
+                
+                if (existingBlock) {
+                    console.log('🔄 Auto-loading metadata for existing block:', existingBlock.name);
+                    
+                    // Find metadata names by IDs
+                    const tipoName = existingBlock.tipo_id ? 
+                        blockMetadata.types.find(t => t.id === existingBlock.tipo_id)?.name || '' : '';
+                    const nivelName = existingBlock.nivel_id ? 
+                        blockMetadata.levels.find(l => l.id === existingBlock.nivel_id)?.name || '' : '';
+                    const estadoName = existingBlock.estado_id ? 
+                        blockMetadata.states.find(s => s.id === existingBlock.estado_id)?.name || '' : '';
+                    
+                    console.log('📋 Auto-loaded metadata:', { tipoName, nivelName, estadoName });
+                    
+                    setSelectedTipo(tipoName);
+                    setSelectedNivel(nivelName);
+                    setSelectedEstado(estadoName);
+                } else {
+                    // Reset when block is new or not found
+                    console.log('🆕 New block detected, resetting metadata');
+                    setSelectedTipo('');
+                    setSelectedNivel('');
+                    setSelectedEstado('');
+                }
+            }
+        }, [selectedBlockName, blocks, blockMetadata]);
 
         const getMetadataIds = () => ({
             tipoId: selectedTipo ? blockMetadata.types.find(t => t.name === selectedTipo)?.id : null,
@@ -450,8 +480,8 @@
         const [difficultyRange, setDifficultyRange] = useState(new Set());
         const [syllabusContent, setSyllabusContent] = useState('');
         
-        // Use shared hook for metadata
-        const { blockMetadata, selectedTipo, setSelectedTipo, selectedNivel, setSelectedNivel, selectedEstado, setSelectedEstado, getMetadataIds, resetMetadata } = useBlockMetadata();
+        // Use shared hook for metadata with auto-loading for existing blocks
+        const { blockMetadata, selectedTipo, setSelectedTipo, selectedNivel, setSelectedNivel, selectedEstado, setSelectedEstado, getMetadataIds, resetMetadata } = useBlockMetadata(blocks, blockName);
         const [syllabusFileName, setSyllabusFileName] = useState('');
         const [generatedQuestions, setGeneratedQuestions] = useState([]);
         const [isLoading, setIsLoading] = useState(false);
@@ -640,7 +670,7 @@
 
       const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock, preselectedBlock, preselectedTopic }) => {
           const { t } = useLanguage();
-          const { blockMetadata, selectedTipo, setSelectedTipo, selectedNivel, setSelectedNivel, selectedEstado, setSelectedEstado, getMetadataIds } = useBlockMetadata();
+          const { blockMetadata, selectedTipo, setSelectedTipo, selectedNivel, setSelectedNivel, selectedEstado, setSelectedEstado, getMetadataIds, resetMetadata } = useBlockMetadata(blocks, blockName);
           const [blockName, setBlockName] = useState('');
           const [topicName, setTopicName] = useState('');
           const [file, setFile] = useState(null);
@@ -780,7 +810,19 @@
             const filesToProcess = fileQueue.filter(f => selectedBatchFiles.has(f.file.name));
 
             try {
+                const totalFiles = filesToProcess.length;
+                let currentFile = 0;
+
                 for (const fileInfo of filesToProcess) {
+                    currentFile++;
+                    
+                    // Update progress message for file processing
+                    setMessage(t('uploader_batch_status_progress', { 
+                        current: currentFile, 
+                        total: totalFiles, 
+                        fileName: fileInfo.file.name 
+                    }));
+
                     const text = await fileInfo.file.text();
                     if (!text) continue;
                     
@@ -837,8 +879,21 @@
                           return acc;
                       }, {});
 
-                      for (const blockKey in questionsByBlock) {
+                      const blockKeys = Object.keys(questionsByBlock);
+                      const totalBlocks = blockKeys.length;
+                      let currentBlock = 0;
+
+                      for (const blockKey of blockKeys) {
+                          currentBlock++;
                           const { originalName, questions } = questionsByBlock[blockKey];
+                          
+                          // Update progress message
+                          setMessage(t('uploader_batch_status_progress', { 
+                              current: currentBlock, 
+                              total: totalBlocks, 
+                              fileName: originalName 
+                          }));
+
                           const existingBlock = blocks.find(b => b.nombreCorto.toLowerCase() === originalName.toLowerCase() && b.creatorId === currentUser.id);
                           if (existingBlock) {
                               await onSaveQuestions(existingBlock.id, questions);
@@ -970,7 +1025,7 @@
 
       const ManualQuestionForm = ({ currentUser, blocks, onSaveQuestions, onCreateBlock, preselectedBlock, preselectedTopic, onDataChange }) => {
         const { t } = useLanguage();
-        const { blockMetadata, selectedTipo, setSelectedTipo, selectedNivel, setSelectedNivel, selectedEstado, setSelectedEstado, getMetadataIds } = useBlockMetadata();
+        const { blockMetadata, selectedTipo, setSelectedTipo, selectedNivel, setSelectedNivel, selectedEstado, setSelectedEstado, getMetadataIds, resetMetadata } = useBlockMetadata(blocks, formState.blockName);
         const initialAnswer = () => ({ text: '', isCorrect: false });
         const initialFormState = () => ({
             blockName: preselectedBlock || '',
@@ -1186,7 +1241,26 @@
 
         useEffect(() => { loadData(); }, [loadData]);
 
-        const handleSaveQuestions = async (blockId, newQuestions) => { await saveQuestionsToBlock(blockId, newQuestions); await loadData(); };
+        const handleSaveQuestions = async (blockId, newQuestions) => { 
+            try {
+                // Find the existing block to preserve its metadata
+                const existingBlock = blocks.find(b => b.id === blockId);
+                if (existingBlock) {
+                    console.log('📋 Preserving metadata for existing block:', existingBlock.name);
+                    console.log('📋 Block metadata:', { 
+                        tipo_id: existingBlock.tipo_id, 
+                        nivel_id: existingBlock.nivel_id, 
+                        estado_id: existingBlock.estado_id 
+                    });
+                }
+                
+                await saveQuestionsToBlock(blockId, newQuestions); 
+                await loadData(); 
+            } catch (error) {
+                console.error('❌ Error saving questions to block:', error);
+                throw error;
+            }
+        };
         const handleCreateBlock = async (blockName, newQuestions, isPublic, observaciones) => { await createBlockWithQuestions(blockName, newQuestions, isPublic, observaciones); await loadData(); };
         
         const renderContent = () => {
