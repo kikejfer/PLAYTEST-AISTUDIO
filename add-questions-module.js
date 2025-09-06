@@ -2598,24 +2598,50 @@ const AddQuestionsApp = () => {
     const handleSaveQuestions = async (blockId, questions) => {
         try {
             if (typeof apiDataService !== 'undefined') {
-                for (const question of questions) {
-                    // Use Spanish field names like add-question.html but keep answers transformation
-                    const backendQuestionData = {
-                        blockId: blockId,
-                        tema: question.tema,
-                        textoPregunta: question.textoPregunta,
-                        respuestas: question.respuestas.map(respuesta => ({
-                            textoRespuesta: respuesta.textoRespuesta,
-                            esCorrecta: respuesta.esCorrecta
-                        })),
-                        difficulty: question.dificultad || 1,
+                // CRITICAL: Validate topic preservation before saving
+                if (questions.length === 0) {
+                    throw new Error('No questions to save');
+                }
+                
+                // CRITICAL: Ensure all questions have topics and log for verification
+                const topicValidation = questions.map((q, idx) => ({
+                    index: idx,
+                    tema: q.tema,
+                    hasValidTopic: q.tema && q.tema.trim() && q.tema !== 'General'
+                }));
+                
+                const invalidTopics = topicValidation.filter(v => !v.hasValidTopic);
+                if (invalidTopics.length > 0) {
+                    console.error('🚨 CRITICAL: Questions with invalid/missing topics detected:', invalidTopics);
+                    console.error('🚨 All topics in batch:', topicValidation.map(v => v.tema));
+                    throw new Error(`Topic validation failed: ${invalidTopics.length} questions have invalid topics`);
+                }
+                
+                console.log('✅ Topic validation passed. Unique topics in batch:', [...new Set(questions.map(q => q.tema))]);
+                
+                // Format questions for bulk API
+                const formattedQuestions = questions.map(question => {
+                    // CRITICAL: Never allow tema to be undefined, null, empty, or 'General' 
+                    if (!question.tema || question.tema.trim() === '' || question.tema === 'General') {
+                        throw new Error(`CRITICAL ERROR: Question has invalid topic: "${question.tema}". Topic separation functionality compromised.`);
+                    }
+                    
+                    return {
+                        textoPregunta: question.textoPregunta || question.pregunta,
+                        tema: question.tema.trim(), // CRITICAL: Preserve exact topic from filename parsing
+                        respuestas: question.respuestas || [],
+                        difficulty: question.dificultad || question.difficulty || 1,
                         explicacionRespuesta: question.explicacionRespuesta || ''
                     };
-                    
-                    console.log('🔍 Sending question data to backend:', JSON.stringify(backendQuestionData, null, 2));
-                    
-                    await apiDataService.createQuestion(backendQuestionData);
-                }
+                });
+                
+                console.log(`💾 Saving ${questions.length} questions using bulk API to block ${blockId}`);
+                console.log(`📊 Topics in batch: ${[...new Set(formattedQuestions.map(q => q.tema))].join(', ')}`);
+                
+                // Use bulk API instead of individual calls
+                const result = await apiDataService.createQuestionsBulk(blockId, formattedQuestions);
+                
+                console.log('✅ All questions saved successfully via bulk API');
             }
             
             // Refresh blocks data
@@ -2650,20 +2676,23 @@ const AddQuestionsApp = () => {
                 
                 const block = await apiDataService.createBlock(blockData);
                 
-                // Add questions to the new block
+                // Add questions to the new block using bulk API
                 console.log('🔍 Created block:', block);
                 console.log('🔍 Block ID:', block.id, 'Block.block.id:', block.block?.id);
-                for (const question of questions) {
-                    const questionData = {
-                        blockId: block.block?.id || block.id,  // Try nested path first
-                        tema: question.tema,
+                
+                if (questions.length > 0) {
+                    // Format questions for bulk API
+                    const formattedQuestions = questions.map(question => ({
                         textoPregunta: question.textoPregunta,
+                        tema: question.tema,
                         respuestas: question.respuestas,
                         explicacionRespuesta: question.explicacionRespuesta,
                         difficulty: question.dificultad || 1
-                    };
-                    console.log('🔍 Sending question to new block:', JSON.stringify(questionData, null, 2));
-                    await apiDataService.createQuestion(questionData);
+                    }));
+                    
+                    const blockId = block.block?.id || block.id;
+                    console.log(`💾 Adding ${questions.length} questions to new block ${blockId} using bulk API`);
+                    await apiDataService.createQuestionsBulk(blockId, formattedQuestions);
                 }
             }
             
