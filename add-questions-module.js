@@ -1365,6 +1365,7 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
     const [message, setMessage] = useState('');
     const [processedQuestions, setProcessedQuestions] = useState([]);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [saveProgress, setSaveProgress] = useState({ current: 0, total: 0, isActive: false });
     
     // Batch upload states
     const [fileQueue, setFileQueue] = useState([]);
@@ -1388,6 +1389,7 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
         setIsBatchModeActive(false);
         setSelectedBatchFiles(new Set());
         setProcessedQuestions([]);
+        setSaveProgress({ current: 0, total: 0, isActive: false });
     }, []);
 
     const handleFileChange = (event) => {
@@ -1525,6 +1527,10 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
         try {
             if (processedQuestions.length === 0) return;
 
+            // Inicializar barra de progreso
+            setSaveProgress({ current: 0, total: processedQuestions.length, isActive: true });
+            setStatus('saving');
+
             const questionsByBlock = processedQuestions.reduce((acc, question) => {
                 if (!acc[question.bloque]) {
                     acc[question.bloque] = [];
@@ -1533,21 +1539,43 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
                 return acc;
             }, {});
 
+            let processedCount = 0;
+
             for (const [blockName, blockQuestions] of Object.entries(questionsByBlock)) {
                 const existingBlock = blocks.find(b => b.nombreCorto?.toLowerCase() === blockName.toLowerCase());
-                if (existingBlock) {
-                    await onSaveQuestions(existingBlock.id, blockQuestions);
-                } else {
-                    const { tipoId, nivelId, estadoId } = getMetadataIds();
-                    await onCreateBlock(blockName, blockQuestions, batchIsPublic, '', tipoId, nivelId, estadoId);
+                
+                // Procesar cada pregunta individualmente para actualizar progreso
+                for (let i = 0; i < blockQuestions.length; i++) {
+                    const questionBatch = [blockQuestions[i]]; // Una pregunta a la vez
+                    
+                    if (existingBlock) {
+                        await onSaveQuestions(existingBlock.id, questionBatch);
+                    } else if (i === 0) { // Solo crear el bloque una vez
+                        const { tipoId, nivelId, estadoId } = getMetadataIds();
+                        await onCreateBlock(blockName, questionBatch, batchIsPublic, '', tipoId, nivelId, estadoId);
+                    } else {
+                        // Para preguntas restantes del bloque nuevo, usar el ID del bloque recién creado
+                        const newBlock = blocks.find(b => b.nombreCorto?.toLowerCase() === blockName.toLowerCase());
+                        if (newBlock) {
+                            await onSaveQuestions(newBlock.id, questionBatch);
+                        }
+                    }
+                    
+                    processedCount++;
+                    setSaveProgress(prev => ({ ...prev, current: processedCount }));
+                    
+                    // Pequeña pausa para visualizar el progreso
+                    await new Promise(resolve => setTimeout(resolve, 100));
                 }
             }
 
+            setSaveProgress({ current: processedQuestions.length, total: processedQuestions.length, isActive: false });
             setMessage(`¡Guardado exitoso! ${processedQuestions.length} preguntas procesadas.`);
             setStatus('success');
             setTimeout(resetFullState, 2000);
         } catch (error) {
             console.error('Error saving questions:', error);
+            setSaveProgress({ current: 0, total: 0, isActive: false });
             setMessage('Error al guardar las preguntas');
             setStatus('error');
         }
@@ -1880,20 +1908,58 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
                     style: { fontSize: '12px', color: '#778DA9', textAlign: 'center', marginBottom: '16px' }
                 }, `... y ${processedQuestions.length - 5} preguntas más`),
                 
+                // Barra de progreso
+                saveProgress.isActive && React.createElement('div', {
+                    key: 'progress-container',
+                    style: { marginBottom: '16px' }
+                }, [
+                    React.createElement('div', {
+                        key: 'progress-text',
+                        style: { 
+                            fontSize: '14px', 
+                            color: '#E0E1DD', 
+                            textAlign: 'center', 
+                            marginBottom: '8px' 
+                        }
+                    }, `Guardando preguntas: ${saveProgress.current}/${saveProgress.total}`),
+                    React.createElement('div', {
+                        key: 'progress-bar-background',
+                        style: {
+                            width: '100%',
+                            height: '8px',
+                            backgroundColor: '#1B263B',
+                            borderRadius: '4px',
+                            overflow: 'hidden',
+                            border: '1px solid #415A77'
+                        }
+                    }, React.createElement('div', {
+                        key: 'progress-bar-fill',
+                        style: {
+                            width: `${saveProgress.total > 0 ? (saveProgress.current / saveProgress.total) * 100 : 0}%`,
+                            height: '100%',
+                            backgroundColor: '#10B981',
+                            transition: 'width 0.3s ease-in-out',
+                            borderRadius: '3px'
+                        }
+                    }))
+                ]),
+                
                 React.createElement('button', {
                     key: 'save-all-btn',
                     onClick: handleSaveProcessedQuestions,
+                    disabled: saveProgress.isActive,
                     style: {
                         width: '100%',
-                        background: '#10B981',
+                        background: saveProgress.isActive ? '#6B7280' : '#10B981',
                         color: 'white',
                         fontWeight: 'bold',
                         padding: '10px 16px',
                         borderRadius: '8px',
                         border: 'none',
-                        cursor: 'pointer'
+                        cursor: saveProgress.isActive ? 'not-allowed' : 'pointer',
+                        opacity: saveProgress.isActive ? 0.7 : 1
                     }
-                }, 'Guardar Todas las Preguntas')
+                }, saveProgress.isActive ? 'Guardando...' : 'Guardar Todas las Preguntas')
             ]),
             
             // Display reviewed questions (single file mode)
