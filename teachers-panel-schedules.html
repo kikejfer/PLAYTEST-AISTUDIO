@@ -2870,38 +2870,28 @@
                         throw new Error('No questions to save');
                     }
                     
-                    console.log(`📝 Saving ${questions.length} questions to block ${blockId}`);
+                    console.log(`📝 Saving ${questions.length} questions to block ${blockId} using bulk API`);
                     
-                    const savedQuestions = [];
+                    // Prepare questions data for bulk API
+                    const formattedQuestions = questions.map(question => ({
+                        textoPregunta: question.pregunta || question.text,
+                        respuestas: (question.opciones || question.options || []).map(opcion => ({
+                            textoRespuesta: opcion.texto || opcion.text || opcion.textoRespuesta || opcion,
+                            esCorrecta: opcion.esCorrecta || opcion.isCorrect || false
+                        })),
+                        explicacionRespuesta: question.explicacion || question.explanation || '',
+                        difficulty: question.dificultad || question.difficulty || 1,
+                        tema: question.tema || question.topic || 'General'
+                    }));
                     
-                    for (let i = 0; i < questions.length; i++) {
-                        const question = questions[i];
-                        
-                        // Prepare question data for API (using correct field names expected by backend)
-                        const questionData = {
-                            blockId: blockId,
-                            textoPregunta: question.pregunta || question.text,
-                            respuestas: (question.opciones || question.options || []).map(opcion => ({
-                                textoRespuesta: opcion.texto || opcion.text || opcion.textoRespuesta || opcion,
-                                esCorrecta: opcion.esCorrecta || opcion.isCorrect || false
-                            })),
-                            explicacionRespuesta: question.explicacion || question.explanation || '',
-                            difficulty: question.dificultad || question.difficulty || 1,
-                            tema: question.tema || question.topic || 'General'
-                        };
-                        
-                        try {
-                            const savedQuestion = await apiDataService.createQuestion(questionData);
-                            savedQuestions.push(savedQuestion);
-                            console.log(`✅ Question ${i + 1}/${questions.length} saved`);
-                        } catch (error) {
-                            console.error(`❌ Error saving question ${i + 1}:`, error);
-                            throw new Error(`Failed to save question ${i + 1}: ${error.message}`);
-                        }
+                    try {
+                        const result = await apiDataService.createQuestionsBulk(blockId, formattedQuestions);
+                        console.log('✅ All questions successfully saved via bulk API:', result.createdQuestions?.length || formattedQuestions.length);
+                        return result.createdQuestions || formattedQuestions;
+                    } catch (error) {
+                        console.error('❌ Error saving questions via bulk API:', error);
+                        throw new Error(`Failed to save questions: ${error.message}`);
                     }
-                    
-                    console.log('✅ All questions successfully saved:', savedQuestions.length);
-                    return savedQuestions;
                 } catch (error) {
                     console.error('❌ Error saving questions to block:', error);
                     throw error;

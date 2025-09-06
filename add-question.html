@@ -207,27 +207,19 @@
           console.log('✅ Block created:', createdBlock);
           
           if (questions && questions.length > 0) {
-              for (let i = 0; i < questions.length; i++) {
-                  const question = questions[i];
-                  const questionData = {
-                      blockId: createdBlock.id,
-                      textoPregunta: question.pregunta || question.textoPregunta,
-                      tema: question.tema || 'General',
-                      respuestas: question.respuestas || [],
-                      difficulty: question.dificultad || 1,
-                      explicacionRespuesta: question.explicacionRespuesta || null
-                  };
-                  
-                  console.log(`💾 Saving question ${i+1}/${questions.length}:`, {
-                      tema: questionData.tema,
-                      difficulty: questionData.difficulty,
-                      hasExplanation: !!questionData.explicacionRespuesta,
-                      explanation: questionData.explicacionRespuesta ? questionData.explicacionRespuesta.substring(0, 50) + '...' : 'None'
-                  });
-                  
-                  await apiDataService.createQuestion(questionData);
-              }
-              console.log('✅ All questions created successfully');
+              // Use bulk API instead of individual calls to avoid duplicate counting
+              console.log(`💾 Saving ${questions.length} questions using bulk API to block ${createdBlock.id}`);
+              
+              const formattedQuestions = questions.map(question => ({
+                  textoPregunta: question.pregunta || question.textoPregunta,
+                  tema: question.tema || 'General',
+                  respuestas: question.respuestas || [],
+                  difficulty: question.dificultad || 1,
+                  explicacionRespuesta: question.explicacionRespuesta || null
+              }));
+              
+              await apiDataService.createQuestionsBulk(createdBlock.id, formattedQuestions);
+              console.log('✅ All questions created successfully via bulk API');
               
               // Debug: Fetch the block to see what was actually saved
               console.log('🔍 Fetching saved block to verify topics...');

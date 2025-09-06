@@ -142,7 +142,8 @@
       "Read(/C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\playtest-backend/**)",
       "Read(/C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\playtest-backend/**)",
       "Read(/C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\playtest-backend/**)",
-      "Read(/C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\playtest-backend/**)"
+      "Read(/C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\playtest-backend/**)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
