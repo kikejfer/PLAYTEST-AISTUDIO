@@ -1394,6 +1394,8 @@
         // Function to refresh block components when updates are received
         function refreshCreatorBlockComponents(blockName, action = 'updated') {
             console.log(`🔄 [creators-panel] Refreshing block components - ${action}: ${blockName}`);
+            console.log(`🔍 [creators-panel] Current creatorBloquesCreados:`, window.creatorBloquesCreados);
+            console.log(`🔍 [creators-panel] Component refresh function exists:`, window.creatorBloquesCreados && typeof window.creatorBloquesCreados.refresh === 'function');
             
             // Refresh Bloques Creados component if it exists
             if (window.creatorBloquesCreados && typeof window.creatorBloquesCreados.refresh === 'function') {
@@ -1402,8 +1404,10 @@
                 console.log('✅ creatorBloquesCreados refreshed successfully');
             } else {
                 console.log('ℹ️ creatorBloquesCreados component not available, re-rendering...');
+                console.log('🔄 Re-rendering bloques component for container: bloques-creados-container');
                 // Re-render if the component doesn't have refresh functionality
                 window.creatorBloquesCreados = renderBloquesCreados('bloques-creados-container', 'jugadores');
+                console.log('✅ creatorBloquesCreados re-rendered successfully');
             }
         }
 

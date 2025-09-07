@@ -139,15 +139,19 @@
           
           // Notificar a través de postMessage (para iframes/ventanas)
           if (window.parent && window.parent !== window) {
+              console.log(`📤 [add-question.html] Sending postMessage to parent window`);
               window.parent.postMessage({
                   type: 'BLOCKS_UPDATED',
                   action: action,
                   blockName: blockName,
                   timestamp: new Date().getTime()
               }, '*');
+          } else {
+              console.log(`ℹ️ [add-question.html] No parent window, skipping postMessage`);
           }
           
           // Notificar a través de eventos personalizados (para misma ventana)
+          console.log(`📤 [add-question.html] Dispatching custom event: blocksUpdated`);
           const event = new CustomEvent('blocksUpdated', {
               detail: {
                   action: action,
@@ -158,6 +162,7 @@
           window.dispatchEvent(event);
           
           // Notificar a través de localStorage (para múltiples ventanas)
+          console.log(`📤 [add-question.html] Setting localStorage: blocks_last_updated`);
           localStorage.setItem('blocks_last_updated', JSON.stringify({
               action: action,
               blockName: blockName,
@@ -165,6 +170,12 @@
           }));
           
           console.log(`✅ [add-question.html] Block update notifications sent for: ${blockName}`);
+          console.log(`🔍 [add-question.html] Notification details:`, {
+              action,
+              blockName,
+              timestamp: new Date().getTime(),
+              windowType: window.parent === window ? 'top-level' : 'child'
+          });
       };
       
       // --- INLINED: types.ts ---
@@ -1306,11 +1317,14 @@
             }
         };
         const handleCreateBlock = async (blockName, newQuestions, isPublic, observaciones) => { 
+            console.log(`🔄 [handleCreateBlock] Starting block creation: "${blockName}"`);
             await createBlockWithQuestions(blockName, newQuestions, isPublic, observaciones); 
             await loadData(); 
             
             // Notify block creation for automatic refresh
+            console.log(`📢 [handleCreateBlock] Sending notification for block: "${blockName}"`);
             notifyBlocksUpdated(blockName, 'created');
+            console.log(`✅ [handleCreateBlock] Block creation complete: "${blockName}"`);
         };
         
         const renderContent = () => {
