@@ -33,9 +33,11 @@ if (!window.PANEL_CONFIGS) {
     };
 }
 
-// Prevent multiple header loads
-let isHeaderLoading = false;
-let isHeaderLoaded = false;
+// Prevent multiple header loads (only declare if not exists)
+if (typeof window.isHeaderLoading === 'undefined') {
+    window.isHeaderLoading = false;
+    window.isHeaderLoaded = false;
+}
 
 /**
  * Carga el header dinámicamente
@@ -50,7 +52,7 @@ let isHeaderLoaded = false;
 async function loadHeader(panelType, containerId = 'header-container', userData = {}) {
     try {
         // Prevent multiple simultaneous loads
-        if (isHeaderLoading) {
+        if (window.isHeaderLoading) {
             console.log('🔄 HEADER DEBUG - Header already loading, skipping');
             return;
         }
@@ -60,7 +62,7 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
             return;
         }
         
-        isHeaderLoading = true;
+        window.isHeaderLoading = true;
         console.log('🚀 HEADER DEBUG - Starting header load for panel:', panelType);
         
         // Verificar que el tipo de panel sea válido
@@ -177,7 +179,7 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
         console.log('❌ HEADER DEBUG - Header load failed, marked as loaded to prevent retries');
     } finally {
         // Always clear the loading flag
-        isHeaderLoading = false;
+        window.isHeaderLoading = false;
     }
 }
 
@@ -477,7 +479,7 @@ async function getUserDataInternal() {
             lastName: profile.lastName || '',
             luminarias: profile.luminarias || profile.stats?.luminarias || 0,
             roles: userRoles,
-            activeRole: localStorage.getItem('activeRole') || detectRoleFromToken() || userRoles[0]?.code || null
+            activeRole: getValidActiveRole(userRoles)
         };
         
     } catch (error) {
@@ -589,6 +591,33 @@ function detectRoleFromToken() {
     
     console.log('❌ DEBUG Role Detection - No matching role found');
     return null; // No rol por defecto - usuario debe asignar roles manualmente
+}
+
+/**
+ * Obtiene el rol activo válido, priorizando el almacenado si es válido
+ * @param {Array} userRoles - Array de roles disponibles para el usuario
+ * @returns {string|null} Código del rol activo
+ */
+function getValidActiveRole(userRoles) {
+    const storedActiveRole = localStorage.getItem('activeRole');
+    
+    // Verificar si el rol almacenado es válido (usuario tiene ese rol)
+    if (storedActiveRole && userRoles.some(role => role.code === storedActiveRole)) {
+        console.log(`✅ DEBUG Using stored active role: ${storedActiveRole}`);
+        return storedActiveRole;
+    }
+    
+    // Si no hay rol válido almacenado, usar detección automática
+    const autoDetectedRole = detectRoleFromToken();
+    if (autoDetectedRole) {
+        console.log(`🔄 DEBUG Using auto-detected role: ${autoDetectedRole}`);
+        return autoDetectedRole;
+    }
+    
+    // Fallback al primer rol disponible
+    const fallbackRole = userRoles[0]?.code || null;
+    console.log(`⚠️ DEBUG Using fallback role: ${fallbackRole}`);
+    return fallbackRole;
 }
 
 /**
