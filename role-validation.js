@@ -238,6 +238,7 @@ function initializePanelValidation() {
     const panelMapping = {
         'PAP': { role: 'administrador_principal', name: 'Administrador Principal' },
         'PAS': { role: 'administrador_secundario', name: 'Administrador Secundario' },
+        'PST': { role: 'soporte_tecnico', name: 'Soporte Técnico' },
         'PCC': { role: 'creador', name: 'Creador de Contenido' },
         'PPF': { role: 'profesor', name: 'Profesor' },
         'PJG': { role: 'jugador', name: 'Jugador' }

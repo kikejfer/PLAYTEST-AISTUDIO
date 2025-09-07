@@ -249,7 +249,7 @@
     </style>
     
     <!-- Sistema Persistente PLAYTEST -->
-    <script type="module" src="persistent-system-init.js?v=20250818"></script>
+    <!-- <script type="module" src="persistent-system-init.js?v=20250818"></script> -->
     
     <!-- Sistema de header reutilizable -->
     <link rel="stylesheet" href="header-styles.css">
@@ -398,6 +398,28 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🛠️ PST Panel: DOM loaded, checking header...');
             
+            // Debug completo del token
+            const token = localStorage.getItem('playtest_auth_token');
+            if (!token) {
+                console.warn('⚠️ PST Panel: No hay token de autenticación');
+            } else {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    console.log('✅ PST Panel: Token decodificado:', {
+                        userId: payload.userId,
+                        nickname: payload.nickname,
+                        roles: payload.roles,
+                        exp: new Date(payload.exp * 1000).toLocaleString()
+                    });
+                } catch (error) {
+                    console.error('❌ PST Panel: Error decodificando token:', error);
+                }
+            }
+            
+            // Verificar activeRole almacenado
+            const storedRole = localStorage.getItem('activeRole');
+            console.log('🏷️ PST Panel: Stored active role:', storedRole);
+            
             // Verificar si el header-loader está disponible
             if (typeof initializeHeader === 'function') {
                 console.log('✅ PST Panel: header-loader disponible');
@@ -409,14 +431,6 @@
                         initializeHeader();
                     }
                 }, 1000);
-            }
-            
-            // Verificar token
-            const token = localStorage.getItem('playtest_auth_token');
-            if (!token) {
-                console.warn('⚠️ PST Panel: No hay token de autenticación');
-            } else {
-                console.log('✅ PST Panel: Token disponible');
             }
         });
     </script>
