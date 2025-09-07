@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Global Communication System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0D1B2A;
+            color: #E0E1DD;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1B263B;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #415A77;
+            border-radius: 6px;
+        }
+        
+        button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #2563EB;
+        }
+        
+        .log {
+            background: #0D1B2A;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            min-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .success { color: #10B981; }
+        .error { color: #EF4444; }
+        .info { color: #3B82F6; }
+        .warning { color: #F59E0B; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test Global Communication System</h1>
+        <p>This page tests the global communication system for automatic block updates.</p>
+        
+        <div class="test-section">
+            <h2>📢 Send Notifications</h2>
+            <button onclick="testPostMessage()">Test PostMessage</button>
+            <button onclick="testCustomEvent()">Test Custom Event</button>
+            <button onclick="testLocalStorage()">Test localStorage</button>
+            <button onclick="testNotifyBlocksUpdated()">Test notifyBlocksUpdated Function</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>👂 Event Listeners Status</h2>
+            <button onclick="setupListeners()">Setup Event Listeners</button>
+            <button onclick="clearLog()">Clear Log</button>
+            <div id="listener-status">Setting up listeners...</div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📝 Event Log</h2>
+            <div id="event-log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // Global communication function (copied from add-question.html)
+        const notifyBlocksUpdated = (blockName, action = 'created') => {
+            console.log(`📢 [test] Notifying blocks updated: ${action} - ${blockName}`);
+            
+            // Notificar a través de postMessage (para iframes/ventanas)
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'BLOCKS_UPDATED',
+                    action: action,
+                    blockName: blockName,
+                    timestamp: new Date().getTime()
+                }, '*');
+            }
+            
+            // Notificar a través de eventos personalizados (para misma ventana)
+            const event = new CustomEvent('blocksUpdated', {
+                detail: {
+                    action: action,
+                    blockName: blockName,
+                    timestamp: new Date().getTime()
+                }
+            });
+            window.dispatchEvent(event);
+            
+            // Notificar a través de localStorage (para múltiples ventanas)
+            localStorage.setItem('blocks_last_updated', JSON.stringify({
+                action: action,
+                blockName: blockName,
+                timestamp: new Date().getTime()
+            }));
+            
+            console.log(`✅ [test] Block update notifications sent for: ${blockName}`);
+        };
+
+        // Logging function
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('event-log');
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        // Test functions
+        function testPostMessage() {
+            log('🔄 Testing PostMessage...', 'info');
+            window.postMessage({
+                type: 'BLOCKS_UPDATED',
+                action: 'created',
+                blockName: 'Test Block PostMessage',
+                timestamp: new Date().getTime()
+            }, '*');
+        }
+
+        function testCustomEvent() {
+            log('🔄 Testing Custom Event...', 'info');
+            const event = new CustomEvent('blocksUpdated', {
+                detail: {
+                    action: 'updated',
+                    blockName: 'Test Block CustomEvent',
+                    timestamp: new Date().getTime()
+                }
+            });
+            window.dispatchEvent(event);
+        }
+
+        function testLocalStorage() {
+            log('🔄 Testing localStorage...', 'info');
+            localStorage.setItem('blocks_last_updated', JSON.stringify({
+                action: 'created',
+                blockName: 'Test Block localStorage',
+                timestamp: new Date().getTime()
+            }));
+        }
+
+        function testNotifyBlocksUpdated() {
+            log('🔄 Testing notifyBlocksUpdated function...', 'info');
+            notifyBlocksUpdated('Test Block Function', 'updated');
+        }
+
+        function clearLog() {
+            document.getElementById('event-log').innerHTML = '';
+        }
+
+        function setupListeners() {
+            log('🔗 Setting up event listeners...', 'info');
+
+            // PostMessage listener
+            window.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'BLOCKS_UPDATED') {
+                    log(`📢 Received PostMessage: ${event.data.action} - ${event.data.blockName}`, 'success');
+                }
+            });
+
+            // Custom event listener  
+            window.addEventListener('blocksUpdated', (event) => {
+                log(`📢 Received CustomEvent: ${event.detail.action} - ${event.detail.blockName}`, 'success');
+            });
+
+            // localStorage listener
+            window.addEventListener('storage', (event) => {
+                if (event.key === 'blocks_last_updated') {
+                    try {
+                        const updateData = JSON.parse(event.newValue);
+                        log(`📢 Received localStorage: ${updateData.action} - ${updateData.blockName}`, 'success');
+                    } catch (err) {
+                        log(`❌ Error parsing localStorage update: ${err.message}`, 'error');
+                    }
+                }
+            });
+
+            document.getElementById('listener-status').innerHTML = 
+                '<span class="success">✅ All event listeners are active</span>';
+            log('✅ All event listeners configured successfully', 'success');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupListeners();
+            log('🧪 Global Communication Test initialized', 'info');
+        });
+    </script>
+</body>
+</html>
