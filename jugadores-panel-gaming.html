@@ -2422,6 +2422,16 @@
                         
                         await displayAvailableBlocks(filteredBlocks, updatedProfile.loadedBlocks);
                         
+                        // 🔄 Refrescar también el componente de Bloques Cargados
+                        console.log('🔄 [PJG] Refreshing loaded blocks component after block action...');
+                        if (window.bloquesCreados_loaded_blocks_pjg_container && typeof window.bloquesCreados_loaded_blocks_pjg_container.refresh === 'function') {
+                            console.log('🔄 Refreshing bloquesCreados_loaded_blocks_pjg_container...');
+                            window.bloquesCreados_loaded_blocks_pjg_container.refresh();
+                            console.log('✅ Loaded blocks component refreshed successfully');
+                        } else {
+                            console.log('ℹ️ Loaded blocks component not available for refresh');
+                        }
+                        
                     } catch (error) {
                         console.error('Error handling block action:', error);
                         alert('Error al procesar la acción. Inténtalo de nuevo.');
