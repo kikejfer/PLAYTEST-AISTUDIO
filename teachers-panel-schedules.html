@@ -3778,6 +3778,10 @@
             // Default behavior - show schedules content (cronogramas is active by default)
             // Other content sections can be shown when their tabs are clicked
             
+            // 🔄 Initialize default active tab content (Recursos)
+            console.log('🔄 Initializing default active tab content...');
+            initializeDefaultActiveTab();
+            
             // Add simple event listener for block updates
             console.log('🔗 Setting up block update listener for Teachers Panel...');
             
@@ -3789,6 +3793,36 @@
             
             console.log('✅ Block update listener configured for Teachers Panel');
         });
+        
+        // Function to initialize the default active tab content
+        function initializeDefaultActiveTab() {
+            // Find the active tab button
+            const activeTabButton = document.querySelector('.tab-button.active');
+            if (activeTabButton) {
+                const tabId = activeTabButton.getAttribute('onclick')?.match(/showTab\('([^']+)'\)/)?.[1];
+                if (tabId) {
+                    console.log(`🔄 Initializing content for default active tab: ${tabId}`);
+                    
+                    // Initialize components for the default active tab
+                    if (tabId === 'recursos-tab') {
+                        // Initialize Bloques Creados component for teachers (alumnos)
+                        console.log('🔄 Initializing recursosBloquesCreados component...');
+                        window.recursosBloquesCreados = renderBloquesCreados('recursos-bloques-creados-container', 'alumnos');
+                        console.log('✅ recursosBloquesCreados component initialized');
+                    } else if (tabId === 'add-questions-tab') {
+                        // Mount React app if it's the add-questions tab
+                        const contentDiv = document.getElementById('add-questions-content');
+                        if (contentDiv && !contentDiv.hasChildNodes() && window.mountAddQuestionsApp) {
+                            window.mountAddQuestionsApp('add-questions-content');
+                        }
+                    }
+                } else {
+                    console.log('⚠️ Could not determine active tab ID');
+                }
+            } else {
+                console.log('⚠️ No active tab button found');
+            }
+        }
         
         // Function to refresh block components when updates are received
         function refreshBlockComponents(blockName, action = 'updated') {
