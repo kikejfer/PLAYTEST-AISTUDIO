@@ -372,9 +372,6 @@ function getCurrentRoleName(userData) {
     return activeRole ? activeRole.name : userData.roles[0].name;
 }
 
-// Prevent multiple simultaneous calls
-let userDataPromise = null;
-
 /**
  * Obtiene los datos del usuario actual desde tu sistema real
  * @returns {Object} userData
