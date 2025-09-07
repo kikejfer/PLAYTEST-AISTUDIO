@@ -14,6 +14,10 @@ if (!window.PANEL_CONFIGS) {
             title: 'PANEL ADMINISTRADOR SECUNDARIO',
             role: 'Administrador Secundario'
         },
+        'PST': {
+            title: 'PANEL SOPORTE TÉCNICO',
+            role: 'Soporte Técnico'
+        },
         'PCC': {
             title: 'PANEL CREADOR DE CONTENIDO',
             role: 'Creador de Contenido'
@@ -292,6 +296,7 @@ async function enhanceExistingHeader() {
             const allRoles = [
                 { code: 'PAP', name: 'Administrador Principal', panel: 'admin-principal-panel.html' },
                 { code: 'PAS', name: 'Administrador Secundario', panel: 'admin-secundario-panel.html' },
+                { code: 'PST', name: 'Soporte Técnico', panel: 'support-dashboard.html' },
                 { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
                 { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-schedules.html' },
                 { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' }
@@ -514,6 +519,7 @@ function getUserRolesFromSystem(profile, session) {
         'admin_principal': { code: 'PAP', name: 'Administrador Principal', panel: 'admin-principal-panel.html' },
         'administrador_secundario': { code: 'PAS', name: 'Administrador Secundario', panel: 'admin-secundario-panel.html' },
         'admin_secundario': { code: 'PAS', name: 'Administrador Secundario', panel: 'admin-secundario-panel.html' },
+        'soporte_tecnico': { code: 'PST', name: 'Soporte Técnico', panel: 'support-dashboard.html' },
         'creador': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
         'creador_contenido': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
         'profesor_creador': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
