@@ -135,23 +135,33 @@
 
       // 🚀 SISTEMA DE COMUNICACIÓN GLOBAL PARA ACTUALIZACIÓN AUTOMÁTICA
       const notifyBlocksUpdated = (blockName, action = 'created') => {
-          console.log(`📢 [add-question.html] Notifying blocks updated: ${action} - ${blockName}`);
+          console.log(`📢 [add-question.html] Triggering direct re-render for: ${action} - ${blockName}`);
           
-          // Notificar a través de postMessage (para iframes/ventanas)
-          if (window.parent && window.parent !== window) {
-              console.log(`📤 [add-question.html] Sending postMessage to parent window`);
-              window.parent.postMessage({
-                  type: 'BLOCKS_UPDATED',
-                  action: action,
-                  blockName: blockName,
-                  timestamp: new Date().getTime()
-              }, '*');
-          } else {
-              console.log(`ℹ️ [add-question.html] No parent window, skipping postMessage`);
+          // Re-render directamente los componentes de bloques
+          refreshAllBlockComponents(blockName, action);
+          
+          console.log(`✅ [add-question.html] Block components refreshed for: ${blockName}`);
+      };
+      
+      // Función para refrescar todos los componentes de bloques
+      const refreshAllBlockComponents = (blockName, action = 'updated') => {
+          console.log(`🔄 [add-question.html] Starting global block refresh - ${action}: ${blockName}`);
+          
+          // Buscar y refrescar componentes en la ventana actual
+          if (window.creatorBloquesCreados && typeof window.creatorBloquesCreados.refresh === 'function') {
+              console.log('🔄 Refreshing creatorBloquesCreados component...');
+              window.creatorBloquesCreados.refresh();
+          } else if (typeof renderBloquesCreados === 'function') {
+              console.log('🔄 Re-rendering creatorBloquesCreados component...');
+              window.creatorBloquesCreados = renderBloquesCreados('bloques-creados-container', 'jugadores');
           }
           
-          // Notificar a través de eventos personalizados (para misma ventana)
-          console.log(`📤 [add-question.html] Dispatching custom event: blocksUpdated`);
+          if (window.recursosBloquesCreados && typeof window.recursosBloquesCreados.refresh === 'function') {
+              console.log('🔄 Refreshing recursosBloquesCreados component...');
+              window.recursosBloquesCreados.refresh();
+          }
+          
+          // Disparar evento personalizado para otros paneles que puedan estar escuchando
           const event = new CustomEvent('blocksUpdated', {
               detail: {
                   action: action,
@@ -161,21 +171,7 @@
           });
           window.dispatchEvent(event);
           
-          // Notificar a través de localStorage (para múltiples ventanas)
-          console.log(`📤 [add-question.html] Setting localStorage: blocks_last_updated`);
-          localStorage.setItem('blocks_last_updated', JSON.stringify({
-              action: action,
-              blockName: blockName,
-              timestamp: new Date().getTime()
-          }));
-          
-          console.log(`✅ [add-question.html] Block update notifications sent for: ${blockName}`);
-          console.log(`🔍 [add-question.html] Notification details:`, {
-              action,
-              blockName,
-              timestamp: new Date().getTime(),
-              windowType: window.parent === window ? 'top-level' : 'child'
-          });
+          console.log(`✅ [add-question.html] Global block refresh completed`);
       };
       
       // --- INLINED: types.ts ---
