@@ -1188,6 +1188,7 @@
                     jugadoresAdminPrincipal: data.jugadoresAdminPrincipal || [],
                     jugadoresOtrosAdmins: data.jugadoresOtrosAdmins || [],
                     usuarios: data.usuarios || [],
+                    soporteTecnico: data.soporteTecnico || [], // ✅ AGREGADO: Datos de soporte técnico
                 };
                 
                     console.log('✅ Panel Data loaded from backend:', {
@@ -1195,7 +1196,8 @@
                         profesores: panelData.profesores?.length || 0,
                         creadores: panelData.creadores?.length || 0,
                         jugadores: panelData.jugadores?.length || 0,
-                        usuarios: panelData.usuarios.length
+                        usuarios: panelData.usuarios.length,
+                        soporteTecnico: panelData.soporteTecnico?.length || 0 // ✅ AGREGADO: Log de soporte
                     });
                     
                     // LOG TEMPORAL: Ver listas separadas
@@ -1210,6 +1212,10 @@
                     console.log('🔍 FRONTEND DEBUG - Jugadores:');
                     panelData.jugadores?.forEach(user => {
                         console.log(`  - ${user.nickname} (ID: ${user.id})`);
+                    });
+                    console.log('🔍 FRONTEND DEBUG - Soporte Técnico:');
+                    panelData.soporteTecnico?.forEach(user => {
+                        console.log(`  - ${user.nickname} (ID: ${user.id}) - ${user.email}`);
                     });
                     
                     renderTables();
