@@ -132,6 +132,40 @@
         return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>;
       };
       const useLanguage = () => useContext(LanguageContext);
+
+      // 🚀 SISTEMA DE COMUNICACIÓN GLOBAL PARA ACTUALIZACIÓN AUTOMÁTICA
+      const notifyBlocksUpdated = (blockName, action = 'created') => {
+          console.log(`📢 [add-question.html] Notifying blocks updated: ${action} - ${blockName}`);
+          
+          // Notificar a través de postMessage (para iframes/ventanas)
+          if (window.parent && window.parent !== window) {
+              window.parent.postMessage({
+                  type: 'BLOCKS_UPDATED',
+                  action: action,
+                  blockName: blockName,
+                  timestamp: new Date().getTime()
+              }, '*');
+          }
+          
+          // Notificar a través de eventos personalizados (para misma ventana)
+          const event = new CustomEvent('blocksUpdated', {
+              detail: {
+                  action: action,
+                  blockName: blockName,
+                  timestamp: new Date().getTime()
+              }
+          });
+          window.dispatchEvent(event);
+          
+          // Notificar a través de localStorage (para múltiples ventanas)
+          localStorage.setItem('blocks_last_updated', JSON.stringify({
+              action: action,
+              blockName: blockName,
+              timestamp: new Date().getTime()
+          }));
+          
+          console.log(`✅ [add-question.html] Block update notifications sent for: ${blockName}`);
+      };
       
       // --- INLINED: types.ts ---
       const BlockType = { GENERAL: 'TEMARIO GENERAL', COMPLETE: 'TEMARIO COMPLETO', EXTERNAL: 'EXTERNO' };
@@ -252,6 +286,9 @@
 
           // Block is automatically loaded by the backend when created
           console.log('✅ Block created and auto-loaded by backend');
+          
+          // Notify block creation for automatic refresh (additional notification from lower level)
+          notifyBlocksUpdated(blockName, 'created');
           
           return { ...createdBlock, totalPreguntas: questions.length, questions: questions };
       };
@@ -1258,12 +1295,23 @@
                 
                 await saveQuestionsToBlock(blockId, newQuestions); 
                 await loadData(); 
+                
+                // Notify block updates for automatic refresh
+                if (existingBlock) {
+                    notifyBlocksUpdated(existingBlock.nombreCorto || existingBlock.name, 'updated');
+                }
             } catch (error) {
                 console.error('❌ Error saving questions to block:', error);
                 throw error;
             }
         };
-        const handleCreateBlock = async (blockName, newQuestions, isPublic, observaciones) => { await createBlockWithQuestions(blockName, newQuestions, isPublic, observaciones); await loadData(); };
+        const handleCreateBlock = async (blockName, newQuestions, isPublic, observaciones) => { 
+            await createBlockWithQuestions(blockName, newQuestions, isPublic, observaciones); 
+            await loadData(); 
+            
+            // Notify block creation for automatic refresh
+            notifyBlocksUpdated(blockName, 'created');
+        };
         
         const renderContent = () => {
           if (isLoading) return <div className="text-center p-8">{t('loading')}...</div>;

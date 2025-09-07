@@ -1356,8 +1356,56 @@
             });
 
             // Initialize Bloques Creados section for creators (jugadores)
-            renderBloquesCreados('bloques-creados-container', 'jugadores');
+            window.creatorBloquesCreados = renderBloquesCreados('bloques-creados-container', 'jugadores');
+            
+            // Add global communication listeners for automatic block updates
+            console.log('🔗 Setting up block update listeners for Creators Panel...');
+            
+            // Listen for postMessage events (from iframes/windows)
+            window.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'BLOCKS_UPDATED') {
+                    console.log(`📢 [creators-panel] Received blocks update message:`, event.data);
+                    refreshCreatorBlockComponents(event.data.blockName, event.data.action);
+                }
+            });
+            
+            // Listen for custom events (same window)
+            window.addEventListener('blocksUpdated', (event) => {
+                console.log(`📢 [creators-panel] Received blocks update event:`, event.detail);
+                refreshCreatorBlockComponents(event.detail.blockName, event.detail.action);
+            });
+            
+            // Listen for localStorage changes (multiple windows)
+            window.addEventListener('storage', (event) => {
+                if (event.key === 'blocks_last_updated') {
+                    try {
+                        const updateData = JSON.parse(event.newValue);
+                        console.log(`📢 [creators-panel] Received blocks update from localStorage:`, updateData);
+                        refreshCreatorBlockComponents(updateData.blockName, updateData.action);
+                    } catch (err) {
+                        console.warn('❌ Error parsing localStorage blocks update:', err);
+                    }
+                }
+            });
+            
+            console.log('✅ Block update listeners configured for Creators Panel');
         });
+        
+        // Function to refresh block components when updates are received
+        function refreshCreatorBlockComponents(blockName, action = 'updated') {
+            console.log(`🔄 [creators-panel] Refreshing block components - ${action}: ${blockName}`);
+            
+            // Refresh Bloques Creados component if it exists
+            if (window.creatorBloquesCreados && typeof window.creatorBloquesCreados.refresh === 'function') {
+                console.log('🔄 Refreshing creatorBloquesCreados component...');
+                window.creatorBloquesCreados.refresh();
+                console.log('✅ creatorBloquesCreados refreshed successfully');
+            } else {
+                console.log('ℹ️ creatorBloquesCreados component not available, re-rendering...');
+                // Re-render if the component doesn't have refresh functionality
+                window.creatorBloquesCreados = renderBloquesCreados('bloques-creados-container', 'jugadores');
+            }
+        }
 
 
         // Add CSS animation

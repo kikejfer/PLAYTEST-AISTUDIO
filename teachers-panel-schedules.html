@@ -3777,7 +3777,53 @@
             
             // Default behavior - show schedules content (cronogramas is active by default)
             // Other content sections can be shown when their tabs are clicked
+            
+            // Add global communication listeners for automatic block updates
+            console.log('🔗 Setting up block update listeners for Teachers Panel...');
+            
+            // Listen for postMessage events (from iframes/windows)
+            window.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'BLOCKS_UPDATED') {
+                    console.log(`📢 [teachers-panel] Received blocks update message:`, event.data);
+                    refreshBlockComponents(event.data.blockName, event.data.action);
+                }
+            });
+            
+            // Listen for custom events (same window)
+            window.addEventListener('blocksUpdated', (event) => {
+                console.log(`📢 [teachers-panel] Received blocks update event:`, event.detail);
+                refreshBlockComponents(event.detail.blockName, event.detail.action);
+            });
+            
+            // Listen for localStorage changes (multiple windows)
+            window.addEventListener('storage', (event) => {
+                if (event.key === 'blocks_last_updated') {
+                    try {
+                        const updateData = JSON.parse(event.newValue);
+                        console.log(`📢 [teachers-panel] Received blocks update from localStorage:`, updateData);
+                        refreshBlockComponents(updateData.blockName, updateData.action);
+                    } catch (err) {
+                        console.warn('❌ Error parsing localStorage blocks update:', err);
+                    }
+                }
+            });
+            
+            console.log('✅ Block update listeners configured for Teachers Panel');
         });
+        
+        // Function to refresh block components when updates are received
+        function refreshBlockComponents(blockName, action = 'updated') {
+            console.log(`🔄 [teachers-panel] Refreshing block components - ${action}: ${blockName}`);
+            
+            // Refresh Bloques Creados component if it exists
+            if (window.recursosBloquesCreados && typeof window.recursosBloquesCreados.refresh === 'function') {
+                console.log('🔄 Refreshing recursosBloquesCreados component...');
+                window.recursosBloquesCreados.refresh();
+                console.log('✅ recursosBloquesCreados refreshed successfully');
+            } else {
+                console.log('ℹ️ recursosBloquesCreados component not available for refresh');
+            }
+        }
     </script>
 </body>
 </html>
