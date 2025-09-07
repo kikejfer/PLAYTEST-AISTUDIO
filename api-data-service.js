@@ -5,19 +5,24 @@ class APIDataService {
   constructor(baseURL = null) {
     // Auto-detect API URL based on environment
     if (!baseURL) {
-      // Check if running in development or production
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        // Development - try multiple local ports
-        this.baseURL = 'http://localhost:3002/api'; // Updated to use current port
-        this.fallbackURLs = [
-          'http://localhost:3000/api',
-          'http://localhost:3001/api'
-        ];
-      } else {
-        // Production - use Render backend
-        this.baseURL = 'https://playtest-backend.onrender.com/api';
-        this.fallbackURLs = [];
-      }
+      // FORCE RENDER BACKEND - Always use production backend
+      console.log('🌐 Forcing connection to Render backend...');
+      this.baseURL = 'https://playtest-backend.onrender.com/api';
+      this.fallbackURLs = [];
+      
+      // Original auto-detection logic (commented out)
+      // if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      //   // Development - try multiple local ports
+      //   this.baseURL = 'http://localhost:3002/api'; // Updated to use current port
+      //   this.fallbackURLs = [
+      //     'http://localhost:3000/api',
+      //     'http://localhost:3001/api'
+      //   ];
+      // } else {
+      //   // Production - use Render backend
+      //   this.baseURL = 'https://playtest-backend.onrender.com/api';
+      //   this.fallbackURLs = [];
+      // }
     } else {
       this.baseURL = baseURL;
       this.fallbackURLs = [];
