@@ -558,7 +558,7 @@ function detectRoleFromToken() {
     if (tokenRoles.length === 0) return null;
     
     // Prioridad de roles para detección automática (roles administrativos tienen prioridad)
-    const rolePriority = ['administrador_principal', 'admin_principal', 'administrador_secundario', 'admin_secundario', 'creador', 'creador_contenido', 'profesor_creador', 'profesor', 'jugador'];
+    const rolePriority = ['administrador_principal', 'admin_principal', 'administrador_secundario', 'admin_secundario', 'soporte_tecnico', 'creador', 'creador_contenido', 'profesor_creador', 'profesor', 'jugador'];
     
     // DEBUG: Log para troubleshoot
     console.log('🔍 DEBUG Role Detection - Token roles:', tokenRoles);
@@ -571,6 +571,7 @@ function detectRoleFromToken() {
                 'admin_principal': 'PAP',
                 'administrador_secundario': 'PAS',
                 'admin_secundario': 'PAS',
+                'soporte_tecnico': 'PST',
                 'creador': 'PCC',
                 'creador_contenido': 'PCC',
                 'profesor_creador': 'PCC',
