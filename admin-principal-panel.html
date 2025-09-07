@@ -2599,13 +2599,13 @@ El usuario "${nickname}" ya no tiene privilegios administrativos pero mantiene s
                 const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
                 const API_BASE_URL = 'https://playtest-backend.onrender.com';
                 
-                console.log(`🔧 FRONTEND: API URL = ${API_BASE_URL}/api/roles-updated/add-support-role`);
+                console.log(`🔧 FRONTEND: API URL = ${API_BASE_URL}/api/roles-updated/add-soporte-tecnico`);
                 console.log(`🔧 FRONTEND: Token present = ${token ? 'YES' : 'NO'}`);
                 
                 const requestBody = { nickname: nickname };
                 console.log(`🔧 FRONTEND: Request body =`, requestBody);
                 
-                const response = await fetch(`${API_BASE_URL}/api/roles-updated/add-support-role`, {
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/add-soporte-tecnico`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -2621,18 +2621,20 @@ El usuario "${nickname}" ya no tiene privilegios administrativos pero mantiene s
                 if (response.ok) {
                     if (responseData.success) {
                         console.log(`✅ FRONTEND: Support role assignment successful for ${nickname}`);
+                        showSupportModalSuccess(`Usuario "${nickname}" asignado como Soporte Técnico exitosamente`);
                     } else {
                         console.log(`⚠️ FRONTEND: Support role assignment completed with warning: ${responseData.message}`);
+                        showSupportModalSuccess(responseData.message || `Usuario "${nickname}" asignado como Soporte Técnico`);
                     }
+                    
+                    setTimeout(() => {
+                        hideAddSupportModal();
+                        loadPanelData();
+                    }, 2000);
+                    
                 } else {
                     throw new Error(responseData.error || responseData.message || 'Error desconocido');
                 }
-
-                showSupportModalSuccess(`Usuario "${nickname}" asignado como Soporte Técnico exitosamente`);
-                setTimeout(() => {
-                    hideAddSupportModal();
-                    loadPanelData();
-                }, 2000);
 
             } catch (error) {
                 console.error('Error asignando soporte técnico:', error);
