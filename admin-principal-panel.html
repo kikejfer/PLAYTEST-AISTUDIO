@@ -2599,46 +2599,84 @@ El usuario "${nickname}" ya no tiene privilegios administrativos pero mantiene s
                 const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
                 const API_BASE_URL = 'https://playtest-backend.onrender.com';
                 
-                console.log(`🔧 FRONTEND: API URL = ${API_BASE_URL}/api/roles-updated/add-soporte-tecnico`);
-                console.log(`🔧 FRONTEND: Token present = ${token ? 'YES' : 'NO'}`);
+                // Try multiple endpoints until we find one that works
+                const endpoints = [
+                    '/api/roles-updated/add-soporte-tecnico',
+                    '/api/users/assign-role',
+                    '/api/admin/assign-role'
+                ];
                 
-                const requestBody = { nickname: nickname };
-                console.log(`🔧 FRONTEND: Request body =`, requestBody);
+                let success = false;
+                let lastError = null;
                 
-                const response = await fetch(`${API_BASE_URL}/api/roles-updated/add-soporte-tecnico`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-                
-                const responseData = await response.json();
-                console.log(`🔧 FRONTEND: Response status = ${response.status}`);
-                console.log(`🔧 FRONTEND: Response data =`, responseData);
+                for (const endpoint of endpoints) {
+                    try {
+                        console.log(`🔧 FRONTEND: Trying endpoint = ${API_BASE_URL}${endpoint}`);
+                        console.log(`🔧 FRONTEND: Token present = ${token ? 'YES' : 'NO'}`);
+                        
+                        const requestBody = { 
+                            nickname: nickname,
+                            role: 'soporte_tecnico',
+                            roleName: 'soporte_tecnico'
+                        };
+                        console.log(`🔧 FRONTEND: Request body =`, requestBody);
+                        
+                        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(requestBody)
+                        });
+                        
+                        const responseData = await response.json();
+                        console.log(`🔧 FRONTEND: Response status = ${response.status} for ${endpoint}`);
+                        console.log(`🔧 FRONTEND: Response data =`, responseData);
 
-                if (response.ok) {
-                    if (responseData.success) {
-                        console.log(`✅ FRONTEND: Support role assignment successful for ${nickname}`);
-                        showSupportModalSuccess(`Usuario "${nickname}" asignado como Soporte Técnico exitosamente`);
-                    } else {
-                        console.log(`⚠️ FRONTEND: Support role assignment completed with warning: ${responseData.message}`);
-                        showSupportModalSuccess(responseData.message || `Usuario "${nickname}" asignado como Soporte Técnico`);
+                        if (response.ok) {
+                            console.log(`✅ FRONTEND: Support role assignment successful for ${nickname} using ${endpoint}`);
+                            showSupportModalSuccess(`Usuario "${nickname}" asignado como Soporte Técnico exitosamente`);
+                            
+                            setTimeout(() => {
+                                hideAddSupportModal();
+                                loadPanelData();
+                            }, 2000);
+                            
+                            success = true;
+                            break;
+                        } else if (response.status === 404) {
+                            console.log(`⚠️ FRONTEND: Endpoint ${endpoint} not found, trying next...`);
+                            continue;
+                        } else {
+                            throw new Error(responseData.error || responseData.message || `HTTP ${response.status}`);
+                        }
+                        
+                    } catch (endpointError) {
+                        console.log(`⚠️ FRONTEND: Endpoint ${endpoint} failed:`, endpointError.message);
+                        lastError = endpointError;
+                        continue;
                     }
-                    
-                    setTimeout(() => {
-                        hideAddSupportModal();
-                        loadPanelData();
-                    }, 2000);
-                    
-                } else {
-                    throw new Error(responseData.error || responseData.message || 'Error desconocido');
+                }
+                
+                if (!success) {
+                    throw lastError || new Error('Todos los endpoints fallaron');
                 }
 
             } catch (error) {
                 console.error('Error asignando soporte técnico:', error);
-                showSupportModalError('Error: ' + error.message);
+                
+                // Show helpful error message
+                let errorMessage = 'Error al asignar rol de Soporte Técnico';
+                if (error.message.includes('not found') || error.message.includes('Route not found')) {
+                    errorMessage = 'El endpoint para asignar Soporte Técnico no está disponible en el backend. Se requiere implementar el endpoint /api/roles-updated/add-soporte-tecnico';
+                } else if (error.message.includes('token')) {
+                    errorMessage = 'Token de autorización inválido. Por favor, vuelve a iniciar sesión.';
+                } else {
+                    errorMessage = `Error: ${error.message}`;
+                }
+                
+                showSupportModalError(errorMessage);
             }
         }
 
