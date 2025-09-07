@@ -14,10 +14,6 @@ if (!window.PANEL_CONFIGS) {
             title: 'PANEL ADMINISTRADOR SECUNDARIO',
             role: 'Administrador Secundario'
         },
-        'PST': {
-            title: 'PANEL SOPORTE TÉCNICO',
-            role: 'Soporte Técnico'
-        },
         'PCC': {
             title: 'PANEL CREADOR DE CONTENIDO',
             role: 'Creador de Contenido'
@@ -29,6 +25,10 @@ if (!window.PANEL_CONFIGS) {
         'PJG': {
             title: 'PANEL JUGADOR',
             role: 'Jugador'
+        },
+        'PST': {
+            title: 'PANEL SOPORTE TÉCNICO',
+            role: 'Soporte Técnico'
         }
     };
 }
@@ -523,7 +523,7 @@ function getUserRolesFromSystem(profile, session) {
         'creador': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
         'creador_contenido': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
         'profesor_creador': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
-        'profesor': { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-schedules.html' },
+        'profesor': { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-schedules.html' },        
         'jugador': { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' }
     };
     
@@ -1418,7 +1418,7 @@ function createRoleModificationModal() {
                 
                 <div style="margin-bottom: 1.5rem;">
                     <p style="color: #778DA9; margin: 0 0 1rem 0; text-align: center; font-size: 0.9rem;">
-                        Selecciona los roles que deseas adoptar.
+                        Selecciona los roles que deseas adoptar. Puedes tener múltiples roles activos.
                     </p>
                 </div>
 
@@ -1470,24 +1470,21 @@ async function loadRoleOptions() {
         const payload = JSON.parse(atob(token.split('.')[1]));
         const currentRoles = payload.roles || [];
 
-        // Verificar si el usuario actual es Administrador Principal
-        const isAdminPrincipal = currentRoles.includes('administrador_principal') || currentRoles.includes('admin_principal');
-
         // Definir todos los roles disponibles
         const availableRoles = [
             { id: 'jugador', name: '🎮 Jugador', description: 'Participa en partidas y duelos', editable: true },
             { id: 'creador', name: '🎨 Creador de Contenido', description: 'Crea bloques y monetiza contenido', editable: true },
             { id: 'profesor', name: '👨‍🏫 Profesor', description: 'Gestiona estudiantes y clases', editable: true },
-            { id: 'administrador_secundario', name: '⚙️ Administrador Secundario', description: 'Gestión administrativa limitada', editable: false },
-            { id: 'administrador_principal', name: '🔧 Administrador Principal', description: 'Gestión administrativa completa', editable: false }
+            { id: 'soporte_tecnico', name: '🔧 Soporte Técnico', description: 'Gestión de incidencias técnicas (solo visible, no modificable)', editable: false },
+            { id: 'administrador_secundario', name: '⚙️ Administrador Secundario', description: 'Gestión administrativa limitada (solo visible, no modificable)', editable: false },
+            { id: 'administrador_principal', name: '🔧 Administrador Principal', description: 'Gestión administrativa completa (solo visible, no modificable)', editable: false }
         ];
 
         // Crear checkboxes para cada rol
         container.innerHTML = availableRoles.map(role => {
             const hasRole = currentRoles.includes(role.id);
             const isEditable = role.editable;
-            // Deshabilitar roles admin para usuarios que no sean Admin Principal
-            const isDisabled = !isEditable && !isAdminPrincipal;
+            const isDisabled = !isEditable && hasRole; // Solo deshabilitar roles admin que el usuario ya tiene
             
             return `
                 <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid ${isDisabled ? '#6B7280' : '#415A77'}; border-radius: 0.5rem; margin-bottom: 0.75rem; transition: background 0.2s; opacity: ${isDisabled ? '0.7' : '1'};" ${!isDisabled ? `onmouseover="this.style.background='rgba(65, 90, 119, 0.1)'" onmouseout="this.style.background='transparent'"` : ''}>
@@ -1721,7 +1718,7 @@ async function loadPersonalData() {
             ? 'https://playtest-backend.onrender.com' 
             : '';
             
-        const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
+        const response = await fetch(`${API_BASE_URL}/api/users/me`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -1755,6 +1752,7 @@ function renderPersonalDataView(userData) {
         { key: 'first_name', label: 'Nombre', value: userData.first_name || 'No especificado' },
         { key: 'last_name', label: 'Apellidos', value: userData.last_name || 'No especificado' },
         { key: 'email', label: 'Email', value: userData.email || 'No especificado' },
+        { key: 'roles', label: 'Roles', value: Array.isArray(userData.roles) ? userData.roles.join(', ') : userData.role || 'No especificado' },
         { key: 'created_at', label: 'Fecha de registro', value: userData.created_at ? new Date(userData.created_at).toLocaleDateString('es-ES') : 'No disponible' }
     ];
 
@@ -1788,6 +1786,7 @@ function renderPersonalDataEdit(userData) {
 
     const readOnlyFields = [
         { key: 'nickname', label: 'Nickname', value: userData.nickname },
+        { key: 'roles', label: 'Roles', value: Array.isArray(userData.roles) ? userData.roles.join(', ') : userData.role || 'No especificado' },
         { key: 'created_at', label: 'Fecha de registro', value: userData.created_at ? new Date(userData.created_at).toLocaleDateString('es-ES') : 'No disponible' }
     ];
 
@@ -1901,7 +1900,7 @@ async function savePersonalData() {
             
         const token = localStorage.getItem('playtest_auth_token');
         
-        const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
+        const response = await fetch(`${API_BASE_URL}/api/users/me`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
