@@ -1341,6 +1341,18 @@
                     window.mountAddQuestionsApp('add-questions-content');
                 }
             }
+            
+            // Refresh blocks when switching to content tab
+            if (tabId === 'bloques-creados-section') {
+                console.log('🔄 [creators-panel] Switching to content tab, refreshing blocks...');
+                if (window.creatorBloquesCreados && typeof window.creatorBloquesCreados.refresh === 'function') {
+                    console.log('🔄 Refreshing blocks component on tab switch');
+                    window.creatorBloquesCreados.refresh();
+                } else {
+                    console.log('🔄 Re-rendering blocks component on tab switch');
+                    window.creatorBloquesCreados = renderBloquesCreados('bloques-creados-container', 'jugadores');
+                }
+            }
         };
         
         // Initialize default tab view
