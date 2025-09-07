@@ -984,6 +984,18 @@ class BloquesCreados {
             this.blocksData = this.blocksData.filter(block => block.id !== blockId);
             this.displayBlocks();
             
+            // 🔄 También refrescar la sección "Bloques Disponibles" si existe
+            console.log('🔄 [BloquesCreados] Refreshing Available Blocks after unload...');
+            if (typeof refreshAvailableBlocksAfterUnload === 'function') {
+                console.log('🔄 Calling refreshAvailableBlocksAfterUnload...');
+                refreshAvailableBlocksAfterUnload();
+            } else if (window.refreshAvailableBlocks) {
+                console.log('🔄 Calling window.refreshAvailableBlocks...');
+                window.refreshAvailableBlocks();
+            } else {
+                console.log('ℹ️ No available blocks refresh function found');
+            }
+            
             alert('Bloque eliminado de tu lista correctamente');
         } catch (error) {
             console.error('Error removing block from loaded blocks:', error);
@@ -1131,8 +1143,18 @@ class BloquesCreados {
 
     // Public method to refresh data
     async refresh() {
-        await this.loadCreatedBlocks();
-        await this.loadMetadataFilters();
+        console.log(`🔄 [BloquesCreados] Refreshing data for displayMode: ${this.displayMode}`);
+        
+        if (this.displayMode === 'loaded') {
+            console.log('🔄 Refreshing loaded blocks...');
+            await this.loadLoadedBlocks();
+        } else {
+            console.log('🔄 Refreshing created blocks...');
+            await this.loadCreatedBlocks();
+            await this.loadMetadataFilters();
+        }
+        
+        console.log(`✅ [BloquesCreados] Refresh completed for displayMode: ${this.displayMode}`);
     }
 
     // Contenido del Bloque - Para estudiantes (PJG) y bloques cargados

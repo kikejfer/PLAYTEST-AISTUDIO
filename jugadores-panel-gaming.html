@@ -2438,6 +2438,45 @@
                     }
                 };
 
+                // 🔄 Función para refrescar solo "Bloques Disponibles" después de descargar desde "Bloques Cargados"
+                window.refreshAvailableBlocksAfterUnload = async () => {
+                    console.log('🔄 [PJG] Refreshing Available Blocks after unload from Loaded Blocks...');
+                    try {
+                        // Recargar datos de bloques disponibles
+                        const [updatedBlocks, updatedProfile] = await Promise.all([
+                            window.apiDataService.fetchAvailableBlocks(),
+                            window.apiDataService.getUserProfile()
+                        ]);
+                        
+                        availableBlocksData = updatedBlocks;
+                        
+                        // Aplicar los filtros actuales a los nuevos datos
+                        const tipoFilter = document.getElementById('ab-filter-tipo')?.value;
+                        const nivelFilter = document.getElementById('ab-filter-nivel')?.value;
+                        const caracterFilter = document.getElementById('ab-filter-caracter')?.value;
+                        
+                        let filteredBlocks = [...availableBlocksData];
+                        
+                        if (tipoFilter) {
+                            filteredBlocks = filteredBlocks.filter(block => block.tipo_id == tipoFilter);
+                        }
+                        
+                        if (nivelFilter) {
+                            filteredBlocks = filteredBlocks.filter(block => block.nivel_id == nivelFilter);
+                        }
+                        
+                        if (caracterFilter) {
+                            filteredBlocks = filteredBlocks.filter(block => block.estado_id == caracterFilter);
+                        }
+                        
+                        await displayAvailableBlocks(filteredBlocks, updatedProfile.loadedBlocks);
+                        console.log('✅ [PJG] Available Blocks refreshed after unload');
+                        
+                    } catch (error) {
+                        console.error('❌ Error refreshing available blocks after unload:', error);
+                    }
+                };
+
                 // Función para ver el contenido de bloques disponibles
                 window.viewAvailableBlockContent = async (blockId, blockName, isLoaded) => {
                     try {
