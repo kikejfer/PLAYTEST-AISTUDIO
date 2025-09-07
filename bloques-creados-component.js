@@ -1685,6 +1685,25 @@ class BloquesCreados {
             this.cancelEditBlockCharacteristics();
             await this.reloadCurrentBlockData();
             
+            // 🔄 También refrescar la lista principal de bloques con las características actualizadas
+            console.log('🔄 [BloquesCreados] Refreshing main blocks list after saving characteristics...');
+            await this.refresh();
+            console.log('✅ [BloquesCreados] Main blocks list refreshed successfully');
+            
+            // 🔄 Notificar a otros paneles sobre la actualización del bloque
+            console.log('📢 [BloquesCreados] Notifying block characteristics update...');
+            const blockName = name || this.currentBlockData?.name || 'Block';
+            const event = new CustomEvent('blocksUpdated', {
+                detail: {
+                    action: 'updated',
+                    blockName: blockName,
+                    blockId: this.currentBlockId,
+                    timestamp: new Date().getTime()
+                }
+            });
+            window.dispatchEvent(event);
+            console.log('✅ [BloquesCreados] Block update notification sent');
+            
         } catch (error) {
             console.error('❌ Error saving block characteristics:', error);
             alert('Error al guardar las características del bloque: ' + error.message);
