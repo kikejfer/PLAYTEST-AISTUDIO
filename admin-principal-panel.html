@@ -563,6 +563,10 @@
                     <span class="tab-icon">📚</span>
                     <span>Configuración Modular</span>
                 </button>
+                <button class="tab-button" onclick="switchTab('app-config')">
+                    <span class="tab-icon">⚙️</span>
+                    <span>Configuración Aplicación</span>
+                </button>
             </div>
         </div>
 
@@ -785,6 +789,21 @@
             <iframe id="feature-flags-iframe" src="feature-flags-admin-panel.html" style="width: 100%; height: 800px; border: none; border-radius: 10px; background: white;"></iframe>
         </div>
         
+        <!-- Contenido de la pestaña Configuración de la Aplicación -->
+        <div id="app-config-tab" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <span>⚙️ Panel de Control de Funcionalidades</span>
+                    <button class="btn btn-secondary" onclick="loadFeatureFlags()" style="background: #415A77; border: 1px solid #778DA9;">
+                        🔄 Recargar Estado
+                    </button>
+                </div>
+                <div class="section-content" id="feature-flags-container">
+                    <div class="loading">Cargando configuración...</div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script src="api-data-service.js"></script>
@@ -935,10 +954,16 @@
 
             // Si se selecciona la pestaña de bloques, asegurar que el iframe se carga correctamente
             if (tabName === 'blocks') {
-                const iframe = document.getElementById('blocks-iframe');
-                if (iframe && !iframe.src.includes('block-management.html')) {
-                    iframe.src = 'block-management.html';
+                const iframe = document.getElementById('feature-flags-iframe');
+                if (iframe && !iframe.src.includes('feature-flags-admin-panel.html')) {
+                    iframe.src = 'feature-flags-admin-panel.html';
                 }
+            }
+
+            // Cargar feature flags si se selecciona la pestaña de configuración
+            if (tabName === 'app-config') {
+                console.log('⚙️ Tab de configuración de app seleccionada. Cargando flags...');
+                loadFeatureFlags();
             }
         }
 
@@ -2464,6 +2489,119 @@ El usuario "${nickname}" ya no tiene privilegios administrativos pero mantiene s
             } catch (error) {
                 showError('Error de conexión');
             }
+        }
+
+        // --- FEATURE FLAGS MANAGEMENT ---
+
+        const featureGroups = {
+            'competition': { name: 'Sistema de Competición', icon: '🏆', features: ['duels', 'trivial', 'tournaments', 'rankings'] },
+            'monetization': { name: 'Sistema de Monetización', icon: '💰', features: ['payment_plans', 'marketplace', 'luminaria_conversion'] },
+            'ai_system': { name: 'Sistema de IA', icon: '🤖', features: ['ai_question_generation', 'ai_suggestions'] },
+            'communication': { name: 'Sistema de Comunicación', icon: '💬', features: ['chat', 'tickets', 'internal_mail'] },
+            'leveling_system': { name: 'Sistema de Niveles', icon: '📈', features: ['user_progression', 'creator_levels'] },
+            'challenges': { name: 'Sistema de Retos', icon: '🎯', features: ['custom_challenges', 'rewards', 'scheduling'] },
+            'notifications': { name: 'Sistema de Notificaciones', icon: '🔔', features: ['push_notifications', 'email_notifications', 'badges'] },
+            'advanced_tools': { name: 'Herramientas Avanzadas', icon: '🛠️', features: ['detailed_analytics', 'data_export'] },
+            'mobile_app': { name: 'App Móvil', icon: '📱', features: ['sync', 'mobile_push', 'offline_mode'] }
+        };
+
+        async function loadFeatureFlags() {
+            const container = document.getElementById('feature-flags-container');
+            container.innerHTML = '<div class="loading">Cargando configuración...</div>';
+
+            try {
+                const flags = await apiDataService.fetchFeatureFlags();
+                const flagsMap = new Map(flags.map(f => [f.feature_key, f.enabled]));
+                renderFeatureFlags(flagsMap);
+            } catch (error) {
+                console.error('Error loading feature flags:', error);
+                container.innerHTML = `<div class="error">No se pudo cargar la configuración de funcionalidades. ${error.message}</div>`;
+            }
+        }
+
+        function renderFeatureFlags(flagsMap) {
+            const container = document.getElementById('feature-flags-container');
+            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;">';
+
+            for (const [groupKey, group] of Object.entries(featureGroups)) {
+                const isGroupEnabled = group.features.every(f => flagsMap.get(f) === true);
+
+                html += `
+                    <div style="background: #0D1B2A; border: 1px solid #415A77; border-radius: 8px; padding: 16px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #415A77;">
+                            <h4 style="font-size: 16px; font-weight: 600; color: #E0E1DD;">
+                                <span style="font-size: 20px; margin-right: 8px;">${group.icon}</span>${group.name}
+                            </h4>
+                            <label class="switch">
+                                <input type="checkbox" onchange="toggleFeatureGroup('${groupKey}', this.checked)" ${isGroupEnabled ? 'checked' : ''}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                `;
+
+                group.features.forEach(featureKey => {
+                    const isEnabled = flagsMap.get(featureKey) === true;
+                    const featureName = featureKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #778DA9;">${featureName}</span>
+                            <label class="switch">
+                                <input type="checkbox" onchange="toggleFeature('${featureKey}', this.checked)" ${isEnabled ? 'checked' : ''}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    `;
+                });
+
+                html += '</div></div>';
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+            addSwitchStyles();
+        }
+
+        async function toggleFeature(featureKey, enabled) {
+            try {
+                await apiDataService.toggleFeatureFlag(featureKey, enabled);
+                showSuccess(`Funcionalidad '${featureKey}' ${enabled ? 'activada' : 'desactivada'}.`);
+            } catch (error) {
+                showError(`Error al cambiar '${featureKey}': ${error.message}`);
+                loadFeatureFlags(); // Recargar para revertir el cambio visual
+            }
+        }
+
+        async function toggleFeatureGroup(groupKey, enabled) {
+            const group = featureGroups[groupKey];
+            if (!group) return;
+
+            try {
+                await apiDataService.toggleFeatureGroup(groupKey, enabled);
+                showSuccess(`Grupo '${group.name}' ${enabled ? 'activado' : 'desactivado'}.`);
+                loadFeatureFlags(); // Recargar para reflejar todos los cambios
+            } catch (error) {
+                showError(`Error al cambiar el grupo '${group.name}': ${error.message}`);
+                loadFeatureFlags();
+            }
+        }
+
+        function addSwitchStyles() {
+            if (document.getElementById('switch-styles')) return;
+            const style = document.createElement('style');
+            style.id = 'switch-styles';
+            style.innerHTML = `
+                .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+                .switch input { opacity: 0; width: 0; height: 0; }
+                .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #415A77; transition: .4s; }
+                .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; }
+                input:checked + .slider { background-color: #3B82F6; }
+                input:focus + .slider { box-shadow: 0 0 1px #3B82F6; }
+                input:checked + .slider:before { transform: translateX(20px); }
+                .slider.round { border-radius: 24px; }
+                .slider.round:before { border-radius: 50%; }
+            `;
+            document.head.appendChild(style);
         }
 
     </script>

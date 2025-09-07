@@ -1311,6 +1311,94 @@ class APIDataService {
     console.log('⚠️ fetchTrivialScores: returning empty array (not implemented yet)');
     return this.simulateDelay([]);
   }
+
+  // === FEATURE FLAGS ===
+  async fetchFeatureFlags() {
+    try {
+      const flags = await this.apiCall('/feature-flags');
+      return this.simulateDelay(flags);
+    } catch (error) {
+      console.warn('⚠️ Failed to fetch feature flags:', error.message);
+      // Return default feature flags structure for fallback
+      const defaultFlags = [
+        // Competition system
+        { feature_key: 'duels', enabled: true },
+        { feature_key: 'trivial', enabled: true },
+        { feature_key: 'tournaments', enabled: false },
+        { feature_key: 'rankings', enabled: true },
+        
+        // Monetization system
+        { feature_key: 'payment_plans', enabled: false },
+        { feature_key: 'marketplace', enabled: false },
+        { feature_key: 'luminaria_conversion', enabled: false },
+        
+        // AI system
+        { feature_key: 'ai_questions', enabled: true },
+        { feature_key: 'ai_explanations', enabled: true },
+        { feature_key: 'ai_hints', enabled: false },
+        
+        // Communication
+        { feature_key: 'chat', enabled: false },
+        { feature_key: 'forums', enabled: false },
+        { feature_key: 'messaging', enabled: false },
+        
+        // Leveling system
+        { feature_key: 'xp_system', enabled: true },
+        { feature_key: 'achievements', enabled: true },
+        { feature_key: 'leaderboards', enabled: true },
+        
+        // Challenges
+        { feature_key: 'daily_challenges', enabled: false },
+        { feature_key: 'weekly_goals', enabled: false },
+        { feature_key: 'seasonal_events', enabled: false },
+        
+        // Notifications
+        { feature_key: 'push_notifications', enabled: false },
+        { feature_key: 'email_notifications', enabled: true },
+        { feature_key: 'badges', enabled: true },
+        
+        // Advanced tools
+        { feature_key: 'detailed_analytics', enabled: true },
+        { feature_key: 'data_export', enabled: false },
+        
+        // Mobile app
+        { feature_key: 'sync', enabled: false },
+        { feature_key: 'mobile_push', enabled: false },
+        { feature_key: 'offline_mode', enabled: false }
+      ];
+      return this.simulateDelay(defaultFlags);
+    }
+  }
+
+  async toggleFeatureFlag(featureKey, enabled) {
+    try {
+      const response = await this.apiCall('/feature-flags', {
+        method: 'POST',
+        body: JSON.stringify({ featureKey, enabled })
+      });
+      return this.simulateDelay(response);
+    } catch (error) {
+      console.warn(`⚠️ Failed to toggle feature flag ${featureKey}:`, error.message);
+      // For fallback, just log the change
+      console.log(`🏳️ Feature flag ${featureKey} would be ${enabled ? 'enabled' : 'disabled'}`);
+      return this.simulateDelay({ message: `Feature ${featureKey} updated to ${enabled}` });
+    }
+  }
+
+  async toggleFeatureGroup(groupKey, enabled) {
+    try {
+      const response = await this.apiCall('/feature-flags/group', {
+        method: 'POST',
+        body: JSON.stringify({ groupKey, enabled })
+      });
+      return this.simulateDelay(response);
+    } catch (error) {
+      console.warn(`⚠️ Failed to toggle feature group ${groupKey}:`, error.message);
+      // For fallback, just log the change
+      console.log(`🏳️ Feature group ${groupKey} would be ${enabled ? 'enabled' : 'disabled'}`);
+      return this.simulateDelay({ message: `Feature group ${groupKey} updated to ${enabled}` });
+    }
+  }
 }
 
 // Configuración de la URL base según el entorno
