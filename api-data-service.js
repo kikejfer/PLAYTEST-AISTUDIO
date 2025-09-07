@@ -143,49 +143,8 @@ class APIDataService {
 
       return this.simulateDelay(response);
     } catch (error) {
-      console.warn('⚠️ Backend no disponible, usando login temporal:', error.message);
-      
-      // Fallback temporal mientras el backend se despierta
-      if (nickname && password) {
-        // Crear usuario temporal para desarrollo/demo
-        const tempUser = {
-          id: 1,
-          nickname: nickname,
-          firstName: 'Usuario',
-          lastName: 'Demo',
-          email: 'demo@playtest.com',
-          roles: ['creador', 'jugador', 'profesor']
-        };
-        
-        // Crear un token JWT-like válido para el decodificador
-        const header = { alg: "none", typ: "JWT" };
-        const payload = {
-          user: tempUser,
-          roles: tempUser.roles,
-          iat: Math.floor(Date.now() / 1000),
-          exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 horas
-        };
-        
-        const tempToken = btoa(JSON.stringify(header)) + '.' + btoa(JSON.stringify(payload)) + '.temp_signature';
-        
-        this.token = tempToken;
-        localStorage.setItem('playtest_auth_token', tempToken);
-        localStorage.setItem('authToken', tempToken);
-        
-        localStorage.setItem('playtest_session', JSON.stringify({
-          userId: tempUser.id,
-          nickname: tempUser.nickname
-        }));
-        
-        console.log('✅ Login temporal exitoso para:', nickname);
-        
-        return this.simulateDelay({
-          user: tempUser,
-          token: tempToken
-        });
-      } else {
-        throw new Error('Credenciales inválidas');
-      }
+      console.error('❌ Backend login failed:', error.message);
+      throw new Error(`Login failed: ${error.message}`);
     }
   }
 
@@ -215,49 +174,8 @@ class APIDataService {
 
       return this.simulateDelay(response);
     } catch (error) {
-      console.warn('⚠️ Backend no disponible, usando registro temporal:', error.message);
-      
-      // Fallback temporal mientras el backend se despierta
-      if (nickname && password) {
-        // Crear usuario temporal para desarrollo/demo
-        const tempUser = {
-          id: Math.floor(Math.random() * 1000) + 1,
-          nickname: nickname,
-          firstName: firstName || 'Usuario',
-          lastName: lastName || 'Nuevo',
-          email: email || 'demo@playtest.com',
-          roles: ['creador', 'jugador', 'profesor']
-        };
-        
-        // Crear un token JWT-like válido para el decodificador
-        const header = { alg: "none", typ: "JWT" };
-        const payload = {
-          user: tempUser,
-          roles: tempUser.roles,
-          iat: Math.floor(Date.now() / 1000),
-          exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 horas
-        };
-        
-        const tempToken = btoa(JSON.stringify(header)) + '.' + btoa(JSON.stringify(payload)) + '.temp_signature';
-        
-        this.token = tempToken;
-        localStorage.setItem('playtest_auth_token', tempToken);
-        localStorage.setItem('authToken', tempToken);
-        
-        localStorage.setItem('playtest_session', JSON.stringify({
-          userId: tempUser.id,
-          nickname: tempUser.nickname
-        }));
-        
-        console.log('✅ Registro temporal exitoso para:', nickname);
-        
-        return this.simulateDelay({
-          user: tempUser,
-          token: tempToken
-        });
-      } else {
-        throw new Error('Datos de registro inválidos');
-      }
+      console.error('❌ Backend register failed:', error.message);
+      throw new Error(`Registration failed: ${error.message}`);
     }
   }
 
