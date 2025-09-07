@@ -401,7 +401,11 @@ async function getUserData() {
 async function getUserDataInternal() {
     try {
         // Leer roles directamente del JWT token (como lo hace el panel)
-        const tokenRoles = window.getRolesFromToken ? window.getRolesFromToken() : [];
+        const tokenRoles = window.getRolesFromToken ? window.getRolesFromToken() : getRolesFromTokenLocal();
+        
+        // DEBUG: Verificar roles del token antes del mapeo
+        console.log('🔍 DEBUG getUserDataInternal - Token roles:', tokenRoles);
+        
         const userRoles = getUserRolesFromSystem({ roles: tokenRoles }, {});
         
         // Intentar obtener datos del usuario desde tu API
@@ -510,8 +514,8 @@ function getRolesFromTokenLocal() {
 function getUserRolesFromSystem(profile, session) {
     const roles = [];
     
-    // Detectar roles desde el token JWT decodificado
-    const tokenRoles = window.getRolesFromToken ? window.getRolesFromToken() : getRolesFromTokenLocal();
+    // Usar roles pasados como parámetro, o obtener del token como fallback
+    const tokenRoles = profile.roles || (window.getRolesFromToken ? window.getRolesFromToken() : getRolesFromTokenLocal());
     
     // Mapeo de roles de tu sistema a códigos de panel
     const roleMapping = {
