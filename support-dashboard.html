@@ -12,6 +12,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
     <link rel="stylesheet" href="header-styles.css">
     <script src="role-validation.js"></script>
+    <script src="api-data-service.js"></script>
     <script src="header-loader.js"></script>
     
     <!-- Tailwind CSS from CDN -->
@@ -253,10 +254,6 @@
     
     <!-- Sistema de header reutilizable -->
     <link rel="stylesheet" href="header-styles.css">
-    <script src="header-loader.js"></script>
-    
-    <!-- API Data Service para obtener datos del usuario -->
-    <script src="api-data-service.js"></script>
 </head>
 <body>
     <!-- Contenedor del header que se carga dinámicamente -->
@@ -394,48 +391,6 @@
         function showError(message) {
             console.error('❌ ERROR:', message);
         }
-    </script>
-    
-    <script>
-        // Asegurar que el header se inicialice correctamente
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🛠️ PST Panel: DOM loaded, checking header...');
-            
-            // Debug completo del token
-            const token = localStorage.getItem('playtest_auth_token');
-            if (!token) {
-                console.warn('⚠️ PST Panel: No hay token de autenticación');
-            } else {
-                try {
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    console.log('✅ PST Panel: Token decodificado:', {
-                        userId: payload.userId,
-                        nickname: payload.nickname,
-                        roles: payload.roles,
-                        exp: new Date(payload.exp * 1000).toLocaleString()
-                    });
-                } catch (error) {
-                    console.error('❌ PST Panel: Error decodificando token:', error);
-                }
-            }
-            
-            // Verificar activeRole almacenado
-            const storedRole = localStorage.getItem('activeRole');
-            console.log('🏷️ PST Panel: Stored active role:', storedRole);
-            
-            // Verificar si el header-loader está disponible
-            if (typeof initializeHeader === 'function') {
-                console.log('✅ PST Panel: header-loader disponible');
-                initializeHeader();
-            } else {
-                console.log('⚠️ PST Panel: header-loader no disponible, reintentando...');
-                setTimeout(function() {
-                    if (typeof initializeHeader === 'function') {
-                        initializeHeader();
-                    }
-                }, 1000);
-            }
-        });
     </script>
 </body>
 </html>
