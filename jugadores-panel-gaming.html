@@ -573,6 +573,15 @@
                 if (Object.keys(configuredBlocks).length === 0) return;
                 const gameConfig = { mode, config: configuredBlocks };
                 
+                // DEBUG: Log game configuration before sending
+                console.log('🎮 GAME DEBUG - handleGameAction:', {
+                    mode: mode,
+                    configuredBlocks: configuredBlocks,
+                    configuredBlocksKeys: Object.keys(configuredBlocks),
+                    configuredBlocksLength: Object.keys(configuredBlocks).length,
+                    gameConfig: gameConfig
+                });
+                
                 if (isCompetitionMode) {
                     const challengedUser = challengeableUsers.find(u => u.id === challengedUserId);
                     if (!challengedUser) return;
@@ -1439,6 +1448,16 @@
 
             // Crear nuevo juego
             const handleCreateGame = async (gameConfig) => {
+                // DEBUG: Log received gameConfig
+                console.log('📨 GAME DEBUG - handleCreateGame received:', {
+                    gameConfig: gameConfig,
+                    gameConfigType: typeof gameConfig,
+                    gameConfigKeys: gameConfig ? Object.keys(gameConfig) : 'null',
+                    hasMode: gameConfig?.mode,
+                    hasConfig: gameConfig?.config,
+                    configKeys: gameConfig?.config ? Object.keys(gameConfig.config) : 'no config'
+                });
+                
                 try {
                     if (window.apiDataService) {
                         const newGame = await window.apiDataService.createGameForUser(

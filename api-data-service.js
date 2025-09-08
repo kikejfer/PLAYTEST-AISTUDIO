@@ -825,6 +825,16 @@ class APIDataService {
 
   // Helper function to create detailed configuration metadata
   async createConfigurationMetadata(gameConfig, allBlocks) {
+    // DEBUG: CRITICAL - This is where questions are counted
+    console.log('🎯 CRITICAL - createConfigurationMetadata:', {
+      gameConfig: gameConfig,
+      gameConfigType: typeof gameConfig,
+      gameConfigKeys: gameConfig ? Object.keys(gameConfig) : 'null',
+      gameConfigLength: gameConfig ? Object.keys(gameConfig).length : 0,
+      allBlocksLength: allBlocks ? allBlocks.length : 0,
+      isEmpty: !gameConfig || Object.keys(gameConfig).length === 0
+    });
+    
     const metadata = {
       totalQuestions: 0,
       blocks: [],
@@ -837,6 +847,7 @@ class APIDataService {
     };
 
     if (!gameConfig || !allBlocks) {
+      console.log('❌ CRITICAL - Empty gameConfig or allBlocks, returning empty metadata');
       return metadata;
     }
 
@@ -881,6 +892,19 @@ class APIDataService {
   }
 
   async createGameForUser(userId, nickname, gameConfig) {
+    // DEBUG: Log received parameters
+    console.log('🔧 API DEBUG - createGameForUser received:', {
+      userId: userId,
+      nickname: nickname,
+      gameConfig: gameConfig,
+      gameConfigType: typeof gameConfig,
+      gameConfigKeys: gameConfig ? Object.keys(gameConfig) : 'null',
+      gameConfigMode: gameConfig?.mode,
+      gameConfigConfig: gameConfig?.config,
+      configKeys: gameConfig?.config ? Object.keys(gameConfig.config) : 'no config',
+      configLength: gameConfig?.config ? Object.keys(gameConfig.config).length : 0
+    });
+    
     // Map Spanish game modes to English gameType values
     const modeToType = {
       'Modo Clásico': 'classic',
