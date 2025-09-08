@@ -360,8 +360,17 @@
             try {
                 console.log('🛠️ Inicializando Dashboard Soporte Técnico');
                 
-                // Cargar header para panel de soporte técnico
-                await loadHeader('PST', 'header-container');
+                // Obtener datos del usuario ANTES de cargar el header
+                console.log('📊 PST: Obteniendo datos del usuario...');
+                const userData = await getUserData();
+                console.log('✅ PST: Datos obtenidos:', {
+                    name: userData.name,
+                    roles: userData.roles,
+                    rolesCount: userData.roles ? userData.roles.length : 0
+                });
+                
+                // Cargar header para panel de soporte técnico CON datos del usuario
+                await loadHeader('PST', 'header-container', userData);
                 
                 // Cargar estadísticas mockup
                 loadMockStats();

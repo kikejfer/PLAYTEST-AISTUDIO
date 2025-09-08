@@ -80,6 +80,14 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
         
         let headerHTML = await response.text();
         
+        // DEBUG: Log userData antes del procesamiento
+        console.log('🔍 DEBUG loadHeader - userData received:', {
+            name: userData.name,
+            roles: userData.roles,
+            activeRole: userData.activeRole,
+            rolesLength: userData.roles ? userData.roles.length : 0
+        });
+        
         // Procesar datos del usuario con valores por defecto
         const userInfo = {
             name: userData.name || 'Cargando...',
@@ -89,6 +97,13 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
             roles: userData.roles || [],
             activeRole: userData.activeRole || panelType
         };
+        
+        console.log('🔍 DEBUG userInfo processed:', {
+            name: userInfo.name,
+            roles: userInfo.roles,
+            rolesLength: userInfo.roles.length,
+            activeRole: userInfo.activeRole
+        });
         
         // Generar inicial del usuario basada en su nombre
         const userInitial = userInfo.name && userInfo.name !== 'Cargando...' 
