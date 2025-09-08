@@ -1460,7 +1460,7 @@ function createRoleModificationModal() {
     `;
 
     modal.innerHTML = `
-        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 100%; max-width: 700px; border: 1px solid #415A77;" onclick="event.stopPropagation();">
+        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 100%; max-width: 420px; border: 1px solid #415A77;" onclick="event.stopPropagation();">
             <div style="padding: 2rem; position: relative;">
                 <button onclick="closeRoleModificationModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
                 
