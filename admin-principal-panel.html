@@ -692,8 +692,9 @@
                                 <th>Nickname / Nombre</th>
                                 <th>Email</th>
                                 <th>Bloques Creados</th>
-                                <th>Estudiantes</th>
+                                <th>Temas</th>
                                 <th>Preguntas</th>
+                                <th>Alumnos</th>
                                 <th>Administrador</th>
                                 <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                                 <th>🗑️</th>
@@ -724,9 +725,9 @@
                                 <th>Nickname / Nombre</th>
                                 <th>Email</th>
                                 <th>Bloques Creados</th>
-                                <th>Preguntas</th>
                                 <th>Temas</th>
-                                <th>Usuarios</th>
+                                <th>Preguntas</th>
+                                <th>Estudiantes</th>
                                 <th>Administrador</th>
                                 <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                                 <th>🗑️</th>
@@ -1431,10 +1432,11 @@
                 const fullName = profesor.first_name || 
                                 [profesor.first_name, profesor.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
-                // Información específica para profesores (valores básicos)
+                // Información específica para profesores según nueva especificación
                 const bloquesCreados = profesor.blocks_created || 0;
-                const totalEstudiantes = profesor.total_students || 0;
+                const totalTemas = profesor.total_topics || 0;
                 const totalPreguntas = profesor.total_questions || 0;
+                const totalAlumnos = profesor.estudiantes || 0;
                 
                 row.innerHTML = `
                     <td>
@@ -1445,8 +1447,9 @@
                     <td><strong>${profesor.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
                     <td>${profesor.email || 'Sin email'}</td>
                     <td><strong style="color: #3B82F6;">${bloquesCreados}</strong></td>
-                    <td><strong style="color: #10B981;">${totalEstudiantes}</strong></td>
+                    <td><strong style="color: #10B981;">${totalTemas}</strong></td>
                     <td><strong style="color: #8B5CF6;">${totalPreguntas}</strong></td>
+                    <td><strong style="color: #F59E0B;">${totalAlumnos}</strong></td>
                     <td>
                         <select onchange="reassignUser(${profesorId}, this.value)">
                             <option value="">${profesor.assigned_admin_nickname || 'Sin asignar'}</option>
@@ -1492,11 +1495,11 @@
                 const fullName = creador.first_name || 
                                 [creador.first_name, creador.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
-                // Información específica para creadores (valores básicos)
+                // Información específica para creadores según nueva especificación
                 const bloquesCreados = creador.blocks_created || 0;
-                const totalPreguntas = creador.total_questions || 0;
                 const totalTemas = creador.total_topics || 0;
-                const totalUsuarios = creador.total_users_blocks || 0;
+                const totalPreguntas = creador.total_questions || 0;
+                const totalEstudiantes = creador.usuarios || 0;
                 
                 row.innerHTML = `
                     <td>
@@ -1506,10 +1509,10 @@
                     </td>
                     <td><strong>${creador.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
                     <td>${creador.email || 'Sin email'}</td>
-                    <td><strong style="color: #F59E0B;">${bloquesCreados}</strong></td>
-                    <td><strong style="color: #3B82F6;">${totalPreguntas}</strong></td>
+                    <td><strong style="color: #3B82F6;">${bloquesCreados}</strong></td>
                     <td><strong style="color: #10B981;">${totalTemas}</strong></td>
-                    <td><strong style="color: #8B5CF6;">${totalUsuarios}</strong></td>
+                    <td><strong style="color: #8B5CF6;">${totalPreguntas}</strong></td>
+                    <td><strong style="color: #F59E0B;">${totalEstudiantes}</strong></td>
                     <td>
                         <select onchange="reassignUser(${creadorId}, this.value)">
                             <option value="">${creador.assigned_admin_nickname || 'Sin asignar'}</option>
@@ -1646,7 +1649,7 @@
                     return;
                 }
 
-                let html = '<table class="nested-table"><thead><tr><th></th><th>Bloque</th><th>Núm. Temas</th><th>Total Preguntas</th><th>Usuarios</th><th>Fecha Creación</th></tr></thead><tbody>';
+                let html = '<table class="nested-table"><thead><tr><th></th><th>Bloque</th><th>Temas</th><th>Preguntas</th><th>Alumnos</th><th>Fecha Creación</th></tr></thead><tbody>';
                 
                 blocks.forEach(block => {
                     html += `
@@ -1701,7 +1704,7 @@
                     return;
                 }
 
-                let html = '<table class="nested-table"><thead><tr><th></th><th>Bloque</th><th>Núm. Temas</th><th>Total Preguntas</th><th>Usuarios</th><th>Fecha Creación</th></tr></thead><tbody>';
+                let html = '<table class="nested-table"><thead><tr><th></th><th>Bloque</th><th>Temas</th><th>Preguntas</th><th>Estudiantes</th><th>Fecha Creación</th></tr></thead><tbody>';
                 
                 blocks.forEach(block => {
                     html += `
