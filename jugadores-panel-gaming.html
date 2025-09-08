@@ -583,8 +583,19 @@
                 });
                 
                 if (isCompetitionMode) {
+                    console.log('🎯 COMPETITION DEBUG - Challenge details:', {
+                        isCompetitionMode: isCompetitionMode,
+                        challengedUserId: challengedUserId,
+                        challengeableUsersCount: challengeableUsers.length,
+                        challengeableUsers: challengeableUsers
+                    });
                     const challengedUser = challengeableUsers.find(u => u.id === challengedUserId);
-                    if (!challengedUser) return;
+                    console.log('👤 Found challengedUser:', challengedUser);
+                    if (!challengedUser) {
+                        console.error('❌ No challenged user found!');
+                        return;
+                    }
+                    console.log('📞 About to call onSendChallenge...');
                     onSendChallenge(challengedUser, gameConfig);
                     setChallengeStatus(t('challenge_sent'));
                     setTimeout(() => setChallengeStatus(''), 3000);
