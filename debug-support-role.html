@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Soporte Técnico - PLAYTEST</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0D1B2A;
+            color: #E0E1DD;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .debug-section {
+            background: #1B263B;
+            border: 1px solid #415A77;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .debug-title {
+            color: #3B82F6;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        .debug-output {
+            background: #0D1B2A;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 500;
+        }
+        button:hover {
+            background: #2563EB;
+        }
+        .success { color: #10B981; }
+        .error { color: #EF4444; }
+        .warning { color: #F59E0B; }
+        .info { color: #3B82F6; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug: Problema Soporte Técnico</h1>
+    
+    <div class="debug-section">
+        <div class="debug-title">🔑 Información de Token JWT</div>
+        <button onclick="debugToken()">Analizar Token</button>
+        <div id="token-debug" class="debug-output">Haz clic en "Analizar Token" para ver información...</div>
+    </div>
+    
+    <div class="debug-section">
+        <div class="debug-title">👤 Datos del Usuario Actual</div>
+        <button onclick="debugUserData()">Obtener Datos Usuario</button>
+        <div id="user-debug" class="debug-output">Haz clic en "Obtener Datos Usuario" para ver información...</div>
+    </div>
+    
+    <div class="debug-section">
+        <div class="debug-title">🛠️ Panel Administrador - Datos Soporte</div>
+        <button onclick="debugAdminPanel()">Consultar Admin Panel</button>
+        <div id="admin-debug" class="debug-output">Haz clic en "Consultar Admin Panel" para ver información...</div>
+    </div>
+    
+    <div class="debug-section">
+        <div class="debug-title">🔍 Verificar Base de Datos</div>
+        <button onclick="debugDatabase()">Verificar BD</button>
+        <div id="db-debug" class="debug-output">Haz clic en "Verificar BD" para ver información...</div>
+    </div>
+    
+    <div class="debug-section">
+        <div class="debug-title">🎯 Tests de Endpoints</div>
+        <button onclick="testSupportEndpoints()">Test Endpoints</button>
+        <div id="endpoints-debug" class="debug-output">Haz clic en "Test Endpoints" para probar...</div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://playtest-backend.onrender.com';
+        
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            element.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            console.log(`[DEBUG-${type.toUpperCase()}]`, message);
+        }
+        
+        function clear(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        function debugToken() {
+            clear('token-debug');
+            log('token-debug', '🔍 Analizando token JWT...', 'info');
+            
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+            
+            if (!token) {
+                log('token-debug', '❌ ERROR: No hay token almacenado', 'error');
+                log('token-debug', 'Tokens buscados:', 'info');
+                log('token-debug', `- playtest_auth_token: ${localStorage.getItem('playtest_auth_token')}`, 'info');
+                log('token-debug', `- authToken: ${localStorage.getItem('authToken')}`, 'info');
+                return;
+            }
+            
+            try {
+                // Decodificar token JWT
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                log('token-debug', '✅ Token decodificado exitosamente:', 'success');
+                log('token-debug', JSON.stringify(payload, null, 2), 'info');
+                
+                // Verificar expiración
+                const now = Math.floor(Date.now() / 1000);
+                if (payload.exp < now) {
+                    log('token-debug', '⚠️ ADVERTENCIA: Token expirado', 'warning');
+                    log('token-debug', `Expiró: ${new Date(payload.exp * 1000).toLocaleString()}`, 'warning');
+                } else {
+                    log('token-debug', '✅ Token válido', 'success');
+                    log('token-debug', `Expira: ${new Date(payload.exp * 1000).toLocaleString()}`, 'info');
+                }
+                
+            } catch (error) {
+                log('token-debug', `❌ ERROR decodificando token: ${error.message}`, 'error');
+            }
+        }
+
+        async function debugUserData() {
+            clear('user-debug');
+            log('user-debug', '👤 Obteniendo datos del usuario...', 'info');
+            
+            try {
+                // Verificar si hay header-loader disponible
+                if (typeof getUserData === 'function') {
+                    log('user-debug', '🔄 Usando getUserData() del header-loader...', 'info');
+                    const userData = await getUserData();
+                    log('user-debug', '✅ Datos obtenidos:', 'success');
+                    log('user-debug', JSON.stringify(userData, null, 2), 'info');
+                } else {
+                    log('user-debug', '❌ header-loader no disponible', 'warning');
+                }
+                
+                // Verificar apiDataService
+                if (window.apiDataService && window.apiDataService.getUserProfile) {
+                    log('user-debug', '🔄 Probando apiDataService...', 'info');
+                    try {
+                        const profile = await window.apiDataService.getUserProfile();
+                        log('user-debug', '✅ Perfil API:', 'success');
+                        log('user-debug', JSON.stringify(profile, null, 2), 'info');
+                    } catch (error) {
+                        log('user-debug', `❌ Error API: ${error.message}`, 'error');
+                    }
+                } else {
+                    log('user-debug', '❌ apiDataService no disponible', 'warning');
+                }
+                
+                // Verificar localStorage
+                const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+                log('user-debug', '📁 Sesión localStorage:', 'info');
+                log('user-debug', JSON.stringify(session, null, 2), 'info');
+                
+            } catch (error) {
+                log('user-debug', `❌ ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        async function debugAdminPanel() {
+            clear('admin-debug');
+            log('admin-debug', '🛠️ Consultando endpoint admin panel...', 'info');
+            
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+            
+            if (!token) {
+                log('admin-debug', '❌ ERROR: No hay token para autenticación', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/admin-principal-panel`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log('admin-debug', `📊 Status: ${response.status} ${response.statusText}`, 'info');
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log('admin-debug', `❌ ERROR Response: ${errorText}`, 'error');
+                    return;
+                }
+                
+                const data = await response.json();
+                log('admin-debug', '✅ Datos recibidos:', 'success');
+                log('admin-debug', `📊 Total usuarios: ${JSON.stringify(data.statistics)}`, 'info');
+                
+                // Verificar específicamente soporteTecnico
+                if (data.soporteTecnico) {
+                    log('admin-debug', `🛠️ Soporte Técnico encontrado: ${data.soporteTecnico.length} usuarios`, 'success');
+                    data.soporteTecnico.forEach((support, index) => {
+                        log('admin-debug', `  ${index + 1}. ${support.nickname} (ID: ${support.id}) - ${support.email}`, 'info');
+                    });
+                } else {
+                    log('admin-debug', '❌ No se encontró array soporteTecnico en la respuesta', 'error');
+                }
+                
+                log('admin-debug', 'Estructura completa:', 'info');
+                log('admin-debug', JSON.stringify(data, null, 2), 'info');
+                
+            } catch (error) {
+                log('admin-debug', `❌ ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        async function debugDatabase() {
+            clear('db-debug');
+            log('db-debug', '🔍 Verificando datos en base de datos...', 'info');
+            
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+            
+            if (!token) {
+                log('db-debug', '❌ ERROR: No hay token para autenticación', 'error');
+                return;
+            }
+            
+            try {
+                // Test debug endpoint
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/debug-users`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log('db-debug', `📊 Debug Status: ${response.status} ${response.statusText}`, 'info');
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log('db-debug', `❌ ERROR Response: ${errorText}`, 'error');
+                    return;
+                }
+                
+                const data = await response.json();
+                log('db-debug', '✅ Datos de debug recibidos:', 'success');
+                
+                // Analizar usuarios con roles
+                log('db-debug', '👥 Usuarios con roles:', 'info');
+                data.users_with_roles.forEach(user => {
+                    const roleInfo = user.role_name || 'Sin rol';
+                    log('db-debug', `  - ${user.nickname} (ID: ${user.id}) - Rol: ${roleInfo}`, 'info');
+                });
+                
+                log('db-debug', 'Datos completos:', 'info');
+                log('db-debug', JSON.stringify(data, null, 2), 'info');
+                
+            } catch (error) {
+                log('db-debug', `❌ ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSupportEndpoints() {
+            clear('endpoints-debug');
+            log('endpoints-debug', '🎯 Probando endpoints de soporte técnico...', 'info');
+            
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+            
+            if (!token) {
+                log('endpoints-debug', '❌ ERROR: No hay token para autenticación', 'error');
+                return;
+            }
+            
+            // Test endpoints
+            const endpoints = [
+                '/api/roles-updated/add-soporte-tecnico',
+                '/api/roles-updated/remove-soporte-tecnico',
+                '/api/roles-updated/admin-principal-panel'
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    log('endpoints-debug', `🔄 Testing ${endpoint}...`, 'info');
+                    
+                    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                        method: 'HEAD', // Solo verificar si existe
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.status === 405) {
+                        log('endpoints-debug', `✅ ${endpoint} existe (405 = Method not allowed para HEAD)`, 'success');
+                    } else if (response.status === 200) {
+                        log('endpoints-debug', `✅ ${endpoint} existe y responde`, 'success');
+                    } else if (response.status === 404) {
+                        log('endpoints-debug', `❌ ${endpoint} no existe (404)`, 'error');
+                    } else {
+                        log('endpoints-debug', `⚠️ ${endpoint} status: ${response.status}`, 'warning');
+                    }
+                    
+                } catch (error) {
+                    log('endpoints-debug', `❌ ERROR testing ${endpoint}: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        // Auto-load header-loader if available
+        window.addEventListener('DOMContentLoaded', function() {
+            if (typeof loadHeader === 'function') {
+                log('token-debug', 'ℹ️ header-loader.js detectado', 'info');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Arreglar Login Usuario - PLAYTEST</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0D1B2A;
+            color: #E0E1DD;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .fix-section {
+            background: #1B263B;
+            border: 1px solid #415A77;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .fix-title {
+            color: #3B82F6;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 500;
+        }
+        button:hover {
+            background: #2563EB;
+        }
+        button.danger {
+            background: #EF4444;
+        }
+        button.danger:hover {
+            background: #DC2626;
+        }
+        button.success {
+            background: #10B981;
+        }
+        button.success:hover {
+            background: #059669;
+        }
+        .result {
+            background: #0D1B2A;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: #10B981; }
+        .error { color: #EF4444; }
+        .warning { color: #F59E0B; }
+        .info { color: #3B82F6; }
+        input {
+            padding: 8px 12px;
+            border: 1px solid #415A77;
+            border-radius: 4px;
+            background: #0D1B2A;
+            color: #E0E1DD;
+            font-size: 14px;
+            width: 200px;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #778DA9;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Herramienta de Reparación de Login</h1>
+    
+    <div class="fix-section">
+        <div class="fix-title">📋 Diagnóstico Automático</div>
+        <button onclick="diagnosticFull()">🔍 Diagnóstico Completo</button>
+        <div id="diagnostic-result" class="result">Haz clic en "Diagnóstico Completo" para analizar...</div>
+    </div>
+    
+    <div class="fix-section">
+        <div class="fix-title">🔑 Reparación de Token</div>
+        <p style="color: #778DA9;">Si tu token está expirado, puedes intentar refrescarlo:</p>
+        <button onclick="refreshToken()">🔄 Refrescar Token</button>
+        <button onclick="clearTokens()" class="danger">🗑️ Limpiar Tokens</button>
+        <div id="token-result" class="result">Resultados aparecerán aquí...</div>
+    </div>
+    
+    <div class="fix-section">
+        <div class="fix-title">👤 Login Manual</div>
+        <p style="color: #778DA9;">Si no puedes hacer login, usa estas credenciales de prueba:</p>
+        <div class="form-group">
+            <label>Usuario:</label>
+            <input type="text" id="username" value="AdminPrincipal" placeholder="Ingresa tu usuario">
+        </div>
+        <div class="form-group">
+            <label>Password:</label>
+            <input type="password" id="password" value="" placeholder="Ingresa tu contraseña">
+        </div>
+        <button onclick="manualLogin()" class="success">🔐 Login Manual</button>
+        <div id="login-result" class="result">Resultados de login aparecerán aquí...</div>
+    </div>
+    
+    <div class="fix-section">
+        <div class="fix-title">✅ Verificación de Roles</div>
+        <p style="color: #778DA9;">Verifica si tu usuario tiene el rol de soporte técnico:</p>
+        <button onclick="checkRoles()">👥 Verificar Roles</button>
+        <button onclick="gotoSupportDashboard()" class="success">🛠️ Ir a Dashboard Soporte</button>
+        <div id="roles-result" class="result">Información de roles aparecerá aquí...</div>
+    </div>
+
+    <script src="api-data-service.js"></script>
+    <script>
+        const API_BASE_URL = 'https://playtest-backend.onrender.com';
+        
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            element.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            console.log(`[FIX-${type.toUpperCase()}]`, message);
+        }
+        
+        function clear(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        async function diagnosticFull() {
+            clear('diagnostic-result');
+            log('diagnostic-result', '🔍 Iniciando diagnóstico completo...', 'info');
+            
+            // 1. Verificar tokens
+            const tokens = {
+                playtest_auth_token: localStorage.getItem('playtest_auth_token'),
+                authToken: localStorage.getItem('authToken')
+            };
+            
+            log('diagnostic-result', '🔑 Verificando tokens...', 'info');
+            let validToken = null;
+            
+            for (const [name, token] of Object.entries(tokens)) {
+                if (token) {
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        const now = Math.floor(Date.now() / 1000);
+                        
+                        if (payload.exp > now) {
+                            log('diagnostic-result', `✅ ${name}: Token válido (expira: ${new Date(payload.exp * 1000).toLocaleString()})`, 'success');
+                            validToken = token;
+                        } else {
+                            log('diagnostic-result', `⚠️ ${name}: Token expirado (expiró: ${new Date(payload.exp * 1000).toLocaleString()})`, 'warning');
+                        }
+                        
+                        log('diagnostic-result', `   Usuario: ${payload.nickname || payload.sub || 'No definido'}`, 'info');
+                        log('diagnostic-result', `   Roles: ${JSON.stringify(payload.roles || 'No definidos')}`, 'info');
+                        
+                    } catch (e) {
+                        log('diagnostic-result', `❌ ${name}: Token inválido`, 'error');
+                    }
+                } else {
+                    log('diagnostic-result', `❌ ${name}: No encontrado`, 'error');
+                }
+            }
+            
+            // 2. Verificar apiDataService
+            log('diagnostic-result', '📡 Verificando apiDataService...', 'info');
+            if (window.apiDataService) {
+                try {
+                    const profile = await window.apiDataService.getUserProfile();
+                    log('diagnostic-result', `✅ apiDataService funciona`, 'success');
+                    log('diagnostic-result', `   Nickname: ${profile.nickname}`, 'info');
+                    log('diagnostic-result', `   Email: ${profile.email}`, 'info');
+                    log('diagnostic-result', `   Roles: ${JSON.stringify(profile.roles)}`, 'info');
+                } catch (error) {
+                    log('diagnostic-result', `❌ apiDataService error: ${error.message}`, 'error');
+                }
+            } else {
+                log('diagnostic-result', `❌ apiDataService no disponible`, 'error');
+            }
+            
+            // 3. Test endpoint de admin panel
+            if (validToken) {
+                log('diagnostic-result', '🛠️ Verificando endpoint admin panel...', 'info');
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/roles-updated/admin-principal-panel`, {
+                        headers: {
+                            'Authorization': `Bearer ${validToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        log('diagnostic-result', `✅ Admin panel responde correctamente`, 'success');
+                        log('diagnostic-result', `   Soporte técnico: ${data.soporteTecnico?.length || 0} usuarios`, 'info');
+                    } else {
+                        log('diagnostic-result', `❌ Admin panel error: ${response.status}`, 'error');
+                    }
+                } catch (error) {
+                    log('diagnostic-result', `❌ Admin panel error: ${error.message}`, 'error');
+                }
+            }
+            
+            // 4. Recomendaciones
+            log('diagnostic-result', '💡 RECOMENDACIONES:', 'info');
+            if (!validToken) {
+                log('diagnostic-result', '   → Necesitas hacer login nuevamente', 'warning');
+            }
+            if (window.apiDataService) {
+                log('diagnostic-result', '   → apiDataService está disponible ✅', 'success');
+            } else {
+                log('diagnostic-result', '   → Recarga la página para cargar apiDataService', 'warning');
+            }
+        }
+
+        async function refreshToken() {
+            clear('token-result');
+            log('token-result', '🔄 Intentando refrescar token...', 'info');
+            
+            // Esta es una implementación básica - en la práctica necesitarías 
+            // un endpoint de refresh en tu backend
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+            
+            if (!token) {
+                log('token-result', '❌ No hay token para refrescar', 'error');
+                log('token-result', '💡 Usa "Login Manual" en su lugar', 'info');
+                return;
+            }
+            
+            try {
+                // Verificar si el token actual es válido
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const now = Math.floor(Date.now() / 1000);
+                
+                if (payload.exp > now) {
+                    log('token-result', '✅ Token actual sigue siendo válido', 'success');
+                    log('token-result', `   Expira: ${new Date(payload.exp * 1000).toLocaleString()}`, 'info');
+                    return;
+                }
+                
+                log('token-result', '⚠️ Token expirado, necesitas hacer login manual', 'warning');
+                
+            } catch (error) {
+                log('token-result', `❌ Error verificando token: ${error.message}`, 'error');
+            }
+        }
+
+        function clearTokens() {
+            clear('token-result');
+            log('token-result', '🗑️ Limpiando tokens...', 'info');
+            
+            localStorage.removeItem('playtest_auth_token');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('playtest_session');
+            localStorage.removeItem('activeRole');
+            
+            log('token-result', '✅ Tokens eliminados', 'success');
+            log('token-result', '💡 Ahora puedes hacer login nuevamente', 'info');
+        }
+
+        async function manualLogin() {
+            clear('login-result');
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (!username || !password) {
+                log('login-result', '❌ Debes ingresar usuario y contraseña', 'error');
+                return;
+            }
+            
+            log('login-result', `🔐 Intentando login con: ${username}`, 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nickname: username,
+                        password: password
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Guardar token
+                    localStorage.setItem('playtest_auth_token', data.token);
+                    
+                    log('login-result', '✅ Login exitoso!', 'success');
+                    log('login-result', `   Token guardado`, 'info');
+                    log('login-result', `   Usuario: ${data.user?.nickname || username}`, 'info');
+                    
+                    // Recargar la página para aplicar cambios
+                    setTimeout(() => {
+                        log('login-result', '🔄 Recargando página en 3 segundos...', 'info');
+                        setTimeout(() => window.location.reload(), 3000);
+                    }, 1000);
+                    
+                } else {
+                    const error = await response.text();
+                    log('login-result', `❌ Error de login: ${response.status}`, 'error');
+                    log('login-result', `   ${error}`, 'error');
+                }
+                
+            } catch (error) {
+                log('login-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkRoles() {
+            clear('roles-result');
+            log('roles-result', '👥 Verificando roles del usuario...', 'info');
+            
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+            
+            if (!token) {
+                log('roles-result', '❌ No hay token disponible', 'error');
+                return;
+            }
+            
+            try {
+                // Decodificar token para ver roles
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                log('roles-result', `👤 Usuario: ${payload.nickname || payload.sub}`, 'info');
+                log('roles-result', `🏷️ Roles en token: ${JSON.stringify(payload.roles || [])}`, 'info');
+                
+                // Verificar con backend
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/admin-principal-panel`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('roles-result', '✅ Datos del backend obtenidos', 'success');
+                    
+                    // Buscar el usuario en soporte técnico
+                    const soporteUsers = data.soporteTecnico || [];
+                    const currentUserNickname = payload.nickname || payload.sub;
+                    const userInSupport = soporteUsers.find(u => u.nickname === currentUserNickname);
+                    
+                    if (userInSupport) {
+                        log('roles-result', '🛠️ ¡Usuario ENCONTRADO en Soporte Técnico!', 'success');
+                        log('roles-result', `   ID: ${userInSupport.id}`, 'info');
+                        log('roles-result', `   Email: ${userInSupport.email}`, 'info');
+                        log('roles-result', `   Fecha asignación: ${userInSupport.fecha_asignacion}`, 'info');
+                    } else {
+                        log('roles-result', '❌ Usuario NO encontrado en Soporte Técnico', 'error');
+                        log('roles-result', `   Usuarios en soporte: ${soporteUsers.length}`, 'info');
+                        soporteUsers.forEach(u => {
+                            log('roles-result', `   - ${u.nickname}`, 'info');
+                        });
+                    }
+                    
+                } else {
+                    log('roles-result', `❌ Error backend: ${response.status}`, 'error');
+                }
+                
+            } catch (error) {
+                log('roles-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function gotoSupportDashboard() {
+            log('roles-result', '🛠️ Redirigiendo a dashboard de soporte...', 'info');
+            window.location.href = 'support-dashboard.html';
+        }
+    </script>
+</body>
+</html>

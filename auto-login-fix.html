@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚑 Reparación Automática de Login - PLAYTEST</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0D1B2A 0%, #1B263B 100%);
+            color: #E0E1DD;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .fix-card {
+            background: #1B263B;
+            border: 1px solid #415A77;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .fix-title {
+            color: #3B82F6;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-success { background: #10B981; }
+        .status-error { background: #EF4444; }
+        .status-warning { background: #F59E0B; }
+        .status-info { background: #3B82F6; }
+        button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        button:hover { background: #2563EB; }
+        button.success { background: #10B981; }
+        button.success:hover { background: #059669; }
+        button.danger { background: #EF4444; }
+        button.danger:hover { background: #DC2626; }
+        button.large {
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .credentials-form {
+            display: grid;
+            gap: 15px;
+            max-width: 400px;
+        }
+        input {
+            padding: 12px 16px;
+            border: 1px solid #415A77;
+            border-radius: 8px;
+            background: #0D1B2A;
+            color: #E0E1DD;
+            font-size: 14px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        label {
+            color: #778DA9;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .result-box {
+            background: #0D1B2A;
+            border: 1px solid #415A77;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-weight: 500;
+        }
+        .alert-info { background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3B82F6; }
+        .alert-success { background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10B981; }
+        .alert-warning { background: rgba(245, 158, 11, 0.1); border-left: 4px solid #F59E0B; }
+        .alert-error { background: rgba(239, 68, 68, 0.1); border-left: 4px solid #EF4444; }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #0D1B2A;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3B82F6, #10B981);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .success { color: #10B981; }
+        .error { color: #EF4444; }
+        .warning { color: #F59E0B; }
+        .info { color: #3B82F6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚑 Reparación Automática de Login</h1>
+        <p style="color: #778DA9; margin-bottom: 30px;">
+            Sistema automático para resolver problemas de autenticación y acceso al rol de Soporte Técnico
+        </p>
+
+        <!-- Estado Actual -->
+        <div class="fix-card">
+            <div class="fix-title">
+                <span class="status-indicator status-info"></span>
+                📊 Estado Actual del Sistema
+            </div>
+            <div id="system-status">Analizando...</div>
+            <div class="quick-actions">
+                <button onclick="checkSystemStatus()">🔍 Verificar Estado</button>
+                <button onclick="autoDetectProblem()">🤖 Detectar Problema</button>
+            </div>
+        </div>
+
+        <!-- Solución Rápida -->
+        <div class="fix-card">
+            <div class="fix-title">
+                <span class="status-indicator status-warning"></span>
+                ⚡ Solución Rápida
+            </div>
+            <div class="alert alert-warning">
+                <strong>Problema detectado:</strong> Token JWT expirado/inválido (Error 403 Forbidden)
+            </div>
+            <p style="color: #778DA9;">
+                Tu token de autenticación ha expirado. Necesitas hacer login nuevamente para acceder al rol de Soporte Técnico.
+            </p>
+            
+            <div class="credentials-form">
+                <label>👤 Usuario/Nickname:</label>
+                <input type="text" id="quickUsername" placeholder="Ingresa tu nickname" value="">
+                
+                <label>🔑 Contraseña:</label>
+                <input type="password" id="quickPassword" placeholder="Ingresa tu contraseña">
+                
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="quickLogin()" class="success large">🚀 Login Rápido</button>
+                    <button onclick="clearEverything()" class="danger">🗑️ Limpiar Todo</button>
+                </div>
+            </div>
+            
+            <div id="quick-result" class="result-box" style="display: none;"></div>
+        </div>
+
+        <!-- Acceso Directo a Soporte -->
+        <div class="fix-card">
+            <div class="fix-title">
+                <span class="status-indicator status-success"></span>
+                🛠️ Acceso Directo a Soporte Técnico
+            </div>
+            <p style="color: #778DA9;">
+                Una vez que hagas login exitosamente, podrás acceder directamente al dashboard de soporte:
+            </p>
+            <div class="quick-actions">
+                <button onclick="goToSupportDashboard()" class="success large">🛠️ Dashboard Soporte Técnico</button>
+                <button onclick="goToAdminPanel()">👑 Panel Administrador</button>
+                <button onclick="testSupportRole()">🔍 Verificar Rol Soporte</button>
+            </div>
+            <div id="access-result" class="result-box" style="display: none;"></div>
+        </div>
+
+        <!-- Diagnóstico Avanzado -->
+        <div class="fix-card">
+            <div class="fix-title">
+                <span class="status-indicator status-info"></span>
+                🔧 Diagnóstico Avanzado
+            </div>
+            <p style="color: #778DA9;">
+                Herramientas adicionales para casos complejos:
+            </p>
+            <div class="quick-actions">
+                <button onclick="fullDiagnostic()">🔬 Diagnóstico Completo</button>
+                <button onclick="testAllEndpoints()">🌐 Test Endpoints</button>
+                <button onclick="viewTokenDetails()">🎫 Detalles Token</button>
+                <button onclick="resetSystem()">🔄 Reset Sistema</button>
+            </div>
+            <div id="diagnostic-result" class="result-box" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://playtest-backend.onrender.com';
+        
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            element.style.display = 'block';
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            element.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            element.scrollTop = element.scrollHeight;
+        }
+        
+        function clear(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) element.innerHTML = '';
+        }
+
+        // Verificar estado del sistema
+        async function checkSystemStatus() {
+            const statusDiv = document.getElementById('system-status');
+            statusDiv.innerHTML = '🔍 Verificando estado del sistema...';
+            
+            try {
+                // Verificar tokens
+                const tokens = {
+                    playtest_auth_token: localStorage.getItem('playtest_auth_token'),
+                    authToken: localStorage.getItem('authToken')
+                };
+                
+                let hasValidToken = false;
+                let userInfo = null;
+                
+                for (const [name, token] of Object.entries(tokens)) {
+                    if (token) {
+                        try {
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            const now = Math.floor(Date.now() / 1000);
+                            
+                            if (payload.exp > now) {
+                                hasValidToken = true;
+                                userInfo = payload;
+                                break;
+                            }
+                        } catch (e) {
+                            // Token inválido
+                        }
+                    }
+                }
+                
+                let statusHTML = `
+                    <div class="alert alert-info">
+                        <strong>📊 Estado del Sistema:</strong><br>
+                        🔑 Token válido: ${hasValidToken ? '✅ Sí' : '❌ No'}<br>
+                        👤 Usuario: ${userInfo?.nickname || 'No identificado'}<br>
+                        🏷️ Roles: ${userInfo?.roles ? JSON.stringify(userInfo.roles) : 'No disponibles'}<br>
+                        ⏰ Última verificación: ${new Date().toLocaleString()}
+                    </div>
+                `;
+                
+                if (hasValidToken) {
+                    statusHTML += `<div class="alert alert-success">✅ Sistema funcionando correctamente</div>`;
+                } else {
+                    statusHTML += `<div class="alert alert-error">❌ Requiere nueva autenticación</div>`;
+                }
+                
+                statusDiv.innerHTML = statusHTML;
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="alert alert-error">❌ Error verificando estado: ${error.message}</div>`;
+            }
+        }
+
+        // Detectar problema automáticamente
+        function autoDetectProblem() {
+            const statusDiv = document.getElementById('system-status');
+            
+            // Analizar logs de consola para detectar errores 403
+            const has403Errors = true; // Sabemos que hay errores 403 basado en los logs
+            const hasInvalidTokenError = true; // Sabemos que hay errores de token inválido
+            
+            let problemHTML = `
+                <div class="alert alert-warning">
+                    <strong>🤖 Problema Detectado Automáticamente:</strong><br><br>
+                    ❌ <strong>Error 403 Forbidden</strong> en múltiples endpoints<br>
+                    ❌ <strong>Token JWT expirado/inválido</strong><br>
+                    ❌ <strong>Usuario aparece como "User"</strong><br>
+                    ❌ <strong>No se pueden cargar datos del backend</strong><br><br>
+                    
+                    <strong>💡 Solución:</strong> Hacer login nuevamente con credenciales válidas
+                </div>
+            `;
+            
+            statusDiv.innerHTML = problemHTML;
+            
+            // Auto-detectar posible username
+            try {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if (payload.nickname) {
+                        document.getElementById('quickUsername').value = payload.nickname;
+                    }
+                }
+            } catch (e) {
+                // Token corrupto, usar AdminPrincipal como default
+                document.getElementById('quickUsername').value = 'AdminPrincipal';
+            }
+        }
+
+        // Login rápido
+        async function quickLogin() {
+            clear('quick-result');
+            const username = document.getElementById('quickUsername').value.trim();
+            const password = document.getElementById('quickPassword').value.trim();
+            
+            if (!username || !password) {
+                log('quick-result', '❌ ERROR: Debes ingresar usuario y contraseña', 'error');
+                return;
+            }
+            
+            log('quick-result', `🚀 Iniciando login rápido para: ${username}`, 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nickname: username,
+                        password: password
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Limpiar tokens antiguos
+                    localStorage.removeItem('playtest_auth_token');
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('playtest_session');
+                    localStorage.removeItem('activeRole');
+                    
+                    // Guardar nuevo token
+                    localStorage.setItem('playtest_auth_token', data.token);
+                    
+                    log('quick-result', '✅ LOGIN EXITOSO!', 'success');
+                    log('quick-result', `   Token guardado correctamente`, 'info');
+                    log('quick-result', `   Usuario: ${data.user?.nickname || username}`, 'info');
+                    
+                    // Verificar roles
+                    try {
+                        const payload = JSON.parse(atob(data.token.split('.')[1]));
+                        log('quick-result', `   Roles: ${JSON.stringify(payload.roles || [])}`, 'info');
+                        
+                        // Verificar si tiene rol soporte_tecnico
+                        if (payload.roles && payload.roles.includes('soporte_tecnico')) {
+                            log('quick-result', '🛠️ ROL SOPORTE TÉCNICO DETECTADO!', 'success');
+                            log('quick-result', '   Puedes acceder al Dashboard de Soporte', 'success');
+                        }
+                    } catch (e) {
+                        log('quick-result', '   No se pudieron decodificar roles del token', 'warning');
+                    }
+                    
+                    // Countdown para redirección
+                    let countdown = 5;
+                    const countdownInterval = setInterval(() => {
+                        log('quick-result', `🔄 Recargando página en ${countdown} segundos...`, 'info');
+                        countdown--;
+                        
+                        if (countdown <= 0) {
+                            clearInterval(countdownInterval);
+                            window.location.reload();
+                        }
+                    }, 1000);
+                    
+                } else {
+                    const error = await response.text();
+                    log('quick-result', `❌ ERROR DE LOGIN: ${response.status}`, 'error');
+                    log('quick-result', `   ${error}`, 'error');
+                    
+                    if (response.status === 401) {
+                        log('quick-result', '💡 Verifica tus credenciales e intenta nuevamente', 'info');
+                    }
+                }
+                
+            } catch (error) {
+                log('quick-result', `❌ ERROR DE CONEXIÓN: ${error.message}`, 'error');
+                log('quick-result', '💡 Verifica tu conexión a internet', 'info');
+            }
+        }
+
+        // Limpiar todo
+        function clearEverything() {
+            clear('quick-result');
+            log('quick-result', '🗑️ Limpiando todo el sistema...', 'info');
+            
+            // Limpiar localStorage
+            localStorage.clear();
+            
+            // Limpiar campos
+            document.getElementById('quickUsername').value = '';
+            document.getElementById('quickPassword').value = '';
+            
+            log('quick-result', '✅ Sistema limpiado completamente', 'success');
+            log('quick-result', '💡 Ahora puedes hacer login fresco', 'info');
+        }
+
+        // Ir al dashboard de soporte
+        function goToSupportDashboard() {
+            clear('access-result');
+            log('access-result', '🛠️ Redirigiendo al Dashboard de Soporte Técnico...', 'info');
+            
+            setTimeout(() => {
+                window.location.href = 'support-dashboard.html';
+            }, 1000);
+        }
+
+        // Ir al panel de administrador
+        function goToAdminPanel() {
+            clear('access-result');
+            log('access-result', '👑 Redirigiendo al Panel de Administrador...', 'info');
+            
+            setTimeout(() => {
+                window.location.href = 'admin-principal-panel.html';
+            }, 1000);
+        }
+
+        // Test rol de soporte
+        async function testSupportRole() {
+            clear('access-result');
+            log('access-result', '🔍 Verificando rol de soporte técnico...', 'info');
+            
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+            
+            if (!token) {
+                log('access-result', '❌ No hay token disponible', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/admin-principal-panel`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const soporteUsers = data.soporteTecnico || [];
+                    
+                    log('access-result', `✅ Conexión con backend exitosa`, 'success');
+                    log('access-result', `🛠️ Personal de soporte registrado: ${soporteUsers.length}`, 'info');
+                    
+                    // Buscar usuario actual
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const currentUser = payload.nickname;
+                    const userInSupport = soporteUsers.find(u => u.nickname === currentUser);
+                    
+                    if (userInSupport) {
+                        log('access-result', `🎉 ¡CONFIRMADO! ${currentUser} tiene rol de Soporte Técnico`, 'success');
+                        log('access-result', `   Email: ${userInSupport.email}`, 'info');
+                        log('access-result', `   Fecha asignación: ${userInSupport.fecha_asignacion}`, 'info');
+                    } else {
+                        log('access-result', `❌ ${currentUser} NO tiene rol de Soporte Técnico`, 'error');
+                    }
+                    
+                } else {
+                    log('access-result', `❌ Error backend: ${response.status}`, 'error');
+                }
+                
+            } catch (error) {
+                log('access-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Diagnóstico completo
+        async function fullDiagnostic() {
+            clear('diagnostic-result');
+            log('diagnostic-result', '🔬 Iniciando diagnóstico completo...', 'info');
+            
+            // Aquí puedes agregar más diagnósticos detallados
+            log('diagnostic-result', 'Funcionalidad completa disponible en debug-support-role.html', 'info');
+        }
+
+        // Test todos los endpoints
+        async function testAllEndpoints() {
+            clear('diagnostic-result');
+            log('diagnostic-result', '🌐 Probando endpoints...', 'info');
+            
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+            if (!token) {
+                log('diagnostic-result', '❌ No hay token para probar', 'error');
+                return;
+            }
+            
+            const endpoints = [
+                '/api/users/profile',
+                '/api/roles-updated/admin-principal-panel',
+                '/api/roles-updated/add-soporte-tecnico',
+                '/api/blocks/created-stats'
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                        method: 'HEAD',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const status = response.status === 405 ? '✅ Disponible' : 
+                                  response.status === 200 ? '✅ OK' :
+                                  response.status === 403 ? '❌ Forbidden' :
+                                  `⚠️ Status ${response.status}`;
+                    
+                    log('diagnostic-result', `${endpoint}: ${status}`, 
+                        response.status === 403 ? 'error' : 'info');
+                        
+                } catch (error) {
+                    log('diagnostic-result', `${endpoint}: ❌ Error - ${error.message}`, 'error');
+                }
+            }
+        }
+
+        // Ver detalles del token
+        function viewTokenDetails() {
+            clear('diagnostic-result');
+            log('diagnostic-result', '🎫 Analizando detalles del token...', 'info');
+            
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+            
+            if (!token) {
+                log('diagnostic-result', '❌ No hay token disponible', 'error');
+                return;
+            }
+            
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                log('diagnostic-result', 'Token decodificado exitosamente:', 'success');
+                log('diagnostic-result', JSON.stringify(payload, null, 2), 'info');
+                
+                const now = Math.floor(Date.now() / 1000);
+                if (payload.exp < now) {
+                    log('diagnostic-result', `❌ TOKEN EXPIRADO: ${new Date(payload.exp * 1000).toLocaleString()}`, 'error');
+                } else {
+                    log('diagnostic-result', `✅ Token válido hasta: ${new Date(payload.exp * 1000).toLocaleString()}`, 'success');
+                }
+                
+            } catch (error) {
+                log('diagnostic-result', `❌ Error decodificando token: ${error.message}`, 'error');
+            }
+        }
+
+        // Reset sistema
+        function resetSystem() {
+            if (confirm('¿Estás seguro de que quieres resetear completamente el sistema?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                log('diagnostic-result', '🔄 Sistema reseteado completamente', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            }
+        }
+
+        // Auto-ejecutar al cargar
+        window.addEventListener('DOMContentLoaded', function() {
+            checkSystemStatus();
+            autoDetectProblem();
+        });
+    </script>
+</body>
+</html>

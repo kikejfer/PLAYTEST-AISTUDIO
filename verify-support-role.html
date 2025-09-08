@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Verificar Rol Soporte Técnico - PLAYTEST</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0D1B2A;
+            color: #E0E1DD;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .card {
+            background: #1B263B;
+            border: 1px solid #415A77;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .title {
+            color: #3B82F6;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+        button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 500;
+        }
+        button:hover { background: #2563EB; }
+        button.success { background: #10B981; }
+        button.success:hover { background: #059669; }
+        button.danger { background: #EF4444; }
+        button.danger:hover { background: #DC2626; }
+        .result {
+            background: #0D1B2A;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            border: 1px solid #415A77;
+        }
+        .success { color: #10B981; }
+        .error { color: #EF4444; }
+        .warning { color: #F59E0B; }
+        .info { color: #3B82F6; }
+        input {
+            padding: 8px 12px;
+            border: 1px solid #415A77;
+            border-radius: 4px;
+            background: #0D1B2A;
+            color: #E0E1DD;
+            margin: 5px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Verificación de Rol Soporte Técnico</h1>
+
+    <div class="card">
+        <div class="title">1. 🎫 Análisis del Token Actual</div>
+        <p>Analiza qué roles tiene el usuario en su token JWT actual:</p>
+        <button onclick="analyzeCurrentToken()">🔍 Analizar Token</button>
+        <div id="token-analysis" class="result"></div>
+    </div>
+
+    <div class="card">
+        <div class="title">2. 🗄️ Verificación en Base de Datos</div>
+        <p>Consulta directamente la base de datos para ver qué roles tiene asignados el usuario:</p>
+        <input type="text" id="username" placeholder="Nickname del usuario" value="">
+        <br>
+        <button onclick="checkDatabaseRoles()">🔍 Verificar BD</button>
+        <button onclick="checkAllSupportUsers()" class="success">👥 Ver Todo el Soporte</button>
+        <div id="db-check" class="result"></div>
+    </div>
+
+    <div class="card">
+        <div class="title">3. ✅ Asignar Rol de Soporte</div>
+        <p>Si el usuario no tiene el rol, asignárselo:</p>
+        <input type="text" id="assign-username" placeholder="Nickname del usuario" value="">
+        <br>
+        <button onclick="assignSupportRole()" class="success">➕ Asignar Rol</button>
+        <button onclick="removeSupportRole()" class="danger">➖ Remover Rol</button>
+        <div id="role-assignment" class="result"></div>
+    </div>
+
+    <div class="card">
+        <div class="title">4. 🔄 Regenerar Token con Roles</div>
+        <p>Hacer login nuevamente para obtener un token con los roles actualizados:</p>
+        <input type="text" id="login-username" placeholder="Nickname" value="">
+        <input type="password" id="login-password" placeholder="Contraseña">
+        <br>
+        <button onclick="loginWithNewToken()" class="success">🔐 Login y Regenerar Token</button>
+        <div id="login-result" class="result"></div>
+    </div>
+
+    <div class="card">
+        <div class="title">5. 🎯 Test Final</div>
+        <p>Verificar que todo funciona correctamente:</p>
+        <button onclick="testFinalAccess()" class="success">🛠️ Test Dashboard Soporte</button>
+        <button onclick="goToSupportDashboard()">🚀 Ir a Dashboard</button>
+        <div id="final-test" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://playtest-backend.onrender.com';
+        
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            element.innerHTML += `<span class="${type}">[${timestamp}] ${message}</span>\n`;
+        }
+        
+        function clear(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        function analyzeCurrentToken() {
+            clear('token-analysis');
+            log('token-analysis', '🎫 Analizando token actual...', 'info');
+            
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+            
+            if (!token) {
+                log('token-analysis', '❌ No hay token en localStorage', 'error');
+                return;
+            }
+            
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                log('token-analysis', '✅ Token decodificado:', 'success');
+                log('token-analysis', `   Usuario: ${payload.nickname || payload.sub}`, 'info');
+                log('token-analysis', `   Roles actuales: ${JSON.stringify(payload.roles || [])}`, 'info');
+                log('token-analysis', `   Issued: ${new Date(payload.iat * 1000).toLocaleString()}`, 'info');
+                log('token-analysis', `   Expires: ${new Date(payload.exp * 1000).toLocaleString()}`, 'info');
+                
+                const now = Math.floor(Date.now() / 1000);
+                if (payload.exp < now) {
+                    log('token-analysis', '⚠️ TOKEN EXPIRADO', 'warning');
+                } else {
+                    log('token-analysis', '✅ Token válido', 'success');
+                }
+                
+                // Verificar si tiene rol soporte_tecnico
+                if (payload.roles && payload.roles.includes('soporte_tecnico')) {
+                    log('token-analysis', '🛠️ ROL SOPORTE_TECNICO: ✅ PRESENTE', 'success');
+                } else {
+                    log('token-analysis', '❌ ROL SOPORTE_TECNICO: NO PRESENTE', 'error');
+                    log('token-analysis', '💡 Necesita hacer login nuevamente', 'warning');
+                }
+                
+                // Auto-llenar campos con el usuario del token
+                document.getElementById('username').value = payload.nickname || payload.sub || '';
+                document.getElementById('assign-username').value = payload.nickname || payload.sub || '';
+                document.getElementById('login-username').value = payload.nickname || payload.sub || '';
+                
+            } catch (error) {
+                log('token-analysis', `❌ Error decodificando token: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkDatabaseRoles() {
+            clear('db-check');
+            const username = document.getElementById('username').value.trim();
+            
+            if (!username) {
+                log('db-check', '❌ Ingresa un nickname', 'error');
+                return;
+            }
+            
+            log('db-check', `🗄️ Verificando roles en BD para: ${username}`, 'info');
+            
+            // Primero intentar con token actual (aunque esté expirado, a veces funciona para debug)
+            let token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/debug-users`, {
+                    headers: token ? {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    } : {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('db-check', '✅ Datos obtenidos de la BD', 'success');
+                    
+                    // Buscar usuario específico
+                    const userWithRoles = data.users_with_roles.find(u => u.nickname === username);
+                    if (userWithRoles) {
+                        log('db-check', `👤 Usuario ${username} encontrado:`, 'success');
+                        log('db-check', `   ID: ${userWithRoles.id}`, 'info');
+                        log('db-check', `   Email: ${userWithRoles.email}`, 'info');
+                        log('db-check', `   Rol: ${userWithRoles.role_name || 'Sin rol específico'}`, 'info');
+                        
+                        if (userWithRoles.role_name === 'soporte_tecnico') {
+                            log('db-check', '🛠️ ✅ TIENE ROL SOPORTE_TECNICO EN BD', 'success');
+                        } else {
+                            log('db-check', '❌ NO tiene rol soporte_tecnico en BD', 'error');
+                        }
+                    } else {
+                        log('db-check', `❌ Usuario ${username} no encontrado`, 'error');
+                    }
+                    
+                } else {
+                    log('db-check', `❌ Error consultando BD: ${response.status}`, 'error');
+                    if (response.status === 403) {
+                        log('db-check', '💡 Token expirado, usa "Login y Regenerar Token"', 'warning');
+                    }
+                }
+                
+            } catch (error) {
+                log('db-check', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkAllSupportUsers() {
+            clear('db-check');
+            log('db-check', '👥 Obteniendo todo el personal de soporte técnico...', 'info');
+            
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/admin-principal-panel`, {
+                    headers: token ? {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    } : {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const supportUsers = data.soporteTecnico || [];
+                    
+                    log('db-check', `✅ Personal de soporte técnico: ${supportUsers.length}`, 'success');
+                    
+                    if (supportUsers.length > 0) {
+                        supportUsers.forEach((user, index) => {
+                            log('db-check', `   ${index + 1}. ${user.nickname} (ID: ${user.id})`, 'info');
+                            log('db-check', `      Email: ${user.email}`, 'info');
+                            log('db-check', `      Fecha: ${user.fecha_asignacion}`, 'info');
+                        });
+                    } else {
+                        log('db-check', '❌ No hay usuarios con rol de soporte técnico', 'warning');
+                    }
+                    
+                } else {
+                    log('db-check', `❌ Error: ${response.status}`, 'error');
+                }
+                
+            } catch (error) {
+                log('db-check', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function assignSupportRole() {
+            clear('role-assignment');
+            const username = document.getElementById('assign-username').value.trim();
+            
+            if (!username) {
+                log('role-assignment', '❌ Ingresa un nickname', 'error');
+                return;
+            }
+            
+            log('role-assignment', `➕ Asignando rol soporte_tecnico a: ${username}`, 'info');
+            
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+            
+            if (!token) {
+                log('role-assignment', '❌ No hay token para autenticación', 'error');
+                log('role-assignment', '💡 Usa "Login y Regenerar Token" primero', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/add-soporte-tecnico`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nickname: username
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('role-assignment', '✅ ROL ASIGNADO EXITOSAMENTE!', 'success');
+                    log('role-assignment', `   Usuario: ${data.user.nickname}`, 'info');
+                    log('role-assignment', `   Roles: ${JSON.stringify(data.user.roles)}`, 'info');
+                    log('role-assignment', '💡 Ahora haz login para obtener token actualizado', 'warning');
+                } else {
+                    const error = await response.text();
+                    log('role-assignment', `❌ Error: ${response.status}`, 'error');
+                    log('role-assignment', `   ${error}`, 'error');
+                }
+                
+            } catch (error) {
+                log('role-assignment', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function removeSupportRole() {
+            clear('role-assignment');
+            const username = document.getElementById('assign-username').value.trim();
+            
+            if (!username) {
+                log('role-assignment', '❌ Ingresa un nickname', 'error');
+                return;
+            }
+            
+            if (!confirm(`¿Estás seguro de remover el rol de soporte técnico de ${username}?`)) {
+                return;
+            }
+            
+            log('role-assignment', `➖ Removiendo rol soporte_tecnico de: ${username}`, 'info');
+            
+            const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/remove-soporte-tecnico`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nickname: username
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('role-assignment', '✅ ROL REMOVIDO EXITOSAMENTE', 'success');
+                    log('role-assignment', `   Usuario: ${data.user.nickname}`, 'info');
+                } else {
+                    const error = await response.text();
+                    log('role-assignment', `❌ Error: ${response.status}`, 'error');
+                    log('role-assignment', `   ${error}`, 'error');
+                }
+                
+            } catch (error) {
+                log('role-assignment', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function loginWithNewToken() {
+            clear('login-result');
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            
+            if (!username || !password) {
+                log('login-result', '❌ Ingresa usuario y contraseña', 'error');
+                return;
+            }
+            
+            log('login-result', `🔐 Haciendo login para: ${username}`, 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nickname: username,
+                        password: password
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Limpiar tokens antiguos
+                    localStorage.clear();
+                    
+                    // Guardar nuevo token
+                    localStorage.setItem('playtest_auth_token', data.token);
+                    
+                    log('login-result', '✅ LOGIN EXITOSO!', 'success');
+                    
+                    // Decodificar y verificar nuevo token
+                    try {
+                        const payload = JSON.parse(atob(data.token.split('.')[1]));
+                        log('login-result', '🎫 Nuevo token generado:', 'success');
+                        log('login-result', `   Usuario: ${payload.nickname}`, 'info');
+                        log('login-result', `   Roles: ${JSON.stringify(payload.roles)}`, 'info');
+                        log('login-result', `   Expira: ${new Date(payload.exp * 1000).toLocaleString()}`, 'info');
+                        
+                        if (payload.roles && payload.roles.includes('soporte_tecnico')) {
+                            log('login-result', '🎉 ¡ROL SOPORTE_TECNICO PRESENTE EN NUEVO TOKEN!', 'success');
+                            log('login-result', '✅ Ya puedes acceder al Dashboard de Soporte', 'success');
+                        } else {
+                            log('login-result', '⚠️ Rol soporte_tecnico no presente en token', 'warning');
+                            log('login-result', '💡 Verifica que el rol esté asignado en BD', 'info');
+                        }
+                        
+                    } catch (e) {
+                        log('login-result', '⚠️ No se pudo decodificar el nuevo token', 'warning');
+                    }
+                    
+                } else {
+                    const error = await response.text();
+                    log('login-result', `❌ Error de login: ${response.status}`, 'error');
+                    log('login-result', `   ${error}`, 'error');
+                }
+                
+            } catch (error) {
+                log('login-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testFinalAccess() {
+            clear('final-test');
+            log('final-test', '🎯 Probando acceso al sistema como soporte técnico...', 'info');
+            
+            const token = localStorage.getItem('playtest_auth_token');
+            
+            if (!token) {
+                log('final-test', '❌ No hay token, haz login primero', 'error');
+                return;
+            }
+            
+            // Test 1: Verificar roles en token
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                log('final-test', '1. ✅ Token decodificado', 'success');
+                log('final-test', `   Roles: ${JSON.stringify(payload.roles)}`, 'info');
+                
+                if (payload.roles && payload.roles.includes('soporte_tecnico')) {
+                    log('final-test', '2. ✅ Rol soporte_tecnico presente', 'success');
+                } else {
+                    log('final-test', '2. ❌ Rol soporte_tecnico no presente', 'error');
+                    return;
+                }
+                
+            } catch (e) {
+                log('final-test', '1. ❌ Error decodificando token', 'error');
+                return;
+            }
+            
+            // Test 2: Verificar acceso a admin panel
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/roles-updated/admin-principal-panel`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    log('final-test', '3. ✅ Acceso a admin panel OK', 'success');
+                    
+                    const data = await response.json();
+                    const supportUsers = data.soporteTecnico || [];
+                    log('final-test', `   Personal soporte: ${supportUsers.length}`, 'info');
+                    
+                } else {
+                    log('final-test', `3. ❌ Error admin panel: ${response.status}`, 'error');
+                }
+                
+            } catch (error) {
+                log('final-test', `3. ❌ Error: ${error.message}`, 'error');
+            }
+            
+            log('final-test', '🎉 VERIFICACIÓN COMPLETA', 'success');
+        }
+
+        function goToSupportDashboard() {
+            window.location.href = 'support-dashboard.html';
+        }
+
+        // Auto-ejecutar al cargar
+        window.addEventListener('DOMContentLoaded', function() {
+            analyzeCurrentToken();
+        });
+    </script>
+</body>
+</html>

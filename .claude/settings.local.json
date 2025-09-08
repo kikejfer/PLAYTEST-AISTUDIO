@@ -143,7 +143,10 @@
       "Read(/C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\playtest-backend/**)",
       "Read(/C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\playtest-backend/**)",
       "Read(/C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\playtest-backend/**)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(start debug-support-role.html)",
+      "Bash(start fix-user-login.html)",
+      "Bash(start auto-login-fix.html)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
