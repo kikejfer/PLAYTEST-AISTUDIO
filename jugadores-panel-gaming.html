@@ -1593,6 +1593,31 @@
                 }, 'Usuario no encontrado. Regresa a la página de inicio.');
             }
 
+            // Enviar reto
+            const handleSendChallenge = async (challengedUser, gameConfig) => {
+                console.log('📨 CHALLENGE DEBUG - handleSendChallenge received:', {
+                    challengedUser: challengedUser,
+                    gameConfig: gameConfig
+                });
+                
+                try {
+                    if (window.apiDataService) {
+                        await window.apiDataService.createChallenge(
+                            currentUser,
+                            challengedUser,
+                            gameConfig
+                        );
+                        
+                        // Refresh data to show new challenge
+                        await loadPlayerData();
+                        console.log('✅ Challenge sent successfully to:', challengedUser.nickname);
+                    }
+                } catch (error) {
+                    console.error('❌ Error sending challenge:', error);
+                    setError('Error al enviar el reto. Inténtalo de nuevo.');
+                }
+            };
+
             return React.createElement('div', { 
                 className: "container mx-auto px-4 py-6 space-y-8 animate-fade-in" 
             }, [
@@ -1602,7 +1627,7 @@
                     key: 'game-setup',
                     blocks: blocks,
                     onCreateGame: handleCreateGame,
-                    onSendChallenge: (user, config) => console.log('Challenge sent:', user, config)
+                    onSendChallenge: handleSendChallenge
                 })
             ]);
         };
