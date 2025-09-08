@@ -178,7 +178,7 @@
         }
 
         if (!currentUser) {
-           window.location.href = 'index.html';
+           window.location.href = 'jugadores-panel-gaming.html';
            return null;
         }
 
@@ -348,7 +348,7 @@
                       </div>
                        <div className="flex justify-center gap-4">
                           <button onClick={() => setGameState('review')} className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-bold py-3 px-6 rounded-lg transition-colors">{t('game_review_answers')}</button>
-                          <button onClick={() => window.location.href = `active-game.html?gameId=${game.id}`} className="flex items-center gap-2 bg-brand-cta hover:bg-brand-cta-hover text-white font-bold py-3 px-6 rounded-lg transition-colors"><ArrowUturnLeftIcon className="h-5 w-5" />{t('game_button_dashboard')}</button>
+                          <button onClick={() => window.location.href = 'jugadores-panel-gaming.html'} className="flex items-center gap-2 bg-brand-cta hover:bg-brand-cta-hover text-white font-bold py-3 px-6 rounded-lg transition-colors"><ArrowUturnLeftIcon className="h-5 w-5" />{t('game_button_dashboard')}</button>
                       </div>
                   </div>
                 );
@@ -520,8 +520,7 @@
 
           return (
               <div className="min-h-screen flex flex-col">
-                  <Header />
-                  <main className="flex-grow p-4 sm:p-6 lg:p-8">{renderContent()}</main>
+                                    <main className="flex-grow p-4 sm:p-6 lg:p-8">{renderContent()}</main>
                   <footer className="text-center p-4 text-xs text-brand-accent"><p>{t('footer_text')}</p></footer>
               </div>
           );

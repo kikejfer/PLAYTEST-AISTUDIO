@@ -1431,6 +1431,8 @@
 
             useEffect(() => {
                 loadPlayerData();
+                // Make refresh function available globally for game configuration dashboard
+                window.refreshPlayerDashboardData = loadPlayerData;
             }, [loadPlayerData]);
 
             // Navegación a juegos
@@ -1787,7 +1789,15 @@
                 try {
                     await window.apiDataService.loadBlock(blockId);
                     setMessage('Bloque cargado exitosamente');
-                    await loadData(); // Refresh data
+                    await loadData(); // Refresh blocks data
+                    // Also refresh games data since available questions may have changed
+                    if (window.refreshActiveGamesData) {
+                        await window.refreshActiveGamesData();
+                    }
+                    // Refresh game configuration dashboard as well
+                    if (window.refreshPlayerDashboardData) {
+                        await window.refreshPlayerDashboardData();
+                    }
                 } catch (error) {
                     console.error('Error loading block:', error);
                     setMessage('Error al cargar el bloque');
@@ -1802,7 +1812,15 @@
                 try {
                     await window.apiDataService.unloadBlock(blockId);
                     setMessage('Bloque descargado exitosamente');
-                    await loadData(); // Refresh data
+                    await loadData(); // Refresh blocks data
+                    // Also refresh games data since available questions may have changed
+                    if (window.refreshActiveGamesData) {
+                        await window.refreshActiveGamesData();
+                    }
+                    // Refresh game configuration dashboard as well
+                    if (window.refreshPlayerDashboardData) {
+                        await window.refreshPlayerDashboardData();
+                    }
                 } catch (error) {
                     console.error('Error unloading block:', error);
                     setMessage('Error al descargar el bloque');
@@ -2073,42 +2091,45 @@
             const [isLoading, setIsLoading] = useState(true);
             const [currentUser, setCurrentUser] = useState(null);
 
-            useEffect(() => {
-                const loadActiveGamesData = async () => {
-                    try {
-                        setIsLoading(true);
-                        const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
-                        
-                        if (!window.apiDataService) {
-                            setTimeout(loadActiveGamesData, 1000);
-                            return;
-                        }
-                        
-                        const userId = session.id || session.userId;
-                        if (!userId) {
-                            return;
-                        }
-
-                        setCurrentUser(session);
-                        
-                        const [gamesData, configurations, challengesData, blocksData] = await Promise.all([
-                            window.apiDataService.fetchGamesForUser(userId),
-                            window.apiDataService.fetchGameConfigurations(userId),
-                            window.apiDataService.fetchChallengesForUser(userId),
-                            window.apiDataService.fetchLoadedBlocks()
-                        ]);
-                        
-                        setGames(gamesData || []);
-                        setGameConfigurations(configurations || []);
-                        setChallenges(challengesData || []);
-                        setBlocks(blocksData || []);
-                    } catch (error) {
-                        console.error('Error loading active games data:', error);
-                    } finally {
-                        setIsLoading(false);
+            const loadActiveGamesData = async () => {
+                try {
+                    setIsLoading(true);
+                    const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+                    
+                    if (!window.apiDataService) {
+                        setTimeout(loadActiveGamesData, 1000);
+                        return;
                     }
-                };
+                    
+                    const userId = session.id || session.userId;
+                    if (!userId) {
+                        return;
+                    }
+
+                    setCurrentUser(session);
+                    
+                    const [gamesData, configurations, challengesData, blocksData] = await Promise.all([
+                        window.apiDataService.fetchGamesForUser(userId),
+                        window.apiDataService.fetchGameConfigurations(userId),
+                        window.apiDataService.fetchChallengesForUser(userId),
+                        window.apiDataService.fetchLoadedBlocks()
+                    ]);
+                    
+                    setGames(gamesData || []);
+                    setGameConfigurations(configurations || []);
+                    setChallenges(challengesData || []);
+                    setBlocks(blocksData || []);
+                } catch (error) {
+                    console.error('Error loading active games data:', error);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            useEffect(() => {
                 loadActiveGamesData();
+                // Make refresh function available globally
+                window.refreshActiveGamesData = loadActiveGamesData;
             }, []);
 
             const onNavigateToGame = (game) => {
