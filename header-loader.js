@@ -1519,22 +1519,27 @@ async function loadRoleOptions() {
         // Decodificar token para obtener roles actuales
         const payload = JSON.parse(atob(token.split('.')[1]));
         const currentRoles = payload.roles || [];
+        
+        // CORRECCIÓN 2: Verificar si el usuario es administrador principal
+        const isAdminPrincipal = currentRoles.includes('administrador_principal');
+        console.log('🔍 User role check:', { currentRoles, isAdminPrincipal });
 
         // Definir todos los roles disponibles
         const availableRoles = [
             { id: 'jugador', name: '🎮 Jugador', description: 'Participa en partidas y duelos', editable: true },
             { id: 'creador', name: '🎨 Creador de Contenido', description: 'Crea bloques y monetiza contenido', editable: true },
             { id: 'profesor', name: '👨‍🏫 Profesor', description: 'Gestiona estudiantes y clases', editable: true },
-            { id: 'soporte_tecnico', name: '🔧 Soporte Técnico', description: 'Gestión de incidencias técnicas (solo visible, no modificable)', editable: false },
-            { id: 'administrador_secundario', name: '⚙️ Administrador Secundario', description: 'Gestión administrativa limitada (solo visible, no modificable)', editable: false },
-            { id: 'administrador_principal', name: '🔧 Administrador Principal', description: 'Gestión administrativa completa (solo visible, no modificable)', editable: false }
+            { id: 'soporte_tecnico', name: '🔧 Soporte Técnico', description: 'Gestión de incidencias técnicas', editable: isAdminPrincipal },
+            { id: 'administrador_secundario', name: '⚙️ Administrador Secundario', description: 'Gestión administrativa limitada', editable: isAdminPrincipal },
+            { id: 'administrador_principal', name: '👑 Administrador Principal', description: 'Gestión administrativa completa - Rol máximo del sistema', editable: isAdminPrincipal }
         ];
 
         // Crear checkboxes para cada rol
         container.innerHTML = availableRoles.map(role => {
             const hasRole = currentRoles.includes(role.id);
             const isEditable = role.editable;
-            const isDisabled = !isEditable && hasRole; // Solo deshabilitar roles admin que el usuario ya tiene
+            const isAdminRole = role.id.includes('administrador') || role.id.includes('soporte_tecnico');
+            const isDisabled = !isEditable;
             
             return `
                 <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid ${isDisabled ? '#6B7280' : '#415A77'}; border-radius: 0.5rem; margin-bottom: 0.75rem; transition: background 0.2s; opacity: ${isDisabled ? '0.7' : '1'};" ${!isDisabled ? `onmouseover="this.style.background='rgba(65, 90, 119, 0.1)'" onmouseout="this.style.background='transparent'"` : ''}>
@@ -1542,7 +1547,7 @@ async function loadRoleOptions() {
                     <div style="flex: 1;">
                         <label for="role-${role.id}" style="color: ${isDisabled ? '#9CA3AF' : '#E0E1DD'}; font-weight: 500; cursor: ${isDisabled ? 'not-allowed' : 'pointer'}; display: block; margin-bottom: 0.25rem;">${role.name}</label>
                         <p style="color: ${isDisabled ? '#6B7280' : '#778DA9'}; margin: 0; font-size: 0.875rem;">${role.description}</p>
-                        ${isDisabled ? '<p style="color: #F59E0B; margin: 0.25rem 0 0 0; font-size: 0.75rem;">⚠️ Solo modificable por administrador principal</p>' : ''}
+                        ${isDisabled && isAdminRole ? `<p style="color: #F59E0B; margin: 0.25rem 0 0 0; font-size: 0.75rem;">🔒 Solo el Administrador Principal puede modificar roles administrativos</p>` : ''}
                     </div>
                 </div>
             `;
@@ -1572,11 +1577,25 @@ async function saveRoleModifications() {
             .filter(cb => cb.checked) // Incluye tanto editables como deshabilitados que estén marcados
             .map(cb => cb.id.replace('role-', ''));
         
-        console.log('🔍 Roles being sent to backend:', selectedRoles);
+        // CORRECCIÓN 3: Logging mejorado y validación de seguridad
+        console.log('🔍 ROLE MODIFICATION DEBUG:', {
+            selectedRoles: selectedRoles,
+            selectedCount: selectedRoles.length,
+            checkboxesFound: checkboxes.length,
+            currentToken: token ? 'EXISTS' : 'MISSING'
+        });
 
         if (selectedRoles.length === 0) {
-            alert('Debes seleccionar al menos un rol');
+            alert('⚠️ Debes seleccionar al menos un rol para continuar');
             return;
+        }
+        
+        // Validación de seguridad: verificar roles administrativos
+        const adminRoles = selectedRoles.filter(role => 
+            role.includes('administrador') || role.includes('admin')
+        );
+        if (adminRoles.length > 0) {
+            console.log('🔒 Admin roles detected:', adminRoles);
         }
 
         // Enviar al backend
@@ -1613,12 +1632,35 @@ async function saveRoleModifications() {
             // Cerrar modal primero
             closeRoleModificationModal();
             
-            // Limpiar datos cacheados para forzar actualización
+            // CORRECCIÓN 1: Refrescar token JWT con nuevos roles
             try {
-                // Limpiar datos de roles cacheados pero mantener token
-                const currentToken = localStorage.getItem('playtest_auth_token');
+                console.log('🔄 Refreshing JWT token with updated roles...');
                 
-                // Eliminar datos cacheados de usuario para forzar recarga
+                // Obtener nuevo token del backend
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                    
+                const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh-token`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (refreshResponse.ok) {
+                    const refreshData = await refreshResponse.json();
+                    if (refreshData.token) {
+                        // Actualizar token con nuevos roles
+                        localStorage.setItem('playtest_auth_token', refreshData.token);
+                        console.log('✅ JWT token refreshed with updated roles');
+                    }
+                } else {
+                    console.warn('⚠️ Token refresh failed, using existing token');
+                }
+                
+                // Limpiar datos cacheados para forzar actualización
                 localStorage.removeItem('activeRole');
                 
                 console.log('✅ Cleared cached role data');
@@ -1652,8 +1694,19 @@ async function saveRoleModifications() {
         }
 
     } catch (error) {
-        console.error('Error guardando roles:', error);
-        alert('Error al guardar los roles. Inténtalo de nuevo.');
+        // CORRECCIÓN 3: Mejor manejo de errores con mensajes específicos
+        console.error('❌ ROLE SAVE ERROR:', error);
+        
+        let errorMessage = 'Error al guardar los roles. Inténtalo de nuevo.';
+        if (error.message.includes('403') || error.message.includes('permisos')) {
+            errorMessage = '🔒 No tienes permisos para asignar estos roles. Solo el Administrador Principal puede modificar roles administrativos.';
+        } else if (error.message.includes('401') || error.message.includes('sesión')) {
+            errorMessage = '🔑 Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
+        } else if (error.message.includes('400')) {
+            errorMessage = '⚠️ Algunos roles seleccionados no son válidos.';
+        }
+        
+        alert(errorMessage);
     } finally {
         // Reactivar botón
         saveBtn.textContent = 'Guardar Cambios';
