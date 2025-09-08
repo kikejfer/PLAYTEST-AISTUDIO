@@ -589,7 +589,7 @@
                         challengeableUsersCount: challengeableUsers.length,
                         challengeableUsers: challengeableUsers
                     });
-                    const challengedUser = challengeableUsers.find(u => u.id === challengedUserId);
+                    const challengedUser = challengeableUsers.find(u => u.id.toString() === challengedUserId.toString());
                     console.log('👤 Found challengedUser:', challengedUser);
                     if (!challengedUser) {
                         console.error('❌ No challenged user found!');
