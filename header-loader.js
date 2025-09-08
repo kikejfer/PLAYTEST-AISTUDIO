@@ -387,10 +387,8 @@ function getCurrentRoleName(userData) {
     return activeRole ? activeRole.name : userData.roles[0].name;
 }
 
-// Prevent multiple simultaneous calls (use window scope to avoid conflicts)
-if (typeof window.userDataPromise === 'undefined') {
-    window.userDataPromise = null;
-}
+// Initialize userDataPromise to prevent undefined errors
+window.userDataPromise = window.userDataPromise || null;
 
 /**
  * Obtiene los datos del usuario actual desde tu sistema real
