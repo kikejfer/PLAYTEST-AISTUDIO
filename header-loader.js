@@ -372,28 +372,33 @@ function getCurrentRoleName(userData) {
     return activeRole ? activeRole.name : userData.roles[0].name;
 }
 
+// Prevent multiple simultaneous calls (use window scope to avoid conflicts)
+if (typeof window.userDataPromise === 'undefined') {
+    window.userDataPromise = null;
+}
+
 /**
  * Obtiene los datos del usuario actual desde tu sistema real
  * @returns {Object} userData
  */
 async function getUserData() {
     // If there's already a getUserData call in progress, return that promise
-    if (userDataPromise) {
+    if (window.userDataPromise) {
         console.log('🔄 HEADER DEBUG - Using existing getUserData promise');
-        return userDataPromise;
+        return window.userDataPromise;
     }
     
     console.log('🚀 HEADER DEBUG - Starting new getUserData call');
     
     // Create the promise and store it
-    userDataPromise = getUserDataInternal();
+    window.userDataPromise = getUserDataInternal();
     
     try {
-        const result = await userDataPromise;
+        const result = await window.userDataPromise;
         return result;
     } finally {
         // Clear the promise when done (success or error)
-        userDataPromise = null;
+        window.userDataPromise = null;
     }
 }
 
