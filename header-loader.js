@@ -1460,15 +1460,15 @@ function createRoleModificationModal() {
     `;
 
     modal.innerHTML = `
-        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 100%; max-width: 500px; border: 1px solid #415A77;" onclick="event.stopPropagation();">
+        <div style="background: #1B263B; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 100%; max-width: 700px; border: 1px solid #415A77;" onclick="event.stopPropagation();">
             <div style="padding: 2rem; position: relative;">
                 <button onclick="closeRoleModificationModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #778DA9; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='#415A77'" onmouseout="this.style.background='none'">×</button>
                 
-                <h2 style="color: #E0E1DD; margin: 0 0 1.5rem 0; font-size: 1.5rem; text-align: center;">🎭 Modificar Roles</h2>
+                <h2 style="color: #E0E1DD; margin: 0 0 1rem 0; font-size: 1.5rem; text-align: center;">🎭 Modificar Roles</h2>
                 
-                <div style="margin-bottom: 1.5rem;">
-                    <p style="color: #778DA9; margin: 0 0 1rem 0; text-align: center; font-size: 0.9rem;">
-                        Selecciona los roles que deseas adoptar. Puedes tener múltiples roles activos.
+                <div style="margin-bottom: 1rem;">
+                    <p style="color: #778DA9; margin: 0; text-align: center; font-size: 0.85rem;">
+                        Selecciona tus roles activos
                     </p>
                 </div>
 
@@ -1524,14 +1524,14 @@ async function loadRoleOptions() {
         const isAdminPrincipal = currentRoles.includes('administrador_principal');
         console.log('🔍 User role check:', { currentRoles, isAdminPrincipal });
 
-        // Definir todos los roles disponibles
+        // Definir todos los roles disponibles  
         const availableRoles = [
-            { id: 'jugador', name: '🎮 Jugador', description: 'Participa en partidas y duelos', editable: true },
-            { id: 'creador', name: '🎨 Creador de Contenido', description: 'Crea bloques y monetiza contenido', editable: true },
-            { id: 'profesor', name: '👨‍🏫 Profesor', description: 'Gestiona estudiantes y clases', editable: true },
-            { id: 'soporte_tecnico', name: '🔧 Soporte Técnico', description: 'Gestión de incidencias técnicas', editable: isAdminPrincipal },
-            { id: 'administrador_secundario', name: '⚙️ Administrador Secundario', description: 'Gestión administrativa limitada', editable: isAdminPrincipal },
-            { id: 'administrador_principal', name: '👑 Administrador Principal', description: 'Gestión administrativa completa - Rol máximo del sistema', editable: isAdminPrincipal }
+            { id: 'jugador', name: '🎮 Jugador', description: 'Partidas y duelos', editable: true },
+            { id: 'creador', name: '🎨 Creador', description: 'Bloques y contenido', editable: true },
+            { id: 'profesor', name: '👨‍🏫 Profesor', description: 'Estudiantes y clases', editable: true },
+            { id: 'soporte_tecnico', name: '🔧 Soporte Técnico', description: 'Incidencias técnicas', editable: isAdminPrincipal },
+            { id: 'administrador_secundario', name: '⚙️ Admin. Secundario', description: 'Gestión administrativa', editable: isAdminPrincipal },
+            { id: 'administrador_principal', name: '👑 Admin. Principal', description: 'Gestión completa', editable: isAdminPrincipal }
         ];
 
         // Crear checkboxes para cada rol
@@ -1542,12 +1542,12 @@ async function loadRoleOptions() {
             const isDisabled = !isEditable;
             
             return `
-                <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid ${isDisabled ? '#6B7280' : '#415A77'}; border-radius: 0.5rem; margin-bottom: 0.75rem; transition: background 0.2s; opacity: ${isDisabled ? '0.7' : '1'};" ${!isDisabled ? `onmouseover="this.style.background='rgba(65, 90, 119, 0.1)'" onmouseout="this.style.background='transparent'"` : ''}>
-                    <input type="checkbox" id="role-${role.id}" ${hasRole ? 'checked' : ''} ${isDisabled ? 'disabled' : ''} style="width: 1.25rem; height: 1.25rem; cursor: ${isDisabled ? 'not-allowed' : 'pointer'};">
+                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border: 1px solid ${isDisabled ? '#6B7280' : '#415A77'}; border-radius: 0.5rem; margin-bottom: 0.5rem; transition: background 0.2s; opacity: ${isDisabled ? '0.7' : '1'};" ${!isDisabled ? `onmouseover="this.style.background='rgba(65, 90, 119, 0.1)'" onmouseout="this.style.background='transparent'"` : ''}>
+                    <input type="checkbox" id="role-${role.id}" ${hasRole ? 'checked' : ''} ${isDisabled ? 'disabled' : ''} style="width: 1.1rem; height: 1.1rem; cursor: ${isDisabled ? 'not-allowed' : 'pointer'};">
                     <div style="flex: 1;">
-                        <label for="role-${role.id}" style="color: ${isDisabled ? '#9CA3AF' : '#E0E1DD'}; font-weight: 500; cursor: ${isDisabled ? 'not-allowed' : 'pointer'}; display: block; margin-bottom: 0.25rem;">${role.name}</label>
-                        <p style="color: ${isDisabled ? '#6B7280' : '#778DA9'}; margin: 0; font-size: 0.875rem;">${role.description}</p>
-                        ${isDisabled && isAdminRole ? `<p style="color: #F59E0B; margin: 0.25rem 0 0 0; font-size: 0.75rem;">🔒 Solo el Administrador Principal puede modificar roles administrativos</p>` : ''}
+                        <label for="role-${role.id}" style="color: ${isDisabled ? '#9CA3AF' : '#E0E1DD'}; font-weight: 500; cursor: ${isDisabled ? 'not-allowed' : 'pointer'}; display: block; margin-bottom: 0.1rem; font-size: 0.95rem;">${role.name}</label>
+                        <p style="color: ${isDisabled ? '#6B7280' : '#778DA9'}; margin: 0; font-size: 0.8rem;">${role.description}</p>
+                        ${isDisabled && isAdminRole ? `<p style="color: #F59E0B; margin: 0.2rem 0 0 0; font-size: 0.7rem;">🔒 Solo Admin. Principal puede modificar</p>` : ''}
                     </div>
                 </div>
             `;
@@ -1577,6 +1577,9 @@ async function saveRoleModifications() {
             .filter(cb => cb.checked) // Incluye tanto editables como deshabilitados que estén marcados
             .map(cb => cb.id.replace('role-', ''));
         
+        // FIX: Obtener token antes de usarlo en logging
+        const token = localStorage.getItem('playtest_auth_token');
+        
         // CORRECCIÓN 3: Logging mejorado y validación de seguridad
         console.log('🔍 ROLE MODIFICATION DEBUG:', {
             selectedRoles: selectedRoles,
@@ -1602,8 +1605,6 @@ async function saveRoleModifications() {
         const API_BASE_URL = window.location.hostname.includes('onrender.com') 
             ? 'https://playtest-backend.onrender.com' 
             : '';
-            
-        const token = localStorage.getItem('playtest_auth_token');
         
         // Debug logging
         console.log('🔍 Sending role update request:', {
