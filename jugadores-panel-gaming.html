@@ -2368,7 +2368,7 @@
                     ])),
                     React.createElement('tbody', { key: 'tbody' }, tabGameHistory.map((game, index) =>
                         React.createElement('tr', {
-                            key: game.gameId + index,
+                            key: `game-${game.gameId || index}-${game.date || Date.now()}-${index}`,
                             className: "border-b border-slate-600"
                         }, [
                             React.createElement('td', {
