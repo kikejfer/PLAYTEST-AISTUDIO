@@ -393,8 +393,9 @@
                                 <th>Nickname / Nombre</th>
                                 <th>Email</th>
                                 <th>Bloques Creados</th>
-                                <th>Estudiantes</th>
+                                <th>Temas</th>
                                 <th>Preguntas</th>
+                                <th>Alumnos</th>
                                 <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                             </tr>
                         </thead>
@@ -423,9 +424,9 @@
                                 <th>Nickname / Nombre</th>
                                 <th>Email</th>
                                 <th>Bloques Creados</th>
-                                <th>Preguntas</th>
                                 <th>Temas</th>
-                                <th>Usuarios</th>
+                                <th>Preguntas</th>
+                                <th>Estudiantes</th>
                                 <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
                             </tr>
                         </thead>
@@ -984,7 +985,7 @@
 
             if (profesores.length === 0) {
                 const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="8" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
+                row.innerHTML = `<td colspan="9" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
                     <div style="padding: 20px;">
                         <div style="font-size: 18px; margin-bottom: 10px;">👨‍🏫</div>
                         <div style="font-weight: bold; margin-bottom: 5px;">No tienes profesores asignados</div>
@@ -1011,22 +1012,24 @@
                 
                 // Información específica para profesores con nuevos campos
                 const bloquesCreados = profesor.bloques_creados || 0;
-                const estudiantes = profesor.estudiantes || 0;
+                const temas = profesor.total_temas || 0;
                 const preguntas = profesor.total_preguntas || 0;
+                const alumnos = profesor.estudiantes || profesor.alumnos || 0;
                 
-                console.log(`👨‍🏫 Mapped profesor data: ${nickname}, ${fullName}, ${email}, bloques: ${bloquesCreados}, estudiantes: ${estudiantes}, preguntas: ${preguntas}`);
+                console.log(`👨‍🏫 Mapped profesor data: ${nickname}, ${fullName}, ${email}, bloques: ${bloquesCreados}, temas: ${temas}, preguntas: ${preguntas}, alumnos: ${alumnos}`);
                 
                 row.innerHTML = `
                     <td>
-                        <button class="btn btn-expand" onclick="toggleProfesorExpansion(${profesor.user_id})">
+                        <button class="btn btn-expand" onclick="toggleProfesorExpansion(${profesor.id})">
                             ${isExpanded ? '−' : '+'}
                         </button>
                     </td>
                     <td><strong>${nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
                     <td>${email}</td>
                     <td><strong style="color: #8B5CF6;">${bloquesCreados}</strong></td>
-                    <td><strong style="color: #10B981;">${estudiantes}</strong></td>
+                    <td><strong style="color: #F59E0B;">${temas}</strong></td>
                     <td><strong style="color: #06B6D4;">${preguntas}</strong></td>
+                    <td><strong style="color: #10B981;">${alumnos}</strong></td>
                     <td class="luminarias">${profesor.luminarias_actuales || 0}</td>
                 `;
                 tbody.appendChild(row);
@@ -1036,7 +1039,7 @@
                     const expandRow = document.createElement('tr');
                     expandRow.className = 'expandable-row show';
                     expandRow.innerHTML = `
-                        <td colspan="7">
+                        <td colspan="8">
                             <div id="profesor-blocks-${profesor.id}">
                                 <div class="loading">Cargando bloques...</div>
                             </div>
@@ -1085,22 +1088,22 @@
                 const bloquesCreados = creador.bloques_creados || 0;
                 const preguntas = creador.total_preguntas || 0;
                 const temas = creador.total_temas || 0;
-                const usuarios = creador.total_usuarios || 0;
+                const estudiantes = creador.total_usuarios || creador.estudiantes || 0;
                 
-                console.log(`🎨 Mapped creador data: ${nickname}, ${fullName}, ${email}, bloques: ${bloquesCreados}, preguntas: ${preguntas}, temas: ${temas}, usuarios: ${usuarios}`);
+                console.log(`🎨 Mapped creador data: ${nickname}, ${fullName}, ${email}, bloques: ${bloquesCreados}, temas: ${temas}, preguntas: ${preguntas}, estudiantes: ${estudiantes}`);
                 
                 row.innerHTML = `
                     <td>
-                        <button class="btn btn-expand" onclick="toggleCreadorExpansion(${creador.user_id})">
+                        <button class="btn btn-expand" onclick="toggleCreadorExpansion(${creador.id})">
                             ${isExpanded ? '−' : '+'}
                         </button>
                     </td>
                     <td><strong>${nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
                     <td>${email}</td>
                     <td><strong style="color: #8B5CF6;">${bloquesCreados}</strong></td>
-                    <td><strong style="color: #06B6D4;">${preguntas}</strong></td>
                     <td><strong style="color: #F59E0B;">${temas}</strong></td>
-                    <td><strong style="color: #10B981;">${usuarios}</strong></td>
+                    <td><strong style="color: #06B6D4;">${preguntas}</strong></td>
+                    <td><strong style="color: #10B981;">${estudiantes}</strong></td>
                     <td class="luminarias">${creador.luminarias_actuales || 0}</td>
                 `;
                 tbody.appendChild(row);
