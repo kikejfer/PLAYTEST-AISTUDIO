@@ -2091,12 +2091,30 @@
             await initializeCreadoresAsignadosGenerico();
         }
 
+        // Función para esperar a que apiDataService esté disponible
+        async function waitForApiService(maxAttempts = 10) {
+            for (let i = 0; i < maxAttempts; i++) {
+                if (window.apiDataService) {
+                    console.log(`✅ apiDataService disponible en intento ${i + 1}`);
+                    return true;
+                }
+                console.log(`⏳ Esperando apiDataService... intento ${i + 1}/${maxAttempts}`);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            console.warn('⚠️ apiDataService no disponible después de esperar');
+            return false;
+        }
+
         // Inicializar las nuevas secciones después de que todo esté cargado
         document.addEventListener('DOMContentLoaded', function() {
-            // Esperar a que el módulo genérico esté disponible
+            // Esperar a que los servicios estén disponibles
             setTimeout(async () => {
                 if (window.adminPanelSection) {
                     console.log('🚀 Inicializando nuevas secciones PAS con módulo genérico...');
+                    
+                    // Esperar a que apiDataService esté disponible
+                    await waitForApiService();
+                    
                     await initializeProfesoresAsignadosGenerico();
                     await initializeCreadoresAsignadosGenerico();
                 } else {
@@ -2104,7 +2122,7 @@
                     document.getElementById('profesores-asignados-generico-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Módulo genérico no cargado</div>';
                     document.getElementById('creadores-asignados-generico-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Módulo genérico no cargado</div>';
                 }
-            }, 1500);
+            }, 2000); // Aumentado a 2 segundos
         });
 
     </script>
