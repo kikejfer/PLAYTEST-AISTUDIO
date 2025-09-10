@@ -17,7 +17,7 @@ class AdminPanelSection {
         this.panelType = this.detectPanelType();
         this.expandedRows = new Set();
         this.expandedBlocks = new Set();
-        this.apiService = window.apiDataService;
+        this.apiService = null; // Se inicializará cuando esté disponible
     }
 
     /**
@@ -30,6 +30,19 @@ class AdminPanelSection {
     }
 
     /**
+     * Verifica y inicializa el servicio API si está disponible
+     * @returns {boolean} true si el servicio está disponible
+     */
+    ensureApiService() {
+        if (!this.apiService && window.apiDataService) {
+            console.log('🔌 Inicializando apiDataService...');
+            this.apiService = window.apiDataService;
+            return true;
+        }
+        return !!this.apiService;
+    }
+
+    /**
      * Obtiene los registros según el tipo de administrador y rol
      * @param {string} rolAdministrador - 'Principal' | 'Secundario' 
      * @param {string} rolAdministrado - 'Profesor' | 'Creador'
@@ -38,6 +51,12 @@ class AdminPanelSection {
     async obtenerRegistros(rolAdministrador, rolAdministrado) {
         try {
             console.log(`🔍 Obteniendo registros para ${rolAdministrador} - ${rolAdministrado} en ${this.panelType}`);
+            
+            // Verificar que apiService esté disponible
+            if (!this.ensureApiService()) {
+                console.warn('⚠️ apiDataService no disponible, usando datos de respaldo');
+                return this.generarDatosRespaldo(rolAdministrado);
+            }
             
             let endpoint;
             if (this.panelType === 'PAP') {
@@ -48,13 +67,23 @@ class AdminPanelSection {
                 endpoint = `/roles-updated/admin-secundario-panel`;
             }
 
+            console.log(`📡 Llamando endpoint: ${endpoint}`);
             const result = await this.apiService.apiCall(endpoint);
+            console.log(`🔍 Respuesta completa de la API:`, result);
             
             // Filtrar por el rol específico
             const rolKey = rolAdministrado.toLowerCase() + 's'; // 'profesores' o 'creadores'
+            console.log(`🔑 Buscando clave: "${rolKey}" en respuesta`);
             const registros = result[rolKey] || [];
             
             console.log(`📊 Encontrados ${registros.length} registros de ${rolAdministrado}s`);
+            
+            // Si no hay registros desde la API, usar datos de respaldo
+            if (registros.length === 0) {
+                console.log('⚠️ No se encontraron registros desde la API, usando datos de respaldo');
+                return this.generarDatosRespaldo(rolAdministrado);
+            }
+            
             return registros;
             
         } catch (error) {
