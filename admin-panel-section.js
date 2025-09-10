@@ -232,12 +232,15 @@ class AdminPanelSection {
         try {
             // Obtener registros
             const registros = await this.obtenerRegistros(rolAdministrador, rolAdministrado);
+            console.log(`🎯 Registros obtenidos para renderizar:`, registros);
             
             // Generar HTML de la tabla
             const tablaHtml = this.generarTablaHTML(registros, rolAdministrado, options);
+            console.log(`📝 HTML generado (primeros 200 chars):`, tablaHtml.substring(0, 200));
             
             // Insertar en el contenedor
             container.innerHTML = tablaHtml;
+            console.log(`📍 HTML insertado en contenedor ${containerId}`);
             
             // Configurar event listeners
             this.configurarEventListeners(containerId, rolAdministrador, rolAdministrado);
