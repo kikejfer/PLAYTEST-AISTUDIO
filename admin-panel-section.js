@@ -53,11 +53,20 @@ class AdminPanelSection {
             console.log('🔌 Usando loadPanelData como servicio alternativo...');
             this.apiService = {
                 apiCall: async (endpoint) => {
-                    // Adaptar loadPanelData para usar el mismo formato que apiCall
-                    if (endpoint === '/roles-updated/admin-principal-panel') {
-                        return await loadPanelData();
-                    } else if (endpoint === '/roles-updated/admin-secundario-panel') {
-                        return await loadPanelData();
+                    // Para PAS, usar la misma llamada que funciona en el panel principal
+                    if (endpoint === '/roles-updated/admin-secundario-panel') {
+                        // Usar la misma lógica que en las líneas 575+ del panel
+                        const response = await fetch('https://playtest-backend.onrender.com/api/roles-updated/admin-secundario-panel', {
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('playtest_auth_token')}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        return data;
+                    } else if (endpoint === '/roles-updated/admin-principal-panel') {
+                        // Para PAP debe usar apiDataService que ya funciona
+                        throw new Error('PAP debe usar apiDataService');
                     }
                     throw new Error(`Endpoint ${endpoint} no soportado`);
                 }
@@ -98,7 +107,7 @@ class AdminPanelSection {
             console.log(`🔍 Respuesta completa de la API:`, result);
             
             // Filtrar por el rol específico
-            const rolKey = rolAdministrado.toLowerCase() + 's'; // 'profesores' o 'creadores'
+            const rolKey = rolAdministrado.toLowerCase() + 'es'; // 'profesores' o 'creadores'
             console.log(`🔑 Buscando clave: "${rolKey}" en respuesta`);
             const registros = result[rolKey] || [];
             
