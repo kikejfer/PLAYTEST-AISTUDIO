@@ -396,7 +396,9 @@
                                 <th>Temas</th>
                                 <th>Preguntas</th>
                                 <th>Alumnos</th>
+                                <th>Administrador</th>
                                 <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
+                                <th>🗑️</th>
                             </tr>
                         </thead>
                         <tbody id="profesores-tbody">
@@ -427,7 +429,9 @@
                                 <th>Temas</th>
                                 <th>Preguntas</th>
                                 <th>Estudiantes</th>
+                                <th>Administrador</th>
                                 <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
+                                <th>🗑️</th>
                             </tr>
                         </thead>
                         <tbody id="creadores-tbody">
@@ -471,6 +475,35 @@
         let panelData = {};
         let expandedRows = new Set();
         let currentUser = null;
+
+        // API Data Service for consistency with PAP
+        const apiDataService = {
+            async apiCall(endpoint) {
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                if (!token) {
+                    throw new Error('No authentication token found');
+                }
+                
+                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
+                    ? 'https://playtest-backend.onrender.com' 
+                    : '';
+                    
+                const url = `${API_BASE_URL}/api${endpoint}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            }
+        };
 
         async function fetchWithRetry(url, options, maxRetries = 5, timeout = 30000) {
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -985,7 +1018,7 @@
 
             if (profesores.length === 0) {
                 const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="9" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
+                row.innerHTML = `<td colspan="10" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
                     <div style="padding: 20px;">
                         <div style="font-size: 18px; margin-bottom: 10px;">👨‍🏫</div>
                         <div style="font-weight: bold; margin-bottom: 5px;">No tienes profesores asignados</div>
@@ -997,56 +1030,58 @@
             }
 
             profesores.forEach((profesor, index) => {
-                // Debug logging
-                console.log(`👨‍🏫 Processing profesor ${index}:`, profesor);
-                
                 const row = document.createElement('tr');
-                const isExpanded = expandedRows.has(`profesor-${profesor.id}`);
+                const profesorId = profesor.id || profesor.user_id;
+                const isExpanded = expandedRows.has(`profesor-${profesorId}`);
+                const fullName = profesor.first_name || 
+                                [profesor.first_name, profesor.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
-                // Try multiple field combinations for name
-                const nickname = profesor.nickname || profesor.username || `Usuario_${profesor.id}`;
-                const firstName = profesor.first_name || profesor.firstName || profesor.nombre || '';
-                const lastName = profesor.last_name || profesor.lastName || profesor.apellido || profesor.apellidos || '';
-                const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'No especificado';
-                const email = profesor.email || 'Sin email';
-                
-                // Información específica para profesores con nuevos campos
-                const bloquesCreados = profesor.bloques_creados || 0;
-                const temas = profesor.total_temas || 0;
-                const preguntas = profesor.total_preguntas || 0;
-                const alumnos = profesor.estudiantes || profesor.alumnos || 0;
-                
-                console.log(`👨‍🏫 Mapped profesor data: ${nickname}, ${fullName}, ${email}, bloques: ${bloquesCreados}, temas: ${temas}, preguntas: ${preguntas}, alumnos: ${alumnos}`);
+                // Información específica para profesores según nueva especificación
+                const bloquesCreados = profesor.blocks_created || 0;
+                const totalTemas = profesor.total_topics || 0;
+                const totalPreguntas = profesor.total_questions || 0;
+                const totalAlumnos = profesor.estudiantes || 0;
                 
                 row.innerHTML = `
                     <td>
-                        <button class="btn btn-expand" onclick="toggleProfesorExpansion(${profesor.id})">
+                        <button class="btn btn-expand" onclick="toggleProfesorExpansion(${profesorId})">
                             ${isExpanded ? '−' : '+'}
                         </button>
                     </td>
-                    <td><strong>${nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
-                    <td>${email}</td>
-                    <td><strong style="color: #8B5CF6;">${bloquesCreados}</strong></td>
-                    <td><strong style="color: #F59E0B;">${temas}</strong></td>
-                    <td><strong style="color: #06B6D4;">${preguntas}</strong></td>
-                    <td><strong style="color: #10B981;">${alumnos}</strong></td>
-                    <td class="luminarias">${profesor.luminarias_actuales || 0}</td>
+                    <td><strong>${profesor.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
+                    <td>${profesor.email || 'Sin email'}</td>
+                    <td><strong style="color: #3B82F6;">${bloquesCreados}</strong></td>
+                    <td><strong style="color: #10B981;">${totalTemas}</strong></td>
+                    <td><strong style="color: #8B5CF6;">${totalPreguntas}</strong></td>
+                    <td><strong style="color: #F59E0B;">${totalAlumnos}</strong></td>
+                    <td>
+                        <select onchange="reassignUser(${profesorId}, this.value)">
+                            <option value="">${profesor.assigned_admin_nickname || 'Sin asignar'}</option>
+                            ${getAdminOptions ? getAdminOptions(profesor.assigned_admin_id) : ''}
+                        </select>
+                    </td>
+                    <td class="luminarias">
+                        ${profesor.luminarias_actuales || 0}
+                    </td>
+                    <td>
+                        <button onclick="deleteUser(${profesorId}, '${profesor.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️</button>
+                    </td>
                 `;
                 tbody.appendChild(row);
 
-                // Fila expandible para bloques (sin luminarias)
+                // Fila expandible para bloques
                 if (isExpanded) {
                     const expandRow = document.createElement('tr');
                     expandRow.className = 'expandable-row show';
                     expandRow.innerHTML = `
-                        <td colspan="8">
-                            <div id="profesor-blocks-${profesor.id}">
+                        <td colspan="10">
+                            <div id="profesor-blocks-${profesorId}">
                                 <div class="loading">Cargando bloques...</div>
                             </div>
                         </td>
                     `;
                     tbody.appendChild(expandRow);
-                    loadProfesorBlocks(profesor.id);
+                    loadProfesorBlocks(profesorId);
                 }
             });
         }
@@ -1059,7 +1094,7 @@
 
             if (creadores.length === 0) {
                 const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="8" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
+                row.innerHTML = `<td colspan="10" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
                     <div style="padding: 20px;">
                         <div style="font-size: 18px; margin-bottom: 10px;">🎨</div>
                         <div style="font-weight: bold; margin-bottom: 5px;">No tienes creadores de contenido asignados</div>
@@ -1071,40 +1106,42 @@
             }
 
             creadores.forEach((creador, index) => {
-                // Debug logging
-                console.log(`🎨 Processing creador ${index}:`, creador);
-                
                 const row = document.createElement('tr');
-                const isExpanded = expandedRows.has(`creador-${creador.id}`);
+                const creadorId = creador.id || creador.user_id;
+                const isExpanded = expandedRows.has(`creador-${creadorId}`);
+                const fullName = creador.first_name || 
+                                [creador.first_name, creador.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
-                // Try multiple field combinations for name
-                const nickname = creador.nickname || creador.username || `Usuario_${creador.id}`;
-                const firstName = creador.first_name || creador.firstName || creador.nombre || '';
-                const lastName = creador.last_name || creador.lastName || creador.apellido || creador.apellidos || '';
-                const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'No especificado';
-                const email = creador.email || 'Sin email';
-                
-                // Información específica para creadores con nuevos campos
-                const bloquesCreados = creador.bloques_creados || 0;
-                const preguntas = creador.total_preguntas || 0;
-                const temas = creador.total_temas || 0;
-                const estudiantes = creador.total_usuarios || creador.estudiantes || 0;
-                
-                console.log(`🎨 Mapped creador data: ${nickname}, ${fullName}, ${email}, bloques: ${bloquesCreados}, temas: ${temas}, preguntas: ${preguntas}, estudiantes: ${estudiantes}`);
+                // Información específica para creadores según nueva especificación
+                const bloquesCreados = creador.blocks_created || 0;
+                const totalTemas = creador.total_topics || 0;
+                const totalPreguntas = creador.total_questions || 0;
+                const totalEstudiantes = creador.usuarios || 0;
                 
                 row.innerHTML = `
                     <td>
-                        <button class="btn btn-expand" onclick="toggleCreadorExpansion(${creador.id})">
+                        <button class="btn btn-expand" onclick="toggleCreadorExpansion(${creadorId})">
                             ${isExpanded ? '−' : '+'}
                         </button>
                     </td>
-                    <td><strong>${nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
-                    <td>${email}</td>
-                    <td><strong style="color: #8B5CF6;">${bloquesCreados}</strong></td>
-                    <td><strong style="color: #F59E0B;">${temas}</strong></td>
-                    <td><strong style="color: #06B6D4;">${preguntas}</strong></td>
-                    <td><strong style="color: #10B981;">${estudiantes}</strong></td>
-                    <td class="luminarias">${creador.luminarias_actuales || 0}</td>
+                    <td><strong>${creador.nickname}</strong><br><small style="color: #6B7280;">${fullName}</small></td>
+                    <td>${creador.email || 'Sin email'}</td>
+                    <td><strong style="color: #3B82F6;">${bloquesCreados}</strong></td>
+                    <td><strong style="color: #10B981;">${totalTemas}</strong></td>
+                    <td><strong style="color: #8B5CF6;">${totalPreguntas}</strong></td>
+                    <td><strong style="color: #F59E0B;">${totalEstudiantes}</strong></td>
+                    <td>
+                        <select onchange="reassignUser(${creadorId}, this.value)">
+                            <option value="">${creador.assigned_admin_nickname || 'Sin asignar'}</option>
+                            ${getAdminOptions ? getAdminOptions(creador.assigned_admin_id) : ''}
+                        </select>
+                    </td>
+                    <td class="luminarias">
+                        ${creador.luminarias_actuales || 0}
+                    </td>
+                    <td>
+                        <button onclick="deleteUser(${creadorId}, '${creador.nickname}')" style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">🗑️</button>
+                    </td>
                 `;
                 tbody.appendChild(row);
 
@@ -1113,14 +1150,14 @@
                     const expandRow = document.createElement('tr');
                     expandRow.className = 'expandable-row show';
                     expandRow.innerHTML = `
-                        <td colspan="8">
-                            <div id="creador-blocks-${creador.id}">
+                        <td colspan="10">
+                            <div id="creador-blocks-${creadorId}">
                                 <div class="loading">Cargando bloques...</div>
                             </div>
                         </td>
                     `;
                     tbody.appendChild(expandRow);
-                    loadCreadorBlocks(creador.id);
+                    loadCreadorBlocks(creadorId);
                 }
             });
         }
@@ -1180,160 +1217,93 @@
         }
 
         async function loadProfesorBlocks(profesorId) {
-            console.log(`🔄 Loading blocks for profesor ID: ${profesorId}`);
-            const container = document.getElementById(`profesor-blocks-${profesorId}`);
-            
             try {
-                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
-                if (!token) {
-                    console.error('❌ No auth token found for loading blocks');
-                    container.innerHTML = '<p style="color: #EF4444;">Error: No hay token de autenticación</p>';
+                console.log(`👨‍🏫 Loading blocks for PROFESOR ID: ${profesorId}`);
+                // Use API service instead of direct fetch
+                const result = await apiDataService.apiCall(`/roles-updated/profesores/${profesorId}/bloques`);
+                const blocks = result.bloques || [];
+                const container = document.getElementById(`profesor-blocks-${profesorId}`);
+                
+                if (blocks.length === 0) {
+                    container.innerHTML = '<p>No tiene bloques públicos creados</p>';
                     return;
                 }
+
+                let html = '<table class="nested-table"><thead><tr><th></th><th>Bloque</th><th>Temas</th><th>Preguntas</th><th>Alumnos</th><th>Fecha Creación</th></tr></thead><tbody>';
                 
-                const API_BASE_URL = window.location.hostname.includes('onrender.com') 
-                    ? 'https://playtest-backend.onrender.com' 
-                    : '';
-                    
-                const url = `${API_BASE_URL}/api/roles-updated/profesores/${profesorId}/bloques`;
-                console.log(`🔗 Fetching blocks from: ${url}`);
-                
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                blocks.forEach(block => {
+                    html += `
+                        <tr>
+                            <td>
+                                <button class="btn btn-expand" onclick="toggleBlockExpansion(${block.id})" style="font-size: 18px; padding: 4px 8px;">+</button>
+                            </td>
+                            <td><strong>${block.name}</strong></td>
+                            <td>${block.num_temas}</td>
+                            <td>${block.total_preguntas}</td>
+                            <td>${block.usuarios_bloque}</td>
+                            <td>${new Date(block.created_at).toLocaleDateString()}</td>
+                        </tr>
+                        <tr id="block-expansion-${block.id}" style="display: none;">
+                            <td colspan="6">
+                                <div id="block-topics-${block.id}"></div>
+                            </td>
+                        </tr>
+                    `;
                 });
-
-                console.log(`📡 Response status: ${response.status}`);
-
-                if (!response.ok) {
-                    console.error(`❌ HTTP error: ${response.status} - ${response.statusText}`);
-                    
-                    // Try alternative endpoint
-                    console.log('🔄 Trying alternative blocks endpoint...');
-                    const altUrl = `${API_BASE_URL}/api/roles-updated/bloques?user_id=${profesorId}`;
-                    console.log(`🔗 Alternative URL: ${altUrl}`);
-                    
-                    try {
-                        const altResponse = await fetch(altUrl, {
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                        
-                        if (altResponse.ok) {
-                            const altResult = await altResponse.json();
-                            console.log('📦 Alternative blocks data received:', altResult);
-                            
-                            const altBlocks = altResult.bloques || altResult || [];
-                            if (altBlocks.length > 0) {
-                                displayBlocks(altBlocks, container);
-                                return;
-                            }
-                        }
-                    } catch (altError) {
-                        console.warn('⚠️ Alternative endpoint also failed:', altError);
-                    }
-                    
-                    container.innerHTML = `<p style="color: #EF4444;">Error ${response.status}: No se pudieron cargar los bloques. Endpoint no disponible.</p>`;
-                    return;
-                }
-
-                const result = await response.json();
-                console.log('📦 Blocks data received:', result);
                 
-                const blocks = result.bloques || result.blocks || result || [];
-                console.log(`📋 Processing ${blocks.length} blocks`);
-                
-                displayBlocks(blocks, container);
+                html += '</tbody></table>';
+                container.innerHTML = html;
 
             } catch (error) {
-                console.error('❌ Error cargando bloques:', error);
-                if (container) {
-                    container.innerHTML = `<p style="color: #EF4444;">Error al cargar los bloques: ${error.message}</p>`;
-                }
+                console.error('Error cargando bloques:', error);
+                document.getElementById(`profesor-blocks-${profesorId}`).innerHTML = 
+                    '<p style="color: red;">Error al cargar los bloques</p>';
             }
         }
 
-        function displayBlocks(blocks, container) {
-            console.log('🎨 Displaying blocks:', blocks);
-            
-            if (!blocks || blocks.length === 0) {
-                container.innerHTML = `
-                    <div style="padding: 20px; background: #1B263B; border-radius: 8px; text-align: center; color: #778DA9;">
-                        <div style="font-size: 18px; margin-bottom: 10px;">📝</div>
-                        <div style="font-weight: bold; margin-bottom: 5px;">No hay bloques creados</div>
-                        <div style="font-size: 12px;">Este profesor/creador aún no ha creado ningún bloque.</div>
-                    </div>
-                `;
-                return;
-            }
-
-            let html = '<div style="margin-top: 15px;">';
-            
-            blocks.forEach((block, index) => {
-                console.log(`📋 Processing block ${index}:`, block);
+        async function loadCreadorBlocks(creadorId) {
+            try {
+                console.log(`🎨 Loading blocks for CREADOR ID: ${creadorId}`);
+                // Use API service instead of direct fetch - FIXED: using creadores endpoint
+                const result = await apiDataService.apiCall(`/roles-updated/creadores/${creadorId}/bloques`);
+                const blocks = result.bloques || [];
+                const container = document.getElementById(`creador-blocks-${creadorId}`);
                 
-                // Enhanced field mapping for blocks
-                const id = block.id || block.block_id || block.bloque_id || index;
-                const titulo = block.titulo || block.title || block.name || block.bloque_titulo || 'Sin título';
-                const descripcion = block.descripcion || block.description || block.bloque_descripcion || 'Sin descripción';
-                const fechaCreacion = block.fecha_creacion || block.created_at || block.date_created || 'Fecha no disponible';
-                const totalPreguntas = block.total_preguntas || block.total_questions || block.preguntas || block.questions || 0;
-                const totalUsuarios = block.total_usuarios || block.total_users || block.usuarios || block.users || 0;
-                const estado = block.estado || block.status || (block.activo ? 'Activo' : 'Inactivo') || 'Desconocido';
-                
-                // Format fecha
-                let fechaFormateada = fechaCreacion;
-                try {
-                    if (fechaCreacion && fechaCreacion !== 'Fecha no disponible') {
-                        const date = new Date(fechaCreacion);
-                        if (!isNaN(date.getTime())) {
-                            fechaFormateada = date.toLocaleDateString('es-ES', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                            });
-                        }
-                    }
-                } catch (e) {
-                    console.warn('⚠️ Error formatting date:', e);
+                if (blocks.length === 0) {
+                    container.innerHTML = '<p>No tiene bloques públicos creados</p>';
+                    return;
                 }
+
+                let html = '<table class="nested-table"><thead><tr><th></th><th>Bloque</th><th>Temas</th><th>Preguntas</th><th>Estudiantes</th><th>Fecha Creación</th></tr></thead><tbody>';
                 
-                console.log(`📊 Mapped block data: ${titulo}, ${descripcion}, ${fechaFormateada}, preguntas: ${totalPreguntas}, usuarios: ${totalUsuarios}, estado: ${estado}`);
+                blocks.forEach(block => {
+                    html += `
+                        <tr>
+                            <td>
+                                <button class="btn btn-expand" onclick="toggleBlockExpansion(${block.id})" style="font-size: 18px; padding: 4px 8px;">+</button>
+                            </td>
+                            <td><strong>${block.name}</strong></td>
+                            <td>${block.num_temas}</td>
+                            <td>${block.total_preguntas}</td>
+                            <td>${block.usuarios_bloque}</td>
+                            <td>${new Date(block.created_at).toLocaleDateString()}</td>
+                        </tr>
+                        <tr id="block-expansion-${block.id}" style="display: none;">
+                            <td colspan="6">
+                                <div id="block-topics-${block.id}">Cargando temas...</div>
+                            </td>
+                        </tr>
+                    `;
+                });
                 
-                html += `
-                    <div style="background: #1B263B; border: 1px solid #415A77; border-radius: 8px; margin-bottom: 10px; overflow: hidden;">
-                        <div style="padding: 15px; border-bottom: 1px solid #415A77;">
-                            <div style="display: flex; justify-content: between; align-items: center; flex-wrap: wrap; gap: 15px;">
-                                <div style="flex: 1; min-width: 200px;">
-                                    <h4 style="margin: 0 0 5px 0; color: #E0E1DD; font-size: 16px; font-weight: bold;">${titulo}</h4>
-                                    <p style="margin: 0; color: #778DA9; font-size: 12px; line-height: 1.4;">${descripcion}</p>
-                                </div>
-                                <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-                                    <div style="text-align: center; min-width: 60px;">
-                                        <div style="color: #3B82F6; font-weight: bold; font-size: 18px;">${totalPreguntas}</div>
-                                        <div style="color: #778DA9; font-size: 10px;">Preguntas</div>
-                                    </div>
-                                    <div style="text-align: center; min-width: 60px;">
-                                        <div style="color: #8B5CF6; font-weight: bold; font-size: 18px;">${totalUsuarios}</div>
-                                        <div style="color: #778DA9; font-size: 10px;">Usuarios</div>
-                                    </div>
-                                    <div style="text-align: center; min-width: 80px;">
-                                        <div style="color: ${estado === 'Activo' ? '#10B981' : '#EF4444'}; font-weight: bold; font-size: 12px;">${estado}</div>
-                                        <div style="color: #778DA9; font-size: 10px;">${fechaFormateada}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += '</div>';
-            container.innerHTML = html;
+                html += '</tbody></table>';
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error cargando bloques:', error);
+                document.getElementById(`creador-blocks-${creadorId}`).innerHTML = 
+                    '<p style="color: red;">Error al cargar los bloques</p>';
+            }
         }
 
         async function toggleBlockExpansion(blockId) {
@@ -1485,6 +1455,59 @@
         function showBlockDetails(blockId) {
             // Implementar modal o ventana con detalles completos del bloque
             alert(`Ver detalles completos del bloque ID: ${blockId}`);
+        }
+
+        async function toggleBlockExpansion(blockId) {
+            const expansionRow = document.getElementById(`block-expansion-${blockId}`);
+            if (expansionRow.style.display === 'none') {
+                expansionRow.style.display = 'table-row';
+                await loadBlockTopics(blockId);
+            } else {
+                expansionRow.style.display = 'none';
+            }
+        }
+
+        async function loadBlockTopics(blockId) {
+            const container = document.getElementById(`block-topics-${blockId}`);
+            if (!container) return;
+            
+            try {
+                const result = await apiDataService.apiCall(`/roles-updated/bloques/${blockId}/topics`);
+                const topics = result.topics || [];
+                
+                if (topics.length === 0) {
+                    container.innerHTML = '<p>No tiene temas creados</p>';
+                    return;
+                }
+                
+                let html = '<div style="padding: 10px; background: #0D1B2A;"><h4>Temas del bloque:</h4><ul>';
+                topics.forEach(topic => {
+                    html += `<li><strong>${topic.name}</strong> - ${topic.description || 'Sin descripción'}</li>`;
+                });
+                html += '</ul></div>';
+                
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading block topics:', error);
+                container.innerHTML = '<p style="color: red;">Error al cargar los temas</p>';
+            }
+        }
+
+        function getAdminOptions(currentAdminId) {
+            // Esta función debería devolver las opciones de administradores disponibles
+            // Para el panel secundario, no hay administradores para asignar
+            return '';
+        }
+
+        function reassignUser(userId, adminId) {
+            // Esta función está para compatibilidad con PAP pero no es funcional en el panel secundario
+            console.log(`Reasignar usuario ${userId} al administrador ${adminId} - No disponible en panel secundario`);
+        }
+
+        function deleteUser(userId, nickname) {
+            // Esta función está para compatibilidad con PAP pero no es funcional en el panel secundario
+            console.log(`Eliminar usuario ${userId} (${nickname}) - No disponible en panel secundario`);
         }
 
         // Funciones para creadores de contenido
