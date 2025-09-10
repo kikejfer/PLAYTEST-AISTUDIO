@@ -298,6 +298,14 @@ class AdminPanelSection {
      * @returns {Object} Características calculadas
      */
     calcularCaracteristicas(registro, rolAdministrado) {
+        // Debug para investigar campos disponibles en PAS
+        console.log(`🔍 DEBUG calcularCaracteristicas - ${rolAdministrado}:`, registro);
+        console.log(`🔍 Campos de preguntas disponibles:`, {
+            total_questions: registro.total_questions,
+            total_preguntas: registro.total_preguntas,
+            preguntas_totales: registro.preguntas_totales
+        });
+        
         return {
             // Nickname/Nombre del assigned_user_id
             nickname: registro.nickname || 'Sin nickname',
