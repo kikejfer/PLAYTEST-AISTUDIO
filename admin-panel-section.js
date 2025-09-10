@@ -246,10 +246,21 @@ class AdminPanelSection {
                     result.adminSecundarios.forEach(admin => adminIds.add(admin.id));
                 }
                 
-                // Usar TODOS los administradores disponibles (no filtrar)
-                this.availableAdmins = result.availableAdmins;
+                // Filtrar solo administradores principales y secundarios
+                this.availableAdmins = result.availableAdmins.filter(admin => {
+                    // Si está en la lista de adminSecundarios, incluirlo
+                    if (adminIds.has(admin.id)) {
+                        return true;
+                    }
+                    
+                    // Filtro por roles (para casos donde no hay adminSecundarios)
+                    const role = admin.role_name || admin.role || '';
+                    return role === 'administrador_principal' || role === 'administrador_secundario' || 
+                           admin.is_principal || admin.is_secondary ||
+                           admin.nickname === 'AdminPrincipal'; // Incluir admin principal por nickname
+                });
                 
-                console.log(`👥 Administradores disponibles: ${this.availableAdmins.length} totales`);
+                console.log(`👥 Administradores disponibles filtrados: ${this.availableAdmins.length} (de ${result.availableAdmins.length} totales)`);
                 console.log(`🔍 Tipos encontrados:`, this.availableAdmins.map(a => ({
                     id: a.id,
                     nickname: a.nickname,

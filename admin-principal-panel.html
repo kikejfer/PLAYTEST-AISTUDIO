@@ -1597,15 +1597,17 @@
 
 
         function getAdminOptions(currentAdminId) {
-            console.log('🔍 DEBUG getAdminOptions - Available admins:', panelData.administradoresSecundarios);
+            // Usar los mismos administradores filtrados que las secciones genéricas (solo Principal y Secundarios)
+            const availableAdmins = window.adminPanelSection ? window.adminPanelSection.availableAdmins : [];
+            console.log('🔍 DEBUG getAdminOptions - Available admins:', availableAdmins);
             
-            if (!panelData.administradoresSecundarios || panelData.administradoresSecundarios.length === 0) {
+            if (!availableAdmins || availableAdmins.length === 0) {
                 return '<option value="">No hay administradores disponibles</option>';
             }
             
             let options = '<option value="null">Sin asignar</option>';
             
-            return options + panelData.administradoresSecundarios.map(admin => 
+            return options + availableAdmins.map(admin => 
                 `<option value="${admin.id}" ${admin.id === currentAdminId ? 'selected' : ''}>
                     ${admin.nickname}
                 </option>`
