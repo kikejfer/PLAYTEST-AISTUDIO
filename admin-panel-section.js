@@ -18,6 +18,7 @@ class AdminPanelSection {
         this.expandedRows = new Set();
         this.expandedBlocks = new Set();
         this.apiService = null; // Se inicializará cuando esté disponible
+        this.availableAdmins = []; // Lista de administradores disponibles
         this.ensureStyles(); // Asegurar que los estilos PAP estén disponibles
     }
 
@@ -229,6 +230,12 @@ class AdminPanelSection {
             console.log(`📡 Llamando endpoint: ${endpoint}`);
             const result = await this.apiService.apiCall(endpoint);
             console.log(`🔍 Respuesta completa de la API:`, result);
+            
+            // Almacenar administradores disponibles para los desplegables
+            if (result.availableAdmins) {
+                this.availableAdmins = result.availableAdmins;
+                console.log(`👥 Administradores disponibles guardados: ${this.availableAdmins.length}`);
+            }
             
             // Filtrar por el rol específico
             const rolKey = rolAdministrado.toLowerCase() + 'es'; // 'profesores' o 'creadores'
@@ -495,9 +502,29 @@ class AdminPanelSection {
      * @returns {string} HTML de opciones
      */
     generarOpcionesAdmin(currentAdminId) {
-        // Implementar según los administradores disponibles
-        // Por ahora retornamos vacío, se implementará cuando se integre
-        return '';
+        if (!this.availableAdmins || this.availableAdmins.length === 0) {
+            return '<option value="">No hay administradores disponibles</option>';
+        }
+
+        let options = '';
+        
+        // Agregar opción para quitar asignación
+        options += '<option value="null">Sin asignar</option>';
+        
+        this.availableAdmins.forEach(admin => {
+            // No mostrar el administrador actual como opción
+            if (admin.id !== currentAdminId) {
+                // Determinar el tipo de administrador
+                const tipoAdmin = admin.is_principal || admin.role === 'administrador_principal' 
+                    ? 'Principal' 
+                    : 'Secundario';
+                
+                const displayName = `${admin.nickname || admin.first_name || 'Admin'} (${tipoAdmin})`;
+                options += `<option value="${admin.id}">${displayName}</option>`;
+            }
+        });
+        
+        return options;
     }
 
     /**
