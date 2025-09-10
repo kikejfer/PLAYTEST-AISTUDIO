@@ -238,8 +238,14 @@ class AdminPanelSection {
             
             // Almacenar administradores disponibles para los desplegables
             if (result.availableAdmins) {
-                this.availableAdmins = result.availableAdmins;
-                console.log(`👥 Administradores disponibles guardados: ${this.availableAdmins.length}`);
+                // Filtrar solo administradores principales y secundarios
+                this.availableAdmins = result.availableAdmins.filter(admin => {
+                    const role = admin.role_name || admin.role || '';
+                    return role === 'administrador_principal' || role === 'administrador_secundario' || 
+                           admin.is_principal || admin.is_secondary;
+                });
+                console.log(`👥 Administradores disponibles filtrados: ${this.availableAdmins.length} (de ${result.availableAdmins.length} totales)`);
+                console.log(`🔍 Tipos encontrados:`, this.availableAdmins.map(a => a.role_name || a.role || 'unknown'));
             }
             
             // Filtrar por el rol específico
