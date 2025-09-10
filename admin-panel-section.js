@@ -458,7 +458,11 @@ class AdminPanelSection {
         try {
             console.log(`📚 Cargando bloques para ${tipo} ID: ${userId}`);
             
-            const endpoint = `/roles-updated/${tipo}s/${userId}/bloques`;
+            // Corregir endpoint con terminación correcta
+            const tipoPlural = tipo.toLowerCase() + 'es'; // 'profesores' o 'creadores'
+            const endpoint = `/roles-updated/${tipoPlural}/${userId}/bloques`;
+            console.log(`📡 Endpoint bloques: ${endpoint}`);
+            
             const result = await this.apiService.apiCall(endpoint);
             const bloques = result.bloques || [];
             
@@ -534,7 +538,13 @@ class AdminPanelSection {
             
         } catch (error) {
             console.error('Error cargando bloques:', error);
-            container.innerHTML = '<p style="color: #EF4444; padding: 20px;">Error al cargar los bloques</p>';
+            console.error('Error detalles:', {
+                userId,
+                tipo,
+                endpoint: `/roles-updated/${tipo.toLowerCase() + 'es'}/${userId}/bloques`,
+                errorMessage: error.message
+            });
+            container.innerHTML = `<p style="color: #EF4444; padding: 20px;">Error al cargar los bloques: ${error.message}</p>`;
         }
     }
 
