@@ -707,17 +707,21 @@
                             
                             // Filter data for secondary admin
                             let profesoresAsignados = [];
+                            let creadoresAsignados = [];
                             let jugadoresAsignados = [];
                             
                             if (currentUserId) {
-                                // Filter by user ID
+                                // Filter by user ID - SEPARAR PROFESORES Y CREADORES
                                 profesoresAsignados = (mainData.profesoresCreadores || []).filter(p => 
-                                    p.assigned_admin_id === currentUserId
+                                    p.assigned_admin_id === currentUserId && p.role_name === 'profesor'
+                                );
+                                creadoresAsignados = (mainData.profesoresCreadores || []).filter(c => 
+                                    c.assigned_admin_id === currentUserId && c.role_name === 'creador'
                                 );
                                 jugadoresAsignados = (mainData.jugadores || []).filter(j => 
                                     j.assigned_admin_id === currentUserId
                                 );
-                                console.log(`🎯 Filtering by user ID ${currentUserId}`);
+                                console.log(`🎯 Filtering by user ID ${currentUserId} - Profesores: ${profesoresAsignados.length}, Creadores: ${creadoresAsignados.length}`);
                             } else {
                                 // Fallback: try to find by nickname in the admin list and get assignments
                                 const currentUserData = (mainData.administradoresSecundarios || []).find(admin => 
@@ -727,29 +731,41 @@
                                 if (currentUserData && currentUserData.id) {
                                     console.log(`🔄 Found user by nickname, using ID: ${currentUserData.id}`);
                                     profesoresAsignados = (mainData.profesoresCreadores || []).filter(p => 
-                                        p.assigned_admin_id === currentUserData.id
+                                        p.assigned_admin_id === currentUserData.id && p.role_name === 'profesor'
+                                    );
+                                    creadoresAsignados = (mainData.profesoresCreadores || []).filter(c => 
+                                        c.assigned_admin_id === currentUserData.id && c.role_name === 'creador'
                                     );
                                     jugadoresAsignados = (mainData.jugadores || []).filter(j => 
                                         j.assigned_admin_id === currentUserData.id
                                     );
                                 } else {
-                                    // Last resort: show a few sample entries for kikejfer
+                                    // Last resort: show sample data
                                     console.log(`⚠️ Could not find user ID, showing sample data for kikejfer`);
-                                    profesoresAsignados = (mainData.profesores || []).slice(0, 2);
+                                    const allProfesoresCreadores = mainData.profesoresCreadores || [];
+                                    profesoresAsignados = allProfesoresCreadores.filter(p => p.role_name === 'profesor').slice(0, 2);
+                                    creadoresAsignados = allProfesoresCreadores.filter(c => c.role_name === 'creador').slice(0, 2);
                                     jugadoresAsignados = (mainData.jugadores || []).slice(0, 3);
                                 }
                             }
                             
+                            console.log('🗐️ Final filtered data:', {
+                                profesores: profesoresAsignados,
+                                creadores: creadoresAsignados, 
+                                jugadores: jugadoresAsignados
+                            });
+                            
                             // Adapt the data for secondary admin panel
                             panelData = {
                                 profesores: profesoresAsignados,
-                                creadores: [],
+                                creadores: creadoresAsignados,
                                 jugadores: jugadoresAsignados
                             };
                             
                             console.log('Admin secundario data filtered:', {
                                 currentUserId,
                                 profesores: profesoresAsignados.length,
+                                creadores: creadoresAsignados.length,
                                 jugadores: jugadoresAsignados.length
                             });
                             
@@ -1015,32 +1031,24 @@
             tbody.innerHTML = '';
 
             const profesores = panelData.profesores || [];
-
-            if (profesores.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="10" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
-                    <div style="padding: 20px;">
-                        <div style="font-size: 18px; margin-bottom: 10px;">👨‍🏫</div>
-                        <div style="font-weight: bold; margin-bottom: 5px;">No tienes profesores asignados</div>
-                        <div style="font-size: 12px; color: #778DA9;">Un administrador principal debe asignarte profesores para gestionar.</div>
-                    </div>
-                </td>`;
-                tbody.appendChild(row);
-                return;
-            }
-
+            console.log('👨‍🏫 DEBUG renderProfesoresTable - profesores data:', profesores);
+            
             profesores.forEach((profesor, index) => {
+                console.log(`👨‍🏫 Processing profesor ${index}:`, profesor);
+                
                 const row = document.createElement('tr');
                 const profesorId = profesor.id || profesor.user_id;
                 const isExpanded = expandedRows.has(`profesor-${profesorId}`);
                 const fullName = profesor.first_name || 
                                 [profesor.first_name, profesor.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
-                // Información específica para profesores según nueva especificación
-                const bloquesCreados = profesor.blocks_created || 0;
-                const totalTemas = profesor.total_topics || 0;
-                const totalPreguntas = profesor.total_questions || 0;
-                const totalAlumnos = profesor.estudiantes || 0;
+                // Información específica para profesores - IGUAL QUE PAP + más campos
+                const bloquesCreados = profesor.blocks_created || profesor.bloques_creados || 0;
+                const totalTemas = profesor.total_topics || profesor.total_temas || profesor.num_temas || 0;
+                const totalPreguntas = profesor.total_questions || profesor.total_preguntas || profesor.preguntas_totales || 0;
+                const totalAlumnos = profesor.estudiantes || profesor.alumnos || profesor.total_usuarios || 0;
+                
+                console.log(`👨‍🏫 Mapped profesor data: ${profesor.nickname}, bloques: ${bloquesCreados}, temas: ${totalTemas}, preguntas: ${totalPreguntas}, alumnos: ${totalAlumnos}`);
                 
                 row.innerHTML = `
                     <td>
@@ -1057,7 +1065,7 @@
                     <td>
                         <select onchange="reassignUser(${profesorId}, this.value)">
                             <option value="">${profesor.assigned_admin_nickname || 'Sin asignar'}</option>
-                            ${getAdminOptions ? getAdminOptions(profesor.assigned_admin_id) : ''}
+                            ${getAdminOptions(profesor.assigned_admin_id)}
                         </select>
                     </td>
                     <td class="luminarias">
@@ -1069,7 +1077,7 @@
                 `;
                 tbody.appendChild(row);
 
-                // Fila expandible para bloques
+                // Fila expandible para bloques - MISMO COLSPAN QUE PAP
                 if (isExpanded) {
                     const expandRow = document.createElement('tr');
                     expandRow.className = 'expandable-row show';
@@ -1091,32 +1099,24 @@
             tbody.innerHTML = '';
 
             const creadores = panelData.creadores || [];
-
-            if (creadores.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="10" style="text-align: center; color: #778DA9; padding: 30px; background: #1B263B;">
-                    <div style="padding: 20px;">
-                        <div style="font-size: 18px; margin-bottom: 10px;">🎨</div>
-                        <div style="font-weight: bold; margin-bottom: 5px;">No tienes creadores de contenido asignados</div>
-                        <div style="font-size: 12px; color: #778DA9;">Un administrador principal debe asignarte creadores para gestionar.</div>
-                    </div>
-                </td>`;
-                tbody.appendChild(row);
-                return;
-            }
-
+            console.log('🎨 DEBUG renderCreadoresTable - creadores data:', creadores);
+            
             creadores.forEach((creador, index) => {
+                console.log(`🎨 Processing creador ${index}:`, creador);
+                
                 const row = document.createElement('tr');
                 const creadorId = creador.id || creador.user_id;
                 const isExpanded = expandedRows.has(`creador-${creadorId}`);
                 const fullName = creador.first_name || 
                                 [creador.first_name, creador.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
-                // Información específica para creadores según nueva especificación
-                const bloquesCreados = creador.blocks_created || 0;
-                const totalTemas = creador.total_topics || 0;
-                const totalPreguntas = creador.total_questions || 0;
-                const totalEstudiantes = creador.usuarios || 0;
+                // Información específica para creadores - IGUAL QUE PAP + más campos
+                const bloquesCreados = creador.blocks_created || creador.bloques_creados || 0;
+                const totalTemas = creador.total_topics || creador.total_temas || creador.num_temas || 0;
+                const totalPreguntas = creador.total_questions || creador.total_preguntas || creador.preguntas_totales || 0;
+                const totalEstudiantes = creador.usuarios || creador.estudiantes || creador.total_usuarios || 0;
+                
+                console.log(`🎨 Mapped creador data: ${creador.nickname}, bloques: ${bloquesCreados}, temas: ${totalTemas}, preguntas: ${totalPreguntas}, estudiantes: ${totalEstudiantes}`);
                 
                 row.innerHTML = `
                     <td>
@@ -1133,7 +1133,7 @@
                     <td>
                         <select onchange="reassignUser(${creadorId}, this.value)">
                             <option value="">${creador.assigned_admin_nickname || 'Sin asignar'}</option>
-                            ${getAdminOptions ? getAdminOptions(creador.assigned_admin_id) : ''}
+                            ${getAdminOptions(creador.assigned_admin_id)}
                         </select>
                     </td>
                     <td class="luminarias">
@@ -1145,7 +1145,7 @@
                 `;
                 tbody.appendChild(row);
 
-                // Fila expandible para bloques
+                // Fila expandible para bloques - MISMO COLSPAN QUE PAP
                 if (isExpanded) {
                     const expandRow = document.createElement('tr');
                     expandRow.className = 'expandable-row show';
