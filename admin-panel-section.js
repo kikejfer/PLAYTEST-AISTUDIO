@@ -34,11 +34,37 @@ class AdminPanelSection {
      * @returns {boolean} true si el servicio está disponible
      */
     ensureApiService() {
+        // Debugging: ver qué servicios están disponibles
+        console.log('🔍 DEBUG servicios disponibles:', {
+            apiDataService: !!window.apiDataService,
+            APIDataService: !!window.APIDataService,
+            loadPanelData: !!window.loadPanelData,
+            adminPanelApi: !!window.adminPanelApi
+        });
+        
         if (!this.apiService && window.apiDataService) {
             console.log('🔌 Inicializando apiDataService...');
             this.apiService = window.apiDataService;
             return true;
         }
+        
+        // Intentar usar el servicio que usa el panel principal
+        if (!this.apiService && typeof loadPanelData === 'function') {
+            console.log('🔌 Usando loadPanelData como servicio alternativo...');
+            this.apiService = {
+                apiCall: async (endpoint) => {
+                    // Adaptar loadPanelData para usar el mismo formato que apiCall
+                    if (endpoint === '/roles-updated/admin-principal-panel') {
+                        return await loadPanelData();
+                    } else if (endpoint === '/roles-updated/admin-secundario-panel') {
+                        return await loadPanelData();
+                    }
+                    throw new Error(`Endpoint ${endpoint} no soportado`);
+                }
+            };
+            return true;
+        }
+        
         return !!this.apiService;
     }
 
