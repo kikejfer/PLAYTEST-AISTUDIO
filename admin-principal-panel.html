@@ -1301,8 +1301,8 @@
         function renderTables() {
             renderAdminsTable();
             renderSupportTable();
-            renderProfesoresTable();
-            renderCreadoresTable();
+            // renderProfesoresTable(); // ❌ Ahora usa módulo genérico
+            // renderCreadoresTable();  // ❌ Ahora usa módulo genérico
             renderJugadoresAdminPrincipalTable();
             renderJugadoresOtrosAdminsTable();
             
@@ -1315,8 +1315,8 @@
 
         function applyInitialLimits() {
             const tablesToLimit = [
-                'profesores-table',
-                'creadores-table', 
+                // 'profesores-table',   // ❌ Ahora usa módulo genérico
+                // 'creadores-table',    // ❌ Ahora usa módulo genérico
                 'jugadores-admin-principal-table',
                 'jugadores-otros-admins-table'
             ];

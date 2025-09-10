@@ -238,14 +238,35 @@ class AdminPanelSection {
             
             // Almacenar administradores disponibles para los desplegables
             if (result.availableAdmins) {
+                console.log(`🔍 DEBUG availableAdmins estructura:`, result.availableAdmins.slice(0, 3));
+                
+                // Si tenemos adminSecundarios en result, usar esos datos para el filtro
+                const adminIds = new Set();
+                if (result.adminSecundarios) {
+                    result.adminSecundarios.forEach(admin => adminIds.add(admin.id));
+                }
+                
                 // Filtrar solo administradores principales y secundarios
+                // Primero intentar con los adminSecundarios, luego con filtros de role
                 this.availableAdmins = result.availableAdmins.filter(admin => {
+                    // Si está en la lista de adminSecundarios, incluirlo
+                    if (adminIds.has(admin.id)) {
+                        return true;
+                    }
+                    
+                    // Filtro por roles (para casos donde no hay adminSecundarios)
                     const role = admin.role_name || admin.role || '';
                     return role === 'administrador_principal' || role === 'administrador_secundario' || 
-                           admin.is_principal || admin.is_secondary;
+                           admin.is_principal || admin.is_secondary ||
+                           admin.nickname === 'AdminPrincipal'; // Incluir admin principal por nickname
                 });
+                
                 console.log(`👥 Administradores disponibles filtrados: ${this.availableAdmins.length} (de ${result.availableAdmins.length} totales)`);
-                console.log(`🔍 Tipos encontrados:`, this.availableAdmins.map(a => a.role_name || a.role || 'unknown'));
+                console.log(`🔍 Tipos encontrados:`, this.availableAdmins.map(a => ({
+                    id: a.id,
+                    nickname: a.nickname,
+                    role_name: a.role_name || a.role || 'unknown'
+                })));
             }
             
             // Filtrar por el rol específico
