@@ -735,7 +735,7 @@ class AdminPanelSection {
         try {
             console.log(`📝 Cargando temas para bloque ID: ${blockId}`);
             
-            const result = await this.apiService.apiCall(`/roles-updated/bloques/${blockId}/topics`);
+            const result = await this.apiService.apiCall(`/roles-updated/bloques/${blockId}/temas`);
             const temas = result.topics || result.temas || [];
             
             if (temas.length === 0) {
