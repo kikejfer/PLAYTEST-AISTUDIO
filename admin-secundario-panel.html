@@ -873,9 +873,11 @@
                     // Direct backend data structure
                     console.log('✅ Using direct backend data structure');
                     console.log('🔍 PAS DEBUG - Backend data keys:', Object.keys(data));
+                    console.log('🔍 PAS DEBUG - data completa del backend:', data);
                     console.log('🔍 PAS DEBUG - Profesores:', data.profesores?.length || 0);
                     console.log('🔍 PAS DEBUG - Creadores:', data.creadores?.length || 0);
                     console.log('🔍 PAS DEBUG - Jugadores:', data.jugadores?.length || 0);
+                    console.log('🔍 PAS DEBUG - data.jugadores array:', data.jugadores);
                     panelData = data;
                 } else if (data.profesoresCreadores && data.usuarios) {
                     console.log('🔄 Need to filter data for this admin');
@@ -1165,6 +1167,9 @@
         function renderUsuariosTable() {
             const tbody = document.getElementById('usuarios-tbody');
             tbody.innerHTML = '';
+
+            console.log('🔍 PAS DEBUG renderUsuariosTable - panelData.jugadores:', panelData.jugadores);
+            console.log('🔍 PAS DEBUG renderUsuariosTable - panelData completo:', panelData);
 
             if (!panelData.jugadores || panelData.jugadores.length === 0) {
                 const row = document.createElement('tr');

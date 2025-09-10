@@ -1145,6 +1145,11 @@
                 if (backendAvailable && response && response.ok) {
                     console.log('✅ Procesando respuesta del backend principal');
                     const data = await response.json();
+                    
+                    console.log('🔍 PAP DEBUG - data completa del backend:', data);
+                    console.log('🔍 PAP DEBUG - data.jugadoresAdminPrincipal:', data.jugadoresAdminPrincipal);
+                    console.log('🔍 PAP DEBUG - data.jugadoresOtrosAdmins:', data.jugadoresOtrosAdmins);
+                    console.log('🔍 PAP DEBUG - data.jugadores:', data.jugadores);
 
                 panelData = {
                     administradoresSecundarios: data.adminSecundarios || [],
@@ -1176,9 +1181,17 @@
                     panelData.creadores?.forEach(user => {
                         console.log(`  - ${user.nickname} (ID: ${user.id})`);
                     });
-                    console.log('🔍 FRONTEND DEBUG - Jugadores:');
+                    console.log('🔍 FRONTEND DEBUG - Jugadores (general):');
                     panelData.jugadores?.forEach(user => {
                         console.log(`  - ${user.nickname} (ID: ${user.id})`);
+                    });
+                    console.log('🔍 FRONTEND DEBUG - Jugadores Admin Principal:');
+                    panelData.jugadoresAdminPrincipal?.forEach(user => {
+                        console.log(`  - ${user.nickname} (ID: ${user.id}, assigned_admin_id: ${user.assigned_admin_id})`);
+                    });
+                    console.log('🔍 FRONTEND DEBUG - Jugadores Otros Admins:');
+                    panelData.jugadoresOtrosAdmins?.forEach(user => {
+                        console.log(`  - ${user.nickname} (ID: ${user.id}, assigned_admin_id: ${user.assigned_admin_id})`);
                     });
                     console.log('🔍 FRONTEND DEBUG - Soporte Técnico:');
                     panelData.soporteTecnico?.forEach(user => {
