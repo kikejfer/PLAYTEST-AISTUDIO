@@ -248,16 +248,27 @@ class AdminPanelSection {
                 
                 // Filtrar solo administradores principales y secundarios
                 this.availableAdmins = result.availableAdmins.filter(admin => {
-                    // Si está en la lista de adminSecundarios, incluirlo
-                    if (adminIds.has(admin.id)) {
-                        return true;
-                    }
-                    
-                    // Filtro por roles (para casos donde no hay adminSecundarios)
+                    // Debug para ver cada admin evaluado
+                    const inAdminSecundarios = adminIds.has(admin.id);
                     const role = admin.role_name || admin.role || '';
-                    return role === 'administrador_principal' || role === 'administrador_secundario' || 
-                           admin.is_principal || admin.is_secondary ||
-                           admin.nickname === 'AdminPrincipal'; // Incluir admin principal por nickname
+                    const isRoleMatch = role === 'administrador_principal' || role === 'administrador_secundario';
+                    const isPropMatch = admin.is_principal || admin.is_secondary;
+                    const isNicknameMatch = admin.nickname === 'AdminPrincipal';
+                    
+                    const shouldInclude = inAdminSecundarios || isRoleMatch || isPropMatch || isNicknameMatch;
+                    
+                    console.log(`🔍 Admin evaluado:`, {
+                        id: admin.id,
+                        nickname: admin.nickname,
+                        role: role,
+                        inAdminSecundarios,
+                        isRoleMatch,
+                        isPropMatch,
+                        isNicknameMatch,
+                        shouldInclude
+                    });
+                    
+                    return shouldInclude;
                 });
                 
                 console.log(`👥 Administradores disponibles filtrados: ${this.availableAdmins.length} (de ${result.availableAdmins.length} totales)`);
@@ -297,6 +308,16 @@ class AdminPanelSection {
      * @returns {Object} Características calculadas
      */
     calcularCaracteristicas(registro, rolAdministrado) {
+        // Debug temporal para ver los valores de preguntas
+        console.log(`🔍 DEBUG calcularCaracteristicas ${rolAdministrado}:`, {
+            id: registro.id,
+            nickname: registro.nickname,
+            total_preguntas: registro.total_preguntas,
+            total_questions: registro.total_questions,
+            preguntas_totales: registro.preguntas_totales,
+            registro_completo: registro
+        });
+        
         return {
             // Nickname/Nombre del assigned_user_id
             nickname: registro.nickname || 'Sin nickname',
