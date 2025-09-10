@@ -402,68 +402,32 @@
             </div>
         </div>
 
-        <!-- Sección 1: Profesores Asignados -->
+        <!-- Sección 1: Profesores Asignados (Módulo Genérico) -->
         <div class="section">
             <div class="section-header">
-                <span>Profesores Asignados</span>
-                <div class="section-actions" style="margin-left: auto;">
-                    <input type="text" id="profesores-search" placeholder="Buscar profesores..." style="padding: 5px 10px; border: 1px solid #415A77; border-radius: 3px; background: #1B263B; color: #E0E1DD; font-size: 14px;">
-                </div>
+                <span>👨‍🏫 Profesores Asignados (Módulo Genérico)</span>
+                <button class="btn btn-secondary" onclick="refreshProfesoresAsignadosGenerico()" style="background: #415A77; border: 1px solid #778DA9;">
+                    🔄 Refrescar
+                </button>
             </div>
             <div class="section-content">
-                <div class="table-container">
-                    <table id="profesores-table">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>Nickname / Nombre</th>
-                                <th>Email</th>
-                                <th>Bloques Creados</th>
-                                <th>Temas</th>
-                                <th>Preguntas</th>
-                                <th>Alumnos</th>
-                                <th>Administrador</th>
-                                <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
-                                <th>🗑️</th>
-                            </tr>
-                        </thead>
-                        <tbody id="profesores-tbody">
-                            <!-- Los datos se cargan dinámicamente -->
-                        </tbody>
-                    </table>
+                <div id="profesores-asignados-section">
+                    <div class="loading">Cargando profesores asignados...</div>
                 </div>
             </div>
         </div>
 
-        <!-- Sección 2: Creadores de Contenido Asignados -->
+        <!-- Sección 2: Creadores Asignados (Módulo Genérico) -->
         <div class="section">
             <div class="section-header">
-                <span>Creadores Asignados</span>
-                <div class="section-actions" style="margin-left: auto;">
-                    <input type="text" id="creadores-search" placeholder="Buscar creadores..." style="padding: 5px 10px; border: 1px solid #415A77; border-radius: 3px; background: #1B263B; color: #E0E1DD; font-size: 14px;">
-                </div>
+                <span>🎨 Creadores Asignados (Módulo Genérico)</span>
+                <button class="btn btn-secondary" onclick="refreshCreadoresAsignadosGenerico()" style="background: #415A77; border: 1px solid #778DA9;">
+                    🔄 Refrescar
+                </button>
             </div>
             <div class="section-content">
-                <div class="table-container">
-                    <table id="creadores-table">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>Nickname / Nombre</th>
-                                <th>Email</th>
-                                <th>Bloques Creados</th>
-                                <th>Temas</th>
-                                <th>Preguntas</th>
-                                <th>Estudiantes</th>
-                                <th>Administrador</th>
-                                <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
-                                <th>🗑️</th>
-                            </tr>
-                        </thead>
-                        <tbody id="creadores-tbody">
-                            <!-- Los datos se cargan dinámicamente -->
-                        </tbody>
-                    </table>
+                <div id="creadores-asignados-section">
+                    <div class="loading">Cargando creadores asignados...</div>
                 </div>
             </div>
         </div>
@@ -495,37 +459,6 @@
             </div>
         </div>
 
-        <!-- NUEVAS SECCIONES CON MÓDULO GENÉRICO -->
-        
-        <!-- Nueva Sección: Profesores Asignados (Módulo Genérico) -->
-        <div class="section">
-            <div class="section-header">
-                <span>👨‍🏫 Profesores Asignados (Módulo Genérico)</span>
-                <button class="btn btn-secondary" onclick="refreshProfesoresAsignadosGenerico()" style="background: #415A77; border: 1px solid #778DA9;">
-                    🔄 Refrescar
-                </button>
-            </div>
-            <div class="section-content">
-                <div id="profesores-asignados-generico-section">
-                    <div class="loading">Inicializando módulo genérico para profesores asignados...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Nueva Sección: Creadores Asignados (Módulo Genérico) -->
-        <div class="section">
-            <div class="section-header">
-                <span>🎨 Creadores Asignados (Módulo Genérico)</span>
-                <button class="btn btn-secondary" onclick="refreshCreadoresAsignadosGenerico()" style="background: #415A77; border: 1px solid #778DA9;">
-                    🔄 Refrescar
-                </button>
-            </div>
-            <div class="section-content">
-                <div id="creadores-asignados-generico-section">
-                    <div class="loading">Inicializando módulo genérico para creadores asignados...</div>
-                </div>
-            </div>
-        </div>
 
     </div>
 
@@ -2060,34 +1993,34 @@
         // Funciones para inicializar las NUEVAS secciones del módulo genérico en PAS
         async function initializeProfesoresAsignadosGenerico() {
             try {
-                await adminPanelSection.renderizarSeccion('profesores-asignados-generico-section', 'Secundario', 'Profesor');
+                await adminPanelSection.renderizarSeccion('profesores-asignados-section', 'Secundario', 'Profesor');
                 console.log('✅ Sección Profesores Asignados (Módulo Genérico) PAS inicializada');
             } catch (error) {
                 console.error('❌ Error inicializando sección Profesores Asignados (Módulo Genérico) PAS:', error);
-                document.getElementById('profesores-asignados-generico-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Error al cargar: ' + error.message + '</div>';
+                document.getElementById('profesores-asignados-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Error al cargar: ' + error.message + '</div>';
             }
         }
 
         async function initializeCreadoresAsignadosGenerico() {
             try {
-                await adminPanelSection.renderizarSeccion('creadores-asignados-generico-section', 'Secundario', 'Creador');
+                await adminPanelSection.renderizarSeccion('creadores-asignados-section', 'Secundario', 'Creador');
                 console.log('✅ Sección Creadores Asignados (Módulo Genérico) PAS inicializada');
             } catch (error) {
                 console.error('❌ Error inicializando sección Creadores Asignados (Módulo Genérico) PAS:', error);
-                document.getElementById('creadores-asignados-generico-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Error al cargar: ' + error.message + '</div>';
+                document.getElementById('creadores-asignados-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Error al cargar: ' + error.message + '</div>';
             }
         }
 
         // Funciones para refrescar las NUEVAS secciones
         async function refreshProfesoresAsignadosGenerico() {
             console.log('🔄 Refrescando sección Profesores Asignados (Módulo Genérico)...');
-            document.getElementById('profesores-asignados-generico-section').innerHTML = '<div class="loading">Refrescando...</div>';
+            document.getElementById('profesores-asignados-section').innerHTML = '<div class="loading">Refrescando...</div>';
             await initializeProfesoresAsignadosGenerico();
         }
 
         async function refreshCreadoresAsignadosGenerico() {
             console.log('🔄 Refrescando sección Creadores Asignados (Módulo Genérico)...');
-            document.getElementById('creadores-asignados-generico-section').innerHTML = '<div class="loading">Refrescando...</div>';
+            document.getElementById('creadores-asignados-section').innerHTML = '<div class="loading">Refrescando...</div>';
             await initializeCreadoresAsignadosGenerico();
         }
 
@@ -2119,8 +2052,8 @@
                     await initializeCreadoresAsignadosGenerico();
                 } else {
                     console.error('❌ Módulo adminPanelSection no disponible');
-                    document.getElementById('profesores-asignados-generico-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Módulo genérico no cargado</div>';
-                    document.getElementById('creadores-asignados-generico-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Módulo genérico no cargado</div>';
+                    document.getElementById('profesores-asignados-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Módulo genérico no cargado</div>';
+                    document.getElementById('creadores-asignados-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Módulo genérico no cargado</div>';
                 }
             }, 2000); // Aumentado a 2 segundos
         });

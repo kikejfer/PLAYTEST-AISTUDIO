@@ -676,68 +676,32 @@
             </div>
         </div>
 
-        <!-- Sección 3: Profesores -->
+        <!-- Sección 3: Profesores (Módulo Genérico) -->
         <div class="section">
             <div class="section-header">
-                <span>Profesores</span>
-                <div class="section-actions">
-                    <input type="text" id="profesores-search" placeholder="Buscar profesores..." style="padding: 5px 10px; border: 1px solid #415A77; border-radius: 3px; background: #1B263B; color: #E0E1DD; font-size: 14px;">
-                </div>
+                <span>👨‍🏫 Profesores (Módulo Genérico)</span>
+                <button class="btn btn-secondary" onclick="refreshProfesoresGenerico()" style="background: #415A77; border: 1px solid #778DA9;">
+                    🔄 Refrescar
+                </button>
             </div>
             <div class="section-content">
-                <div class="table-container">
-                    <table id="profesores-table">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>Nickname / Nombre</th>
-                                <th>Email</th>
-                                <th>Bloques Creados</th>
-                                <th>Temas</th>
-                                <th>Preguntas</th>
-                                <th>Alumnos</th>
-                                <th>Administrador</th>
-                                <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
-                                <th>🗑️</th>
-                            </tr>
-                        </thead>
-                        <tbody id="profesores-tbody">
-                            <!-- Los datos se cargan dinámicamente -->
-                        </tbody>
-                    </table>
+                <div id="profesores-section">
+                    <div class="loading">Cargando profesores...</div>
                 </div>
             </div>
         </div>
 
-        <!-- Sección 4: Creadores -->
+        <!-- Sección 4: Creadores (Módulo Genérico) -->
         <div class="section">
             <div class="section-header">
-                <span>Creadores</span>
-                <div class="section-actions">
-                    <input type="text" id="creadores-search" placeholder="Buscar creadores..." style="padding: 5px 10px; border: 1px solid #415A77; border-radius: 3px; background: #1B263B; color: #E0E1DD; font-size: 14px;">
-                </div>
+                <span>🎨 Creadores (Módulo Genérico)</span>
+                <button class="btn btn-secondary" onclick="refreshCreadoresGenerico()" style="background: #415A77; border: 1px solid #778DA9;">
+                    🔄 Refrescar
+                </button>
             </div>
             <div class="section-content">
-                <div class="table-container">
-                    <table id="creadores-table">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>Nickname / Nombre</th>
-                                <th>Email</th>
-                                <th>Bloques Creados</th>
-                                <th>Temas</th>
-                                <th>Preguntas</th>
-                                <th>Estudiantes</th>
-                                <th>Administrador</th>
-                                <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
-                                <th>🗑️</th>
-                            </tr>
-                        </thead>
-                        <tbody id="creadores-tbody">
-                            <!-- Los datos se cargan dinámicamente -->
-                        </tbody>
-                    </table>
+                <div id="creadores-section">
+                    <div class="loading">Cargando creadores...</div>
                 </div>
             </div>
         </div>
@@ -800,37 +764,6 @@
             </div>
         </div>
 
-        <!-- NUEVAS SECCIONES CON MÓDULO GENÉRICO -->
-        
-        <!-- Nueva Sección: Profesores (Módulo Genérico) -->
-        <div class="section">
-            <div class="section-header">
-                <span>👨‍🏫 Profesores (Módulo Genérico)</span>
-                <button class="btn btn-secondary" onclick="refreshProfesoresGenerico()" style="background: #415A77; border: 1px solid #778DA9;">
-                    🔄 Refrescar
-                </button>
-            </div>
-            <div class="section-content">
-                <div id="profesores-generico-section">
-                    <div class="loading">Inicializando módulo genérico para profesores...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Nueva Sección: Creadores (Módulo Genérico) -->
-        <div class="section">
-            <div class="section-header">
-                <span>🎨 Creadores (Módulo Genérico)</span>
-                <button class="btn btn-secondary" onclick="refreshCreadoresGenerico()" style="background: #415A77; border: 1px solid #778DA9;">
-                    🔄 Refrescar
-                </button>
-            </div>
-            <div class="section-content">
-                <div id="creadores-generico-section">
-                    <div class="loading">Inicializando módulo genérico para creadores...</div>
-                </div>
-            </div>
-        </div>
 
     </div>
 
@@ -2944,34 +2877,34 @@ Esto hará que:
         // Funciones para inicializar las NUEVAS secciones del módulo genérico en PAP
         async function initializeProfesoresGenerico() {
             try {
-                await adminPanelSection.renderizarSeccion('profesores-generico-section', 'Principal', 'Profesor');
+                await adminPanelSection.renderizarSeccion('profesores-section', 'Principal', 'Profesor');
                 console.log('✅ Sección Profesores (Módulo Genérico) PAP inicializada');
             } catch (error) {
                 console.error('❌ Error inicializando sección Profesores (Módulo Genérico) PAP:', error);
-                document.getElementById('profesores-generico-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Error al cargar: ' + error.message + '</div>';
+                document.getElementById('profesores-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Error al cargar: ' + error.message + '</div>';
             }
         }
 
         async function initializeCreadoresGenerico() {
             try {
-                await adminPanelSection.renderizarSeccion('creadores-generico-section', 'Principal', 'Creador');
+                await adminPanelSection.renderizarSeccion('creadores-section', 'Principal', 'Creador');
                 console.log('✅ Sección Creadores (Módulo Genérico) PAP inicializada');
             } catch (error) {
                 console.error('❌ Error inicializando sección Creadores (Módulo Genérico) PAP:', error);
-                document.getElementById('creadores-generico-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Error al cargar: ' + error.message + '</div>';
+                document.getElementById('creadores-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Error al cargar: ' + error.message + '</div>';
             }
         }
 
         // Funciones para refrescar las NUEVAS secciones
         async function refreshProfesoresGenerico() {
             console.log('🔄 Refrescando sección Profesores (Módulo Genérico)...');
-            document.getElementById('profesores-generico-section').innerHTML = '<div class="loading">Refrescando...</div>';
+            document.getElementById('profesores-section').innerHTML = '<div class="loading">Refrescando...</div>';
             await initializeProfesoresGenerico();
         }
 
         async function refreshCreadoresGenerico() {
             console.log('🔄 Refrescando sección Creadores (Módulo Genérico)...');
-            document.getElementById('creadores-generico-section').innerHTML = '<div class="loading">Refrescando...</div>';
+            document.getElementById('creadores-section').innerHTML = '<div class="loading">Refrescando...</div>';
             await initializeCreadoresGenerico();
         }
 
@@ -3003,8 +2936,8 @@ Esto hará que:
                     await initializeCreadoresGenerico();
                 } else {
                     console.error('❌ Módulo adminPanelSection no disponible');
-                    document.getElementById('profesores-generico-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Módulo genérico no cargado</div>';
-                    document.getElementById('creadores-generico-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Módulo genérico no cargado</div>';
+                    document.getElementById('profesores-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Módulo genérico no cargado</div>';
+                    document.getElementById('creadores-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Módulo genérico no cargado</div>';
                 }
             }, 2000); // Aumentado a 2 segundos
         });
