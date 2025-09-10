@@ -290,7 +290,7 @@ class AdminPanelSection {
         
         let html = `
             <div class="table-container">
-                <table class="admin-section-table">
+                <table>
                     <thead>
                         <tr>
                             <th></th>
