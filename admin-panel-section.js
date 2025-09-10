@@ -18,6 +18,92 @@ class AdminPanelSection {
         this.expandedRows = new Set();
         this.expandedBlocks = new Set();
         this.apiService = null; // Se inicializará cuando esté disponible
+        this.ensureStyles(); // Asegurar que los estilos PAP estén disponibles
+    }
+
+    /**
+     * Inyecta los estilos CSS de PAP si no están presentes
+     */
+    ensureStyles() {
+        // Verificar si ya existen los estilos
+        if (document.getElementById('admin-panel-section-styles')) {
+            return;
+        }
+
+        const style = document.createElement('style');
+        style.id = 'admin-panel-section-styles';
+        style.textContent = `
+            .admin-panel-section .table-container {
+                overflow-x: auto;
+                border-radius: 8px;
+                border: 1px solid #415A77;
+            }
+
+            .admin-panel-section table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+            }
+
+            .admin-panel-section th, .admin-panel-section td {
+                text-align: left;
+                padding: 12px;
+                border-bottom: 1px solid #415A77;
+                color: #E0E1DD;
+            }
+
+            .admin-panel-section th {
+                background: #415A77;
+                font-weight: 600;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                color: #E0E1DD;
+            }
+
+            .admin-panel-section tr:hover {
+                background: #415A77;
+            }
+
+            .admin-panel-section .btn-expand {
+                background: #778DA9;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                padding: 4px 8px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: bold;
+                transition: background 0.3s ease;
+            }
+
+            .admin-panel-section .btn-expand:hover {
+                background: #5A6C7D;
+            }
+
+            .admin-panel-section .nested-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 10px 0;
+                background: #1B263B;
+            }
+
+            .admin-panel-section .nested-table th {
+                background: #0D1B2A;
+                color: #E0E1DD;
+                padding: 8px;
+                font-size: 12px;
+                border-bottom: 1px solid #415A77;
+            }
+
+            .admin-panel-section .nested-table td {
+                padding: 8px;
+                font-size: 12px;
+                border-bottom: 1px solid #2C3E50;
+            }
+        `;
+        document.head.appendChild(style);
+        console.log('✨ Estilos PAP aplicados al módulo genérico');
     }
 
     /**
@@ -289,23 +375,24 @@ class AdminPanelSection {
         const mostrarAdmin = this.panelType === 'PAP';
         
         let html = `
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Nickname / Nombre</th>
-                            <th>Email</th>
-                            <th>Bloques Creados</th>
-                            <th>Temas</th>
-                            <th>Preguntas</th>
-                            <th>${etiquetaUsuarios}</th>
-                            ${mostrarAdmin ? '<th>Administrador</th>' : ''}
-                            <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
-                            <th>🗑️</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+            <div class="admin-panel-section">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Nickname / Nombre</th>
+                                <th>Email</th>
+                                <th>Bloques Creados</th>
+                                <th>Temas</th>
+                                <th>Preguntas</th>
+                                <th>${etiquetaUsuarios}</th>
+                                ${mostrarAdmin ? '<th>Administrador</th>' : ''}
+                                <th><img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 20px; width: 20px;"></th>
+                                <th>🗑️</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         if (registros.length === 0) {
@@ -381,6 +468,7 @@ class AdminPanelSection {
         html += `
                     </tbody>
                 </table>
+                </div>
             </div>
         `;
 
