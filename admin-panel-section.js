@@ -33,6 +33,12 @@ class AdminPanelSection {
         const style = document.createElement('style');
         style.id = 'admin-panel-section-styles';
         style.textContent = `
+            .admin-panel-section {
+                font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+                font-size: 14px;
+                line-height: 1.5;
+            }
+
             .admin-panel-section .table-container {
                 overflow-x: auto;
                 border-radius: 8px;
@@ -43,6 +49,7 @@ class AdminPanelSection {
                 width: 100%;
                 border-collapse: collapse;
                 margin-top: 10px;
+                font-size: 14px;
             }
 
             .admin-panel-section th, .admin-panel-section td {
@@ -50,6 +57,8 @@ class AdminPanelSection {
                 padding: 12px;
                 border-bottom: 1px solid #415A77;
                 color: #E0E1DD;
+                font-size: 14px;
+                line-height: 1.4;
             }
 
             .admin-panel-section th {
@@ -72,9 +81,10 @@ class AdminPanelSection {
                 border-radius: 3px;
                 padding: 4px 8px;
                 cursor: pointer;
-                font-size: 16px;
+                font-size: 14px !important;
                 font-weight: bold;
                 transition: background 0.3s ease;
+                font-family: inherit;
             }
 
             .admin-panel-section .btn-expand:hover {
@@ -86,20 +96,24 @@ class AdminPanelSection {
                 border-collapse: collapse;
                 margin: 10px 0;
                 background: #1B263B;
+                font-size: 13px;
             }
 
             .admin-panel-section .nested-table th {
                 background: #0D1B2A;
                 color: #E0E1DD;
                 padding: 8px;
-                font-size: 12px;
+                font-size: 13px !important;
                 border-bottom: 1px solid #415A77;
+                font-weight: 600;
+                font-family: inherit;
             }
 
             .admin-panel-section .nested-table td {
                 padding: 8px;
-                font-size: 12px;
+                font-size: 13px !important;
                 border-bottom: 1px solid #2C3E50;
+                font-family: inherit;
             }
         `;
         document.head.appendChild(style);
