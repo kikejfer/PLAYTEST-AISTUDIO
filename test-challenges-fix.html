@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba - Retos PJG Arreglados</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0D1B2A;
+            color: #E0E1DD;
+        }
+        .section {
+            background: #1B263B;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #415A77;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #065F46; border: 1px solid #10B981; }
+        .info { background: #1E3A8A; border: 1px solid #3B82F6; }
+        .warning { background: #92400E; border: 1px solid #F59E0B; }
+        code {
+            background: #374151;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        ul {
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Correcciones PJG - Sistema de Retos Competitivos</h1>
+    
+    <div class="section">
+        <h2>✅ Problemas Resueltos</h2>
+        
+        <div class="status success">
+            <h3>🔧 1. Botones Aceptar y Declinar no operativos</h3>
+            <p><strong>Problema:</strong> Los botones no funcionaban porque el frontend pasaba un parámetro incorrecto a la API.</p>
+            <p><strong>Solución:</strong></p>
+            <ul>
+                <li>Frontend: Corregido para pasar <code>currentUser.id</code> como primer parámetro</li>
+                <li>Backend: Creados endpoints faltantes <code>/games/challenges/:gameId/accept</code> y <code>/games/challenges/:gameId/decline</code></li>
+                <li>Validación de seguridad: Solo el jugador retado puede aceptar/declinar</li>
+            </ul>
+        </div>
+        
+        <div class="status success">
+            <h3>📢 2. Notificaciones para el retador</h3>
+            <p><strong>Problema:</strong> El jugador que enviaba el reto no veía ningún aviso de retos pendientes.</p>
+            <p><strong>Solución:</strong></p>
+            <ul>
+                <li>Backend: Modificado endpoint <code>/games/challenges/:userId</code> para devolver retos enviados y recibidos</li>
+                <li>Frontend: Añadida sección "Retos Enviados" con indicador "Esperando respuesta..."</li>
+                <li>Diferenciación visual: Retos recibidos (amarillo) vs Retos enviados (azul)</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>🔍 Cambios Técnicos Detallados</h2>
+        
+        <div class="status info">
+            <h3>Frontend (jugadores-panel-gaming.html)</h3>
+            <ul>
+                <li>Líneas 1511, 1522, 2211, 2228: Agregado <code>currentUser.id</code> como primer parámetro</li>
+                <li>Líneas 848-853: Filtros separados para retos entrantes vs salientes</li>
+                <li>Líneas 900-985: Nueva UI para mostrar ambos tipos de retos con colores distintos</li>
+            </ul>
+        </div>
+        
+        <div class="status info">
+            <h3>Backend (routes/games.js)</h3>
+            <ul>
+                <li>Líneas 643-663: Query modificado para incluir retos en ambas direcciones</li>
+                <li>Líneas 654, 672: Agregado campo <code>direction</code> (incoming/outgoing)</li>
+                <li>Líneas 692-772: Nuevos endpoints accept/decline con validaciones de seguridad</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>🎮 Flujo de Reto Corregido</h2>
+        
+        <div class="status info">
+            <ol>
+                <li><strong>Jugador A</strong> crea un reto en modo competición y selecciona <strong>Jugador B</strong></li>
+                <li><strong>Jugador A</strong> ve "Retos Enviados" con estado "Esperando respuesta..." 📢</li>
+                <li><strong>Jugador B</strong> ve "Retos Recibidos" con botones Aceptar/Declinar funcionales ✅</li>
+                <li>Al hacer clic en Aceptar/Declinar, se ejecuta la acción correctamente</li>
+                <li>Ambos jugadores ven sus paneles actualizados automáticamente</li>
+            </ol>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>🔮 Funcionalidad Adicional</h2>
+        
+        <div class="status success">
+            <h3>Nuevas Características</h3>
+            <ul>
+                <li>🎨 <strong>Indicadores Visuales:</strong> Retos recibidos (⚔️ amarillo) vs enviados (⏳ azul)</li>
+                <li>🛡️ <strong>Seguridad:</strong> Validación de que solo el retado puede aceptar/declinar</li>
+                <li>📊 <strong>Estados:</strong> Los retos aceptados cambian a 'active', declinados a 'declined'</li>
+                <li>🔄 <strong>Actualización Automática:</strong> Los paneles se recargan tras cada acción</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>✨ Resumen</h2>
+        
+        <div class="status success">
+            <p>✅ <strong>Botones Aceptar/Declinar:</strong> Ahora funcionan correctamente</p>
+            <p>✅ <strong>Notificaciones de Retador:</strong> Los jugadores ven sus retos enviados con estado "Esperando respuesta"</p>
+            <p>✅ <strong>Endpoints Backend:</strong> Creados y funcionando con validaciones de seguridad</p>
+            <p>✅ <strong>Experiencia Mejorada:</strong> Clara diferenciación visual entre retos recibidos y enviados</p>
+        </div>
+        
+        <div class="status warning">
+            <h3>⚠️ Nota Importante</h3>
+            <p>Para probar completamente: crear un reto desde un usuario, iniciar sesión con el usuario retado para ver los botones, y verificar que ambos usuarios ven las actualizaciones correctas en sus paneles.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1330,6 +1330,7 @@
             // Aplicar límite inicial de 10 registros a todas las tablas
             setTimeout(() => {
                 applyInitialLimits();
+                setupFilterEventListeners();
             }, 100);
         }
 
@@ -2142,51 +2143,93 @@ El usuario "${nickname}" ya no tiene privilegios administrativos pero mantiene s
             }
         }
 
-        // Funciones de filtrado para las tablas
-        document.addEventListener('DOMContentLoaded', function() {
+        // Function to set up filter event listeners after tables are rendered
+        function setupFilterEventListeners() {
+            console.log('🔍 Setting up filter event listeners...');
+            
+            // Remove existing event listeners to prevent duplicates
+            ['profesores-search', 'creadores-search', 'jugadores-admin-principal-search', 'jugadores-otros-admins-search'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    // Clone the element to remove all event listeners
+                    const newElement = element.cloneNode(true);
+                    element.parentNode.replaceChild(newElement, element);
+                }
+            });
+            
             // Filtro para tabla de profesores
             const profesoresSearch = document.getElementById('profesores-search');
             if (profesoresSearch) {
+                console.log('✅ Setting up profesores filter');
                 profesoresSearch.addEventListener('input', function() {
+                    console.log('🔍 Filtering profesores with term:', this.value);
                     filterTable('profesores-table', this.value);
                 });
+            } else {
+                console.warn('❌ profesores-search element not found');
             }
 
             // Filtro para tabla de creadores
             const creadoresSearch = document.getElementById('creadores-search');
             if (creadoresSearch) {
+                console.log('✅ Setting up creadores filter');
                 creadoresSearch.addEventListener('input', function() {
+                    console.log('🔍 Filtering creadores with term:', this.value);
                     filterTable('creadores-table', this.value);
                 });
+            } else {
+                console.warn('❌ creadores-search element not found');
             }
 
             // Filtro para tabla de jugadores admin principal
             const jugadoresAPSearch = document.getElementById('jugadores-admin-principal-search');
             if (jugadoresAPSearch) {
+                console.log('✅ Setting up jugadores admin principal filter');
                 jugadoresAPSearch.addEventListener('input', function() {
+                    console.log('🔍 Filtering jugadores admin principal with term:', this.value);
                     filterTable('jugadores-admin-principal-table', this.value);
                 });
+            } else {
+                console.warn('❌ jugadores-admin-principal-search element not found');
             }
 
             // Filtro para tabla de jugadores otros admins
             const jugadoresOASearch = document.getElementById('jugadores-otros-admins-search');
             if (jugadoresOASearch) {
+                console.log('✅ Setting up jugadores otros admins filter');
                 jugadoresOASearch.addEventListener('input', function() {
+                    console.log('🔍 Filtering jugadores otros admins with term:', this.value);
                     filterTable('jugadores-otros-admins-table', this.value);
                 });
+            } else {
+                console.warn('❌ jugadores-otros-admins-search element not found');
             }
-        });
+        }
 
         function filterTable(tableId, searchTerm) {
+            console.log(`🔍 Filtering table ${tableId} with term: "${searchTerm}"`);
+            
             const table = document.getElementById(tableId);
+            if (!table) {
+                console.warn(`❌ Table ${tableId} not found`);
+                return;
+            }
+            
             const tbody = table.querySelector('tbody');
+            if (!tbody) {
+                console.warn(`❌ Tbody not found in table ${tableId}`);
+                return;
+            }
+            
             const rows = tbody.querySelectorAll('tr');
             let visibleCount = 0;
             const maxVisible = 10; // Máximo 10 registros visibles
             
-            rows.forEach(row => {
+            console.log(`📊 Processing ${rows.length} rows in table ${tableId}`);
+            
+            rows.forEach((row, index) => {
                 if (row.classList.contains('expandable-row')) {
-                    // Skip expandable rows
+                    // Skip expandable rows but hide them if their parent is hidden
                     return;
                 }
                 
@@ -2197,12 +2240,20 @@ El usuario "${nickname}" ya no tiene privilegios administrativos pero mantiene s
                 }
                 
                 const text = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
-                const matchesSearch = text.includes(searchTerm.toLowerCase());
+                const matchesSearch = !searchTerm || text.includes(searchTerm.toLowerCase());
                 const shouldShow = matchesSearch && visibleCount < maxVisible;
                 
                 row.style.display = shouldShow ? '' : 'none';
                 if (shouldShow) visibleCount++;
+                
+                // Also hide/show any associated expandable rows
+                const nextRow = row.nextElementSibling;
+                if (nextRow && nextRow.classList.contains('expandable-row')) {
+                    nextRow.style.display = shouldShow ? 'none' : 'none'; // Keep expandable rows hidden by default
+                }
             });
+            
+            console.log(`👁️ Showing ${visibleCount} out of ${rows.length} rows in table ${tableId}`);
             
             // Agregar scroll automático al contenedor de tabla si hay muchos resultados
             const tableContainer = table.closest('.table-container');
