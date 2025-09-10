@@ -855,19 +855,23 @@
             // Enhanced function to accept challenge and start game directly
             const handleAcceptAndStartGame = async (challengeId, challenge) => {
                 try {
-                    if (window.apiDataService && setCurrentView) {
+                    if (window.apiDataService) {
                         console.log('🎮 Accepting challenge and starting game:', { challengeId, challenge });
                         
                         // Accept the challenge (this changes status from 'pending' to 'active')
                         await window.apiDataService.acceptChallenge(currentUser.id, challengeId);
                         
+                        // Store game info in localStorage for navigation
+                        localStorage.setItem('current_game_id', challengeId);
+                        localStorage.setItem('current_game_mode', challenge.mode || 'Partida');
+                        
                         // Navigate directly to the game with the challenge's game ID
                         console.log('🚀 Redirecting to game:', challengeId);
                         if (onNavigateToGame) {
-                            onNavigateToGame({ id: challengeId, ...challenge });
+                            onNavigateToGame({ id: challengeId, mode: challenge.mode, ...challenge });
                         } else {
-                            // Fallback navigation
-                            setCurrentView('game');
+                            // Direct navigation fallback
+                            window.location.href = `active-game.html?gameId=${challengeId}`;
                         }
                     }
                 } catch (err) {
