@@ -676,10 +676,10 @@
             </div>
         </div>
 
-        <!-- Sección 3: Profesores (Módulo Genérico) -->
+        <!-- Sección 3: Profesores -->
         <div class="section">
             <div class="section-header">
-                <span>👨‍🏫 Profesores (Módulo Genérico)</span>
+                <span>👨‍🏫 Profesores</span>
                 <button class="btn btn-secondary" onclick="refreshProfesoresGenerico()" style="background: #415A77; border: 1px solid #778DA9;">
                     🔄 Refrescar
                 </button>
@@ -691,10 +691,10 @@
             </div>
         </div>
 
-        <!-- Sección 4: Creadores (Módulo Genérico) -->
+        <!-- Sección 4: Creadores -->
         <div class="section">
             <div class="section-header">
-                <span>🎨 Creadores (Módulo Genérico)</span>
+                <span>🎨 Creadores</span>
                 <button class="btn btn-secondary" onclick="refreshCreadoresGenerico()" style="background: #415A77; border: 1px solid #778DA9;">
                     🔄 Refrescar
                 </button>
@@ -1597,8 +1597,17 @@
 
 
         function getAdminOptions(currentAdminId) {
-            console.log('🔍 DEBUG getAdminOptions - Available admins:', panelData.administradoresSecundarios);
-            return panelData.administradoresSecundarios.map(admin => 
+            // Usar los mismos administradores filtrados que las secciones genéricas
+            const availableAdmins = window.adminPanelSection ? window.adminPanelSection.availableAdmins : panelData.administradoresSecundarios;
+            console.log('🔍 DEBUG getAdminOptions - Available admins:', availableAdmins);
+            
+            if (!availableAdmins || availableAdmins.length === 0) {
+                return '<option value="">No hay administradores disponibles</option>';
+            }
+            
+            let options = '<option value="null">Sin asignar</option>';
+            
+            return options + availableAdmins.map(admin => 
                 `<option value="${admin.id}" ${admin.id === currentAdminId ? 'selected' : ''}>
                     ${admin.nickname}
                 </option>`
@@ -2891,9 +2900,9 @@ Esto hará que:
         async function initializeProfesoresGenerico() {
             try {
                 await adminPanelSection.renderizarSeccion('profesores-section', 'Principal', 'Profesor');
-                console.log('✅ Sección Profesores (Módulo Genérico) PAP inicializada');
+                console.log('✅ Sección Profesores PAP inicializada');
             } catch (error) {
-                console.error('❌ Error inicializando sección Profesores (Módulo Genérico) PAP:', error);
+                console.error('❌ Error inicializando sección Profesores PAP:', error);
                 document.getElementById('profesores-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Error al cargar: ' + error.message + '</div>';
             }
         }
@@ -2901,22 +2910,22 @@ Esto hará que:
         async function initializeCreadoresGenerico() {
             try {
                 await adminPanelSection.renderizarSeccion('creadores-section', 'Principal', 'Creador');
-                console.log('✅ Sección Creadores (Módulo Genérico) PAP inicializada');
+                console.log('✅ Sección Creadores PAP inicializada');
             } catch (error) {
-                console.error('❌ Error inicializando sección Creadores (Módulo Genérico) PAP:', error);
+                console.error('❌ Error inicializando sección Creadores PAP:', error);
                 document.getElementById('creadores-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Error al cargar: ' + error.message + '</div>';
             }
         }
 
         // Funciones para refrescar las NUEVAS secciones
         async function refreshProfesoresGenerico() {
-            console.log('🔄 Refrescando sección Profesores (Módulo Genérico)...');
+            console.log('🔄 Refrescando sección Profesores...');
             document.getElementById('profesores-section').innerHTML = '<div class="loading">Refrescando...</div>';
             await initializeProfesoresGenerico();
         }
 
         async function refreshCreadoresGenerico() {
-            console.log('🔄 Refrescando sección Creadores (Módulo Genérico)...');
+            console.log('🔄 Refrescando sección Creadores...');
             document.getElementById('creadores-section').innerHTML = '<div class="loading">Refrescando...</div>';
             await initializeCreadoresGenerico();
         }

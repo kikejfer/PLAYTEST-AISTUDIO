@@ -402,10 +402,10 @@
             </div>
         </div>
 
-        <!-- Sección 1: Profesores Asignados (Módulo Genérico) -->
+        <!-- Sección 1: Profesores Asignados -->
         <div class="section">
             <div class="section-header">
-                <span>👨‍🏫 Profesores Asignados (Módulo Genérico)</span>
+                <span>👨‍🏫 Profesores Asignados</span>
                 <button class="btn btn-secondary" onclick="refreshProfesoresAsignadosGenerico()" style="background: #415A77; border: 1px solid #778DA9;">
                     🔄 Refrescar
                 </button>
@@ -417,10 +417,10 @@
             </div>
         </div>
 
-        <!-- Sección 2: Creadores Asignados (Módulo Genérico) -->
+        <!-- Sección 2: Creadores Asignados -->
         <div class="section">
             <div class="section-header">
-                <span>🎨 Creadores Asignados (Módulo Genérico)</span>
+                <span>🎨 Creadores Asignados</span>
                 <button class="btn btn-secondary" onclick="refreshCreadoresAsignadosGenerico()" style="background: #415A77; border: 1px solid #778DA9;">
                     🔄 Refrescar
                 </button>
@@ -1999,9 +1999,9 @@
         async function initializeProfesoresAsignadosGenerico() {
             try {
                 await adminPanelSection.renderizarSeccion('profesores-asignados-section', 'Secundario', 'Profesor');
-                console.log('✅ Sección Profesores Asignados (Módulo Genérico) PAS inicializada');
+                console.log('✅ Sección Profesores Asignados PAS inicializada');
             } catch (error) {
-                console.error('❌ Error inicializando sección Profesores Asignados (Módulo Genérico) PAS:', error);
+                console.error('❌ Error inicializando sección Profesores Asignados PAS:', error);
                 document.getElementById('profesores-asignados-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Error al cargar: ' + error.message + '</div>';
             }
         }
@@ -2009,22 +2009,22 @@
         async function initializeCreadoresAsignadosGenerico() {
             try {
                 await adminPanelSection.renderizarSeccion('creadores-asignados-section', 'Secundario', 'Creador');
-                console.log('✅ Sección Creadores Asignados (Módulo Genérico) PAS inicializada');
+                console.log('✅ Sección Creadores Asignados PAS inicializada');
             } catch (error) {
-                console.error('❌ Error inicializando sección Creadores Asignados (Módulo Genérico) PAS:', error);
+                console.error('❌ Error inicializando sección Creadores Asignados PAS:', error);
                 document.getElementById('creadores-asignados-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Error al cargar: ' + error.message + '</div>';
             }
         }
 
         // Funciones para refrescar las NUEVAS secciones
         async function refreshProfesoresAsignadosGenerico() {
-            console.log('🔄 Refrescando sección Profesores Asignados (Módulo Genérico)...');
+            console.log('🔄 Refrescando sección Profesores Asignados...');
             document.getElementById('profesores-asignados-section').innerHTML = '<div class="loading">Refrescando...</div>';
             await initializeProfesoresAsignadosGenerico();
         }
 
         async function refreshCreadoresAsignadosGenerico() {
-            console.log('🔄 Refrescando sección Creadores Asignados (Módulo Genérico)...');
+            console.log('🔄 Refrescando sección Creadores Asignados...');
             document.getElementById('creadores-asignados-section').innerHTML = '<div class="loading">Refrescando...</div>';
             await initializeCreadoresAsignadosGenerico();
         }
