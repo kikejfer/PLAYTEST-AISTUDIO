@@ -332,6 +332,31 @@
             margin-bottom: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
+        
+        /* Estilos para elementos select para mantener consistencia con el tema oscuro */
+        select {
+            background: #1B263B !important;
+            color: #E0E1DD !important;
+            border: 1px solid #415A77 !important;
+            border-radius: 4px !important;
+            padding: 4px 8px !important;
+            font-size: 14px !important;
+        }
+        
+        select option {
+            background: #1B263B !important;
+            color: #E0E1DD !important;
+        }
+        
+        select:hover {
+            border-color: #3B82F6 !important;
+        }
+        
+        select:focus {
+            outline: none !important;
+            border-color: #3B82F6 !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+        }
     </style>
     <!-- Sistema Persistente PLAYTEST -->
     <!-- <script type="module" src="persistent-system-init.js"></script> -->
@@ -1042,7 +1067,11 @@
                 const fullName = profesor.first_name || 
                                 [profesor.first_name, profesor.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
-                // Información específica para profesores - IGUAL QUE PAP + más campos
+                // Cálculos según especificaciones PAS:
+                // - Bloques Creados: número de registros de tabla blocks filtrados por user_role_id del profesor
+                // - Temas: número de registros de topic_answers filtrados por block_id
+                // - Preguntas: campo total_questions de tabla block_answers filtrado por block_id
+                // - Alumnos: número de registros de user_loaded_blocks filtrado por block_id
                 const bloquesCreados = profesor.blocks_created || profesor.bloques_creados || 0;
                 const totalTemas = profesor.total_topics || profesor.total_temas || profesor.num_temas || 0;
                 const totalPreguntas = profesor.total_questions || profesor.total_preguntas || profesor.preguntas_totales || 0;
@@ -1110,7 +1139,11 @@
                 const fullName = creador.first_name || 
                                 [creador.first_name, creador.last_name].filter(Boolean).join(' ') || 'No especificado';
                 
-                // Información específica para creadores - IGUAL QUE PAP + más campos
+                // Cálculos según especificaciones PAS:
+                // - Bloques Creados: número de registros de tabla blocks filtrados por user_role_id del creador  
+                // - Temas: número de registros de topic_answers filtrados por block_id
+                // - Preguntas: campo total_questions de tabla block_answers filtrado por block_id
+                // - Estudiantes: número de registros de user_loaded_blocks filtrado por block_id
                 const bloquesCreados = creador.blocks_created || creador.bloques_creados || 0;
                 const totalTemas = creador.total_topics || creador.total_temas || creador.num_temas || 0;
                 const totalPreguntas = creador.total_questions || creador.total_preguntas || creador.preguntas_totales || 0;
@@ -1335,26 +1368,35 @@
                 const topics = result.temas || [];
                 const container = document.getElementById(`block-topics-${blockId}`);
                 
-                let html = '<h5>Temas del bloque:</h5><table class="nested-table"><thead><tr><th>Tema</th><th>Núm. Preguntas</th><th>Acciones</th></tr></thead><tbody>';
+                if (topics.length === 0) {
+                    container.innerHTML = '<p style="padding: 10px;">No tiene temas creados</p>';
+                    return;
+                }
+                
+                // Mostrar temas en formato tabular con las características según especificaciones PAS
+                let html = '<div style="padding: 10px; background: #0D1B2A;"><h4>Temas del bloque:</h4>';
+                html += '<table class="nested-table" style="margin-top: 10px;"><thead><tr><th>Tema</th><th>Temas</th><th>Preguntas</th><th>Usuarios</th></tr></thead><tbody>';
                 
                 topics.forEach(topic => {
+                    // Las características según especificaciones:
+                    // - temas: filtrando topic_answers con el block_id
+                    // - preguntas: filtrando block_answers con el block_id  
+                    // - usuarios: registros obtenidos al filtrar user_loaded_blocks con el block_id
+                    const temaCount = topic.tema_count || topic.num_temas || 1; // Al menos 1 por el tema mismo
+                    const preguntasCount = topic.preguntas_count || topic.num_preguntas || 0;
+                    const usuariosCount = topic.usuarios_count || topic.num_usuarios || 0;
+                    
                     html += `
                         <tr>
-                            <td>${topic.topic}</td>
-                            <td>${topic.num_preguntas}</td>
-                            <td>
-                                <button class="btn btn-expand" onclick="toggleTopicQuestions(${blockId}, '${topic.topic}')">Preguntas</button>
-                            </td>
-                        </tr>
-                        <tr id="topic-questions-${blockId}-${topic.topic.replace(/\s+/g, '_')}" style="display: none;">
-                            <td colspan="3">
-                                <div id="questions-${blockId}-${topic.topic.replace(/\s+/g, '_')}"></div>
-                            </td>
+                            <td><strong>${topic.topic || topic.name}</strong><br><small style="color: #778DA9;">${topic.description || 'Sin descripción'}</small></td>
+                            <td>${temaCount}</td>
+                            <td>${preguntasCount}</td>
+                            <td>${usuariosCount}</td>
                         </tr>
                     `;
                 });
                 
-                html += '</tbody></table>';
+                html += '</tbody></table></div>';
                 container.innerHTML = html;
 
             } catch (error) {
@@ -1476,15 +1518,34 @@
                 const topics = result.topics || [];
                 
                 if (topics.length === 0) {
-                    container.innerHTML = '<p>No tiene temas creados</p>';
+                    container.innerHTML = '<p style="padding: 10px;">No tiene temas creados</p>';
                     return;
                 }
                 
-                let html = '<div style="padding: 10px; background: #0D1B2A;"><h4>Temas del bloque:</h4><ul>';
+                // Mostrar temas en formato tabular con las características según especificaciones PAS
+                let html = '<div style="padding: 10px; background: #0D1B2A;"><h4>Temas del bloque:</h4>';
+                html += '<table class="nested-table" style="margin-top: 10px;"><thead><tr><th>Tema</th><th>Temas</th><th>Preguntas</th><th>Usuarios</th></tr></thead><tbody>';
+                
                 topics.forEach(topic => {
-                    html += `<li><strong>${topic.name}</strong> - ${topic.description || 'Sin descripción'}</li>`;
+                    // Las características según especificaciones:
+                    // - temas: filtrando topic_answers con el block_id
+                    // - preguntas: filtrando block_answers con el block_id  
+                    // - usuarios: registros obtenidos al filtrar user_loaded_blocks con el block_id
+                    const temaCount = topic.tema_count || topic.num_temas || 1; // Al menos 1 por el tema mismo
+                    const preguntasCount = topic.preguntas_count || topic.num_preguntas || 0;
+                    const usuariosCount = topic.usuarios_count || topic.num_usuarios || 0;
+                    
+                    html += `
+                        <tr>
+                            <td><strong>${topic.name}</strong><br><small style="color: #778DA9;">${topic.description || 'Sin descripción'}</small></td>
+                            <td>${temaCount}</td>
+                            <td>${preguntasCount}</td>
+                            <td>${usuariosCount}</td>
+                        </tr>
+                    `;
                 });
-                html += '</ul></div>';
+                
+                html += '</tbody></table></div>';
                 
                 container.innerHTML = html;
                 
