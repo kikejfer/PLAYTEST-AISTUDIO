@@ -600,7 +600,6 @@ class AdminPanelSection {
             const etiquetaUsuarios = tipo === 'profesor' ? 'Alumnos' : 'Estudiantes';
             let html = `
                 <div style="padding: 10px; background: #0D1B2A;">
-                    <h4>Bloques creados:</h4>
                     <table class="nested-table" style="margin-top: 10px;">
                         <thead>
                             <tr>
@@ -745,7 +744,6 @@ class AdminPanelSection {
             
             let html = `
                 <div style="padding: 10px; background: #1B263B;">
-                    <h5>Temas del bloque:</h5>
                     <table class="nested-table" style="margin-top: 10px;">
                         <thead>
                             <tr>
