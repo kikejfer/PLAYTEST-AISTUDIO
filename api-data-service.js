@@ -1204,6 +1204,17 @@ class APIDataService {
     return this.simulateDelay(response);
   }
 
+  async declineChallengeWithReason(userId, gameId, reason) {
+    const response = await this.apiCall(`/games/challenges/${gameId}/decline`, {
+      method: 'POST',
+      body: JSON.stringify({
+        reason: reason || '',
+        notify_challenger: true
+      })
+    });
+    return this.simulateDelay(response);
+  }
+
   async fetchDetailedHistoryForBlock(userId, blockId) {
     const history = await this.apiCall(`/blocks/${blockId}/history`);
     return this.simulateDelay(history);

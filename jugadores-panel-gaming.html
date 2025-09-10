@@ -858,6 +858,53 @@
             const statusBadge = activeGames.length > 0 ? 'Activa' : 'Completada';
             const buttonText = activeGames.length > 0 ? '▶️ Continuar Partida' : '🔄 Jugar de Nuevo';
 
+            // Helper function to format game configuration details
+            const getGameConfigDetails = (config, metadata) => {
+                if (!config) return 'Sin configuración';
+                
+                const blockIds = Object.keys(config);
+                const totalBlocks = blockIds.length;
+                
+                let details = `${totalBlocks} bloque${totalBlocks !== 1 ? 's' : ''}`;
+                
+                if (metadata && metadata.blockDetails) {
+                    const blockNames = metadata.blockDetails.map(b => b.name).join(', ');
+                    details += ` (${blockNames})`;
+                } else if (blockIds.length > 0) {
+                    details += ` (IDs: ${blockIds.join(', ')})`;
+                }
+                
+                return details;
+            };
+
+            // Enhanced helper for challenge configuration with more detail
+            const getChallengeConfigDetails = (challenge) => {
+                if (!challenge.config) return 'Sin configuración disponible';
+                
+                const config = challenge.config;
+                const metadata = challenge.configurationMetadata;
+                const mode = challenge.mode || 'Modo no especificado';
+                
+                let details = [];
+                details.push(`🎮 Modo: ${mode}`);
+                
+                const blockIds = Object.keys(config);
+                details.push(`📚 ${blockIds.length} bloque${blockIds.length !== 1 ? 's' : ''}`);
+                
+                if (metadata && metadata.blockDetails) {
+                    const blockInfo = metadata.blockDetails.map(block => {
+                        const blockConfig = config[block.id];
+                        if (blockConfig && blockConfig.topics) {
+                            return `• ${block.name} (${blockConfig.topics.length} tema${blockConfig.topics.length !== 1 ? 's' : ''})`;
+                        }
+                        return `• ${block.name}`;
+                    });
+                    details.push(...blockInfo);
+                }
+                
+                return details;
+            };
+
             return React.createElement('div', {
                 className: "bg-slate-800 p-6 rounded-xl shadow-lg flex flex-col h-full"
             }, [
@@ -907,38 +954,53 @@
                             className: "space-y-3 mb-4"
                         }, incomingChallenges.map(challenge => {
                             const challenger = challenge.challenger;
+                            const configDetails = getChallengeConfigDetails(challenge);
+                            
                             return React.createElement('li', {
                                 key: challenge.id,
-                                className: "p-3 rounded-md bg-amber-500/10 border border-amber-500/30"
+                                className: "p-4 rounded-md bg-amber-500/10 border border-amber-500/30"
                             }, [
-                                React.createElement('div', { key: 'challenge-info', className: "flex items-center gap-3" }, [
+                                React.createElement('div', { key: 'challenge-header', className: "flex items-start gap-3 mb-3" }, [
                                     React.createElement('div', {
                                         key: 'sword-icon',
-                                        className: "h-6 w-6 text-amber-400 flex-shrink-0"
+                                        className: "h-8 w-8 text-amber-400 flex-shrink-0 flex items-center justify-center"
                                     }, '⚔️'),
-                                    React.createElement('div', { key: 'challenge-details', className: "flex-grow overflow-hidden" }, [
+                                    React.createElement('div', { key: 'challenge-main', className: "flex-grow" }, [
                                         React.createElement('p', {
                                             key: 'challenger',
-                                            className: "font-semibold text-white truncate"
-                                        }, `Reto de ${challenger?.nickname} en ${challenge.mode}`),
+                                            className: "font-bold text-white text-lg"
+                                        }, `Reto de ${challenger?.nickname}`),
                                         React.createElement('p', {
-                                            key: 'config',
-                                            className: "text-xs text-gray-400 truncate",
-                                            title: getGameConfigDetails(challenge.config, challenge.configurationMetadata)
-                                        }, getGameConfigDetails(challenge.config, challenge.configurationMetadata))
+                                            key: 'mode',
+                                            className: "text-amber-300 font-semibold"
+                                        }, challenge.mode || 'Modo no especificado')
                                     ])
                                 ]),
-                                React.createElement('div', { key: 'challenge-actions', className: "flex justify-end gap-3 mt-3" }, [
+                                
+                                React.createElement('div', { key: 'challenge-config', className: "mb-4 pl-11" }, [
+                                    React.createElement('div', {
+                                        key: 'config-title',
+                                        className: "text-sm font-semibold text-gray-300 mb-2"
+                                    }, '📋 Configuración de la partida:'),
+                                    React.createElement('div', {
+                                        key: 'config-details',
+                                        className: "text-sm text-gray-400 space-y-1"
+                                    }, configDetails.map((detail, index) => 
+                                        React.createElement('div', { key: index }, detail)
+                                    ))
+                                ]),
+                                
+                                React.createElement('div', { key: 'challenge-actions', className: "flex justify-end gap-3" }, [
                                     React.createElement('button', {
                                         key: 'decline',
-                                        onClick: () => onDeclineChallenge(challenge.id),
-                                        className: "py-1.5 px-4 text-sm rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold transition-colors"
-                                    }, 'Declinar'),
+                                        onClick: () => handleDeclineWithReason(challenge.id, challenger?.nickname),
+                                        className: "py-2 px-4 text-sm rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold transition-colors"
+                                    }, '❌ Declinar'),
                                     React.createElement('button', {
                                         key: 'accept',
-                                        onClick: () => onAcceptChallenge(challenge.id),
-                                        className: "py-1.5 px-4 text-sm rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold transition-colors"
-                                    }, 'Aceptar')
+                                        onClick: () => handleAcceptAndStartGame(challenge.id, challenge),
+                                        className: "py-2 px-4 text-sm rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold transition-colors"
+                                    }, '✅ Aceptar y Jugar')
                                 ])
                             ]);
                         }))
@@ -1568,6 +1630,63 @@
                         await loadPlayerData();
                     }
                 } catch (err) {
+                    setError(err instanceof Error ? `Error al declinar reto: ${err.message}` : 'Error desconocido.');
+                }
+            };
+
+            // New enhanced function to accept challenge and start game directly
+            const handleAcceptAndStartGame = async (challengeId, challenge) => {
+                try {
+                    if (window.apiDataService) {
+                        console.log('🎮 Accepting challenge and starting game:', { challengeId, challenge });
+                        
+                        // Accept the challenge (this changes status from 'pending' to 'active')
+                        await window.apiDataService.acceptChallenge(currentUser.id, challengeId);
+                        
+                        // Navigate directly to the game with the challenge's game ID
+                        console.log('🚀 Redirecting to game:', challengeId);
+                        setCurrentView('game');
+                        setCurrentGameId(challengeId);
+                        
+                        // Refresh data to remove the challenge from pending list
+                        await loadPlayerData();
+                        
+                        setMessage(`¡Reto aceptado! Iniciando partida...`);
+                        setTimeout(() => setMessage(''), 2000);
+                    }
+                } catch (err) {
+                    console.error('❌ Error accepting challenge and starting game:', err);
+                    setError(err instanceof Error ? `Error al aceptar reto: ${err.message}` : 'Error desconocido.');
+                }
+            };
+
+            // New function to decline with reason and notify challenger
+            const handleDeclineWithReason = async (challengeId, challengerNickname) => {
+                const reason = prompt(
+                    `¿Por qué declinas el reto de ${challengerNickname}?\n\n(Opcional: Puedes dejar este campo vacío o escribir una razón que será enviada al retador)`
+                );
+                
+                // Allow cancellation
+                if (reason === null) return;
+                
+                try {
+                    if (window.apiDataService) {
+                        console.log('❌ Declining challenge with reason:', { challengeId, reason });
+                        
+                        // Send decline with reason to backend
+                        await window.apiDataService.declineChallengeWithReason(currentUser.id, challengeId, reason || '');
+                        
+                        // Refresh data
+                        await loadPlayerData();
+                        
+                        const message = reason 
+                            ? `Reto declinado. Se ha enviado tu respuesta a ${challengerNickname}.`
+                            : `Reto declinado.`;
+                        setMessage(message);
+                        setTimeout(() => setMessage(''), 3000);
+                    }
+                } catch (err) {
+                    console.error('❌ Error declining challenge with reason:', err);
                     setError(err instanceof Error ? `Error al declinar reto: ${err.message}` : 'Error desconocido.');
                 }
             };
@@ -2277,6 +2396,57 @@
                     }
                 } catch (error) {
                     console.error('Error declining challenge:', error);
+                }
+            };
+
+            // Enhanced decline with reason for ActiveGamesComponent
+            const handleDeclineWithReason = async (challengeId, challengerNickname) => {
+                const reason = prompt(
+                    `¿Por qué declinas el reto de ${challengerNickname}?\n\n(Opcional: Puedes dejar este campo vacío o escribir una razón que será enviada al retador)`
+                );
+                
+                // Allow cancellation
+                if (reason === null) return;
+                
+                try {
+                    if (window.apiDataService) {
+                        console.log('❌ Declining challenge with reason:', { challengeId, reason });
+                        
+                        // Send decline with reason to backend
+                        await window.apiDataService.declineChallengeWithReason(currentUser.id, challengeId, reason || '');
+                        
+                        // Recargar datos
+                        const challengesData = await window.apiDataService.fetchChallengesForUser(currentUser.id);
+                        setChallenges(challengesData || []);
+                    }
+                } catch (error) {
+                    console.error('❌ Error declining challenge with reason:', error);
+                }
+            };
+
+            // Enhanced accept to start game for ActiveGamesComponent  
+            const handleAcceptAndStartGame = async (challengeId, challenge) => {
+                try {
+                    if (window.apiDataService && onNavigateToGame) {
+                        console.log('🎮 Accepting challenge and starting game:', { challengeId, challenge });
+                        
+                        // Accept the challenge (this changes status from 'pending' to 'active')
+                        await window.apiDataService.acceptChallenge(currentUser.id, challengeId);
+                        
+                        // Navigate directly to the game with the challenge's game ID
+                        console.log('🚀 Redirecting to game:', challengeId);
+                        onNavigateToGame(challengeId);
+                        
+                        // Refresh data to remove the challenge from pending list
+                        const [gamesData, challengesData] = await Promise.all([
+                            window.apiDataService.fetchGamesForUser(currentUser.id),
+                            window.apiDataService.fetchChallengesForUser(currentUser.id)
+                        ]);
+                        setGames(gamesData || []);
+                        setChallenges(challengesData || []);
+                    }
+                } catch (error) {
+                    console.error('❌ Error accepting challenge and starting game:', error);
                 }
             };
 
