@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="header-styles.css">
     <script src="role-validation.js"></script>
     <script src="header-loader.js"></script>
+    <script src="admin-panel-section.js"></script>
     
     <!-- Tailwind CSS from CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -493,6 +494,39 @@
                 </div>
             </div>
         </div>
+
+        <!-- NUEVAS SECCIONES CON MÓDULO GENÉRICO -->
+        
+        <!-- Nueva Sección: Profesores Asignados (Módulo Genérico) -->
+        <div class="section">
+            <div class="section-header">
+                <span>👨‍🏫 Profesores Asignados (Módulo Genérico)</span>
+                <button class="btn btn-secondary" onclick="refreshProfesoresAsignadosGenerico()" style="background: #415A77; border: 1px solid #778DA9;">
+                    🔄 Refrescar
+                </button>
+            </div>
+            <div class="section-content">
+                <div id="profesores-asignados-generico-section">
+                    <div class="loading">Inicializando módulo genérico para profesores asignados...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nueva Sección: Creadores Asignados (Módulo Genérico) -->
+        <div class="section">
+            <div class="section-header">
+                <span>🎨 Creadores Asignados (Módulo Genérico)</span>
+                <button class="btn btn-secondary" onclick="refreshCreadoresAsignadosGenerico()" style="background: #415A77; border: 1px solid #778DA9;">
+                    🔄 Refrescar
+                </button>
+            </div>
+            <div class="section-content">
+                <div id="creadores-asignados-generico-section">
+                    <div class="loading">Inicializando módulo genérico para creadores asignados...</div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- <script src="api-data-service.js"></script> -->
@@ -2020,6 +2054,58 @@
                 alert('Error de conexión');
             }
         }
+
+        // === INTEGRACIÓN MÓDULO GENÉRICO ADMIN PANEL SECTION ===
+        
+        // Funciones para inicializar las NUEVAS secciones del módulo genérico en PAS
+        async function initializeProfesoresAsignadosGenerico() {
+            try {
+                await adminPanelSection.renderizarSeccion('profesores-asignados-generico-section', 'Secundario', 'Profesor');
+                console.log('✅ Sección Profesores Asignados (Módulo Genérico) PAS inicializada');
+            } catch (error) {
+                console.error('❌ Error inicializando sección Profesores Asignados (Módulo Genérico) PAS:', error);
+                document.getElementById('profesores-asignados-generico-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Error al cargar: ' + error.message + '</div>';
+            }
+        }
+
+        async function initializeCreadoresAsignadosGenerico() {
+            try {
+                await adminPanelSection.renderizarSeccion('creadores-asignados-generico-section', 'Secundario', 'Creador');
+                console.log('✅ Sección Creadores Asignados (Módulo Genérico) PAS inicializada');
+            } catch (error) {
+                console.error('❌ Error inicializando sección Creadores Asignados (Módulo Genérico) PAS:', error);
+                document.getElementById('creadores-asignados-generico-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Error al cargar: ' + error.message + '</div>';
+            }
+        }
+
+        // Funciones para refrescar las NUEVAS secciones
+        async function refreshProfesoresAsignadosGenerico() {
+            console.log('🔄 Refrescando sección Profesores Asignados (Módulo Genérico)...');
+            document.getElementById('profesores-asignados-generico-section').innerHTML = '<div class="loading">Refrescando...</div>';
+            await initializeProfesoresAsignadosGenerico();
+        }
+
+        async function refreshCreadoresAsignadosGenerico() {
+            console.log('🔄 Refrescando sección Creadores Asignados (Módulo Genérico)...');
+            document.getElementById('creadores-asignados-generico-section').innerHTML = '<div class="loading">Refrescando...</div>';
+            await initializeCreadoresAsignadosGenerico();
+        }
+
+        // Inicializar las nuevas secciones después de que todo esté cargado
+        document.addEventListener('DOMContentLoaded', function() {
+            // Esperar a que el módulo genérico esté disponible
+            setTimeout(async () => {
+                if (window.adminPanelSection) {
+                    console.log('🚀 Inicializando nuevas secciones PAS con módulo genérico...');
+                    await initializeProfesoresAsignadosGenerico();
+                    await initializeCreadoresAsignadosGenerico();
+                } else {
+                    console.error('❌ Módulo adminPanelSection no disponible');
+                    document.getElementById('profesores-asignados-generico-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Módulo genérico no cargado</div>';
+                    document.getElementById('creadores-asignados-generico-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Módulo genérico no cargado</div>';
+                }
+            }, 1500);
+        });
 
     </script>
 
