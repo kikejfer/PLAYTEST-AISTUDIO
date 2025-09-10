@@ -851,6 +851,50 @@
             const outgoingChallenges = challenges.filter(c => 
                 c.status === 'pending' && c.direction === 'outgoing'
             );
+
+            // Enhanced function to accept challenge and start game directly
+            const handleAcceptAndStartGame = async (challengeId, challenge) => {
+                try {
+                    if (window.apiDataService && setCurrentView) {
+                        console.log('🎮 Accepting challenge and starting game:', { challengeId, challenge });
+                        
+                        // Accept the challenge (this changes status from 'pending' to 'active')
+                        await window.apiDataService.acceptChallenge(currentUser.id, challengeId);
+                        
+                        // Navigate directly to the game with the challenge's game ID
+                        console.log('🚀 Redirecting to game:', challengeId);
+                        if (onNavigateToGame) {
+                            onNavigateToGame({ id: challengeId, ...challenge });
+                        } else {
+                            // Fallback navigation
+                            setCurrentView('game');
+                        }
+                    }
+                } catch (err) {
+                    console.error('❌ Error accepting challenge and starting game:', err);
+                }
+            };
+
+            // Enhanced function to decline challenge with reason
+            const handleDeclineWithReason = async (challengeId, challengerNickname) => {
+                const reason = prompt(
+                    `¿Por qué declinas el reto de ${challengerNickname}?\n\n(Opcional: Puedes dejar este campo vacío o escribir una razón que será enviada al retador)`
+                );
+                
+                // Allow cancellation
+                if (reason === null) return;
+                
+                try {
+                    if (window.apiDataService) {
+                        console.log('❌ Declining challenge with reason:', { challengeId, reason });
+                        
+                        // Send decline with reason to backend
+                        await window.apiDataService.declineChallengeWithReason(currentUser.id, challengeId, reason || '');
+                    }
+                } catch (err) {
+                    console.error('❌ Error declining challenge with reason:', err);
+                }
+            };
             
             // Show completed games as available to replay
             const gamesToShow = activeGames.length > 0 ? activeGames : completedGames;
