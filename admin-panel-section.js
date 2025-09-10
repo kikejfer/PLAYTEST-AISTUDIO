@@ -246,22 +246,10 @@ class AdminPanelSection {
                     result.adminSecundarios.forEach(admin => adminIds.add(admin.id));
                 }
                 
-                // Filtrar solo administradores principales y secundarios
-                // Primero intentar con los adminSecundarios, luego con filtros de role
-                this.availableAdmins = result.availableAdmins.filter(admin => {
-                    // Si está en la lista de adminSecundarios, incluirlo
-                    if (adminIds.has(admin.id)) {
-                        return true;
-                    }
-                    
-                    // Filtro por roles (para casos donde no hay adminSecundarios)
-                    const role = admin.role_name || admin.role || '';
-                    return role === 'administrador_principal' || role === 'administrador_secundario' || 
-                           admin.is_principal || admin.is_secondary ||
-                           admin.nickname === 'AdminPrincipal'; // Incluir admin principal por nickname
-                });
+                // Usar TODOS los administradores disponibles (no filtrar)
+                this.availableAdmins = result.availableAdmins;
                 
-                console.log(`👥 Administradores disponibles filtrados: ${this.availableAdmins.length} (de ${result.availableAdmins.length} totales)`);
+                console.log(`👥 Administradores disponibles: ${this.availableAdmins.length} totales`);
                 console.log(`🔍 Tipos encontrados:`, this.availableAdmins.map(a => ({
                     id: a.id,
                     nickname: a.nickname,
@@ -298,14 +286,6 @@ class AdminPanelSection {
      * @returns {Object} Características calculadas
      */
     calcularCaracteristicas(registro, rolAdministrado) {
-        // Debug para investigar campos disponibles en PAS
-        console.log(`🔍 DEBUG calcularCaracteristicas - ${rolAdministrado}:`, registro);
-        console.log(`🔍 Campos de preguntas disponibles:`, {
-            total_questions: registro.total_questions,
-            total_preguntas: registro.total_preguntas,
-            preguntas_totales: registro.preguntas_totales
-        });
-        
         return {
             // Nickname/Nombre del assigned_user_id
             nickname: registro.nickname || 'Sin nickname',
@@ -321,7 +301,8 @@ class AdminPanelSection {
             totalTemas: registro.total_topics || registro.total_temas || registro.num_temas || 0,
             
             // Preguntas totales (total_questions de tabla block_answers)
-            totalPreguntas: registro.total_questions || registro.total_preguntas || registro.preguntas_totales || 0,
+            // En PAS viene como total_preguntas, en PAP como total_questions
+            totalPreguntas: registro.total_preguntas || registro.total_questions || registro.preguntas_totales || 0,
             
             // Alumnos/Estudiantes que tienen cargados estos bloques (de user_loaded_blocks)
             totalUsuarios: registro.estudiantes || registro.alumnos || registro.total_usuarios || 0,
