@@ -64,6 +64,30 @@ class AdminPanelSection {
                         });
                         const data = await response.json();
                         return data;
+                    } else if (endpoint.includes('/bloques')) {
+                        // Soporte para endpoints de bloques individuales en PAS
+                        const fullUrl = `https://playtest-backend.onrender.com/api${endpoint}`;
+                        console.log(`🔗 Llamando URL de bloques PAS: ${fullUrl}`);
+                        const response = await fetch(fullUrl, {
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('playtest_auth_token')}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        return data;
+                    } else if (endpoint.includes('/temas')) {
+                        // Soporte para endpoints de temas individuales en PAS
+                        const fullUrl = `https://playtest-backend.onrender.com/api${endpoint}`;
+                        console.log(`🔗 Llamando URL de temas PAS: ${fullUrl}`);
+                        const response = await fetch(fullUrl, {
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('playtest_auth_token')}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        return data;
                     } else if (endpoint === '/roles-updated/admin-principal-panel') {
                         // Para PAP debe usar apiDataService que ya funciona
                         throw new Error('PAP debe usar apiDataService');
