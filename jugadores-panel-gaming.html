@@ -858,24 +858,6 @@
             const statusBadge = activeGames.length > 0 ? 'Activa' : 'Completada';
             const buttonText = activeGames.length > 0 ? '▶️ Continuar Partida' : '🔄 Jugar de Nuevo';
 
-            // Helper function to format game configuration details
-            const getGameConfigDetails = (config, metadata) => {
-                if (!config) return 'Sin configuración';
-                
-                const blockIds = Object.keys(config);
-                const totalBlocks = blockIds.length;
-                
-                let details = `${totalBlocks} bloque${totalBlocks !== 1 ? 's' : ''}`;
-                
-                if (metadata && metadata.blockDetails) {
-                    const blockNames = metadata.blockDetails.map(b => b.name).join(', ');
-                    details += ` (${blockNames})`;
-                } else if (blockIds.length > 0) {
-                    details += ` (IDs: ${blockIds.join(', ')})`;
-                }
-                
-                return details;
-            };
 
             // Enhanced helper for challenge configuration with more detail
             const getChallengeConfigDetails = (challenge) => {
