@@ -38,19 +38,24 @@ class AdminPanelSection {
                 font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
                 font-size: 16px;
                 line-height: 1.6;
+                width: 100%;
+                max-width: none;
             }
 
             .admin-panel-section .table-container {
                 overflow-x: auto;
                 border-radius: 8px;
                 border: 1px solid #415A77;
+                width: 100%;
             }
 
             .admin-panel-section table {
                 width: 100%;
+                min-width: 100%;
                 border-collapse: collapse;
                 margin-top: 10px;
                 font-size: 16px;
+                table-layout: auto;
             }
 
             .admin-panel-section th, .admin-panel-section td {
