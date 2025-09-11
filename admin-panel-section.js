@@ -208,10 +208,10 @@ class AdminPanelSection {
     }
 
     /**
-     * Obtiene los registros según el tipo de administrador y rol
+     * Obtiene los registros según el tipo de administrador y rol, filtrando por admin_assignments
      * @param {string} rolAdministrador - 'Principal' | 'Secundario' 
      * @param {string} rolAdministrado - 'Profesor' | 'Creador'
-     * @returns {Promise<Array>} Array de registros filtrados
+     * @returns {Promise<Array>} Array de registros filtrados por admin_assignments
      */
     async obtenerRegistros(rolAdministrador, rolAdministrado) {
         try {
@@ -223,92 +223,48 @@ class AdminPanelSection {
                 return this.generarDatosRespaldo(rolAdministrado);
             }
             
-            let endpoint;
-            if (this.panelType === 'PAP') {
-                // PAP: todos los assigned_user_id especificando su admin_id con el rol correspondiente
-                endpoint = `/roles-updated/admin-principal-panel`;
-            } else {
-                // PAS: los assigned_user_id asignados al admin_id con el rol correspondiente
-                endpoint = `/roles-updated/admin-secundario-panel`;
-            }
-
-            console.log(`📡 Llamando endpoint: ${endpoint}`);
+            // Nuevo endpoint que filtra por admin_assignments basado en el usuario actual
+            const endpoint = `/roles-updated/administrados/${rolAdministrado.toLowerCase()}es`;
+            
+            console.log(`📡 Llamando endpoint filtrado por admin_assignments: ${endpoint}`);
             const result = await this.apiService.apiCall(endpoint);
-            console.log(`🔍 Respuesta completa de la API:`, result);
+            console.log(`🔍 Respuesta de administrados filtrados:`, result);
             
-            // Almacenar administradores disponibles para los desplegables
-            if (result.availableAdmins) {
-                console.log(`🔍 DEBUG availableAdmins estructura:`, result.availableAdmins.slice(0, 3));
-                console.log(`🔍 DEBUG adminSecundarios:`, result.adminSecundarios);
-                
-                // Si tenemos adminSecundarios en result, usar esos datos para el filtro
-                const adminIds = new Set();
-                if (result.adminSecundarios) {
-                    result.adminSecundarios.forEach(admin => {
-                        adminIds.add(admin.id);
-                        console.log(`🔍 Admin secundario agregado: ${admin.nickname} (ID: ${admin.id})`);
-                    });
-                }
-                
-                // Filtrar administradores usando múltiples estrategias
+            // Almacenar administradores disponibles para los desplegables (solo en PAP)
+            if (this.panelType === 'PAP' && result.availableAdmins) {
                 this.availableAdmins = result.availableAdmins.filter(admin => {
-                    // 1. Si está en la lista adminSecundarios del backend, incluirlo
-                    if (adminIds.has(admin.id)) {
-                        return true;
-                    }
-                    
-                    // 2. Si es AdminPrincipal por nickname, incluirlo 
-                    if (admin.nickname === 'AdminPrincipal') {
-                        return true;
-                    }
-                    
-                    // 3. Verificar roles si están disponibles
                     const role = admin.role_name || admin.role || '';
-                    if (role === 'administrador_principal' || role === 'administrador_secundario') {
-                        return true;
-                    }
-                    
-                    return false;
+                    return role === 'administrador_principal' || role === 'administrador_secundario' || admin.nickname === 'AdminPrincipal';
                 });
-                
-                console.log(`👥 Administradores disponibles filtrados: ${this.availableAdmins.length} (de ${result.availableAdmins.length} totales)`);
-                console.log(`🔍 Tipos encontrados:`, this.availableAdmins.map(a => ({
-                    id: a.id,
-                    nickname: a.nickname,
-                    role_name: a.role_name || a.role || 'unknown'
-                })));
+                console.log(`👥 Administradores disponibles: ${this.availableAdmins.length}`);
             }
             
-            // Filtrar por el rol específico
-            const rolKey = rolAdministrado.toLowerCase() + 'es'; // 'profesores' o 'creadores'
-            console.log(`🔑 Buscando clave: "${rolKey}" en respuesta`);
-            const registros = result[rolKey] || [];
+            // Los registros ya vienen filtrados por admin_assignments desde el backend
+            const registros = result.administrados || [];
             
-            console.log(`📊 Encontrados ${registros.length} registros de ${rolAdministrado}s`);
+            console.log(`📊 Encontrados ${registros.length} ${rolAdministrado.toLowerCase()}s administrados`);
             
-            // Si no hay registros desde la API, usar datos de respaldo
             if (registros.length === 0) {
-                console.log('⚠️ No se encontraron registros desde la API, usando datos de respaldo');
-                return this.generarDatosRespaldo(rolAdministrado);
+                console.log(`⚠️ No hay ${rolAdministrado.toLowerCase()}s asignados a este administrador`);
+                return [];
             }
             
             return registros;
             
         } catch (error) {
-            console.error('Error obteniendo registros:', error);
-            console.log('🔄 Usando datos de respaldo realistas para desarrollo...');
-            return this.generarDatosRespaldo(rolAdministrado);
+            console.error('Error obteniendo registros administrados:', error);
+            return [];
         }
     }
 
     /**
-     * Calcula las características de un registro realizando consultas directas a la BD
-     * @param {Object} registro - El registro de usuario
+     * Calcula las características del Nivel 1: Administrados
+     * @param {Object} registro - El registro del usuario administrado
      * @param {string} rolAdministrado - 'Profesor' | 'Creador'
-     * @returns {Promise<Object>} Características calculadas
+     * @returns {Promise<Object>} Características calculadas del nivel administrados
      */
     async calcularCaracteristicas(registro, rolAdministrado) {
-        const userId = registro.id || registro.user_id;
+        const userId = registro.id || registro.user_id || registro.assigned_user_id;
         const roleName = rolAdministrado.toLowerCase();
         
         // Verificar que apiService esté disponible
@@ -318,40 +274,40 @@ class AdminPanelSection {
         }
 
         try {
-            // Hacer consulta específica para este usuario y rol
-            const statsEndpoint = `/roles-updated/usuarios/${userId}/estadisticas?rol=${roleName}`;
+            // Endpoint específico para características de administrados
+            const statsEndpoint = `/roles-updated/administrados/${userId}/caracteristicas?rol=${roleName}`;
             const result = await this.apiService.apiCall(statsEndpoint);
             
             return {
                 // Nickname/Nombre del assigned_user_id
-                nickname: registro.nickname || 'Sin nickname',
-                nombreCompleto: [registro.first_name, registro.last_name].filter(Boolean).join(' ') || 'No especificado',
+                nickname: registro.nickname || result.nickname || 'Sin nickname',
+                nombreCompleto: result.full_name || [registro.first_name, registro.last_name].filter(Boolean).join(' ') || 'No especificado',
                 
                 // Email del assigned_user_id
-                email: registro.email || 'Sin email',
+                email: registro.email || result.email || 'Sin email',
                 
-                // Bloques Creados por el assigned_user_id (de consulta a BD)
-                bloquesCreados: result.blocks_created || 0,
+                // Bloques creados por el assigned_user_id (COUNT de blocks por user_role_id + rol)
+                bloquesCreados: result.total_blocks || 0,
                 
-                // Temas totales (COUNT DISTINCT de topic_answers.topic)
+                // Temas totales (COUNT de topic_answers por block_id de los bloques del usuario)
                 totalTemas: result.total_topics || 0,
                 
-                // Preguntas totales (SUM de block_answers.total_questions)
+                // Preguntas totales (SUM de block_answers.total_questions de los bloques del usuario)
                 totalPreguntas: result.total_questions || 0,
                 
-                // Alumnos/Estudiantes que tienen cargados estos bloques (de user_loaded_blocks)
+                // Alumnos(Profesor)/Estudiantes(Creador) que tienen cargados estos bloques (de user_loaded_blocks)
                 totalUsuarios: result.total_users || 0,
                 
-                // Administrador asignado (solo en PAP)
-                administradorAsignado: this.panelType === 'PAP' ? (registro.assigned_admin_nickname || 'Sin asignar') : null,
-                adminId: registro.assigned_admin_id || null,
+                // Administrador asignado (solo en PAP, nickname del admin_id)
+                administradorAsignado: this.panelType === 'PAP' ? (result.assigned_admin_nickname || registro.assigned_admin_nickname || 'Sin asignar') : null,
+                adminId: result.assigned_admin_id || registro.assigned_admin_id || null,
                 
                 // ID del usuario para operaciones
                 userId: userId
             };
             
         } catch (error) {
-            console.warn(`Error calculando características para usuario ${userId}:`, error);
+            console.warn(`Error calculando características de administrado ${userId}:`, error);
             return this.calcularCaracteristicasBasicas(registro, rolAdministrado);
         }
     }
@@ -729,8 +685,8 @@ class AdminPanelSection {
     }
 
     /**
-     * Carga y renderiza los bloques de un usuario
-     * @param {number} userId - ID del usuario
+     * Carga y renderiza el Nivel 2: Bloques de un administrado
+     * @param {number} userId - ID del usuario administrado
      * @param {string} tipo - 'profesor' | 'creador'
      */
     async cargarBloques(userId, tipo) {
@@ -740,7 +696,7 @@ class AdminPanelSection {
         if (!container) return;
 
         try {
-            console.log(`📚 Cargando bloques para ${tipo} ID: ${userId}`);
+            console.log(`📚 Cargando bloques Nivel 2 para ${tipo} ID: ${userId}`);
             
             // Verificar que apiService esté disponible
             if (!this.ensureApiService()) {
@@ -749,22 +705,22 @@ class AdminPanelSection {
                 return;
             }
             
-            // Corregir endpoint con terminación correcta
-            const tipoPlural = tipo.toLowerCase() + 'es'; // 'profesores' o 'creadores'
-            const endpoint = `/roles-updated/${tipoPlural}/${userId}/bloques`;
-            console.log(`📡 Endpoint bloques: ${endpoint}`);
+            // Endpoint específico para bloques de administrados filtrados por tabla blocks + rol
+            const endpoint = `/roles-updated/administrados/${userId}/bloques?rol=${tipo}`;
+            console.log(`📡 Endpoint bloques administrado: ${endpoint}`);
             
             const result = await this.apiService.apiCall(endpoint);
             const bloques = result.bloques || [];
             
             if (bloques.length === 0) {
-                container.innerHTML = '<p style="padding: 20px; text-align: center; color: #778DA9;">No tiene bloques públicos creados</p>';
+                container.innerHTML = `<p style="padding: 20px; text-align: center; color: #778DA9;">No tiene bloques creados con rol ${tipo}</p>`;
                 return;
             }
 
             const etiquetaUsuarios = tipo === 'profesor' ? 'Alumnos' : 'Estudiantes';
             let html = `
                 <div style="padding: 10px; background: #0D1B2A;">
+                    <h4 style="color: #E0E1DD; margin: 10px 0;">Bloques Creados (${bloques.length})</h4>
                     <table class="nested-table" style="margin-top: 10px;">
                         <thead>
                             <tr>
@@ -790,9 +746,9 @@ class AdminPanelSection {
                             </button>
                         </td>
                         <td><strong>${bloque.name}</strong></td>
-                        <td>${bloque.num_temas || bloque.total_topics || 0}</td>
-                        <td>${bloque.total_preguntas || bloque.total_questions || 0}</td>
-                        <td>${bloque.usuarios_bloque || bloque.total_users || 0}</td>
+                        <td>${bloque.total_topics || 0}</td>
+                        <td>${bloque.total_questions || 0}</td>
+                        <td>${bloque.total_users || 0}</td>
                         <td>${bloque.created_at ? new Date(bloque.created_at).toLocaleDateString() : 'N/A'}</td>
                     </tr>
                 `;
@@ -827,11 +783,11 @@ class AdminPanelSection {
             }
             
         } catch (error) {
-            console.error('Error cargando bloques:', error);
+            console.error('Error cargando bloques de administrado:', error);
             console.error('Error detalles:', {
                 userId,
                 tipo,
-                endpoint: `/roles-updated/${tipo.toLowerCase() + 'es'}/${userId}/bloques`,
+                endpoint: `/roles-updated/administrados/${userId}/bloques?rol=${tipo}`,
                 errorMessage: error.message
             });
             container.innerHTML = `<p style="color: #EF4444; padding: 20px;">Error al cargar los bloques: ${error.message}</p>`;
@@ -889,7 +845,7 @@ class AdminPanelSection {
     }
 
     /**
-     * Carga y renderiza los temas de un bloque
+     * Carga y renderiza el Nivel 3: Temas de un bloque
      * @param {number} blockId - ID del bloque
      */
     async cargarTemas(blockId) {
@@ -897,7 +853,7 @@ class AdminPanelSection {
         if (!container) return;
         
         try {
-            console.log(`📝 Cargando temas para bloque ID: ${blockId}`);
+            console.log(`📝 Cargando temas Nivel 3 para bloque ID: ${blockId}`);
             
             // Verificar que apiService esté disponible
             if (!this.ensureApiService()) {
@@ -906,36 +862,45 @@ class AdminPanelSection {
                 return;
             }
             
+            // Endpoint específico para temas filtrados de topic_answers por block_id
             const result = await this.apiService.apiCall(`/roles-updated/bloques/${blockId}/temas`);
             const temas = result.topics || result.temas || [];
             
             if (temas.length === 0) {
-                container.innerHTML = '<p style="padding: 10px;">No tiene temas creados</p>';
+                container.innerHTML = '<p style="padding: 10px; color: #778DA9;">No tiene temas creados en este bloque</p>';
                 return;
             }
             
             let html = `
                 <div style="padding: 10px; background: #1B263B;">
+                    <h5 style="color: #E0E1DD; margin: 10px 0;">Temas del Bloque (${temas.length})</h5>
                     <table class="nested-table" style="margin-top: 10px;">
                         <thead>
                             <tr>
-                                <th>Tema</th>
+                                <th>Título del Tema</th>
                                 <th>Preguntas</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
             `;
             
             temas.forEach(tema => {
-                // Nombre del tema (de columna topic de tabla topic_answers)
-                const nombreTema = tema.topic || tema.name || 'Sin nombre';
+                // Título del tema (de columna topic de tabla topic_answers)
+                const tituloTema = tema.topic || tema.name || 'Sin título';
                 // Número de preguntas (de columna total_questions de tabla topic_answers)
                 const numPreguntas = tema.total_questions || tema.num_preguntas || 0;
                 
                 html += `
                     <tr>
-                        <td><strong>${nombreTema}</strong></td>
+                        <td><strong>${tituloTema}</strong></td>
                         <td>${numPreguntas}</td>
+                        <td>
+                            <button onclick="adminPanelSection.cargarPreguntasTema(${blockId}, '${tema.topic}')" 
+                                    style="background: #3B82F6; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                                Ver Preguntas
+                            </button>
+                        </td>
                     </tr>
                 `;
             });
@@ -949,9 +914,86 @@ class AdminPanelSection {
             container.innerHTML = html;
             
         } catch (error) {
-            console.error('Error cargando temas:', error);
-            container.innerHTML = '<p style="color: #EF4444; padding: 10px;">Error al cargar los temas</p>';
+            console.error('Error cargando temas del bloque:', error);
+            container.innerHTML = '<p style="color: #EF4444; padding: 10px;">Error al cargar los temas del bloque</p>';
         }
+    }
+
+    /**
+     * Carga las preguntas de un tema específico
+     * @param {number} blockId - ID del bloque
+     * @param {string} topic - Nombre del tema
+     */
+    async cargarPreguntasTema(blockId, topic) {
+        try {
+            console.log(`❓ Cargando preguntas del tema "${topic}" del bloque ${blockId}`);
+            
+            if (!this.ensureApiService()) {
+                alert('Error: Servicio API no disponible');
+                return;
+            }
+            
+            // Endpoint para cargar preguntas del bloque y tema específico
+            const result = await this.apiService.apiCall(`/roles-updated/bloques/${blockId}/temas/${encodeURIComponent(topic)}/preguntas`);
+            const preguntas = result.questions || result.preguntas || [];
+            
+            if (preguntas.length === 0) {
+                alert(`No se encontraron preguntas para el tema "${topic}"`);
+                return;
+            }
+            
+            // Mostrar las preguntas en una ventana modal o nueva página
+            this.mostrarPreguntasTema(blockId, topic, preguntas);
+            
+        } catch (error) {
+            console.error('Error cargando preguntas del tema:', error);
+            alert(`Error al cargar las preguntas del tema: ${error.message}`);
+        }
+    }
+
+    /**
+     * Muestra las preguntas de un tema en una ventana modal
+     * @param {number} blockId - ID del bloque
+     * @param {string} topic - Nombre del tema
+     * @param {Array} preguntas - Array de preguntas
+     */
+    mostrarPreguntasTema(blockId, topic, preguntas) {
+        // Crear ventana modal para mostrar las preguntas
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.8); z-index: 10000; display: flex; 
+            align-items: center; justify-content: center;
+        `;
+        
+        modal.innerHTML = `
+            <div style="
+                background: #0D1B2A; color: #E0E1DD; padding: 20px; border-radius: 8px; 
+                max-width: 80%; max-height: 80%; overflow-y: auto; width: 600px;
+                border: 1px solid #415A77;
+            ">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0; color: #E0E1DD;">Preguntas del Tema: "${topic}"</h3>
+                    <button onclick="this.closest('[style*=fixed]').remove()" 
+                            style="background: #EF4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">
+                        Cerrar
+                    </button>
+                </div>
+                <div style="margin-bottom: 15px; color: #778DA9;">
+                    Bloque ID: ${blockId} | Total de preguntas: ${preguntas.length}
+                </div>
+                <div>
+                    ${preguntas.map((pregunta, index) => `
+                        <div style="margin-bottom: 15px; padding: 15px; background: #1B263B; border-radius: 4px; border-left: 3px solid #3B82F6;">
+                            <strong style="color: #E0E1DD;">Pregunta ${index + 1}:</strong>
+                            <div style="margin-top: 8px;">${pregunta.question || pregunta.text || 'Pregunta sin texto'}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
     }
 
     /**
