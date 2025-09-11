@@ -239,36 +239,36 @@ class AdminPanelSection {
             // Almacenar administradores disponibles para los desplegables
             if (result.availableAdmins) {
                 console.log(`🔍 DEBUG availableAdmins estructura:`, result.availableAdmins.slice(0, 3));
+                console.log(`🔍 DEBUG adminSecundarios:`, result.adminSecundarios);
                 
                 // Si tenemos adminSecundarios en result, usar esos datos para el filtro
                 const adminIds = new Set();
                 if (result.adminSecundarios) {
-                    result.adminSecundarios.forEach(admin => adminIds.add(admin.id));
+                    result.adminSecundarios.forEach(admin => {
+                        adminIds.add(admin.id);
+                        console.log(`🔍 Admin secundario agregado: ${admin.nickname} (ID: ${admin.id})`);
+                    });
                 }
                 
-                // Filtrar solo administradores principales y secundarios
+                // Filtrar administradores usando múltiples estrategias
                 this.availableAdmins = result.availableAdmins.filter(admin => {
-                    // Debug para ver cada admin evaluado
-                    const inAdminSecundarios = adminIds.has(admin.id);
+                    // 1. Si está en la lista adminSecundarios del backend, incluirlo
+                    if (adminIds.has(admin.id)) {
+                        return true;
+                    }
+                    
+                    // 2. Si es AdminPrincipal por nickname, incluirlo 
+                    if (admin.nickname === 'AdminPrincipal') {
+                        return true;
+                    }
+                    
+                    // 3. Verificar roles si están disponibles
                     const role = admin.role_name || admin.role || '';
-                    const isRoleMatch = role === 'administrador_principal' || role === 'administrador_secundario';
-                    const isPropMatch = admin.is_principal || admin.is_secondary;
-                    const isNicknameMatch = admin.nickname === 'AdminPrincipal';
+                    if (role === 'administrador_principal' || role === 'administrador_secundario') {
+                        return true;
+                    }
                     
-                    const shouldInclude = inAdminSecundarios || isRoleMatch || isPropMatch || isNicknameMatch;
-                    
-                    console.log(`🔍 Admin evaluado:`, {
-                        id: admin.id,
-                        nickname: admin.nickname,
-                        role: role,
-                        inAdminSecundarios,
-                        isRoleMatch,
-                        isPropMatch,
-                        isNicknameMatch,
-                        shouldInclude
-                    });
-                    
-                    return shouldInclude;
+                    return false;
                 });
                 
                 console.log(`👥 Administradores disponibles filtrados: ${this.availableAdmins.length} (de ${result.availableAdmins.length} totales)`);
@@ -308,16 +308,6 @@ class AdminPanelSection {
      * @returns {Object} Características calculadas
      */
     calcularCaracteristicas(registro, rolAdministrado) {
-        // Debug temporal para ver los valores de preguntas
-        console.log(`🔍 DEBUG calcularCaracteristicas ${rolAdministrado}:`, {
-            id: registro.id,
-            nickname: registro.nickname,
-            total_preguntas: registro.total_preguntas,
-            total_questions: registro.total_questions,
-            preguntas_totales: registro.preguntas_totales,
-            registro_completo: registro
-        });
-        
         return {
             // Nickname/Nombre del assigned_user_id
             nickname: registro.nickname || 'Sin nickname',
