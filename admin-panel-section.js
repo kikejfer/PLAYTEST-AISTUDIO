@@ -302,38 +302,77 @@ class AdminPanelSection {
     }
 
     /**
-     * Calcula las características de un registro según las especificaciones
+     * Calcula las características de un registro realizando consultas directas a la BD
      * @param {Object} registro - El registro de usuario
      * @param {string} rolAdministrado - 'Profesor' | 'Creador'
-     * @returns {Object} Características calculadas
+     * @returns {Promise<Object>} Características calculadas
      */
-    calcularCaracteristicas(registro, rolAdministrado) {
+    async calcularCaracteristicas(registro, rolAdministrado) {
+        const userId = registro.id || registro.user_id;
+        const roleName = rolAdministrado.toLowerCase();
+        
+        // Verificar que apiService esté disponible
+        if (!this.ensureApiService()) {
+            console.warn('⚠️ apiService no disponible para cálculos');
+            return this.calcularCaracteristicasBasicas(registro, rolAdministrado);
+        }
+
+        try {
+            // Hacer consulta específica para este usuario y rol
+            const statsEndpoint = `/roles-updated/usuarios/${userId}/estadisticas?rol=${roleName}`;
+            const result = await this.apiService.apiCall(statsEndpoint);
+            
+            return {
+                // Nickname/Nombre del assigned_user_id
+                nickname: registro.nickname || 'Sin nickname',
+                nombreCompleto: [registro.first_name, registro.last_name].filter(Boolean).join(' ') || 'No especificado',
+                
+                // Email del assigned_user_id
+                email: registro.email || 'Sin email',
+                
+                // Bloques Creados por el assigned_user_id (de consulta a BD)
+                bloquesCreados: result.blocks_created || 0,
+                
+                // Temas totales (COUNT DISTINCT de topic_answers.topic)
+                totalTemas: result.total_topics || 0,
+                
+                // Preguntas totales (SUM de block_answers.total_questions)
+                totalPreguntas: result.total_questions || 0,
+                
+                // Alumnos/Estudiantes que tienen cargados estos bloques (de user_loaded_blocks)
+                totalUsuarios: result.total_users || 0,
+                
+                // Administrador asignado (solo en PAP)
+                administradorAsignado: this.panelType === 'PAP' ? (registro.assigned_admin_nickname || 'Sin asignar') : null,
+                adminId: registro.assigned_admin_id || null,
+                
+                // ID del usuario para operaciones
+                userId: userId
+            };
+            
+        } catch (error) {
+            console.warn(`Error calculando características para usuario ${userId}:`, error);
+            return this.calcularCaracteristicasBasicas(registro, rolAdministrado);
+        }
+    }
+
+    /**
+     * Calcula características básicas sin consultas a BD (fallback)
+     * @param {Object} registro - El registro de usuario
+     * @param {string} rolAdministrado - 'Profesor' | 'Creador'
+     * @returns {Object} Características básicas
+     */
+    calcularCaracteristicasBasicas(registro, rolAdministrado) {
         return {
-            // Nickname/Nombre del assigned_user_id
             nickname: registro.nickname || 'Sin nickname',
             nombreCompleto: [registro.first_name, registro.last_name].filter(Boolean).join(' ') || 'No especificado',
-            
-            // Email del assigned_user_id
             email: registro.email || 'Sin email',
-            
-            // Bloques Creados por el assigned_user_id (filtrados de tabla blocks por user_role_id)
-            bloquesCreados: registro.blocks_created || registro.bloques_creados || 0,
-            
-            // Temas totales de los bloques (de tabla topic_answers contando registros por block_id)
-            totalTemas: registro.total_topics || registro.total_temas || registro.num_temas || 0,
-            
-            // Preguntas totales (total_questions de tabla block_answers)
-            // En PAS viene como total_preguntas, en PAP como total_questions
-            totalPreguntas: registro.total_preguntas || registro.total_questions || registro.preguntas_totales || 0,
-            
-            // Alumnos/Estudiantes que tienen cargados estos bloques (de user_loaded_blocks)
-            totalUsuarios: registro.estudiantes || registro.alumnos || registro.total_usuarios || 0,
-            
-            // Administrador asignado (solo en PAP)
+            bloquesCreados: 0,
+            totalTemas: 0,
+            totalPreguntas: 0,
+            totalUsuarios: 0,
             administradorAsignado: this.panelType === 'PAP' ? (registro.assigned_admin_nickname || 'Sin asignar') : null,
             adminId: registro.assigned_admin_id || null,
-            
-            // ID del usuario para operaciones
             userId: registro.id || registro.user_id
         };
     }
@@ -419,6 +458,9 @@ class AdminPanelSection {
             // Configurar event listeners
             this.configurarEventListeners(containerId, rolAdministrador, rolAdministrado);
             
+            // Cargar estadísticas para cada usuario
+            this.cargarEstadisticasUsuarios(registros, rolAdministrado);
+            
             console.log(`✅ Sección ${rolAdministrado} renderizada en ${containerId}`);
             
         } catch (error) {
@@ -473,31 +515,37 @@ class AdminPanelSection {
                 </tr>
             `;
         } else {
+            // Primero renderizamos la tabla con placeholders
             registros.forEach((registro, index) => {
-                const caracteristicas = this.calcularCaracteristicas(registro, rolAdministrado);
-                const isExpanded = this.expandedRows.has(`${rolAdministrado.toLowerCase()}-${caracteristicas.userId}`);
+                const userId = registro.id || registro.user_id;
+                const nickname = registro.nickname || 'Sin nickname';
+                const nombreCompleto = [registro.first_name, registro.last_name].filter(Boolean).join(' ') || 'No especificado';
+                const email = registro.email || 'Sin email';
+                const adminAsignado = this.panelType === 'PAP' ? (registro.assigned_admin_nickname || 'Sin asignar') : null;
+                const adminId = registro.assigned_admin_id || null;
+                const isExpanded = this.expandedRows.has(`${rolAdministrado.toLowerCase()}-${userId}`);
                 
                 html += `
-                    <tr data-user-id="${caracteristicas.userId}" data-rol="${rolAdministrado.toLowerCase()}">
+                    <tr data-user-id="${userId}" data-rol="${rolAdministrado.toLowerCase()}">
                         <td>
-                            <button class="btn btn-expand" onclick="adminPanelSection.toggleExpansion('${rolAdministrado.toLowerCase()}', ${caracteristicas.userId})">
+                            <button class="btn btn-expand" onclick="adminPanelSection.toggleExpansion('${rolAdministrado.toLowerCase()}', ${userId})">
                                 ${isExpanded ? '−' : '+'}
                             </button>
                         </td>
                         <td>
-                            <strong>${caracteristicas.nickname}</strong><br>
-                            <small style="color: #6B7280;">${caracteristicas.nombreCompleto}</small>
+                            <strong>${nickname}</strong><br>
+                            <small style="color: #6B7280;">${nombreCompleto}</small>
                         </td>
-                        <td>${caracteristicas.email}</td>
-                        <td><strong style="color: #3B82F6;">${caracteristicas.bloquesCreados}</strong></td>
-                        <td><strong style="color: #10B981;">${caracteristicas.totalTemas}</strong></td>
-                        <td><strong style="color: #8B5CF6;">${caracteristicas.totalPreguntas}</strong></td>
-                        <td><strong style="color: #F59E0B;">${caracteristicas.totalUsuarios}</strong></td>
+                        <td>${email}</td>
+                        <td><strong style="color: #3B82F6;" id="blocks-${userId}">...</strong></td>
+                        <td><strong style="color: #10B981;" id="topics-${userId}">...</strong></td>
+                        <td><strong style="color: #8B5CF6;" id="questions-${userId}">...</strong></td>
+                        <td><strong style="color: #F59E0B;" id="users-${userId}">...</strong></td>
                         ${mostrarAdmin ? `
                             <td>
-                                <select onchange="adminPanelSection.reasignarUsuario(${caracteristicas.userId}, this.value)" style="background: #1B263B; color: #E0E1DD; border: 1px solid #415A77; border-radius: 4px; padding: 4px 8px;">
-                                    <option value="">${caracteristicas.administradorAsignado}</option>
-                                    ${this.generarOpcionesAdmin(caracteristicas.adminId)}
+                                <select onchange="adminPanelSection.reasignarUsuario(${userId}, this.value)" style="background: #1B263B; color: #E0E1DD; border: 1px solid #415A77; border-radius: 4px; padding: 4px 8px;">
+                                    <option value="">${adminAsignado}</option>
+                                    ${this.generarOpcionesAdmin(adminId)}
                                 </select>
                             </td>
                         ` : ''}
@@ -505,7 +553,7 @@ class AdminPanelSection {
                             ${registro.luminarias_actuales || 0}
                         </td>
                         <td>
-                            <button onclick="adminPanelSection.eliminarUsuario(${caracteristicas.userId}, '${caracteristicas.nickname}')" 
+                            <button onclick="adminPanelSection.eliminarUsuario(${userId}, '${nickname}')" 
                                     style="background: #EF4444; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
                                 🗑️
                             </button>
@@ -517,9 +565,9 @@ class AdminPanelSection {
                 if (isExpanded) {
                     const colspan = mostrarAdmin ? 10 : 9;
                     html += `
-                        <tr class="expandable-row show" data-user-id="${caracteristicas.userId}">
+                        <tr class="expandible-row show" data-user-id="${userId}">
                             <td colspan="${colspan}">
-                                <div id="${rolAdministrado.toLowerCase()}-blocks-${caracteristicas.userId}" class="blocks-container">
+                                <div id="${rolAdministrado.toLowerCase()}-blocks-${userId}" class="blocks-container">
                                     <div class="loading">Cargando bloques...</div>
                                 </div>
                             </td>
@@ -568,6 +616,46 @@ class AdminPanelSection {
         });
         
         return options;
+    }
+
+    /**
+     * Carga las estadísticas de usuarios de forma asíncrona
+     * @param {Array} registros - Array de registros de usuarios
+     * @param {string} rolAdministrado - 'Profesor' | 'Creador'
+     */
+    async cargarEstadisticasUsuarios(registros, rolAdministrado) {
+        console.log(`📊 Cargando estadísticas para ${registros.length} ${rolAdministrado.toLowerCase()}s`);
+        
+        for (const registro of registros) {
+            const userId = registro.id || registro.user_id;
+            try {
+                const caracteristicas = await this.calcularCaracteristicas(registro, rolAdministrado);
+                
+                // Actualizar los valores en la tabla
+                const blocksElement = document.getElementById(`blocks-${userId}`);
+                const topicsElement = document.getElementById(`topics-${userId}`);
+                const questionsElement = document.getElementById(`questions-${userId}`);
+                const usersElement = document.getElementById(`users-${userId}`);
+                
+                if (blocksElement) blocksElement.textContent = caracteristicas.bloquesCreados;
+                if (topicsElement) topicsElement.textContent = caracteristicas.totalTemas;
+                if (questionsElement) questionsElement.textContent = caracteristicas.totalPreguntas;
+                if (usersElement) usersElement.textContent = caracteristicas.totalUsuarios;
+                
+            } catch (error) {
+                console.warn(`Error cargando estadísticas para usuario ${userId}:`, error);
+                // Mostrar 0 en caso de error
+                const blocksElement = document.getElementById(`blocks-${userId}`);
+                const topicsElement = document.getElementById(`topics-${userId}`);
+                const questionsElement = document.getElementById(`questions-${userId}`);
+                const usersElement = document.getElementById(`users-${userId}`);
+                
+                if (blocksElement) blocksElement.textContent = '0';
+                if (topicsElement) topicsElement.textContent = '0';
+                if (questionsElement) questionsElement.textContent = '0';
+                if (usersElement) usersElement.textContent = '0';
+            }
+        }
     }
 
     /**
@@ -702,9 +790,9 @@ class AdminPanelSection {
                             </button>
                         </td>
                         <td><strong>${bloque.name}</strong></td>
-                        <td>${bloque.num_temas || 0}</td>
-                        <td>${bloque.total_preguntas || 0}</td>
-                        <td>${bloque.usuarios_bloque || 0}</td>
+                        <td>${bloque.num_temas || bloque.total_topics || 0}</td>
+                        <td>${bloque.total_preguntas || bloque.total_questions || 0}</td>
+                        <td>${bloque.usuarios_bloque || bloque.total_users || 0}</td>
                         <td>${bloque.created_at ? new Date(bloque.created_at).toLocaleDateString() : 'N/A'}</td>
                     </tr>
                 `;
