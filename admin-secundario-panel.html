@@ -468,7 +468,7 @@
         let expandedRows = new Set();
         let currentUser = null;
 
-        // API Data Service for consistency with PAP
+        // Enhanced API Data Service with PAS endpoint support
         const apiDataService = {
             async apiCall(endpoint) {
                 const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
@@ -479,6 +479,13 @@
                 const API_BASE_URL = window.location.hostname.includes('onrender.com') 
                     ? 'https://playtest-backend.onrender.com' 
                     : '';
+                
+                // Enhanced endpoint handling for PAS
+                if (endpoint.includes('/administrados/')) {
+                    console.log(`🔗 PAS apiDataService - llamando endpoint administrados: ${endpoint}`);
+                } else if (endpoint.includes('/bloques/')) {
+                    console.log(`🔗 PAS apiDataService - llamando endpoint bloques: ${endpoint}`);
+                }
                     
                 const url = `${API_BASE_URL}/api${endpoint}`;
                 
@@ -490,12 +497,18 @@
                 });
                 
                 if (!response.ok) {
+                    console.error(`❌ PAS apiDataService error: ${response.status} ${response.statusText} for ${endpoint}`);
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
-                return await response.json();
+                const data = await response.json();
+                console.log(`✅ PAS apiDataService respuesta para ${endpoint}:`, data);
+                return data;
             }
         };
+        
+        // Make apiDataService available globally for the generic module
+        window.apiDataService = apiDataService;
 
         async function fetchWithRetry(url, options, maxRetries = 5, timeout = 30000) {
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -2029,19 +2042,7 @@
             await initializeCreadoresAsignadosGenerico();
         }
 
-        // Función para esperar a que apiDataService esté disponible
-        async function waitForApiService(maxAttempts = 10) {
-            for (let i = 0; i < maxAttempts; i++) {
-                if (window.apiDataService) {
-                    console.log(`✅ apiDataService disponible en intento ${i + 1}`);
-                    return true;
-                }
-                console.log(`⏳ Esperando apiDataService... intento ${i + 1}/${maxAttempts}`);
-                await new Promise(resolve => setTimeout(resolve, 500));
-            }
-            console.warn('⚠️ apiDataService no disponible después de esperar');
-            return false;
-        }
+        // apiDataService ya está disponible globalmente desde el inicio
 
         // Inicializar las nuevas secciones después de que todo esté cargado
         document.addEventListener('DOMContentLoaded', function() {
@@ -2050,8 +2051,8 @@
                 if (window.adminPanelSection) {
                     console.log('🚀 Inicializando nuevas secciones PAS con módulo genérico...');
                     
-                    // Esperar a que apiDataService esté disponible
-                    await waitForApiService();
+                    // apiDataService ya está disponible globalmente
+                    console.log('✅ apiDataService disponible inmediatamente');
                     
                     await initializeProfesoresAsignadosGenerico();
                     await initializeCreadoresAsignadosGenerico();
