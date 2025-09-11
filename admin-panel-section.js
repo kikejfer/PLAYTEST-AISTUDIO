@@ -654,6 +654,13 @@ class AdminPanelSection {
         try {
             console.log(`📚 Cargando bloques para ${tipo} ID: ${userId}`);
             
+            // Verificar que apiService esté disponible
+            if (!this.ensureApiService()) {
+                console.error('❌ API Service no disponible para cargar bloques');
+                container.innerHTML = '<p style="padding: 20px; text-align: center; color: #EF4444;">Error: Servicio API no disponible</p>';
+                return;
+            }
+            
             // Corregir endpoint con terminación correcta
             const tipoPlural = tipo.toLowerCase() + 'es'; // 'profesores' o 'creadores'
             const endpoint = `/roles-updated/${tipoPlural}/${userId}/bloques`;
@@ -803,6 +810,13 @@ class AdminPanelSection {
         
         try {
             console.log(`📝 Cargando temas para bloque ID: ${blockId}`);
+            
+            // Verificar que apiService esté disponible
+            if (!this.ensureApiService()) {
+                console.error('❌ API Service no disponible para cargar temas');
+                container.innerHTML = '<p style="padding: 10px; color: #EF4444;">Error: Servicio API no disponible</p>';
+                return;
+            }
             
             const result = await this.apiService.apiCall(`/roles-updated/bloques/${blockId}/temas`);
             const temas = result.topics || result.temas || [];

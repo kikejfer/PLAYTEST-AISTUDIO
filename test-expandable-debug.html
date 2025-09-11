@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="panel-type" content="PAP">
+    <title>Test Expandable Debug</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0D1B2A;
+            color: #E0E1DD;
+            margin: 0;
+            padding: 20px;
+        }
+        .debug-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #1B263B;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .test-button {
+            background: #415A77;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .test-button:hover {
+            background: #5A6C7D;
+        }
+        .result-area {
+            background: #0D1B2A;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #415A77;
+        }
+        pre {
+            white-space: pre-wrap;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>🔍 Test Expandable Blocks Debug</h1>
+        
+        <div>
+            <button class="test-button" onclick="testApiConnection()">Test API Connection</button>
+            <button class="test-button" onclick="testBlocksEndpoint()">Test Blocks Endpoint</button>
+            <button class="test-button" onclick="testTemasEndpoint()">Test Temas Endpoint</button>
+            <button class="test-button" onclick="testExpandableClass()">Test AdminPanelSection Class</button>
+        </div>
+
+        <div id="results" class="result-area">
+            <p>Resultados aparecerán aquí...</p>
+        </div>
+    </div>
+
+    <!-- Include the generic module -->
+    <script src="admin-panel-section.js"></script>
+    <script>
+        let adminPanelSection;
+        let results = document.getElementById('results');
+
+        function log(message) {
+            console.log(message);
+            results.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+        }
+
+        function logError(message, error) {
+            console.error(message, error);
+            results.innerHTML += `<div style="color: #EF4444">${new Date().toLocaleTimeString()}: ❌ ${message}</div>`;
+            if (error) {
+                results.innerHTML += `<pre style="color: #EF4444">${JSON.stringify(error, null, 2)}</pre>`;
+            }
+        }
+
+        function logSuccess(message, data) {
+            console.log(message, data);
+            results.innerHTML += `<div style="color: #10B981">${new Date().toLocaleTimeString()}: ✅ ${message}</div>`;
+            if (data) {
+                results.innerHTML += `<pre style="color: #10B981">${JSON.stringify(data, null, 2)}</pre>`;
+            }
+        }
+
+        async function testApiConnection() {
+            results.innerHTML = '<h3>🔌 Testing API Connection...</h3>';
+            
+            try {
+                // Initialize the class
+                adminPanelSection = new AdminPanelSection();
+                logSuccess('AdminPanelSection class initialized');
+                
+                // Test API service initialization
+                const apiServiceReady = await adminPanelSection.ensureApiService();
+                if (apiServiceReady) {
+                    logSuccess('API service initialized successfully', {
+                        apiService: !!adminPanelSection.apiService,
+                        panelType: adminPanelSection.panelType
+                    });
+                } else {
+                    logError('API service failed to initialize');
+                }
+                
+            } catch (error) {
+                logError('Error testing API connection', error);
+            }
+        }
+
+        async function testBlocksEndpoint() {
+            results.innerHTML = '<h3>📦 Testing Blocks Endpoint...</h3>';
+            
+            if (!adminPanelSection) {
+                await testApiConnection();
+            }
+            
+            try {
+                // Test with a known user ID (let's try user 10 - kikejfer)
+                const userId = 10; 
+                log(`Testing blocks endpoint for user ${userId}...`);
+                
+                const blocksResult = await adminPanelSection.apiService.apiCall(`/roles-updated/profesor/${userId}/bloques`);
+                logSuccess(`Blocks endpoint successful`, blocksResult);
+                
+                if (blocksResult && blocksResult.length > 0) {
+                    const firstBlock = blocksResult[0];
+                    log(`First block ID: ${firstBlock.id}, Name: ${firstBlock.name}`);
+                    
+                    // Test temas endpoint with first block
+                    await testSpecificBlockTemas(firstBlock.id);
+                } else {
+                    log('No blocks found for this user');
+                }
+                
+            } catch (error) {
+                logError('Error testing blocks endpoint', error);
+            }
+        }
+
+        async function testSpecificBlockTemas(blockId) {
+            try {
+                log(`Testing temas endpoint for block ${blockId}...`);
+                
+                const temasResult = await adminPanelSection.apiService.apiCall(`/roles-updated/bloques/${blockId}/temas`);
+                logSuccess(`Temas endpoint successful for block ${blockId}`, temasResult);
+                
+                if (temasResult.temas && temasResult.temas.length > 0) {
+                    log(`Found ${temasResult.temas.length} temas for block ${blockId}`);
+                } else {
+                    log(`No temas found for block ${blockId}`);
+                }
+                
+            } catch (error) {
+                logError(`Error testing temas endpoint for block ${blockId}`, error);
+            }
+        }
+
+        async function testTemasEndpoint() {
+            results.innerHTML = '<h3>📝 Testing Generic Temas Endpoint...</h3>';
+            
+            if (!adminPanelSection) {
+                await testApiConnection();
+            }
+            
+            try {
+                // Test with some block IDs
+                const testBlockIds = [1, 2, 3, 4, 5];
+                
+                for (const blockId of testBlockIds) {
+                    try {
+                        const temasResult = await adminPanelSection.apiService.apiCall(`/roles-updated/bloques/${blockId}/temas`);
+                        
+                        if (temasResult.temas && temasResult.temas.length > 0) {
+                            logSuccess(`Block ${blockId}: Found ${temasResult.temas.length} temas`, temasResult.temas);
+                            break; // Found working block, stop testing
+                        } else {
+                            log(`Block ${blockId}: No temas found`);
+                        }
+                    } catch (error) {
+                        log(`Block ${blockId}: Error - ${error.message}`);
+                    }
+                }
+                
+            } catch (error) {
+                logError('Error testing temas endpoint', error);
+            }
+        }
+
+        async function testExpandableClass() {
+            results.innerHTML = '<h3>⚙️ Testing AdminPanelSection Expandable Functions...</h3>';
+            
+            if (!adminPanelSection) {
+                await testApiConnection();
+            }
+            
+            try {
+                log('Testing expandable functionality...');
+                
+                // Test expandedBlocks set
+                logSuccess('expandedBlocks set exists', {
+                    hasExpandedBlocks: !!adminPanelSection.expandedBlocks,
+                    expandedBlocksType: typeof adminPanelSection.expandedBlocks,
+                    expandedBlocksSize: adminPanelSection.expandedBlocks?.size || 0
+                });
+                
+                // Test toggleBlockExpansion method
+                logSuccess('toggleBlockExpansion method exists', {
+                    hasToggleBlockExpansion: typeof adminPanelSection.toggleBlockExpansion === 'function'
+                });
+                
+                // Test cargarTemas method
+                logSuccess('cargarTemas method exists', {
+                    hasCargarTemas: typeof adminPanelSection.cargarTemas === 'function'
+                });
+                
+                // Test manual block expansion
+                log('Testing manual block expansion for block ID 1...');
+                adminPanelSection.expandedBlocks.add('block-1');
+                logSuccess('Manually added block-1 to expanded set', {
+                    expandedBlocksSize: adminPanelSection.expandedBlocks.size,
+                    hasBlock1: adminPanelSection.expandedBlocks.has('block-1')
+                });
+                
+            } catch (error) {
+                logError('Error testing expandable class', error);
+            }
+        }
+
+        // Auto-run basic test on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                log('🚀 Page loaded, ready for testing!');
+                log('Click the buttons above to run specific tests.');
+            }, 500);
+        });
+    </script>
+</body>
+</html>
