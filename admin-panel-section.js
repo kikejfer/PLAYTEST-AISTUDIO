@@ -182,6 +182,25 @@ class AdminPanelSection {
                         });
                         const data = await response.json();
                         return data;
+                    } else if (endpoint.includes('/administrados/')) {
+                        // Soporte para endpoints de administrados en PAS
+                        const fullUrl = `https://playtest-backend.onrender.com/api${endpoint}`;
+                        console.log(`🔗 Llamando URL de administrados PAS: ${fullUrl}`);
+                        const response = await fetch(fullUrl, {
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('playtest_auth_token')}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (!response.ok) {
+                            console.error(`❌ Error en API administrados: ${response.status} ${response.statusText}`);
+                            throw new Error(`Error ${response.status}: ${response.statusText}`);
+                        }
+                        
+                        const data = await response.json();
+                        console.log(`✅ Respuesta administrados PAS:`, data);
+                        return data;
                     } else if (endpoint.includes('/temas')) {
                         // Soporte para endpoints de temas individuales en PAS
                         const fullUrl = `https://playtest-backend.onrender.com/api${endpoint}`;
@@ -198,7 +217,25 @@ class AdminPanelSection {
                         // Para PAP debe usar apiDataService que ya funciona
                         throw new Error('PAP debe usar apiDataService');
                     }
-                    throw new Error(`Endpoint ${endpoint} no soportado`);
+                    
+                    // Fallback: intentar cualquier endpoint con autenticación
+                    console.log(`🔗 Intentando endpoint genérico: ${endpoint}`);
+                    const fullUrl = `https://playtest-backend.onrender.com/api${endpoint}`;
+                    const response = await fetch(fullUrl, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('playtest_auth_token')}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        console.error(`❌ Error en endpoint genérico: ${response.status} ${response.statusText}`);
+                        throw new Error(`Error ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log(`✅ Respuesta genérica:`, data);
+                    return data;
                 }
             };
             return true;
