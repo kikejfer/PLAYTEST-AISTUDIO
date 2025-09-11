@@ -147,7 +147,8 @@
       "Bash(start debug-support-role.html)",
       "Bash(start fix-user-login.html)",
       "Bash(start auto-login-fix.html)",
-      "Bash(start test-jugadores-debug.html)"
+      "Bash(start test-jugadores-debug.html)",
+      "Bash(git cherry-pick:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
