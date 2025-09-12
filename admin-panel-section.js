@@ -296,6 +296,34 @@ class AdminPanelSection {
 
     /**
      * Calcula las características del Nivel 1: Administrados
+     * 
+     * EXPLICACIÓN DEL CÁLCULO NIVEL 1:
+     * ================================
+     * 
+     * 1. **BLOQUES CREADOS**: COUNT(DISTINCT b.id) de tabla blocks
+     *    - Filtro: user_roles.user_id = assigned_user_id AND user_roles.role_id = target_role_id
+     *    - Solo cuenta bloques creados por el usuario con el rol específico (profesor=3, creador=4)
+     * 
+     * 2. **TOTAL TEMAS**: COUNT(DISTINCT ta.topic) de tabla topic_answers
+     *    - Filtro: topic_answers.block_id pertenece a bloques del usuario
+     *    - Solo cuenta temas únicos que no sean NULL o cadena vacía
+     * 
+     * 3. **TOTAL PREGUNTAS**: SUM(ba.total_questions) de tabla block_answers
+     *    - Filtro: block_answers.block_id pertenece a bloques del usuario
+     *    - Suma total de preguntas de todos los bloques del usuario
+     * 
+     * 4. **TOTAL USUARIOS**: COUNT(DISTINCT ulb.user_id) de tabla user_loaded_blocks
+     *    - Filtro: user_loaded_blocks.block_id pertenece a bloques del usuario
+     *    - Cuenta usuarios únicos que han cargado bloques del administrado
+     *    - Para profesores: cuenta "Alumnos", para creadores: cuenta "Estudiantes"
+     * 
+     * 5. **ADMINISTRADOR ASIGNADO**: Solo en PAP
+     *    - Consulta tabla admin_assignments por assigned_user_id
+     *    - Obtiene nickname del admin_id asignado
+     * 
+     * Endpoints utilizados:
+     * - GET /api/roles-updated/administrados/:userId/caracteristicas?rol=profesor|creador
+     * 
      * @param {Object} registro - El registro del usuario administrado
      * @param {string} rolAdministrado - 'Profesor' | 'Creador'
      * @returns {Promise<Object>} Características calculadas del nivel administrados
@@ -475,6 +503,17 @@ class AdminPanelSection {
         
         let html = `
             <div class="admin-panel-section">
+                <div class="filter-container" style="margin-bottom: 15px; padding: 10px; background: #1B263B; border-radius: 5px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label style="color: #E0E1DD; font-weight: bold;">Filtrar ${rolAdministrado}s:</label>
+                        <input type="text" 
+                               id="filter-${rolAdministrado.toLowerCase()}" 
+                               placeholder="Buscar por nickname, nombre o email..." 
+                               style="flex: 1; padding: 8px 12px; border: 1px solid #415A77; background: #0D1B2A; color: #E0E1DD; border-radius: 4px;"
+                               oninput="adminPanelSection.filtrarUsuarios('${rolAdministrado.toLowerCase()}', this.value)">
+                        <span id="filter-count-${rolAdministrado.toLowerCase()}" style="color: #778DA9; font-size: 14px;"></span>
+                    </div>
+                </div>
                 <div class="table-container">
                     <table>
                         <thead>
@@ -723,6 +762,40 @@ class AdminPanelSection {
 
     /**
      * Carga y renderiza el Nivel 2: Bloques de un administrado
+     * 
+     * EXPLICACIÓN DEL CÁLCULO NIVEL 2:
+     * ================================
+     * 
+     * Obtiene todos los bloques creados por un administrado específico con cálculos por bloque:
+     * 
+     * 1. **BLOQUES DEL USUARIO**: SELECT DISTINCT b.id, b.name, b.created_at
+     *    - Filtro: blocks JOIN user_roles ON b.user_role_id = ur.id
+     *    - WHERE ur.user_id = administrado_id AND ur.role_id = target_role_id
+     *    - Solo bloques creados por el usuario con su rol específico
+     * 
+     * 2. **TEMAS POR BLOQUE**: COUNT(DISTINCT ta.topic) de tabla topic_answers
+     *    - Subquery: WHERE ta.block_id = b.id AND ta.topic IS NOT NULL AND ta.topic != ''
+     *    - Cuenta temas únicos por cada bloque individual
+     * 
+     * 3. **PREGUNTAS POR BLOQUE**: ba.total_questions de tabla block_answers
+     *    - Subquery: WHERE ba.block_id = b.id
+     *    - Total de preguntas por cada bloque individual
+     * 
+     * 4. **USUARIOS POR BLOQUE**: COUNT(DISTINCT ulb.user_id) de tabla user_loaded_blocks
+     *    - Subquery: WHERE ulb.block_id = b.id
+     *    - Cuenta usuarios únicos que han cargado cada bloque específico
+     * 
+     * Cada fila muestra:
+     * - Nombre del bloque
+     * - Número de temas del bloque
+     * - Número de preguntas del bloque  
+     * - Número de alumnos/estudiantes que lo han cargado
+     * - Fecha de creación
+     * - Botón para expandir al Nivel 3 (Temas)
+     * 
+     * Endpoints utilizados:
+     * - GET /api/roles-updated/administrados/:userId/bloques?rol=profesor|creador
+     * 
      * @param {number} userId - ID del usuario administrado
      * @param {string} tipo - 'profesor' | 'creador'
      */
@@ -910,7 +983,6 @@ class AdminPanelSection {
             
             let html = `
                 <div style="padding: 10px; background: #1B263B;">
-                    <h5 style="color: #E0E1DD; margin: 10px 0;">Temas del Bloque (${temas.length})</h5>
                     <table class="nested-table" style="margin-top: 10px;">
                         <thead>
                             <tr>
@@ -1047,6 +1119,55 @@ class AdminPanelSection {
             // Por ahora solo log
         } catch (error) {
             console.error('Error reasignando usuario:', error);
+        }
+    }
+
+    /**
+     * Filtra usuarios en la tabla basado en el texto de búsqueda
+     * @param {string} rol - 'profesor' | 'creador'
+     * @param {string} searchText - Texto de búsqueda
+     */
+    filtrarUsuarios(rol, searchText) {
+        const searchTerm = searchText.toLowerCase().trim();
+        const rows = document.querySelectorAll(`tr[data-rol="${rol}"]`);
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            if (!searchTerm) {
+                // Si no hay término de búsqueda, mostrar todas las filas
+                row.style.display = '';
+                visibleCount++;
+                return;
+            }
+            
+            // Obtener texto de las celdas relevantes (nickname, nombre, email)
+            const cells = row.querySelectorAll('td');
+            if (cells.length < 3) return;
+            
+            const nicknameCell = cells[1]?.textContent || '';
+            const emailCell = cells[2]?.textContent || '';
+            
+            const textToSearch = `${nicknameCell} ${emailCell}`.toLowerCase();
+            
+            if (textToSearch.includes(searchTerm)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+                // También ocultar filas expandidas relacionadas
+                const userId = row.getAttribute('data-user-id');
+                if (userId) {
+                    const expandedRows = document.querySelectorAll(`tr[data-parent-user="${userId}"]`);
+                    expandedRows.forEach(expandedRow => expandedRow.style.display = 'none');
+                }
+            }
+        });
+        
+        // Actualizar contador
+        const countElement = document.getElementById(`filter-count-${rol}`);
+        if (countElement) {
+            const totalRows = rows.length;
+            countElement.textContent = `${visibleCount} de ${totalRows} ${rol}s`;
         }
     }
 
