@@ -300,21 +300,22 @@ class AdminPanelSection {
      * EXPLICACIÓN DEL CÁLCULO NIVEL 1:
      * ================================
      * 
-     * 1. **BLOQUES CREADOS**: COUNT(DISTINCT b.id) de tabla blocks
+     * 1. **BLOQUES CREADOS**: COUNT(DISTINCT blocks.id) filtrado por user_roles específico del administrado
      *    - Filtro: user_roles.user_id = assigned_user_id AND user_roles.role_id = target_role_id
      *    - Solo cuenta bloques creados por el usuario con el rol específico (profesor=3, creador=4)
      * 
-     * 2. **TOTAL TEMAS**: COUNT(DISTINCT ta.topic) de tabla topic_answers
-     *    - Filtro: topic_answers.block_id pertenece a bloques del usuario
+     * 2. **TOTAL TEMAS**: COUNT(DISTINCT topic_answers.topic) de todos los bloques del administrado con el rol de la sección
+     *    - Filtro: topic_answers.block_id pertenece a bloques del usuario CON SU ROL ESPECÍFICO
      *    - Solo cuenta temas únicos que no sean NULL o cadena vacía
+     *    - Importante: Solo temas de bloques creados como profesor/creador según la sección
      * 
-     * 3. **TOTAL PREGUNTAS**: SUM(ba.total_questions) de tabla block_answers
-     *    - Filtro: block_answers.block_id pertenece a bloques del usuario
-     *    - Suma total de preguntas de todos los bloques del usuario
+     * 3. **TOTAL PREGUNTAS**: SUM(block_answers.total_questions) de todos los bloques del administrado con el rol de la sección
+     *    - Filtro: block_answers.block_id pertenece a bloques del usuario CON SU ROL ESPECÍFICO
+     *    - Suma total de preguntas de todos los bloques del usuario como profesor/creador según la sección
      * 
-     * 4. **TOTAL USUARIOS**: COUNT(DISTINCT ulb.user_id) de tabla user_loaded_blocks
-     *    - Filtro: user_loaded_blocks.block_id pertenece a bloques del usuario
-     *    - Cuenta usuarios únicos que han cargado bloques del administrado
+     * 4. **TOTAL USUARIOS**: COUNT(DISTINCT user_loaded_blocks.user_id) que han cargado bloques del administrado con el rol de la sección
+     *    - Filtro: user_loaded_blocks.block_id pertenece a bloques del usuario CON SU ROL ESPECÍFICO
+     *    - Cuenta usuarios únicos que han cargado bloques del administrado como profesor/creador según la sección
      *    - Para profesores: cuenta "Alumnos", para creadores: cuenta "Estudiantes"
      * 
      * 5. **ADMINISTRADOR ASIGNADO**: Solo en PAP
@@ -763,25 +764,25 @@ class AdminPanelSection {
     /**
      * Carga y renderiza el Nivel 2: Bloques de un administrado
      * 
-     * EXPLICACIÓN DEL CÁLCULO NIVEL 2:
-     * ================================
+     * EXPLICACIÓN DEL CÁLCULO NIVEL 2 - Bloques por Administrado:
+     * ============================================================
      * 
      * Obtiene todos los bloques creados por un administrado específico con cálculos por bloque:
      * 
-     * 1. **BLOQUES DEL USUARIO**: SELECT DISTINCT b.id, b.name, b.created_at
-     *    - Filtro: blocks JOIN user_roles ON b.user_role_id = ur.id
+     * 1. **BLOQUES INDIVIDUALES**: Lista de bloques creados por el administrado con su rol específico
+     *    - SELECT DISTINCT b.id, b.name, b.created_at FROM blocks b JOIN user_roles ur
      *    - WHERE ur.user_id = administrado_id AND ur.role_id = target_role_id
-     *    - Solo bloques creados por el usuario con su rol específico
+     *    - Solo bloques creados por el usuario con su rol específico (profesor/creador según sección)
      * 
-     * 2. **TEMAS POR BLOQUE**: COUNT(DISTINCT ta.topic) de tabla topic_answers
+     * 2. **TEMAS POR BLOQUE**: COUNT(DISTINCT topic_answers.topic) por cada bloque individual  
      *    - Subquery: WHERE ta.block_id = b.id AND ta.topic IS NOT NULL AND ta.topic != ''
      *    - Cuenta temas únicos por cada bloque individual
      * 
-     * 3. **PREGUNTAS POR BLOQUE**: ba.total_questions de tabla block_answers
-     *    - Subquery: WHERE ba.block_id = b.id
+     * 3. **PREGUNTAS POR BLOQUE**: block_answers.total_questions por cada bloque individual
+     *    - Subquery: WHERE ba.block_id = b.id 
      *    - Total de preguntas por cada bloque individual
      * 
-     * 4. **USUARIOS POR BLOQUE**: COUNT(DISTINCT ulb.user_id) de tabla user_loaded_blocks
+     * 4. **USUARIOS POR BLOQUE**: COUNT(DISTINCT user_loaded_blocks.user_id) por cada bloque individual
      *    - Subquery: WHERE ulb.block_id = b.id
      *    - Cuenta usuarios únicos que han cargado cada bloque específico
      * 
@@ -955,7 +956,36 @@ class AdminPanelSection {
     }
 
     /**
-     * Carga y renderiza el Nivel 3: Temas de un bloque
+     * Carga y renderiza el Nivel 3 - Temas del bloque
+     * 
+     * EXPLICACIÓN DEL CÁLCULO NIVEL 3 - Temas del bloque:
+     * ===================================================
+     * 
+     * Obtiene todos los temas de un bloque específico:
+     * 
+     * 1. **TEMAS DEL BLOQUE**: SELECT DISTINCT topic_answers.topic 
+     *    - Filtro: WHERE topic_answers.block_id = block_id
+     *    - AND topic_answers.topic IS NOT NULL AND topic_answers.topic != ''
+     *    - Lista todos los temas únicos que existen en el bloque
+     * 
+     * 2. **PREGUNTAS POR TEMA**: COUNT de tabla questions
+     *    - Para cada tema: COUNT(*) FROM questions WHERE block_id = block_id AND topic = tema_específico
+     *    - Cuenta las preguntas de cada tema individual
+     * 
+     * 3. **BOTÓN VER PREGUNTAS**: 
+     *    - Al hacer clic: registros de la tabla questions filtradas por block_id y topic
+     *    - SELECT text_questions FROM questions WHERE block_id = ? AND topic = ?
+     *    - Muestra las preguntas específicas del tema en modal
+     * 
+     * Cada fila muestra:
+     * - Título del tema
+     * - Número de preguntas del tema
+     * - Botón "Ver Preguntas" para mostrar las preguntas específicas
+     * 
+     * Endpoints utilizados:
+     * - GET /api/roles-updated/bloques/:blockId/temas (obtener temas)
+     * - GET /api/roles-updated/bloques/:blockId/temas/:topic/preguntas (obtener preguntas)
+     * 
      * @param {number} blockId - ID del bloque
      */
     async cargarTemas(blockId) {
