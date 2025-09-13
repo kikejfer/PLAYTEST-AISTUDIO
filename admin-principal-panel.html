@@ -1554,7 +1554,10 @@
                     <td>${usuario.email || 'Sin email'}</td>
                     <td><strong style="color: #8B5CF6;">${bloquesReales}</strong></td>
                     <td>
-                        ${getAdminNicknamesList()}
+                        <select onchange="reassignUser(${usuario.id}, this.value)" style="background: #1B263B; color: #E0E1DD; border: 1px solid #415A77; border-radius: 4px; padding: 4px 8px;">
+                            <option value="">${usuario.assigned_admin_nickname || (usuario.id.toString().includes('principal') ? 'Administrador Principal' : 'Sin asignar')}</option>
+                            ${getAdminOptionsSimple(usuario.assigned_admin_id)}
+                        </select>
                     </td>
                     <td class="luminarias">
                         ${usuario.luminarias_actuales || 0}
@@ -1586,7 +1589,10 @@
                     <td>${usuario.email || 'Sin email'}</td>
                     <td><strong style="color: #8B5CF6;">${bloquesReales}</strong></td>
                     <td>
-                        ${getAdminNicknamesList()}
+                        <select onchange="reassignUser(${usuario.id}, this.value)" style="background: #1B263B; color: #E0E1DD; border: 1px solid #415A77; border-radius: 4px; padding: 4px 8px;">
+                            <option value="">${usuario.assigned_admin_nickname || (usuario.id.toString().includes('principal') ? 'Administrador Principal' : 'Sin asignar')}</option>
+                            ${getAdminOptionsSimple(usuario.assigned_admin_id)}
+                        </select>
                     </td>
                     <td class="luminarias">
                         ${usuario.luminarias_actuales || 0}
@@ -1618,27 +1624,28 @@
             ).join('');
         }
 
-        function getAdminNicknamesList() {
-            // Para jugadores: solo mostrar lista de nicknames de administrador_principal y administrador_secundario
+        function getAdminOptionsSimple(currentAdminId) {
+            // Para jugadores: mostrar opciones de administrador_principal y administrador_secundario sin paréntesis
             const availableAdmins = window.adminPanelSection ? window.adminPanelSection.availableAdmins : [];
-            console.log('🔍 DEBUG getAdminNicknamesList - Available admins:', availableAdmins);
+            console.log('🔍 DEBUG getAdminOptionsSimple - Available admins:', availableAdmins);
             
             if (!availableAdmins || availableAdmins.length === 0) {
-                return 'No hay administradores';
+                return '<option value="">No hay administradores disponibles</option>';
             }
             
-            // Filtrar solo administrador_principal y administrador_secundario
-            const filteredAdmins = availableAdmins.filter(admin => {
+            let options = '<option value="null">Sin asignar</option>';
+            
+            // Filtrar y mostrar solo administrador_principal y administrador_secundario
+            availableAdmins.forEach(admin => {
                 const role = admin.role_name || admin.role || '';
-                return role === 'administrador_principal' || role === 'administrador_secundario';
+                if ((role === 'administrador_principal' || role === 'administrador_secundario') && admin.id !== currentAdminId) {
+                    // Mostrar solo el nickname sin paréntesis
+                    const displayName = admin.nickname || admin.first_name || 'Admin';
+                    options += `<option value="${admin.id}">${displayName}</option>`;
+                }
             });
             
-            if (filteredAdmins.length === 0) {
-                return 'No hay administradores';
-            }
-            
-            // Retornar lista de nicknames separados por comas
-            return filteredAdmins.map(admin => admin.nickname).join(', ');
+            return options;
         }
 
         function toggleProfesorExpansion(profesorId) {

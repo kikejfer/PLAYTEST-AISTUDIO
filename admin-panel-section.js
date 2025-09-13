@@ -627,17 +627,36 @@ class AdminPanelSection {
         this.availableAdmins.forEach(admin => {
             // No mostrar el administrador actual como opción
             if (admin.id !== currentAdminId) {
-                // Determinar el tipo de administrador
-                const tipoAdmin = admin.is_principal || admin.role === 'administrador_principal' 
-                    ? 'Principal' 
-                    : 'Secundario';
-                
-                const displayName = `${admin.nickname || admin.first_name || 'Admin'} (${tipoAdmin})`;
+                // Mostrar solo el nickname sin paréntesis
+                const displayName = admin.nickname || admin.first_name || 'Admin';
                 options += `<option value="${admin.id}">${displayName}</option>`;
             }
         });
         
         return options;
+    }
+
+    /**
+     * Genera una lista simple de nicknames de administradores (para PAP)
+     * @returns {string} Lista de nicknames separados por comas
+     */
+    generarListaAdministradores() {
+        if (!this.availableAdmins || this.availableAdmins.length === 0) {
+            return 'No hay administradores';
+        }
+
+        // Filtrar solo administrador_principal y administrador_secundario
+        const filteredAdmins = this.availableAdmins.filter(admin => {
+            const role = admin.role_name || admin.role || '';
+            return role === 'administrador_principal' || role === 'administrador_secundario';
+        });
+        
+        if (filteredAdmins.length === 0) {
+            return 'No hay administradores';
+        }
+        
+        // Retornar lista de nicknames en formato vertical
+        return filteredAdmins.map(admin => `<div>${admin.nickname}</div>`).join('');
     }
 
     /**
@@ -1133,18 +1152,68 @@ class AdminPanelSection {
 
     /**
      * Reasigna un usuario a otro administrador (solo PAP)
-     * @param {number} userId - ID del usuario
-     * @param {number} adminId - ID del nuevo administrador
+     * Actualiza la tabla admin_assignments con el nuevo admin_id
+     * @param {number} userId - ID del usuario (assigned_user_id)
+     * @param {number|string} adminId - ID del nuevo administrador o "null" para sin asignar
      */
     async reasignarUsuario(userId, adminId) {
         if (this.panelType !== 'PAP') return;
         
         try {
             console.log(`🔄 Reasignando usuario ${userId} al administrador ${adminId}`);
-            // Implementar la lógica de reasignación
-            // Por ahora solo log
+            
+            // Verificar que apiService esté disponible
+            if (!this.ensureApiService()) {
+                console.error('❌ API Service no disponible para reasignación');
+                alert('Error: Servicio API no disponible');
+                return;
+            }
+            
+            // Convertir "null" string a null real
+            const newAdminId = adminId === "null" || adminId === "" ? null : parseInt(adminId);
+            
+            // Endpoint para actualizar asignación en admin_assignments
+            const endpoint = '/roles-updated/admin-assignments/update';
+            const requestBody = {
+                assigned_user_id: userId,
+                admin_id: newAdminId
+            };
+            
+            console.log(`📡 Actualizando asignación:`, requestBody);
+            
+            // Hacer la llamada PUT directamente ya que apiCall puede no soportar PUT
+            const fullUrl = `https://playtest-backend.onrender.com/api${endpoint}`;
+            const response = await fetch(fullUrl, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('playtest_auth_token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log('✅ Asignación actualizada exitosamente');
+                // Mostrar mensaje de éxito
+                const adminName = newAdminId ? `administrador ${newAdminId}` : 'sin asignar';
+                alert(`Usuario reasignado a ${adminName} exitosamente`);
+                
+                // Recargar los datos para reflejar los cambios
+                location.reload();
+            } else {
+                throw new Error(result.message || 'Error al actualizar asignación');
+            }
+            
         } catch (error) {
             console.error('Error reasignando usuario:', error);
+            alert(`Error al reasignar usuario: ${error.message}`);
         }
     }
 
