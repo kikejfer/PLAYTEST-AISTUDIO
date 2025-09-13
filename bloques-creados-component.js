@@ -1405,8 +1405,8 @@ class BloquesCreados {
         console.log('✅ Displaying block characteristics:', blockData);
 
         // Preparar datos de temas y estadísticas
-        const topics = blockData.topics || [];
-        const totalQuestions = blockData.totalQuestions || 0;
+        const topics = blockData.stats?.topicsAndQuestions || [];
+        const totalQuestions = blockData.stats?.totalQuestions || 0;
 
         container.innerHTML = `
             <div class="bc-block-char-header">
@@ -1438,17 +1438,17 @@ class BloquesCreados {
                 
                 <div class="bc-block-char-right">
                     <div class="bc-char-field">
-                        <label class="bc-char-label">Total de Preguntas</label>
+                        <label class="bc-char-label">Número de preguntas</label>
                         <div class="bc-char-value" style="color: #3B82F6; font-weight: 600;">${totalQuestions}</div>
                     </div>
                     
                     <div class="bc-char-field">
-                        <label class="bc-char-label">Temas y Preguntas por Tema</label>
+                        <label class="bc-char-label">Temas y número de preguntas</label>
                         <div class="bc-topics-list">
-                            ${topics.length > 0 ? topics.map(topic => `
+                            ${topics.length > 0 ? topics.map(topicItem => `
                                 <div class="bc-topic-item">
-                                    <span class="bc-topic-name">${this.escapeHtml(topic.topic || topic.name)}</span>
-                                    <span class="bc-topic-count">${topic.total_questions || topic.count || 0}</span>
+                                    <span class="bc-topic-name">${this.escapeHtml(topicItem.topic)}</span>
+                                    <span class="bc-topic-count">${topicItem.questionCount}</span>
                                 </div>
                             `).join('') : '<div class="bc-topic-item"><span class="bc-topic-name" style="color: #6B7280; font-style: italic;">No hay temas definidos</span></div>'}
                         </div>
