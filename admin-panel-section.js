@@ -662,7 +662,9 @@ class AdminPanelSection {
         for (const registro of registros) {
             const userId = registro.id || registro.user_id;
             try {
+                console.log(`📊 Calculando características para usuario ${userId} (${rolAdministrado})`);
                 const caracteristicas = await this.calcularCaracteristicas(registro, rolAdministrado);
+                console.log(`📊 Características obtenidas:`, caracteristicas);
                 
                 // Actualizar los valores en la tabla
                 const blocksElement = document.getElementById(`blocks-${userId}`);
@@ -670,13 +672,13 @@ class AdminPanelSection {
                 const questionsElement = document.getElementById(`questions-${userId}`);
                 const usersElement = document.getElementById(`users-${userId}`);
                 
-                if (blocksElement) blocksElement.textContent = caracteristicas.bloquesCreados;
-                if (topicsElement) topicsElement.textContent = caracteristicas.totalTemas;
-                if (questionsElement) questionsElement.textContent = caracteristicas.totalPreguntas;
-                if (usersElement) usersElement.textContent = caracteristicas.totalUsuarios;
+                if (blocksElement) blocksElement.textContent = caracteristicas.bloquesCreados || 0;
+                if (topicsElement) topicsElement.textContent = caracteristicas.totalTemas || 0;
+                if (questionsElement) questionsElement.textContent = caracteristicas.totalPreguntas || 0;
+                if (usersElement) usersElement.textContent = caracteristicas.totalUsuarios || 0;
                 
             } catch (error) {
-                console.warn(`Error cargando estadísticas para usuario ${userId}:`, error);
+                console.error(`❌ Error cargando estadísticas para usuario ${userId}:`, error);
                 // Mostrar 0 en caso de error
                 const blocksElement = document.getElementById(`blocks-${userId}`);
                 const topicsElement = document.getElementById(`topics-${userId}`);
