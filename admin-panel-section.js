@@ -333,6 +333,13 @@ class AdminPanelSection {
         const userId = registro.id || registro.user_id || registro.assigned_user_id;
         const roleName = rolAdministrado.toLowerCase();
         
+        // DEBUG: Agregar logging específico para el problema de inversión de roles
+        console.log(`🐛 CHARACTERISTICS DEBUG:
+            - Usuario ID: ${userId}
+            - Rol Administrado recibido: "${rolAdministrado}"
+            - Rol nombre (lowercase): "${roleName}"
+            - Endpoint que se va a llamar: /roles-updated/administrados/${userId}/caracteristicas?rol=${roleName}`);
+        
         // Verificar que apiService esté disponible
         if (!this.ensureApiService()) {
             console.warn('⚠️ apiService no disponible para cálculos');
@@ -799,6 +806,12 @@ class AdminPanelSection {
 
         try {
             console.log(`📚 Cargando bloques Nivel 2 para ${tipo} ID: ${userId}`);
+            
+            // DEBUG: Agregar logging específico para comparar con características
+            console.log(`🐛 BLOCKS DEBUG:
+                - Usuario ID: ${userId}
+                - Tipo recibido: "${tipo}"
+                - Endpoint que se va a llamar: /roles-updated/administrados/${userId}/bloques?rol=${tipo}`);
             
             // Verificar que apiService esté disponible
             if (!this.ensureApiService()) {
