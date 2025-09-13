@@ -2170,7 +2170,7 @@ El usuario "${nickname}" ya no tiene privilegios administrativos pero mantiene s
             console.log('🔍 Setting up filter event listeners...');
             
             // Remove existing event listeners to prevent duplicates
-            ['profesores-search', 'creadores-search', 'jugadores-admin-principal-search', 'jugadores-otros-admins-search'].forEach(id => {
+            ['jugadores-admin-principal-search', 'jugadores-otros-admins-search'].forEach(id => {
                 const element = document.getElementById(id);
                 if (element) {
                     // Clone the element to remove all event listeners
@@ -2179,29 +2179,8 @@ El usuario "${nickname}" ya no tiene privilegios administrativos pero mantiene s
                 }
             });
             
-            // Filtro para tabla de profesores
-            const profesoresSearch = document.getElementById('profesores-search');
-            if (profesoresSearch) {
-                console.log('✅ Setting up profesores filter');
-                profesoresSearch.addEventListener('input', function() {
-                    console.log('🔍 Filtering profesores with term:', this.value);
-                    filterTable('profesores-table', this.value);
-                });
-            } else {
-                console.warn('❌ profesores-search element not found');
-            }
-
-            // Filtro para tabla de creadores
-            const creadoresSearch = document.getElementById('creadores-search');
-            if (creadoresSearch) {
-                console.log('✅ Setting up creadores filter');
-                creadoresSearch.addEventListener('input', function() {
-                    console.log('🔍 Filtering creadores with term:', this.value);
-                    filterTable('creadores-table', this.value);
-                });
-            } else {
-                console.warn('❌ creadores-search element not found');
-            }
+            // Filtros para profesores y creadores ahora se manejan en el módulo genérico
+            // No es necesario configurar filtros aquí porque las secciones usan adminPanelSection
 
             // Filtro para tabla de jugadores admin principal
             const jugadoresAPSearch = document.getElementById('jugadores-admin-principal-search');
