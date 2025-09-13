@@ -333,13 +333,6 @@ class AdminPanelSection {
         const userId = registro.id || registro.user_id || registro.assigned_user_id;
         const roleName = rolAdministrado.toLowerCase();
         
-        // DEBUG: Agregar logging específico para el problema de inversión de roles
-        console.log(`🐛 CHARACTERISTICS DEBUG:
-            - Usuario ID: ${userId}
-            - Rol Administrado recibido: "${rolAdministrado}"
-            - Rol nombre (lowercase): "${roleName}"
-            - Endpoint que se va a llamar: /roles-updated/administrados/${userId}/caracteristicas?rol=${roleName}`);
-        
         // Verificar que apiService esté disponible
         if (!this.ensureApiService()) {
             console.warn('⚠️ apiService no disponible para cálculos');
@@ -350,15 +343,6 @@ class AdminPanelSection {
             // Endpoint específico para características de administrados
             const statsEndpoint = `/roles-updated/administrados/${userId}/caracteristicas?rol=${roleName}`;
             const result = await this.apiService.apiCall(statsEndpoint);
-            
-            // DEBUG: Log completo de la respuesta del backend
-            console.log(`🔍 BACKEND RESPONSE for ${userId} with role ${roleName}:`, {
-                total_blocks: result.total_blocks,
-                total_topics: result.total_topics,
-                total_questions: result.total_questions,
-                total_users: result.total_users,
-                full_response: result
-            });
             
             return {
                 // Nickname/Nombre del assigned_user_id
@@ -575,10 +559,10 @@ class AdminPanelSection {
                             <small style="color: #6B7280;">${nombreCompleto}</small>
                         </td>
                         <td>${email}</td>
-                        <td><strong style="color: #3B82F6;" id="blocks-${userId}">...</strong></td>
-                        <td><strong style="color: #10B981;" id="topics-${userId}">...</strong></td>
-                        <td><strong style="color: #8B5CF6;" id="questions-${userId}">...</strong></td>
-                        <td><strong style="color: #F59E0B;" id="users-${userId}">...</strong></td>
+                        <td><strong style="color: #3B82F6;" id="blocks-${userId}-${rolAdministrado.toLowerCase()}">...</strong></td>
+                        <td><strong style="color: #10B981;" id="topics-${userId}-${rolAdministrado.toLowerCase()}">...</strong></td>
+                        <td><strong style="color: #8B5CF6;" id="questions-${userId}-${rolAdministrado.toLowerCase()}">...</strong></td>
+                        <td><strong style="color: #F59E0B;" id="users-${userId}-${rolAdministrado.toLowerCase()}">...</strong></td>
                         ${mostrarAdmin ? `
                             <td>
                                 <select onchange="adminPanelSection.reasignarUsuario(${userId}, this.value)" style="background: #1B263B; color: #E0E1DD; border: 1px solid #415A77; border-radius: 4px; padding: 4px 8px;">
@@ -671,11 +655,12 @@ class AdminPanelSection {
                 const caracteristicas = await this.calcularCaracteristicas(registro, rolAdministrado);
                 console.log(`📊 Características obtenidas:`, caracteristicas);
                 
-                // Actualizar los valores en la tabla
-                const blocksElement = document.getElementById(`blocks-${userId}`);
-                const topicsElement = document.getElementById(`topics-${userId}`);
-                const questionsElement = document.getElementById(`questions-${userId}`);
-                const usersElement = document.getElementById(`users-${userId}`);
+                // Actualizar los valores en la tabla CON ROL ESPECÍFICO
+                const rolLower = rolAdministrado.toLowerCase();
+                const blocksElement = document.getElementById(`blocks-${userId}-${rolLower}`);
+                const topicsElement = document.getElementById(`topics-${userId}-${rolLower}`);
+                const questionsElement = document.getElementById(`questions-${userId}-${rolLower}`);
+                const usersElement = document.getElementById(`users-${userId}-${rolLower}`);
                 
                 if (blocksElement) blocksElement.textContent = caracteristicas.bloquesCreados || 0;
                 if (topicsElement) topicsElement.textContent = caracteristicas.totalTemas || 0;
@@ -815,12 +800,6 @@ class AdminPanelSection {
 
         try {
             console.log(`📚 Cargando bloques Nivel 2 para ${tipo} ID: ${userId}`);
-            
-            // DEBUG: Agregar logging específico para comparar con características
-            console.log(`🐛 BLOCKS DEBUG:
-                - Usuario ID: ${userId}
-                - Tipo recibido: "${tipo}"
-                - Endpoint que se va a llamar: /roles-updated/administrados/${userId}/bloques?rol=${tipo}`);
             
             // Verificar que apiService esté disponible
             if (!this.ensureApiService()) {
