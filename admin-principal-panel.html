@@ -1626,8 +1626,22 @@
 
         function getAdminOptionsSimple(currentAdminId) {
             // Para jugadores: mostrar opciones de administrador_principal y administrador_secundario sin paréntesis
-            const availableAdmins = window.adminPanelSection ? window.adminPanelSection.availableAdmins : [];
+            let availableAdmins = [];
+            
+            // Intentar obtener de múltiples fuentes
+            if (window.adminPanelSection && window.adminPanelSection.availableAdmins && window.adminPanelSection.availableAdmins.length > 0) {
+                availableAdmins = window.adminPanelSection.availableAdmins;
+            } else if (panelData && panelData.availableAdmins) {
+                // Filtrar admins desde panelData si el módulo genérico aún no los tiene
+                availableAdmins = panelData.availableAdmins.filter(admin => {
+                    const role = admin.role_name || admin.role || '';
+                    return role === 'administrador_principal' || role === 'administrador_secundario';
+                });
+            }
+            
             console.log('🔍 DEBUG getAdminOptionsSimple - Available admins:', availableAdmins);
+            console.log('🔍 DEBUG getAdminOptionsSimple - panelData.availableAdmins:', panelData?.availableAdmins);
+            console.log('🔍 DEBUG getAdminOptionsSimple - adminPanelSection.availableAdmins:', window.adminPanelSection?.availableAdmins);
             
             if (!availableAdmins || availableAdmins.length === 0) {
                 return '<option value="">No hay administradores disponibles</option>';
