@@ -1542,8 +1542,19 @@
             const jugadoresData = panelData.jugadoresAdminPrincipal || [];
             console.log('🎯 DEBUG renderJugadoresAdminPrincipalTable:', {
                 jugadoresAdminPrincipal: jugadoresData,
-                length: jugadoresData.length
+                length: jugadoresData.length,
+                availableAdmins: panelData.availableAdmins?.length || 0
             });
+            
+            // Asegurar que window.adminPanelSection tenga los availableAdmins
+            if (panelData.availableAdmins && window.adminPanelSection) {
+                window.adminPanelSection.availableAdmins = panelData.availableAdmins.filter(admin => {
+                    const role = admin.role_name || admin.role || '';
+                    return role === 'administrador_principal' || role === 'administrador_secundario';
+                });
+                console.log('🔧 Populated adminPanelSection.availableAdmins:', window.adminPanelSection.availableAdmins.length);
+            }
+            
             jugadoresData.forEach(usuario => {
                 const fullName = [usuario.first_name, usuario.last_name].filter(Boolean).join(' ') || 'No especificado';
                 const bloquesReales = usuario.bloques || usuario.blocks_loaded || 0;
@@ -1577,8 +1588,19 @@
             const jugadoresData = panelData.jugadoresOtrosAdmins || [];
             console.log('🎯 DEBUG renderJugadoresOtrosAdminsTable:', {
                 jugadoresOtrosAdmins: jugadoresData,
-                length: jugadoresData.length
+                length: jugadoresData.length,
+                availableAdmins: panelData.availableAdmins?.length || 0
             });
+            
+            // Asegurar que window.adminPanelSection tenga los availableAdmins
+            if (panelData.availableAdmins && window.adminPanelSection) {
+                window.adminPanelSection.availableAdmins = panelData.availableAdmins.filter(admin => {
+                    const role = admin.role_name || admin.role || '';
+                    return role === 'administrador_principal' || role === 'administrador_secundario';
+                });
+                console.log('🔧 Populated adminPanelSection.availableAdmins for otros admins:', window.adminPanelSection.availableAdmins.length);
+            }
+            
             jugadoresData.forEach(usuario => {
                 const fullName = [usuario.first_name, usuario.last_name].filter(Boolean).join(' ') || 'No especificado';
                 const bloquesReales = usuario.bloques || usuario.blocks_loaded || 0;
