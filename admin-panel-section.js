@@ -351,6 +351,15 @@ class AdminPanelSection {
             const statsEndpoint = `/roles-updated/administrados/${userId}/caracteristicas?rol=${roleName}`;
             const result = await this.apiService.apiCall(statsEndpoint);
             
+            // DEBUG: Log completo de la respuesta del backend
+            console.log(`🔍 BACKEND RESPONSE for ${userId} with role ${roleName}:`, {
+                total_blocks: result.total_blocks,
+                total_topics: result.total_topics,
+                total_questions: result.total_questions,
+                total_users: result.total_users,
+                full_response: result
+            });
+            
             return {
                 // Nickname/Nombre del assigned_user_id
                 nickname: registro.nickname || result.nickname || 'Sin nickname',
