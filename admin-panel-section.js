@@ -1025,7 +1025,7 @@ class AdminPanelSection {
                         <td><strong>${tituloTema}</strong></td>
                         <td>${numPreguntas}</td>
                         <td>
-                            <button onclick="adminPanelSection.cargarPreguntasTema(${blockId}, '${tema.topic}')" 
+                            <button onclick="console.log('🔍 Botón clickeado:', ${blockId}, '${tema.topic}'); adminPanelSection.cargarPreguntasTema(${blockId}, '${tema.topic}')" 
                                     style="background: #3B82F6; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
                                 Ver Preguntas
                             </button>
@@ -1056,14 +1056,19 @@ class AdminPanelSection {
     async cargarPreguntasTema(blockId, topic) {
         try {
             console.log(`❓ Cargando preguntas del tema "${topic}" del bloque ${blockId}`);
+            console.log(`🔍 adminPanelSection disponible:`, !!window.adminPanelSection);
+            console.log(`🔍 this.apiService disponible:`, !!this.apiService);
             
             if (!this.ensureApiService()) {
+                console.error('❌ API Service no disponible');
                 alert('Error: Servicio API no disponible');
                 return;
             }
             
             // Endpoint para cargar preguntas del bloque y tema específico
-            const result = await this.apiService.apiCall(`/roles-updated/bloques/${blockId}/temas/${encodeURIComponent(topic)}/preguntas`);
+            const endpoint = `/roles-updated/bloques/${blockId}/temas/${encodeURIComponent(topic)}/preguntas`;
+            console.log(`📡 Llamando endpoint: ${endpoint}`);
+            const result = await this.apiService.apiCall(endpoint);
             const preguntas = result.questions || result.preguntas || [];
             
             if (preguntas.length === 0) {
