@@ -680,9 +680,14 @@
         <div class="section">
             <div class="section-header">
                 <span>👨‍🏫 Profesores</span>
-                <button class="btn btn-secondary" onclick="refreshProfesoresGenerico()" style="background: #415A77; border: 1px solid #778DA9;">
-                    🔄 Refrescar
-                </button>
+                <div class="filter-container" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="text" 
+                           id="filter-profesores-header" 
+                           placeholder="Filtrar profesores..." 
+                           style="padding: 6px 12px; border: 1px solid #415A77; background: #0D1B2A; color: #E0E1DD; border-radius: 4px; width: 200px;"
+                           oninput="if(window.adminPanelSection) adminPanelSection.filtrarUsuarios('profesor', this.value)">
+                    <span id="filter-count-profesores-header" style="color: #778DA9; font-size: 12px;"></span>
+                </div>
             </div>
             <div class="section-content">
                 <div id="profesores-section">
@@ -695,9 +700,14 @@
         <div class="section">
             <div class="section-header">
                 <span>🎨 Creadores</span>
-                <button class="btn btn-secondary" onclick="refreshCreadoresGenerico()" style="background: #415A77; border: 1px solid #778DA9;">
-                    🔄 Refrescar
-                </button>
+                <div class="filter-container" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="text" 
+                           id="filter-creadores-header" 
+                           placeholder="Filtrar creadores..." 
+                           style="padding: 6px 12px; border: 1px solid #415A77; background: #0D1B2A; color: #E0E1DD; border-radius: 4px; width: 200px;"
+                           oninput="if(window.adminPanelSection) adminPanelSection.filtrarUsuarios('creador', this.value)">
+                    <span id="filter-count-creadores-header" style="color: #778DA9; font-size: 12px;"></span>
+                </div>
             </div>
             <div class="section-content">
                 <div id="creadores-section">

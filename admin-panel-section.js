@@ -504,17 +504,6 @@ class AdminPanelSection {
         
         let html = `
             <div class="admin-panel-section">
-                <div class="filter-container" style="margin-bottom: 15px; padding: 10px; background: #1B263B; border-radius: 5px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <label style="color: #E0E1DD; font-weight: bold;">Filtrar ${rolAdministrado}s:</label>
-                        <input type="text" 
-                               id="filter-${rolAdministrado.toLowerCase()}" 
-                               placeholder="Buscar por nickname, nombre o email..." 
-                               style="flex: 1; padding: 8px 12px; border: 1px solid #415A77; background: #0D1B2A; color: #E0E1DD; border-radius: 4px;"
-                               oninput="adminPanelSection.filtrarUsuarios('${rolAdministrado.toLowerCase()}', this.value)">
-                        <span id="filter-count-${rolAdministrado.toLowerCase()}" style="color: #778DA9; font-size: 14px;"></span>
-                    </div>
-                </div>
                 <div class="table-container">
                     <table>
                         <thead>
@@ -1195,11 +1184,18 @@ class AdminPanelSection {
             }
         });
         
-        // Actualizar contador
+        // Actualizar contadores (tanto en tabla como en header)
         const countElement = document.getElementById(`filter-count-${rol}`);
+        const headerCountElement = document.getElementById(`filter-count-${rol}s-header`);
+        
+        const totalRows = rows.length;
+        const countText = `${visibleCount} de ${totalRows} ${rol}s`;
+        
         if (countElement) {
-            const totalRows = rows.length;
-            countElement.textContent = `${visibleCount} de ${totalRows} ${rol}s`;
+            countElement.textContent = countText;
+        }
+        if (headerCountElement) {
+            headerCountElement.textContent = countText;
         }
     }
 
