@@ -1171,7 +1171,11 @@
                     jugadoresOtrosAdmins: data.jugadoresOtrosAdmins || [],
                     usuarios: data.usuarios || [],
                     soporteTecnico: data.soporteTecnico || [], // ✅ AGREGADO: Datos de soporte técnico
+                    availableAdmins: data.availableAdmins || [] // ✅ AGREGADO: Administradores disponibles para dropdowns
                 };
+                
+                    console.log('🔍 FRONTEND DEBUG - data.availableAdmins from backend:', data.availableAdmins);
+                    console.log('🔍 FRONTEND DEBUG - panelData.availableAdmins after assignment:', panelData.availableAdmins);
                 
                     console.log('✅ Panel Data loaded from backend:', {
                         admins: panelData.administradoresSecundarios.length,
