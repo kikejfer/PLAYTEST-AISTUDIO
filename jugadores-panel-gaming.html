@@ -1588,13 +1588,17 @@
 
             // Navegación a juegos
             const onNavigateToGame = (game) => {
-                const isInProgress = (game.mode === 'Duelo' || game.mode === 'Trivial') && 
-                    (game.gameState || game.turnState || (game.round && game.round > 0));
-
-                if (isInProgress) {
-                    const targetPage = game.mode === 'Duelo' ? 'game-duel.html' : 'game-trivial.html';
-                    window.location.href = `${targetPage}?gameId=${game.id}`;
+                console.log('🎮 Navigating to game:', { id: game.id, mode: game.mode, status: game.status });
+                
+                // For competition games (Duelo/Trivial), go directly to their specific pages
+                if (game.mode === 'Duelo') {
+                    console.log('🥊 Redirecting to Duelo game');
+                    window.location.href = `game-duel.html?gameId=${game.id}`;
+                } else if (game.mode === 'Trivial') {
+                    console.log('🧠 Redirecting to Trivial game');
+                    window.location.href = `game-trivial.html?gameId=${game.id}`;
                 } else {
+                    console.log('🎯 Redirecting to generic active game');
                     window.location.href = `active-game.html?gameId=${game.id}`;
                 }
             };
@@ -2376,13 +2380,17 @@
             }, []);
 
             const onNavigateToGame = (game) => {
-                const isInProgress = (game.mode === 'Duelo' || game.mode === 'Trivial') && 
-                    (game.gameState || game.turnState || (game.round && game.round > 0));
-
-                if (isInProgress) {
-                    const targetPage = game.mode === 'Duelo' ? 'game-duel.html' : 'game-trivial.html';
-                    window.location.href = `${targetPage}?gameId=${game.id}`;
+                console.log('🎮 ActiveGamesComponent - Navigating to game:', { id: game.id, mode: game.mode, status: game.status });
+                
+                // For competition games (Duelo/Trivial), go directly to their specific pages
+                if (game.mode === 'Duelo') {
+                    console.log('🥊 ActiveGamesComponent - Redirecting to Duelo game');
+                    window.location.href = `game-duel.html?gameId=${game.id}`;
+                } else if (game.mode === 'Trivial') {
+                    console.log('🧠 ActiveGamesComponent - Redirecting to Trivial game');
+                    window.location.href = `game-trivial.html?gameId=${game.id}`;
                 } else {
+                    console.log('🎯 ActiveGamesComponent - Redirecting to generic active game');
                     window.location.href = `active-game.html?gameId=${game.id}`;
                 }
             };
