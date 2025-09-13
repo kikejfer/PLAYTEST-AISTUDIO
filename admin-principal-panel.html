@@ -1546,13 +1546,11 @@
                 availableAdmins: panelData.availableAdmins?.length || 0
             });
             
-            // Asegurar que window.adminPanelSection tenga los availableAdmins
+            // Asegurar que window.adminPanelSection tenga los availableAdmins (backend ya los filtra)
             if (panelData.availableAdmins && window.adminPanelSection) {
-                window.adminPanelSection.availableAdmins = panelData.availableAdmins.filter(admin => {
-                    const role = admin.role_name || admin.role || '';
-                    return role === 'administrador_principal' || role === 'administrador_secundario';
-                });
+                window.adminPanelSection.availableAdmins = panelData.availableAdmins;
                 console.log('🔧 Populated adminPanelSection.availableAdmins:', window.adminPanelSection.availableAdmins.length);
+                console.log('🔧 Available admins:', panelData.availableAdmins.map(a => `${a.nickname} (${a.role_name})`));
             }
             
             jugadoresData.forEach(usuario => {
@@ -1592,13 +1590,11 @@
                 availableAdmins: panelData.availableAdmins?.length || 0
             });
             
-            // Asegurar que window.adminPanelSection tenga los availableAdmins
+            // Asegurar que window.adminPanelSection tenga los availableAdmins (backend ya los filtra)
             if (panelData.availableAdmins && window.adminPanelSection) {
-                window.adminPanelSection.availableAdmins = panelData.availableAdmins.filter(admin => {
-                    const role = admin.role_name || admin.role || '';
-                    return role === 'administrador_principal' || role === 'administrador_secundario';
-                });
+                window.adminPanelSection.availableAdmins = panelData.availableAdmins;
                 console.log('🔧 Populated adminPanelSection.availableAdmins for otros admins:', window.adminPanelSection.availableAdmins.length);
+                console.log('🔧 Available admins:', panelData.availableAdmins.map(a => `${a.nickname} (${a.role_name})`));
             }
             
             jugadoresData.forEach(usuario => {
@@ -1661,15 +1657,10 @@
                 availableAdmins = window.adminPanelSection.availableAdmins;
                 console.log('🔍 DEBUG: Using adminPanelSection.availableAdmins');
             } else if (panelData && panelData.availableAdmins && panelData.availableAdmins.length > 0) {
-                // Filtrar admins desde panelData si el módulo genérico aún no los tiene
-                console.log('🔍 DEBUG: Filtering from panelData.availableAdmins');
+                // Usar directamente panelData.availableAdmins ya que el backend ahora solo devuelve administradores
+                console.log('🔍 DEBUG: Using panelData.availableAdmins directly (backend filtered)');
                 console.log('🔍 DEBUG: Raw panelData.availableAdmins:', panelData.availableAdmins);
-                
-                availableAdmins = panelData.availableAdmins.filter(admin => {
-                    const role = admin.role_name || admin.role || '';
-                    console.log(`🔍 DEBUG: Admin ${admin.nickname} has role: ${role}`);
-                    return role === 'administrador_principal' || role === 'administrador_secundario';
-                });
+                availableAdmins = panelData.availableAdmins;
             }
             
             console.log('🔍 DEBUG getAdminOptionsSimple - Final availableAdmins:', availableAdmins);
@@ -1681,16 +1672,17 @@
             
             let options = '<option value="null">Sin asignar</option>';
             
-            // Filtrar y mostrar solo administrador_principal y administrador_secundario
+            // Mostrar todos los administradores (el backend ya filtró por administrador_principal y administrador_secundario)
             availableAdmins.forEach(admin => {
-                const role = admin.role_name || admin.role || '';
-                if ((role === 'administrador_principal' || role === 'administrador_secundario') && admin.id !== currentAdminId) {
-                    // Mostrar solo el nickname sin paréntesis
+                if (admin.id !== currentAdminId) {
                     const displayName = admin.nickname || admin.first_name || 'Admin';
+                    const role = admin.role_name || admin.role || '';
+                    console.log(`🔍 DEBUG: Adding admin option: ${displayName} (${role})`);
                     options += `<option value="${admin.id}">${displayName}</option>`;
                 }
             });
             
+            console.log('🔍 DEBUG: Final options HTML:', options);
             return options;
         }
 

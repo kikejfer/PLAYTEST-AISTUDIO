@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Admin Dropdowns</title>
+</head>
+<body>
+    <h1>Debug Admin Dropdowns</h1>
+    
+    <div id="results"></div>
+    
+    <script>
+        async function testBackend() {
+            try {
+                const response = await fetch('https://playtest-backend.onrender.com/api/roles-updated/admin-principal-panel', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('playtest_auth_token')}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                document.getElementById('results').innerHTML = `
+                    <h2>Backend Response:</h2>
+                    <h3>availableAdmins (${data.availableAdmins?.length || 0} items):</h3>
+                    <pre>${JSON.stringify(data.availableAdmins, null, 2)}</pre>
+                    
+                    <h3>Sample Admin:</h3>
+                    <pre>${JSON.stringify(data.availableAdmins?.[0] || 'No admins', null, 2)}</pre>
+                    
+                    <h3>Full Response Keys:</h3>
+                    <pre>${JSON.stringify(Object.keys(data), null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                document.getElementById('results').innerHTML = `
+                    <h2>Error:</h2>
+                    <pre>${error.message}</pre>
+                    <p>Make sure you're logged in to get a valid token</p>
+                `;
+            }
+        }
+        
+        testBackend();
+    </script>
+</body>
+</html>
