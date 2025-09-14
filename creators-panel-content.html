@@ -1878,13 +1878,19 @@
         
         // Initialize default tab view
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔄 [PCC] Final DOMContentLoaded - Setting up initial tab state');
+            
             // Show ONLY the default content section (bloques-creados-section)
             const allSections = document.querySelectorAll('.content-section');
+            console.log(`📋 Found ${allSections.length} content sections to initialize`);
+            
             allSections.forEach(section => {
                 if (section.id === 'bloques-creados-section') {
                     section.style.display = 'block';
+                    console.log(`✅ Showing default section: ${section.id}`);
                 } else {
                     section.style.display = 'none';
+                    console.log(`🔽 Hiding section: ${section.id}`);
                 }
             });
             
@@ -1892,7 +1898,10 @@
             const firstTabButton = document.querySelector('.tab-button');
             if (firstTabButton && !firstTabButton.classList.contains('active')) {
                 firstTabButton.classList.add('active');
+                console.log('✅ Activated first tab button');
             }
+            
+            console.log('✅ [PCC] Initial tab state setup complete - tabs should be functional');
             
             console.log('🎯 Default tab initialized: bloques-creados-section');
 

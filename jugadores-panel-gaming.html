@@ -2958,6 +2958,7 @@
                             <span><strong>Temas:</strong> ${block.stats?.totalTopics || 0}</span>
                             <span><strong>Usuarios:</strong> ${block.stats?.totalUsers || 0}</span>
                             <span><strong>Creador:</strong> ${block.creatorNickname || 'Usuario'}</span>
+                            ${block.stats?.loadedAt ? `<span><strong>Cargado:</strong> ${new Date(block.stats.loadedAt).toLocaleDateString()}</span>` : ''}
                         </div>
                         
                         <button onclick="handleBlockAction(${block.id}, ${isLoaded})" 
