@@ -1653,8 +1653,11 @@
 
         // Global functions for tab management
         window.showTab = function(tabId) {
+            console.log(`🔄 Switching to tab: ${tabId}`);
+            
             // Hide all content sections
             const allSections = document.querySelectorAll('.content-section');
+            console.log(`📋 Found ${allSections.length} content sections`);
             allSections.forEach(section => {
                 section.style.display = 'none';
             });
@@ -1669,10 +1672,15 @@
             const selectedTab = document.getElementById(tabId);
             if (selectedTab) {
                 selectedTab.style.display = 'block';
+                console.log(`✅ Showing tab: ${tabId}`);
+            } else {
+                console.error(`❌ Tab not found: ${tabId}`);
             }
             
             // Add active class to clicked button
-            event.target.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
             
             // Mount React app if it's the add-questions tab using shared module
             if (tabId === 'add-questions-tab') {
@@ -1870,15 +1878,23 @@
         
         // Initialize default tab view
         document.addEventListener('DOMContentLoaded', function() {
-            // Show default content (non-add-questions sections) by default
+            // Show ONLY the default content section (bloques-creados-section)
             const allSections = document.querySelectorAll('.content-section');
             allSections.forEach(section => {
-                if (section.id !== 'add-questions-tab') {
+                if (section.id === 'bloques-creados-section') {
                     section.style.display = 'block';
                 } else {
                     section.style.display = 'none';
                 }
             });
+            
+            // Ensure the first tab button is active
+            const firstTabButton = document.querySelector('.tab-button');
+            if (firstTabButton && !firstTabButton.classList.contains('active')) {
+                firstTabButton.classList.add('active');
+            }
+            
+            console.log('🎯 Default tab initialized: bloques-creados-section');
 
             // Initialize Bloques Creados section for creators (jugadores)
             window.creatorBloquesCreados = renderBloquesCreados('bloques-creados-container', 'jugadores');

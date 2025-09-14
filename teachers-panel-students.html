@@ -732,7 +732,7 @@
 
         <div class="tabs-container">
             <div class="tabs-nav">
-                <button class="tab-button active">👥 Gestión de Alumnos</button>
+                <button class="tab-button active" onclick="showMainContent()">👥 Gestión de Alumnos</button>
                 <button class="tab-button" onclick="window.location.href='teachers-panel-schedules.html'">📅 Cronogramas</button>
                 <button class="tab-button" onclick="window.location.href='add-question.html'">➕ Añadir Preguntas</button>
                 <button class="tab-button" onclick="window.location.href='teachers-panel-analytics.html'">📊 Analytics</button>
@@ -1015,6 +1015,25 @@
         let students = [];
         let selectedClassId = null;
         let attendanceData = [];
+
+        // Función para mostrar el contenido principal (sub-pestañas)
+        function showMainContent() {
+            // Asegurar que el contenido de sub-pestañas esté visible
+            const subTabsContainer = document.querySelector('.sub-tabs-container');
+            if (subTabsContainer) {
+                subTabsContainer.style.display = 'block';
+            }
+            
+            // Remover clase active de todos los botones principales
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Agregar clase active al botón clickeado
+            event.target.classList.add('active');
+            
+            console.log('📚 Mostrando contenido principal de Gestión de Alumnos');
+        }
 
         // Funciones de sub-pestañas
         function switchSubTab(tabName) {
