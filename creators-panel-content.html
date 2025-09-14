@@ -765,15 +765,18 @@
                 
                 // Refresh blocks when switching to content tab
                 if (tabId === 'bloques-creados-section') {
-                    console.log('🔄 [creators-panel] Switching to content tab, refreshing blocks...');
+                    console.log('🔄 [creators-panel] Switching to content tab, ensuring blocks are loaded...');
                     if (window.creatorBloquesCreados && typeof window.creatorBloquesCreados.refresh === 'function') {
-                        console.log('🔄 Refreshing blocks component on tab switch');
+                        console.log('🔄 Refreshing existing blocks component on tab switch');
                         window.creatorBloquesCreados.refresh();
                     } else {
-                        console.log('🔄 Re-rendering blocks component on tab switch');
+                        console.log('🔄 Initializing blocks component on tab switch (not previously initialized)');
                         // Make sure renderBloquesCreados function is available
                         if (typeof renderBloquesCreados === 'function') {
                             window.creatorBloquesCreados = renderBloquesCreados('bloques-creados-container', 'jugadores');
+                            console.log('✅ BloquesCreados component initialized from tab switch');
+                        } else {
+                            console.error('❌ renderBloquesCreados function not available on tab switch');
                         }
                     }
                 }
@@ -1918,8 +1921,16 @@
             
             console.log('🎯 Default tab initialized: bloques-creados-section');
 
-            // Initialize Bloques Creados section for creators (jugadores)
-            window.creatorBloquesCreados = renderBloquesCreados('bloques-creados-container', 'jugadores');
+            // Initialize Bloques Creados section for creators (jugadores) with delay to ensure container is ready
+            setTimeout(() => {
+                console.log('🔄 [PCC] Delayed initialization of BloquesCreados component');
+                if (typeof renderBloquesCreados === 'function') {
+                    window.creatorBloquesCreados = renderBloquesCreados('bloques-creados-container', 'jugadores');
+                    console.log('✅ [PCC] BloquesCreados component initialized');
+                } else {
+                    console.error('❌ [PCC] renderBloquesCreados function not available');
+                }
+            }, 100);
             
             // Add simple event listener for block updates
             console.log('🔗 Setting up block update listener for Creators Panel...');
