@@ -655,6 +655,12 @@
           return 'administrador_secundario';
         }
         
+        // Support role detection
+        const supportUsers = ['admin', 'support_user_1', 'soporte_tecnico'];
+        if (hasRole(user, 'soporte_tecnico') || supportUsers.includes(user.nickname)) {
+          return 'soporte_tecnico';
+        }
+        
         // For users with multiple roles, choose based on priority
         if (user.roles && Array.isArray(user.roles)) {
           if (user.roles.includes('creador')) return 'creador';
@@ -2254,6 +2260,8 @@
               return 'Admin Principal';
             case 'administrador_secundario':
               return 'Admin Secundario';
+            case 'soporte_tecnico':
+              return 'Soporte Técnico';
             case 'creador':
               return 'Creador';
             case 'profesor':
@@ -3291,6 +3299,10 @@
               
             case 'administrador_secundario':
               handleRoleRedirect('administrador_secundario', 'admin-secundario-panel.html', '🔀', 'Admin Secundario');
+              break;
+              
+            case 'soporte_tecnico':
+              handleRoleRedirect('soporte_tecnico', 'support-dashboard.html', '🛠️', 'Soporte Técnico');
               break;
               
             case 'creador':
