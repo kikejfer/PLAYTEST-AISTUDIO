@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="panel-type" content="PCC">
+    <meta name="header-container" content="header-container">
+    <title>Gestión de Jugadores - Panel de Creadores | LumiQuiz</title>
+    <link rel="stylesheet" href="header-styles.css">
+    <script src="header-loader.js"></script>
+    <script src="api-data-service.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="navigation-service.js"></script>
+    <script src="bloques-creados-component.js"></script>
+    <script src="students-management-component.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0D1B2A;
+            min-height: 100vh;
+            color: #E0E1DD;
+            padding-top: 100px;
+        }
+
+        /* User header styles - fixed position */
+        .user-header {
+            background: #415A77;
+            color: #E0E1DD;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #3B82F6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .user-details h4 {
+            margin: 0;
+            font-size: 14px;
+            color: #E0E1DD;
+        }
+
+        .user-details p {
+            margin: 0;
+            font-size: 12px;
+            color: #778DA9;
+        }
+
+        .logout-btn {
+            background: #EF4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #DC2626;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 1px solid #415A77;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #E0E1DD;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .header p {
+            color: #778DA9;
+            font-size: 1.1rem;
+        }
+
+        /* Navegación de pestañas */
+        .tabs-nav {
+            background: #1B263B;
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 5px;
+            border: 1px solid #415A77;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px 16px;
+            background: transparent;
+            color: #778DA9;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            background: #10B981;
+            color: white;
+        }
+
+        .tab-button:hover:not(.active) {
+            background: #415A77;
+            color: #E0E1DD;
+        }
+
+        /* Contenido de pestañas */
+        .tab-content {
+            background: #1B263B;
+            border-radius: 10px;
+            border: 1px solid #415A77;
+            min-height: 500px;
+        }
+
+        .tab-pane {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Estilos para el contenido específico de jugadores */
+        .players-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .overview-card {
+            background: #0D1B2A;
+            border: 1px solid #415A77;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .overview-card:hover {
+            transform: translateY(-2px);
+            border-color: #10B981;
+        }
+
+        .overview-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .overview-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #10B981;
+            margin-bottom: 5px;
+        }
+
+        .overview-label {
+            color: #778DA9;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .tabs-nav {
+                flex-direction: column;
+            }
+            
+            .players-overview {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header del usuario -->
+    <div class="user-header">
+        <div class="user-info">
+            <div class="user-avatar">C</div>
+            <div class="user-details">
+                <h4 id="user-name">Creador</h4>
+                <p id="user-role">Panel de Creadores</p>
+            </div>
+        </div>
+        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+    </div>
+
+    <div id="header-container"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Gestión de Jugadores</h1>
+            <p>Administra y supervisa a los usuarios que interactúan con tu contenido</p>
+        </div>
+
+        <!-- Navegación de pestañas -->
+        <div class="tabs-nav">
+            <button class="tab-button active" data-tab="players" onclick="switchTab('players')">
+                👥 Mis Jugadores
+            </button>
+            <button class="tab-button" data-tab="engagement" onclick="switchTab('engagement')">
+                📊 Engagement
+            </button>
+            <button class="tab-button" data-tab="content-performance" onclick="switchTab('content-performance')">
+                🎯 Rendimiento de Contenido
+            </button>
+            <button class="tab-button" data-tab="feedback" onclick="switchTab('feedback')">
+                💬 Feedback y Comentarios
+            </button>
+        </div>
+
+        <!-- Contenido de pestañas -->
+        <div class="tab-content">
+            <!-- Pestaña: Mis Jugadores -->
+            <div id="players-tab" class="tab-pane active">
+                <!-- Overview rápido -->
+                <div class="players-overview">
+                    <div class="overview-card">
+                        <span class="overview-icon">👥</span>
+                        <div class="overview-number" id="total-players">0</div>
+                        <div class="overview-label">Total Jugadores</div>
+                    </div>
+                    <div class="overview-card">
+                        <span class="overview-icon">⚡</span>
+                        <div class="overview-number" id="active-players">0</div>
+                        <div class="overview-label">Activos Esta Semana</div>
+                    </div>
+                    <div class="overview-card">
+                        <span class="overview-icon">🏆</span>
+                        <div class="overview-number" id="top-performers">0</div>
+                        <div class="overview-label">Top Performers</div>
+                    </div>
+                    <div class="overview-card">
+                        <span class="overview-icon">📈</span>
+                        <div class="overview-number" id="engagement-rate">0%</div>
+                        <div class="overview-label">Tasa de Engagement</div>
+                    </div>
+                </div>
+
+                <!-- Componente de gestión de jugadores -->
+                <div id="players-management-container"></div>
+            </div>
+
+            <!-- Pestaña: Engagement -->
+            <div id="engagement-tab" class="tab-pane">
+                <h3 style="margin-bottom: 20px;">📊 Análisis de Engagement</h3>
+                <p style="color: #778DA9;">Próximamente: Métricas detalladas de engagement de jugadores</p>
+            </div>
+
+            <!-- Pestaña: Rendimiento de Contenido -->
+            <div id="content-performance-tab" class="tab-pane">
+                <h3 style="margin-bottom: 20px;">🎯 Rendimiento de tu Contenido</h3>
+                <p style="color: #778DA9;">Próximamente: Análisis de rendimiento por bloque y tema</p>
+            </div>
+
+            <!-- Pestaña: Feedback -->
+            <div id="feedback-tab" class="tab-pane">
+                <h3 style="margin-bottom: 20px;">💬 Feedback y Comentarios</h3>
+                <p style="color: #778DA9;">Próximamente: Sistema de feedback de jugadores</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Cargar usuario actual
+            currentUser = getCurrentUser();
+            updateUserInfo();
+            
+            // Inicializar componente de gestión de jugadores
+            StudentsManagementComponent.init({
+                role: 'creador',
+                containerId: 'players-management-container',
+                user: currentUser
+            });
+
+            // Cargar datos de overview
+            loadPlayersOverview();
+        });
+
+        // Obtener usuario actual
+        function getCurrentUser() {
+            try {
+                const session = localStorage.getItem('gameSession');
+                return session ? JSON.parse(session) : null;
+            } catch (error) {
+                console.error('Error obteniendo usuario:', error);
+                return null;
+            }
+        }
+
+        // Actualizar información del usuario en el header
+        function updateUserInfo() {
+            if (currentUser) {
+                document.getElementById('user-name').textContent = currentUser.nickname || 'Creador';
+                document.getElementById('user-role').textContent = 'Panel de Creadores';
+                
+                const avatar = document.querySelector('.user-avatar');
+                avatar.textContent = (currentUser.nickname || 'C').charAt(0).toUpperCase();
+            }
+        }
+
+        // Cargar overview de jugadores
+        async function loadPlayersOverview() {
+            try {
+                // Simular datos (reemplazar con llamada real a API)
+                const mockData = {
+                    totalPlayers: Math.floor(Math.random() * 500) + 50,
+                    activePlayers: Math.floor(Math.random() * 200) + 20,
+                    topPerformers: Math.floor(Math.random() * 50) + 5,
+                    engagementRate: Math.floor(Math.random() * 30) + 60
+                };
+
+                // Animar números
+                animateNumber('total-players', 0, mockData.totalPlayers);
+                animateNumber('active-players', 0, mockData.activePlayers);
+                animateNumber('top-performers', 0, mockData.topPerformers);
+                animateNumber('engagement-rate', 0, mockData.engagementRate, '%');
+
+            } catch (error) {
+                console.error('Error cargando overview:', error);
+            }
+        }
+
+        // Animar números
+        function animateNumber(elementId, start, end, suffix = '') {
+            const element = document.getElementById(elementId);
+            const duration = 1500;
+            const startTime = performance.now();
+            
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const current = Math.round(start + (end - start) * progress);
+                element.textContent = current + suffix;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+
+        // Cambiar pestaña
+        function switchTab(tabName) {
+            // Actualizar botones
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            // Mostrar contenido
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        // Cerrar sesión
+        function logout() {
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                localStorage.removeItem('gameSession');
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>

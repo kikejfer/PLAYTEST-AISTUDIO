@@ -6,6 +6,7 @@
     <title>Gestión de Alumnos y Clases - Panel de Profesores | PLAYTEST</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="navigation-service.js"></script>
+    <script src="students-management-component.js"></script>
     <style>
         * {
             margin: 0;
@@ -688,7 +689,11 @@
                             </div>
                         </div>
 
-                        <div class="students-grid" id="students-container">
+                        <!-- Componente genérico de gestión de estudiantes -->
+                        <div id="students-management-container"></div>
+                        
+                        <!-- Contenedor legacy (oculto) -->
+                        <div class="students-grid" id="students-container" style="display: none;">
                             <div class="loading">Cargando estudiantes...</div>
                         </div>
                     </div>
@@ -866,7 +871,25 @@
         // Inicialización
         document.addEventListener('DOMContentLoaded', async () => {
             await loadClasses();
+            
+            // Inicializar componente de gestión de estudiantes
+            StudentsManagementComponent.init({
+                role: 'profesor',
+                containerId: 'students-management-container',
+                user: getCurrentUser()
+            });
         });
+
+        // Obtener usuario actual
+        function getCurrentUser() {
+            try {
+                const session = localStorage.getItem('gameSession');
+                return session ? JSON.parse(session) : null;
+            } catch (error) {
+                console.error('Error obteniendo usuario:', error);
+                return null;
+            }
+        }
 
         // Cargar clases del profesor
         async function loadClasses() {
