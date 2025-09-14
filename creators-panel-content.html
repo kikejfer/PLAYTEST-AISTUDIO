@@ -712,6 +712,74 @@
             <p>Herramientas completas para crear, gestionar y monetizar contenido educativo con análisis detallado de rendimiento.</p>
         </div>
 
+        <script>
+            // Define showTab function before buttons use it
+            window.showTab = function(tabId) {
+                console.log(`🔄 Switching to tab: ${tabId}`);
+                
+                // Hide all content sections
+                const allSections = document.querySelectorAll('.content-section');
+                console.log(`📋 Found ${allSections.length} content sections`);
+                allSections.forEach(section => {
+                    section.style.display = 'none';
+                });
+                
+                // Remove active class from all tab buttons
+                const allButtons = document.querySelectorAll('.tab-button');
+                allButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Show selected tab
+                const selectedTab = document.getElementById(tabId);
+                if (selectedTab) {
+                    selectedTab.style.display = 'block';
+                    console.log(`✅ Showing tab: ${tabId}`);
+                } else {
+                    console.error(`❌ Tab not found: ${tabId}`);
+                }
+                
+                // Activate the clicked button
+                const clickedButton = document.querySelector(`button[onclick="showTab('${tabId}')"]`);
+                if (clickedButton) {
+                    clickedButton.classList.add('active');
+                    console.log(`✅ Activated button for tab: ${tabId}`);
+                }
+                
+                // Mount React app if it's the add-questions tab using shared module
+                if (tabId === 'add-questions-tab') {
+                    const contentDiv = document.getElementById('add-questions-content');
+                    if (contentDiv && !contentDiv.hasChildNodes() && window.mountAddQuestionsApp) {
+                        console.log('🚀 Mounting Add Questions React app...');
+                        window.mountAddQuestionsApp('add-questions-content');
+                    } else if (tabId === 'add-questions-tab' && !window.mountAddQuestionsApp) {
+                        console.warn('⚠️ mountAddQuestionsApp not available yet, will try again...');
+                        setTimeout(() => showTab(tabId), 500);
+                    }
+                }
+                
+                // Initialize specific tab components if needed
+                if (tabId === 'players-management-tab') {
+                    initializePlayersManagement();
+                }
+                
+                // Refresh blocks when switching to content tab
+                if (tabId === 'bloques-creados-section') {
+                    console.log('🔄 [creators-panel] Switching to content tab, refreshing blocks...');
+                    if (window.creatorBloquesCreados && typeof window.creatorBloquesCreados.refresh === 'function') {
+                        console.log('🔄 Refreshing blocks component on tab switch');
+                        window.creatorBloquesCreados.refresh();
+                    } else {
+                        console.log('🔄 Re-rendering blocks component on tab switch');
+                        // Make sure renderBloquesCreados function is available
+                        if (typeof renderBloquesCreados === 'function') {
+                            window.creatorBloquesCreados = renderBloquesCreados('bloques-creados-container', 'jugadores');
+                        }
+                    }
+                }
+            };
+        </script>
+
         <div class="tabs-container">
             <div class="tabs-nav">
                 <button class="tab-button active" onclick="showTab('bloques-creados-section')">📝 Contenido</button>
@@ -1651,62 +1719,7 @@
         // Use the shared Add Questions Module - No duplicated code needed!
         console.log('🎯 Creators Panel: Using shared Add Questions Module');
 
-        // Global functions for tab management
-        window.showTab = function(tabId) {
-            console.log(`🔄 Switching to tab: ${tabId}`);
-            
-            // Hide all content sections
-            const allSections = document.querySelectorAll('.content-section');
-            console.log(`📋 Found ${allSections.length} content sections`);
-            allSections.forEach(section => {
-                section.style.display = 'none';
-            });
-            
-            // Remove active class from all tab buttons
-            const allButtons = document.querySelectorAll('.tab-button');
-            allButtons.forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Show selected tab
-            const selectedTab = document.getElementById(tabId);
-            if (selectedTab) {
-                selectedTab.style.display = 'block';
-                console.log(`✅ Showing tab: ${tabId}`);
-            } else {
-                console.error(`❌ Tab not found: ${tabId}`);
-            }
-            
-            // Add active class to clicked button
-            if (event && event.target) {
-                event.target.classList.add('active');
-            }
-            
-            // Mount React app if it's the add-questions tab using shared module
-            if (tabId === 'add-questions-tab') {
-                const contentDiv = document.getElementById('add-questions-content');
-                if (contentDiv && !contentDiv.hasChildNodes() && window.mountAddQuestionsApp) {
-                    window.mountAddQuestionsApp('add-questions-content');
-                }
-            }
-
-            // Inicializar funcionalidades específicas por pestaña
-            if (tabId === 'players-management-tab') {
-                initializePlayersManagement();
-            }
-            
-            // Refresh blocks when switching to content tab
-            if (tabId === 'bloques-creados-section') {
-                console.log('🔄 [creators-panel] Switching to content tab, refreshing blocks...');
-                if (window.creatorBloquesCreados && typeof window.creatorBloquesCreados.refresh === 'function') {
-                    console.log('🔄 Refreshing blocks component on tab switch');
-                    window.creatorBloquesCreados.refresh();
-                } else {
-                    console.log('🔄 Re-rendering blocks component on tab switch');
-                    window.creatorBloquesCreados = renderBloquesCreados('bloques-creados-container', 'jugadores');
-                }
-            }
-        };
+        // Note: showTab function is now defined earlier in the document, before the buttons
 
         // Funciones para gestión de jugadores
         window.switchPlayersSubTab = function(tabName) {
