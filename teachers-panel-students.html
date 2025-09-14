@@ -200,6 +200,90 @@
             background: white;
             box-shadow: 0 2px 10px rgba(102, 126, 234, 0.1);
         }
+        .tab-button:hover:not(.active) {
+            color: #667eea;
+            background: #f1f3f4;
+        }
+
+        /* Sub-pestañas */
+        .sub-tabs-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .sub-tabs-nav {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            overflow-x: auto;
+        }
+
+        .sub-tab-button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: 180px;
+        }
+
+        .sub-tab-button.active {
+            color: #3B82F6;
+            background: white;
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.1);
+        }
+
+        .sub-tab-button:hover:not(.active) {
+            color: #3B82F6;
+            background: #f1f3f4;
+        }
+
+        .sub-tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .sub-tab-content.active {
+            display: block;
+        }
+
+        .section-subtitle {
+            color: #6c757d;
+            font-size: 0.95rem;
+            margin: 0;
+            font-weight: normal;
+        }
+
+        /* Coming soon styles */
+        .coming-soon {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .coming-soon-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .coming-soon h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .coming-soon p {
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
 
         .tab-content {
             padding: 30px;
@@ -658,22 +742,89 @@
             </div>
 
             <div class="tab-content">
-                <!-- Sección de Clases -->
-                <div class="section">
-                    <div class="section-header">
-                        <h2 class="section-title">🏫 Mis Clases</h2>
-                        <button class="btn btn-primary" onclick="openClassModal()">
-                            ➕ Crear Clase
+                <!-- Sub-navegación para Gestión de Alumnos -->
+                <div class="sub-tabs-container">
+                    <div class="sub-tabs-nav">
+                        <button class="sub-tab-button active" onclick="switchSubTab('classes')">
+                            🏫 Mis Clases
+                        </button>
+                        <button class="sub-tab-button" onclick="switchSubTab('students')">
+                            👥 Gestión de Estudiantes
+                        </button>
+                        <button class="sub-tab-button" onclick="switchSubTab('attendance')">
+                            📝 Registro de Asistencia
+                        </button>
+                        <button class="sub-tab-button" onclick="switchSubTab('performance')">
+                            📊 Rendimiento Académico
                         </button>
                     </div>
 
-                    <div class="classes-grid" id="classes-container">
-                        <div class="loading">Cargando clases...</div>
+                    <!-- Sub-pestaña: Mis Clases -->
+                    <div id="classes-subtab" class="sub-tab-content active">
+                        <div class="section">
+                            <div class="section-header">
+                                <h2 class="section-title">🏫 Mis Clases</h2>
+                                <button class="btn btn-primary" onclick="openClassModal()">
+                                    ➕ Crear Clase
+                                </button>
+                            </div>
+
+                            <div class="classes-grid" id="classes-container">
+                                <div class="loading">Cargando clases...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sub-pestaña: Gestión de Estudiantes -->
+                    <div id="students-subtab" class="sub-tab-content">
+                        <div class="section">
+                            <div class="section-header">
+                                <h2 class="section-title">👥 Gestión Integral de Estudiantes</h2>
+                                <p class="section-subtitle">Sistema avanzado de gestión, seguimiento y análisis de estudiantes</p>
+                            </div>
+
+                            <!-- Componente genérico de gestión de estudiantes -->
+                            <div id="students-management-container"></div>
+                        </div>
+                    </div>
+
+                    <!-- Sub-pestaña: Registro de Asistencia -->
+                    <div id="attendance-subtab" class="sub-tab-content">
+                        <div class="section">
+                            <div class="section-header">
+                                <h2 class="section-title">📝 Registro de Asistencia</h2>
+                                <p class="section-subtitle">Control diario de asistencia por clase</p>
+                            </div>
+
+                            <div class="attendance-tracker" id="attendance-section">
+                                <div class="attendance-grid" id="attendance-container">
+                                    <div class="loading">Preparando registro de asistencia...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sub-pestaña: Rendimiento Académico -->
+                    <div id="performance-subtab" class="sub-tab-content">
+                        <div class="section">
+                            <div class="section-header">
+                                <h2 class="section-title">📊 Rendimiento Académico</h2>
+                                <p class="section-subtitle">Análisis detallado del progreso y rendimiento estudiantil</p>
+                            </div>
+
+                            <div class="performance-dashboard">
+                                <div class="coming-soon">
+                                    <div class="coming-soon-icon">🚧</div>
+                                    <h3>Próximamente</h3>
+                                    <p>Dashboard de rendimiento académico con métricas avanzadas y reportes personalizados</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Sección de Estudiantes -->
-                <div class="students-section" id="students-section" style="display: none;">
+                <!-- Sección legacy oculta para compatibilidad -->
+                <div class="students-section" id="students-section-legacy" style="display: none;">
                     <div class="section">
                         <div class="section-header">
                             <h2 class="section-title">
@@ -688,9 +839,6 @@
                                 </button>
                             </div>
                         </div>
-
-                        <!-- Componente genérico de gestión de estudiantes -->
-                        <div id="students-management-container"></div>
                         
                         <!-- Contenedor legacy (oculto) -->
                         <div class="students-grid" id="students-container" style="display: none;">
@@ -868,16 +1016,37 @@
         let selectedClassId = null;
         let attendanceData = [];
 
+        // Funciones de sub-pestañas
+        function switchSubTab(tabName) {
+            // Actualizar botones
+            document.querySelectorAll('.sub-tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[onclick="switchSubTab('${tabName}')"]`).classList.add('active');
+
+            // Mostrar contenido
+            document.querySelectorAll('.sub-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-subtab`).classList.add('active');
+
+            // Inicializar componente cuando se selecciona la pestaña de estudiantes
+            if (tabName === 'students' && !window.studentsComponentInitialized) {
+                StudentsManagementComponent.init({
+                    role: 'profesor',
+                    containerId: 'students-management-container',
+                    user: getCurrentUser()
+                });
+                window.studentsComponentInitialized = true;
+            }
+        }
+
         // Inicialización
         document.addEventListener('DOMContentLoaded', async () => {
             await loadClasses();
             
-            // Inicializar componente de gestión de estudiantes
-            StudentsManagementComponent.init({
-                role: 'profesor',
-                containerId: 'students-management-container',
-                user: getCurrentUser()
-            });
+            // Marcar que el componente no está inicializado aún
+            window.studentsComponentInitialized = false;
         });
 
         // Obtener usuario actual
