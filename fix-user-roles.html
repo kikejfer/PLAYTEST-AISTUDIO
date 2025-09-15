@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fix User Roles - Apply to Main Application</title>
+    <style>
+        body { font-family: monospace; margin: 20px; background: #1a1a1a; color: #00ff00; }
+        .code { background: #333; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .fix { color: #ffff00; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fix User Roles Implementation</h1>
+    
+    <h2>Problem Analysis:</h2>
+    <ul>
+        <li>Usuario "admin" no tiene rol de soporte técnico configurado</li>
+        <li>No existe lógica de redirección para soporte técnico</li>
+        <li>URL de profesor debería ser "profesores-panel-funcionalidades.html"</li>
+    </ul>
+
+    <h2>Required Changes for index.html:</h2>
+    
+    <h3>1. Add support role to getUserPrimaryRole function:</h3>
+    <div class="code">
+        <span class="fix">// Add after admin checks and before other roles:</span><br>
+        // Check for support role<br>
+        const supportUsers = ['admin', 'support_user_1', 'soporte_tecnico'];<br>
+        if (hasRole(user, 'soporte_tecnico') || supportUsers.includes(user.nickname)) {<br>
+        &nbsp;&nbsp;return 'soporte_tecnico';<br>
+        }
+    </div>
+
+    <h3>2. Add support case to role redirection switch:</h3>
+    <div class="code">
+        <span class="fix">// Add new case in the switch statement:</span><br>
+        case 'soporte_tecnico':<br>
+        &nbsp;&nbsp;handleRoleRedirect('soporte_tecnico', 'support-dashboard.html', '🛠️', 'Support');<br>
+        &nbsp;&nbsp;break;
+    </div>
+
+    <h3>3. Fix profesor panel URL:</h3>
+    <div class="code">
+        <span class="fix">// Change existing profesor case:</span><br>
+        case 'profesor':<br>
+        &nbsp;&nbsp;handleRoleRedirect('profesor', 'profesores-panel-funcionalidades.html', '👨‍🏫', 'Teacher');<br>
+        &nbsp;&nbsp;break;
+    </div>
+
+    <h3>4. Add support role to getUserRoleDisplayName:</h3>
+    <div class="code">
+        <span class="fix">// Add new case:</span><br>
+        case 'soporte_tecnico':<br>
+        &nbsp;&nbsp;return 'Soporte Técnico';
+    </div>
+
+    <script>
+        console.log('🔧 User roles fix template loaded');
+        console.log('📋 Apply these changes to the main index.html file');
+        
+        // Test the fixes
+        const testUsers = [
+            { nickname: 'admin', expectedRole: 'soporte_tecnico' },
+            { nickname: 'Toñi', expectedRole: 'profesor' },
+            { nickname: 'AntLop', expectedRole: 'creador' }
+        ];
+        
+        console.log('🧪 Expected role mappings:', testUsers);
+    </script>
+</body>
+</html>
