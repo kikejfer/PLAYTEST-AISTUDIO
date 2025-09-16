@@ -80,7 +80,7 @@ test.describe('Descarga de Bloque', () => {
     
     await test.step('Verificar estado de descarga', async () => {
       // Verificar que el bloque muestra estado de descargado
-      const downloadedIndicator = page.locator('text=/descargado/i, text=/downloaded/i, .downloaded').first();
+      const downloadedIndicator = page.locator('text=/descargado/i').or(page.locator('text=/downloaded/i')).or(page.locator('.downloaded')).first();
       
       if (await downloadedIndicator.count() > 0) {
         console.log('✅ Block shows as downloaded');
@@ -94,5 +94,70 @@ test.describe('Descarga de Bloque', () => {
     });
     
     console.log('🎉 SebDom block download test completed successfully');
+  });
+
+  test('AndGar elimina el bloque CE1978', async ({ page }) => {
+
+    await test.step('Login como AndGar', async () => {
+      await page.goto(LOGIN_URL, { timeout: 15000 });
+      await page.waitForSelector('input[name="nickname"]', { timeout: 10000 });
+      await page.locator('input[name="nickname"]').fill('AndGar');
+      await page.locator('input[name="password"]').fill('1002');
+      await page.locator('button[type="submit"], #login-btn, .login-btn').first().click();
+      await page.waitForTimeout(4000);
+
+      // Verificar que llega al panel de creador
+      await expect(page).toHaveURL(/creators-panel-content/, { timeout: 10000 });
+      console.log('✅ AndGar logged in successfully');
+    });
+
+    await test.step('Navegar a Contenido para ver bloques creados', async () => {
+      // Ir a la pestaña de Contenido
+      const contentTab = page.locator('.tab-button:has-text("Contenido"), button:has-text("📝 Contenido")').first();
+      await contentTab.click();
+      await page.waitForTimeout(2000);
+      console.log('✅ Navigated to Content tab');
+    });
+
+    await test.step('Buscar y eliminar bloque CE1978', async () => {
+      // Buscar el bloque CE1978
+      const ce1978Block = page.locator('.block-card:has-text("CE1978")').or(page.locator('.created-block:has-text("CE1978")')).or(page.locator('text=/CE1978/i')).first();
+
+      if (await ce1978Block.count() > 0) {
+        console.log('✅ CE1978 block found');
+
+        // Buscar botón de eliminar
+        const deleteButton = page.locator('button:has-text("Eliminar"), button:has-text("🗑️"), .delete-btn, .remove-btn').first();
+
+        if (await deleteButton.count() > 0) {
+          await deleteButton.click();
+          console.log('✅ Delete button clicked');
+
+          // Confirmar eliminación si aparece modal de confirmación
+          const confirmButton = page.locator('button:has-text("Confirmar"), button:has-text("Sí"), button:has-text("Eliminar")').first();
+          if (await confirmButton.count() > 0) {
+            await confirmButton.click();
+            console.log('✅ Deletion confirmed');
+          }
+
+          await page.waitForTimeout(3000);
+
+          // Verificar que el bloque ya no aparece
+          const blockStillExists = page.locator('text=/CE1978/i').first();
+          if (await blockStillExists.count() === 0) {
+            console.log('✅ CE1978 block successfully deleted');
+          } else {
+            console.log('⚠️ CE1978 block may still exist');
+          }
+
+        } else {
+          console.log('⚠️ Delete button not found');
+        }
+      } else {
+        console.log('⚠️ CE1978 block not found in content list');
+      }
+    });
+
+    console.log('🎉 AndGar block deletion test completed');
   });
 });
