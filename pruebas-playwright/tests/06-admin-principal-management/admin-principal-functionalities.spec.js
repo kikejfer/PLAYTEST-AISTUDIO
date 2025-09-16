@@ -34,7 +34,7 @@ test.describe('Admin Principal Functionalities Tests', () => {
 
     // Verify successful login and navigate to admin panel
     await page.waitForURL(/admin-principal-panel/);
-    await expect(page).toHaveTitle(/Panel de Administrador Principal/);
+    await expect(page).toHaveTitle(/Panel Administrador Principal/);
 
     console.log('✅ AdminPrincipal logged in successfully');
   });

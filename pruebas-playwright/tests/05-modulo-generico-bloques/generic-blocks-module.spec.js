@@ -48,7 +48,7 @@ test.describe('Generic Block Creation Module Tests', () => {
 
     // Verify successful login and navigate to admin panel
     await adminPage.waitForURL(/admin-principal-panel/);
-    await expect(adminPage).toHaveTitle(/Panel de Administrador Principal/);
+    await expect(adminPage).toHaveTitle(/Panel Administrador Principal/);
 
     console.log('✅ AdminPrincipal logged in successfully (Edge)');
   });

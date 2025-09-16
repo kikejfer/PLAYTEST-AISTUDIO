@@ -44,7 +44,10 @@ test.describe('Verificación de APIs Críticas', () => {
       if (authToken) {
         headers['Authorization'] = `Bearer ${authToken}`;
       }
-      
+
+      // Add required role header for loaded-stats endpoint
+      headers['X-Current-Role'] = 'PAP'; // Admin Principal role
+
       const response = await page.request.get('https://playtest-backend.onrender.com/api/blocks/loaded-stats', {
         headers: headers
       });
