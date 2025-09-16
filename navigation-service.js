@@ -76,74 +76,9 @@ class NavigationService {
     injectSupportButtons() {
         if (!this.supportEnabled) return;
 
-        // Buscar ubicación ideal en el DOM
-        const targetContainers = [
-            '.user-header',
-            '.header',
-            '.container',
-            'body'
-        ];
-
-        let targetContainer = null;
-        for (const selector of targetContainers) {
-            targetContainer = document.querySelector(selector);
-            if (targetContainer) break;
-        }
-
-        if (!targetContainer) return;
-
-        // Crear botón de soporte contextual
-        const supportButton = this.createSupportButton();
-        
-        // Inyectar de forma no intrusiva
-        if (targetContainer.classList.contains('user-header')) {
-            // Si hay header de usuario, agregar al lado del logout
-            const logoutBtn = targetContainer.querySelector('.logout-btn');
-            if (logoutBtn) {
-                logoutBtn.parentNode.insertBefore(supportButton, logoutBtn);
-            } else {
-                targetContainer.appendChild(supportButton);
-            }
-        } else {
-            // Crear contenedor flotante
-            const floatingContainer = document.createElement('div');
-            floatingContainer.className = 'navigation-service-floating';
-            floatingContainer.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 9999;
-                display: flex;
-                gap: 10px;
-            `;
-            floatingContainer.appendChild(supportButton);
-            document.body.appendChild(floatingContainer);
-        }
-    }
-
-    // Crear botón de soporte
-    createSupportButton() {
-        const button = document.createElement('button');
-        button.className = 'nav-support-btn';
-        button.innerHTML = '🆘 Soporte';
-        button.style.cssText = `
-            background: #10B981;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            margin-right: 10px;
-        `;
-        
-        button.onmouseover = () => button.style.background = '#059669';
-        button.onmouseout = () => button.style.background = '#10B981';
-        
-        button.onclick = () => this.openSupportPanel();
-        
-        return button;
+        // NO crear botón - ya existe uno en el header
+        console.log('✅ Support functionality available - using existing header button');
+        return;
     }
 
     // Inyectar dropdown de notificaciones
@@ -220,22 +155,22 @@ class NavigationService {
 
     // Abrir panel de soporte
     openSupportPanel() {
-        // Determinar URL de soporte según rol
-        const supportUrls = {
-            'ADP': '/admin-principal-panel.html',
-            'ADS': '/admin-secundario-panel.html',
-            'SPT': '/support-panel.html',
-            'PCC': '/creators-panel-content.html',
-            'PPF': '/profesores-panel-funcionalidades.html',
-            'JGD': '/jugadores-panel-gaming.html'
+        // Usar support-form.html con parámetros contextuales según rol
+        const supportParams = {
+            'ADP': 'type=admin&role=principal',
+            'ADS': 'type=admin&role=secundario', 
+            'SPT': 'type=technical',
+            'PCC': 'type=creator',
+            'PPF': 'type=teacher',
+            'JGD': 'type=player'
         };
 
-        const supportUrl = supportUrls[this.currentRole] || '/index.html';
+        const params = supportParams[this.currentRole] || 'type=global';
+        const supportUrl = `support-form.html?${params}`;
         
-        // Mostrar modal o redirigir
-        if (confirm('¿Necesitas ayuda? Te dirigiremos al panel de soporte.')) {
-            window.location.href = supportUrl;
-        }
+        // Abrir formulario de soporte en nueva ventana
+        window.open(supportUrl, '_blank');
+        console.log(`🛠️ Opening contextual support for role: ${this.currentRole}`);
     }
 
     // Refrescar servicio

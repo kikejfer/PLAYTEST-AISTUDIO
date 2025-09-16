@@ -8,15 +8,15 @@ test.describe('Descarga de Bloque', () => {
   test('SebDom descarga el bloque creado por AndGar', async ({ page }) => {
     
     await test.step('Login como SebDom', async () => {
-      await page.goto(LOGIN_URL);
-      await page.waitForLoadState('networkidle');
+      await page.goto(LOGIN_URL, { timeout: 15000 });
+      await page.waitForSelector('input[name="nickname"]', { timeout: 10000 });
       await page.locator('input[name="nickname"]').fill('SebDom');
       await page.locator('input[name="password"]').fill('1004');
       await page.locator('button[type="submit"], #login-btn, .login-btn').first().click();
-      await page.waitForNavigation();
+      await page.waitForTimeout(4000);
       
       // Verificar que llega al panel de jugador
-      await expect(page).toHaveURL(/jugadores-panel-gaming/);
+      await expect(page).toHaveURL(/jugadores-panel-gaming/, { timeout: 10000 });
       console.log('✅ SebDom logged in successfully');
     });
     

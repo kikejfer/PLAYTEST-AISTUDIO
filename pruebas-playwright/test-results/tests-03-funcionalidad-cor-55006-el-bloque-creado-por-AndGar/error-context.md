@@ -1,0 +1,41 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - img "LumiQuiz Logo" [ref=e4]
+      - generic [ref=e5]:
+        - generic [ref=e6]: La forma más divertida de estudiar
+        - generic [ref=e7]: PANEL JUGADOR
+    - generic [ref=e8]:
+      - button "🛠️" [ref=e9] [cursor=pointer]
+      - button "📧" [ref=e10] [cursor=pointer]
+      - generic [ref=e11]:
+        - img "Luminarias" [ref=e12]
+        - generic [ref=e13]: "0"
+      - generic [ref=e14]:
+        - generic [ref=e15]: SebDom
+        - generic [ref=e16]: Sebastian
+      - button "S" [ref=e18] [cursor=pointer]:
+        - generic [ref=e19] [cursor=pointer]: S
+  - generic [ref=e20]:
+    - paragraph [ref=e22]: Plataforma completa para jugar, gestionar bloques de contenido y revisar tu progreso académico.
+    - generic [ref=e24]:
+      - button "🎮 Partidas" [ref=e25] [cursor=pointer]
+      - button "📚 Carga de Bloques" [ref=e26] [cursor=pointer]
+      - button "📊 Histórico" [ref=e27] [cursor=pointer]
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - heading "Config Configuración de Partida" [level=2] [ref=e30]:
+          - img "Config" [ref=e31]
+          - text: Configuración de Partida
+        - generic [ref=e35]: Cargando...
+      - generic [ref=e36]:
+        - heading "Juegos Juegos Activos" [level=2] [ref=e37]:
+          - img "Juegos" [ref=e38]
+          - text: Juegos Activos
+        - generic [ref=e44]:
+          - paragraph [ref=e45]: No hay juegos disponibles
+          - paragraph [ref=e46]: Crea una nueva partida para empezar
+```

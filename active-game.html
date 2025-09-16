@@ -1101,9 +1101,16 @@
                 <div className="flex items-center gap-4">
                   {/* Support buttons */}
                   <button 
-                    onClick={() => window.open('support-form.html?type=global', '_blank')}
+                    onClick={() => {
+                      if (window.navigationService && window.navigationService.openSupportPanel) {
+                        window.navigationService.openSupportPanel();
+                      } else {
+                        // Fallback si NavigationService no está disponible
+                        window.open('support-form.html?type=global', '_blank');
+                      }
+                    }}
                     className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm font-medium"
-                    title="Soporte Técnico Global"
+                    title="Soporte Técnico Contextual"
                   >
                     🛠️
                     <span className="hidden sm:inline">SOPORTE</span>

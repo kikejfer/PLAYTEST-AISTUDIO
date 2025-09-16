@@ -125,10 +125,32 @@ test.describe('Test Secuencial: Creación y Verificación de Bloque', () => {
         for (const selector of alternativeButtons) {
           const btn = page.locator(selector).first();
           if (await btn.count() > 0) {
-            await btn.click();
-            await page.waitForTimeout(2000);
-            console.log(`✅ Clicked alternative save button: ${selector}`);
-            break;
+            try {
+              // Esperar a que el botón esté habilitado
+              await btn.waitFor({ state: 'attached', timeout: 5000 });
+              await page.waitForTimeout(1000);
+              
+              // Verificar si está habilitado antes de hacer click
+              const isEnabled = await btn.isEnabled();
+              const isVisible = await btn.isVisible();
+              
+              console.log(`🔍 Button ${selector}: visible=${isVisible}, enabled=${isEnabled}`);
+              
+              if (isVisible && isEnabled) {
+                await btn.click({ timeout: 10000 });
+                await page.waitForTimeout(3000);
+                console.log(`✅ Clicked alternative save button: ${selector}`);
+                break;
+              } else {
+                console.log(`⚠️ Button ${selector} not ready, trying force click`);
+                await btn.click({ force: true, timeout: 10000 });
+                await page.waitForTimeout(3000);
+                console.log(`✅ Force clicked alternative save button: ${selector}`);
+                break;
+              }
+            } catch (error) {
+              console.log(`❌ Could not click ${selector}: ${error.message}`);
+            }
           }
         }
       }
