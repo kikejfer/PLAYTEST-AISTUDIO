@@ -1308,16 +1308,7 @@ class BloquesCreados {
         };
         
         if (activeRole && activeRole !== 'null' && activeRole !== 'undefined') {
-            // Map panel codes to database role names
-            const panelToRoleMapping = {
-                'PCC': 'creador',
-                'PPF': 'profesor', 
-                'PJG': 'jugador',
-                'PAP': 'admin_principal',
-                'PAS': 'admin_secundario'
-            };
-            const mappedRole = panelToRoleMapping[activeRole] || activeRole;
-            headers['X-Current-Role'] = mappedRole;
+            headers['X-Current-Role'] = activeRole;
         }
         
         const url = limit ? `${API_BASE_URL}/api/blocks/${blockId}/questions?limit=${limit}` : `${API_BASE_URL}/api/blocks/${blockId}/questions`;
@@ -1359,16 +1350,7 @@ class BloquesCreados {
         };
         
         if (activeRole && activeRole !== 'null' && activeRole !== 'undefined') {
-            // Map panel codes to database role names
-            const panelToRoleMapping = {
-                'PCC': 'creador',
-                'PPF': 'profesor', 
-                'PJG': 'jugador',
-                'PAP': 'admin_principal',
-                'PAS': 'admin_secundario'
-            };
-            const mappedRole = panelToRoleMapping[activeRole] || activeRole;
-            headers['X-Current-Role'] = mappedRole;
+            headers['X-Current-Role'] = activeRole;
         }
         
         const response = await fetch(`${API_BASE_URL}/api/blocks/${blockId}/topics`, {
@@ -1401,16 +1383,7 @@ class BloquesCreados {
         };
         
         if (activeRole && activeRole !== 'null' && activeRole !== 'undefined') {
-            // Map panel codes to database role names
-            const panelToRoleMapping = {
-                'PCC': 'creador',
-                'PPF': 'profesor', 
-                'PJG': 'jugador',
-                'PAP': 'admin_principal',
-                'PAS': 'admin_secundario'
-            };
-            const mappedRole = panelToRoleMapping[activeRole] || activeRole;
-            headers['X-Current-Role'] = mappedRole;
+            headers['X-Current-Role'] = activeRole;
         }
         
         // Obtener datos completos del bloque incluyendo estadísticas
@@ -1687,16 +1660,7 @@ class BloquesCreados {
             };
             
             if (activeRole && activeRole !== 'null' && activeRole !== 'undefined') {
-                // Map panel codes to database role names
-                const panelToRoleMapping = {
-                    'PCC': 'creador',
-                    'PPF': 'profesor', 
-                    'PJG': 'jugador',
-                    'PAP': 'admin_principal',
-                    'PAS': 'admin_secundario'
-                };
-                const mappedRole = panelToRoleMapping[activeRole] || activeRole;
-                headers['X-Current-Role'] = mappedRole;
+                headers['X-Current-Role'] = activeRole;
             }
             
             const response = await fetch(`${API_BASE_URL}/api/blocks/${this.currentBlockId}`, {
@@ -2055,16 +2019,7 @@ class BloquesCreados {
             };
             
             if (activeRole && activeRole !== 'null' && activeRole !== 'undefined') {
-                // Map panel codes to database role names
-                const panelToRoleMapping = {
-                    'PCC': 'creador',
-                    'PPF': 'profesor', 
-                    'PJG': 'jugador',
-                    'PAP': 'admin_principal',
-                    'PAS': 'admin_secundario'
-                };
-                const mappedRole = panelToRoleMapping[activeRole] || activeRole;
-                headers['X-Current-Role'] = mappedRole;
+                headers['X-Current-Role'] = activeRole;
             }
             
             const response = await fetch(`${API_BASE_URL}/api/blocks/${this.currentBlockId}/questions/${questionId}`, {
@@ -2126,16 +2081,7 @@ class BloquesCreados {
             };
             
             if (activeRole && activeRole !== 'null' && activeRole !== 'undefined') {
-                // Map panel codes to database role names
-                const panelToRoleMapping = {
-                    'PCC': 'creador',
-                    'PPF': 'profesor', 
-                    'PJG': 'jugador',
-                    'PAP': 'admin_principal',
-                    'PAS': 'admin_secundario'
-                };
-                const mappedRole = panelToRoleMapping[activeRole] || activeRole;
-                headers['X-Current-Role'] = mappedRole;
+                headers['X-Current-Role'] = activeRole;
             }
             
             const response = await fetch(`${API_BASE_URL}/api/blocks/${this.currentBlockId}/questions/${questionId}`, {
