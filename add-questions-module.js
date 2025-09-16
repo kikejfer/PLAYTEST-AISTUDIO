@@ -2663,7 +2663,15 @@ const AddQuestionsApp = () => {
         try {
             // Check authentication before attempting API calls
             const currentUser = getCurrentUser();
+            console.log('🔍 DEBUG handleCreateBlock - currentUser:', currentUser);
+            console.log('🔍 DEBUG handleCreateBlock - localStorage tokens:', {
+                playtest_auth_token: !!localStorage.getItem('playtest_auth_token'),
+                authToken: !!localStorage.getItem('authToken'),
+                playtest_session: !!localStorage.getItem('playtest_session')
+            });
+            
             if (!currentUser || !currentUser.isAuthenticated) {
+                console.error('🔐 Authentication failed:', { currentUser, hasToken: !!localStorage.getItem('playtest_auth_token') });
                 throw new Error('🔐 Debes estar autenticado para crear bloques. Por favor, inicia sesión.');
             }
 
