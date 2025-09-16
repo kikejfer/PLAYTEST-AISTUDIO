@@ -43,9 +43,30 @@ class APIDataService {
       const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
       const activeRole = localStorage.getItem('activeRole');
       console.log('🔍 activeRole from localStorage:', activeRole);
-      
-      // Convert activeRole to string to avoid [object Object] in header
-      const roleHeader = activeRole ? String(activeRole) : null;
+
+      // Safe conversion to avoid [object Object] in header
+      let roleHeader = null;
+      if (activeRole && activeRole !== 'null' && activeRole !== 'undefined') {
+        if (activeRole === '[object Object]') {
+          console.warn('⚠️ activeRole contains [object Object], skipping header');
+          roleHeader = null;
+        } else {
+          try {
+            // Try to parse as JSON in case it's a stringified object
+            const parsed = JSON.parse(activeRole);
+            if (typeof parsed === 'object' && parsed !== null) {
+              // Extract meaningful value from object
+              roleHeader = parsed.code || parsed.name || parsed.id || null;
+              console.log('🔍 Extracted from object:', roleHeader);
+            } else {
+              roleHeader = String(parsed);
+            }
+          } catch (e) {
+            // Not JSON, use as string directly
+            roleHeader = String(activeRole);
+          }
+        }
+      }
       console.log('🔍 roleHeader being sent:', roleHeader);
       
       const defaultOptions = {
