@@ -44,8 +44,38 @@ class APIDataService {
       const activeRole = localStorage.getItem('activeRole');
       console.log('🔍 activeRole from localStorage:', activeRole);
       
-      // Convert activeRole to string to avoid [object Object] in header
-      const roleHeader = activeRole ? String(activeRole) : null;
+      // Convert activeRole to correct database role name
+      let roleHeader = null;
+      if (activeRole) {
+        console.log('🔍 activeRole raw:', activeRole);
+        console.log('🔍 activeRole type:', typeof activeRole);
+        
+        // Map panel codes to database role names
+        const panelToRoleMapping = {
+          'PCC': 'creador',
+          'PPF': 'profesor', 
+          'PJG': 'jugador',
+          'PAP': 'admin_principal',
+          'PAS': 'admin_secundario'
+        };
+        
+        // If activeRole contains '[object Object]', clear it
+        if (activeRole === '[object Object]') {
+          console.warn('⚠️ Found corrupted activeRole, clearing localStorage');
+          localStorage.removeItem('activeRole');
+          roleHeader = null;
+        } else if (panelToRoleMapping[activeRole]) {
+          // Convert panel code to database role name
+          roleHeader = panelToRoleMapping[activeRole];
+          console.log('🔄 Mapped panel code', activeRole, 'to role:', roleHeader);
+        } else if (['creador', 'profesor', 'jugador', 'admin_principal', 'admin_secundario'].includes(activeRole)) {
+          // Already a valid database role name
+          roleHeader = activeRole;
+        } else {
+          console.warn('⚠️ Unknown activeRole format:', activeRole);
+          roleHeader = null;
+        }
+      }
       console.log('🔍 roleHeader being sent:', roleHeader);
       
       const defaultOptions = {
