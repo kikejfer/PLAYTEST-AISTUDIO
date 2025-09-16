@@ -2670,7 +2670,14 @@ const AddQuestionsApp = () => {
                 playtest_session: !!localStorage.getItem('playtest_session')
             });
             
-            if (!currentUser || !currentUser.isAuthenticated) {
+            // Check authentication with multiple possible formats
+            const isAuthenticated = currentUser && (
+                currentUser.isAuthenticated === true || 
+                currentUser._hasAuthToken === true ||
+                (currentUser.userId && (localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken')))
+            );
+            
+            if (!isAuthenticated) {
                 console.error('🔐 Authentication failed:', { currentUser, hasToken: !!localStorage.getItem('playtest_auth_token') });
                 throw new Error('🔐 Debes estar autenticado para crear bloques. Por favor, inicia sesión.');
             }
