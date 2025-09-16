@@ -43,11 +43,16 @@ class APIDataService {
       const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
       const activeRole = localStorage.getItem('activeRole');
       console.log('🔍 activeRole from localStorage:', activeRole);
+      
+      // Convert activeRole to string to avoid [object Object] in header
+      const roleHeader = activeRole ? String(activeRole) : null;
+      console.log('🔍 roleHeader being sent:', roleHeader);
+      
       const defaultOptions = {
         headers: {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` }),
-          ...(activeRole && { 'X-Current-Role': activeRole })
+          ...(roleHeader && { 'X-Current-Role': roleHeader })
         }
       };
 
