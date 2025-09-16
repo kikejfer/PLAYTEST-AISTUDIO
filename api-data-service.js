@@ -48,8 +48,34 @@ class APIDataService {
       let roleHeader = null;
       if (activeRole && activeRole !== 'null' && activeRole !== 'undefined') {
         if (activeRole === '[object Object]') {
-          console.warn('⚠️ activeRole contains [object Object], skipping header');
-          roleHeader = null;
+          console.warn('⚠️ activeRole contains [object Object], this means an object was stored as string. Attempting recovery...');
+
+          // Try to get the actual object from memory if it exists
+          // This is a fallback - we should fix the root cause
+          const userToken = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+          if (userToken) {
+            try {
+              const payload = JSON.parse(atob(userToken.split('.')[1]));
+              const userRoles = payload.roles || [];
+              console.log('🔍 User roles from token:', userRoles);
+
+              // Map first available role or use fallback
+              if (userRoles.includes('creador')) roleHeader = 'PCC';
+              else if (userRoles.includes('profesor')) roleHeader = 'PPF';
+              else if (userRoles.includes('jugador')) roleHeader = 'PJG';
+              else if (userRoles.includes('administrador_principal')) roleHeader = 'PAP';
+              else if (userRoles.includes('administrador_secundario')) roleHeader = 'PAS';
+
+              console.log('🔍 Recovered role from token:', roleHeader);
+            } catch (tokenError) {
+              console.error('❌ Could not recover role from token:', tokenError);
+            }
+          }
+
+          if (!roleHeader) {
+            console.warn('⚠️ Could not recover role, defaulting to PCC');
+            roleHeader = 'PCC'; // Safe fallback
+          }
         } else {
           try {
             // Try to parse as JSON in case it's a stringified object
@@ -57,7 +83,7 @@ class APIDataService {
             if (typeof parsed === 'object' && parsed !== null) {
               // Extract meaningful value from object
               roleHeader = parsed.code || parsed.name || parsed.id || null;
-              console.log('🔍 Extracted from object:', roleHeader);
+              console.log('🔍 Extracted from parsed object:', roleHeader);
             } else {
               roleHeader = String(parsed);
             }
