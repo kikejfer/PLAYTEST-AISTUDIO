@@ -149,7 +149,8 @@
       "Bash(start auto-login-fix.html)",
       "Bash(start test-jugadores-debug.html)",
       "Bash(git cherry-pick:*)",
-      "Bash(npx playwright test:*)"
+      "Bash(npx playwright test:*)",
+      "Bash(git reset:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

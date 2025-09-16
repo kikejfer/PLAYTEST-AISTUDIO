@@ -63,7 +63,7 @@ const StudentsManagementComponent = (() => {
         
         // Configurar rol y usuario
         currentRole = config.role || detectRoleFromPage();
-        currentUser = config.user || getCurrentUser();
+        currentUser = config.user || window.getCurrentUser();
         
         // Renderizar interfaz
         renderComponent(config.containerId || 'students-management-container');
@@ -90,19 +90,23 @@ const StudentsManagementComponent = (() => {
         }
     };
 
-    // Obtener usuario actual (del sistema existente)
-    const getCurrentUser = () => {
-        try {
-            const session = localStorage.getItem('gameSession');
-            if (session) {
-                return JSON.parse(session);
+    // Use global getCurrentUser if available, otherwise define local fallback
+    if (!window.getCurrentUser) {
+        const getCurrentUser = () => {
+            try {
+                const session = localStorage.getItem('gameSession');
+                if (session) {
+                    return JSON.parse(session);
+                }
+                return null;
+            } catch (error) {
+                console.error('Error obteniendo usuario actual:', error);
+                return null;
             }
-            return null;
-        } catch (error) {
-            console.error('Error obteniendo usuario actual:', error);
-            return null;
-        }
-    };
+        };
+        window.getCurrentUser = getCurrentUser;
+        console.log('📝 Local getCurrentUser (students-management) fallback defined');
+    }
 
     // Renderizar componente principal
     const renderComponent = (containerId) => {

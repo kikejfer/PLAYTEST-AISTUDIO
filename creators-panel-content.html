@@ -1881,15 +1881,19 @@
             }
         }
 
-        // Obtener usuario actual (función común)
-        function getCurrentUser() {
-            try {
-                const session = localStorage.getItem('gameSession');
-                return session ? JSON.parse(session) : null;
-            } catch (error) {
-                console.error('Error obteniendo usuario:', error);
-                return null;
+        // Use global getCurrentUser if available, otherwise define local fallback
+        if (!window.getCurrentUser) {
+            function getCurrentUser() {
+                try {
+                    const session = localStorage.getItem('gameSession');
+                    return session ? JSON.parse(session) : null;
+                } catch (error) {
+                    console.error('Error obteniendo usuario:', error);
+                    return null;
+                }
             }
+            window.getCurrentUser = getCurrentUser;
+            console.log('📝 Local getCurrentUser fallback defined');
         }
         
         // Initialize default tab view

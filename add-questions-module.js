@@ -1158,7 +1158,9 @@ const QuestionGenerator = ({ currentUser, blocks, onSaveQuestions, onCreateBlock
 };
 
 // Get current user from session with authentication check
-const getCurrentUser = () => {
+// Use global getCurrentUser if available, otherwise define local
+if (!window.getCurrentUser) {
+    window.getCurrentUser = () => {
     try {
         // Check for authentication token first
         const authToken = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
@@ -1187,7 +1189,9 @@ const getCurrentUser = () => {
     }
     
     return null; // No authentication available
-};
+    };
+    console.log('📝 Local getCurrentUser (add-questions) fallback defined');
+}
 
 // Get blocks data using API service
 const getBlocksData = async () => {
