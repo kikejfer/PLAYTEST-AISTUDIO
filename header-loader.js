@@ -98,6 +98,12 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
             activeRole: userData.activeRole || panelType
         };
         
+        // Save activeRole to localStorage for API calls
+        if (userInfo.activeRole) {
+            localStorage.setItem('activeRole', userInfo.activeRole);
+            console.log('💾 ActiveRole saved to localStorage:', userInfo.activeRole);
+        }
+        
         console.log('🔍 DEBUG userInfo processed:', {
             name: userInfo.name,
             roles: userInfo.roles,
