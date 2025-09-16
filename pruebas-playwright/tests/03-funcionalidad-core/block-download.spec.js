@@ -20,25 +20,26 @@ test.describe('Descarga de Bloque', () => {
       console.log('✅ SebDom logged in successfully');
     });
     
-    await test.step('Verificar bloque cargado', async () => {
-      // Verificar que el bloque aparece como cargado
-      const loadedBlock = page.locator('.loaded-block, .my-blocks, .user-blocks').first();
-      
-      if (await loadedBlock.count() > 0) {
-        await expect(loadedBlock).toBeVisible();
-        console.log('✅ Loaded block is visible');
-        
-        // Verificar que es el bloque de AndGar
-        const andgarBlock = page.locator('text=AndGar, text=/CE1978/i').first();
-        if (await andgarBlock.count() > 0) {
-          console.log('✅ AndGar block is identified');
-        }
+    await test.step('Navegar a Carga de Bloques y buscar bloque CE1978', async () => {
+      // Navegar a la pestaña Carga de Bloques
+      const loadBlocksTab = page.locator('.tab-button:has-text("Carga de Bloques"), button:has-text("Carga de Bloques")').first();
+      await loadBlocksTab.click();
+      await page.waitForTimeout(2000);
+      console.log('✅ Navigated to Carga de Bloques tab');
+
+      // Buscar el bloque CE1978 en la sección Bloques Disponibles
+      const ce1978Block = page.locator('.block-card:has-text("CE1978"), .available-block:has-text("CE1978")').first();
+      if (await ce1978Block.count() > 0) {
+        console.log('✅ CE1978 block found in Bloques Disponibles');
+      } else {
+        console.log('⚠️ CE1978 block not found in Bloques Disponibles');
       }
     });
-    
-    await test.step('Buscar opción de descarga', async () => {
-      // Buscar opción de descarga
-      const downloadButton = page.locator('button:has-text("Descargar"), a:has-text("Descargar"), .download-btn').first();
+
+    await test.step('Buscar opción de descarga en el bloque CE1978', async () => {
+      // Buscar botón de descarga específicamente dentro del bloque CE1978
+      const ce1978Block = page.locator('.block-card:has-text("CE1978"), .available-block:has-text("CE1978")').first();
+      const downloadButton = ce1978Block.locator('button:has-text("Descargar"), a:has-text("Descargar"), .download-btn').first();
       
       if (await downloadButton.count() > 0) {
         console.log('✅ Download option found');
@@ -111,7 +112,7 @@ test.describe('Descarga de Bloque', () => {
       console.log('✅ AndGar logged in successfully');
     });
 
-    await test.step('Navegar a Contenido para ver bloques creados', async () => {
+    await test.step('Navegar a Contenido para ver bloques cargados', async () => {
       // Ir a la pestaña de Contenido
       const contentTab = page.locator('.tab-button:has-text("Contenido"), button:has-text("📝 Contenido")').first();
       await contentTab.click();
@@ -119,15 +120,15 @@ test.describe('Descarga de Bloque', () => {
       console.log('✅ Navigated to Content tab');
     });
 
-    await test.step('Buscar y eliminar bloque CE1978', async () => {
-      // Buscar el bloque CE1978
-      const ce1978Block = page.locator('.block-card:has-text("CE1978")').or(page.locator('.created-block:has-text("CE1978")')).or(page.locator('text=/CE1978/i')).first();
+    await test.step('Buscar y eliminar bloque CE1978 en Bloques Cargados', async () => {
+      // Buscar el bloque CE1978 en la sección Bloques Cargados
+      const ce1978Block = page.locator('.loaded-block:has-text("CE1978"), .created-block:has-text("CE1978"), .block-card:has-text("CE1978")').first();
 
       if (await ce1978Block.count() > 0) {
-        console.log('✅ CE1978 block found');
+        console.log('✅ CE1978 block found in Bloques Cargados');
 
-        // Buscar botón de eliminar
-        const deleteButton = page.locator('button:has-text("Eliminar"), button:has-text("🗑️"), .delete-btn, .remove-btn').first();
+        // Buscar botón de eliminar específicamente dentro del bloque CE1978
+        const deleteButton = ce1978Block.locator('button:has-text("Eliminar"), button:has-text("🗑️"), .delete-btn, .remove-btn').first();
 
         if (await deleteButton.count() > 0) {
           await deleteButton.click();
@@ -151,10 +152,10 @@ test.describe('Descarga de Bloque', () => {
           }
 
         } else {
-          console.log('⚠️ Delete button not found');
+          console.log('⚠️ Delete button not found in CE1978 block');
         }
       } else {
-        console.log('⚠️ CE1978 block not found in content list');
+        console.log('⚠️ CE1978 block not found in Bloques Cargados section');
       }
     });
 

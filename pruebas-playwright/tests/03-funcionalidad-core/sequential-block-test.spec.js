@@ -161,42 +161,31 @@ test.describe('Test Secuencial: Creación y Verificación de Bloque', () => {
         }
       }
 
-      // Si no encuentra el botón, hacer debug adicional
+      // Buscar específicamente debajo del texto "Subir Fichero (.txt)"
       if (!browseButton) {
-        console.log('🔍 Debugging: Looking for "Subir Fichero (.txt)" text and nearby elements...');
+        console.log('🔍 Looking for file input below "Subir Fichero (.txt)" text...');
 
         // Buscar el texto "Subir Fichero (.txt)"
         const subirFicheroText = page.locator('text=Subir Fichero (.txt)');
-        const textCount = await subirFicheroText.count();
-        console.log(`📝 Found ${textCount} instances of "Subir Fichero (.txt)" text`);
 
-        if (textCount > 0) {
-          console.log('✅ "Subir Fichero (.txt)" text found, looking for nearby elements...');
+        if (await subirFicheroText.count() > 0) {
+          console.log('✅ "Subir Fichero (.txt)" text found');
 
-          // Buscar elementos cerca del texto
-          const parentContainer = subirFicheroText.locator('..');
-          const nearbyInputs = parentContainer.locator('input[type="file"]');
-          const nearbyButtons = parentContainer.locator('button');
+          // Buscar botón "Elegir archivos" o "Choose files" debajo del texto
+          const chooseFilesButton = page.locator('text=Subir Fichero (.txt)').locator('..').locator('button:has-text("Elegir archivos"), button:has-text("Choose files"), input[type="file"]:not([webkitdirectory])').first();
 
-          console.log(`📁 Found ${await nearbyInputs.count()} file inputs near the text`);
-          console.log(`🔘 Found ${await nearbyButtons.count()} buttons near the text`);
+          if (await chooseFilesButton.count() > 0) {
+            browseButton = chooseFilesButton;
+            console.log('✅ Found "Elegir archivos" button below text');
+          } else {
+            // Buscar en contenedor padre más amplio
+            const widerContainer = subirFicheroText.locator('../..');
+            const fileInputInWiderContainer = widerContainer.locator('input[type="file"]:not([webkitdirectory])').first();
 
-          // Mostrar detalles de los elementos cercanos
-          const nearbyInputsAll = await nearbyInputs.all();
-          for (let i = 0; i < nearbyInputsAll.length; i++) {
-            const input = nearbyInputsAll[i];
-            const isVisible = await input.isVisible();
-            const id = await input.getAttribute('id');
-            const webkitDir = await input.getAttribute('webkitdirectory');
-            console.log(`Nearby input ${i}: visible=${isVisible}, id="${id}", webkitdirectory=${webkitDir}`);
-          }
-
-          const nearbyButtonsAll = await nearbyButtons.all();
-          for (let i = 0; i < nearbyButtonsAll.length; i++) {
-            const button = nearbyButtonsAll[i];
-            const text = await button.textContent();
-            const isVisible = await button.isVisible();
-            console.log(`Nearby button ${i}: "${text?.trim()}", visible=${isVisible}`);
+            if (await fileInputInWiderContainer.count() > 0) {
+              browseButton = fileInputInWiderContainer;
+              console.log('✅ Found file input in wider container below text');
+            }
           }
         } else {
           console.log('❌ "Subir Fichero (.txt)" text not found on page');
