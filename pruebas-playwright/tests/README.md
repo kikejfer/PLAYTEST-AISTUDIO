@@ -23,11 +23,25 @@
 - `verify-andgar-block.spec.js` - Verificación visibilidad propios bloques
 - `verify-block-availability.spec.js` - Verificación bloques disponibles para jugadores
 
-### **archived** ⚠️
-Tests auxiliares archivados (usados para debugging del endpoint bulk):
-- debug.spec.js, debug-file-selection.spec.js, manual-debug-selection.spec.js
-- visual-verification.spec.js, visual-block-creation.spec.js, manual-observation.spec.js  
-- roles.spec.js (redundante - combina todos los tests)
+### **06-frontend-utilities** 🆕
+- `getCurrentUser-global.spec.js` - Tests de función global getCurrentUser
+  - Verificación sin redeclaraciones
+  - Compatibilidad cross-módulo
+  - Manejo de tokens de autenticación
+  - Funcionamiento después de reload
+
+### **07-navigation-service** 🆕
+- `navigation-service-core.spec.js` - Funcionalidad core del NavigationService
+  - Inicialización por roles
+  - Detección de usuario y rol
+  - Inyección de botones de soporte
+  - Funcionalidad de refresh
+- `navigation-service-ui.spec.js` - Integración UI del NavigationService
+  - Styling y posicionamiento
+  - Responsividad mobile/tablet
+  - Integración no intrusiva
+  - Manejo de errores UI
+  - Impacto en rendimiento
 
 ## 🚀 Ejecución de Tests
 
@@ -50,6 +64,12 @@ npx playwright test tests/04-administracion/
 
 # Verificación
 npx playwright test tests/05-verificacion/
+
+# Frontend Utilities (nuevos)
+npx playwright test tests/06-frontend-utilities/
+
+# Navigation Service (nuevos)
+npx playwright test tests/07-navigation-service/
 ```
 
 ### Tests Rápidos (solo core):
@@ -57,8 +77,20 @@ npx playwright test tests/05-verificacion/
 npx playwright test tests/03-funcionalidad-core/block-creation.spec.js tests/03-funcionalidad-core/block-loading.spec.js
 ```
 
+### Tests Frontend (nuevos):
+```bash
+# Test función getCurrentUser global
+npx playwright test tests/06-frontend-utilities/getCurrentUser-global.spec.js
+
+# Test NavigationService
+npx playwright test tests/07-navigation-service/navigation-service-core.spec.js
+npx playwright test tests/07-navigation-service/navigation-service-ui.spec.js
+```
+
 ## ✅ Estado Actual
 - **Endpoint `/questions/bulk`**: ✅ Funcionando
 - **Test 1** (block-creation): ✅ Exitoso
 - **Test 2** (block-loading): ✅ Exitoso  
 - **Suite limpia**: ✅ Organizada por categorías
+- **Frontend fixes**: ✅ navigation-service.js creado, getCurrentUser sin redeclaraciones
+- **Nuevos tests**: ✅ 06-frontend-utilities y 07-navigation-service
