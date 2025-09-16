@@ -1885,11 +1885,24 @@
         if (!window.getCurrentUser) {
             function getCurrentUser() {
                 try {
+                    // Check for auth token first
+                    const authToken = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                    if (authToken) {
+                        const session = localStorage.getItem('playtest_session');
+                        const userData = session ? JSON.parse(session) : {};
+                        return {
+                            ...userData,
+                            isAuthenticated: true,
+                            token: authToken
+                        };
+                    }
+                    
+                    // Fallback to old gameSession for compatibility
                     const session = localStorage.getItem('gameSession');
-                    return session ? JSON.parse(session) : null;
+                    return session ? JSON.parse(session) : { isAuthenticated: false };
                 } catch (error) {
                     console.error('Error obteniendo usuario:', error);
-                    return null;
+                    return { isAuthenticated: false };
                 }
             }
             window.getCurrentUser = getCurrentUser;
