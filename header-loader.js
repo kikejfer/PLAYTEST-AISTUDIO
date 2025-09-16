@@ -98,10 +98,32 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
             activeRole: userData.activeRole || panelType
         };
         
-        // Save panel code (not role) to localStorage for API calls
-        // The backend expects panel codes like PCC, PPF, etc.
-        localStorage.setItem('activeRole', panelType);
-        console.log('💾 Panel code saved as activeRole in localStorage:', panelType);
+        // Determine appropriate database role for this panel
+        const panelToRoleMapping = {
+            'PAP': 'administrador_principal',
+            'PAS': 'administrador_secundario', 
+            'PPF': 'profesor',
+            'PCC': 'creador',
+            'PJG': 'jugador'
+        };
+        
+        const requiredRole = panelToRoleMapping[panelType];
+        if (requiredRole) {
+            // Check if user has this role (from userData.roles)
+            if (userInfo.roles && userInfo.roles.includes(requiredRole)) {
+                localStorage.setItem('activeRole', requiredRole);
+                console.log('💾 Database role saved as activeRole:', requiredRole);
+            } else {
+                console.warn('⚠️ User does not have required role for panel:', requiredRole);
+                // Fallback to first available role or panelType
+                const fallbackRole = userInfo.roles?.[0] || panelType;
+                localStorage.setItem('activeRole', fallbackRole);
+                console.log('💾 Fallback role saved as activeRole:', fallbackRole);
+            }
+        } else {
+            localStorage.setItem('activeRole', panelType);
+            console.log('💾 Panel code saved as activeRole (no mapping found):', panelType);
+        }
         
         console.log('🔍 DEBUG userInfo processed:', {
             name: userInfo.name,
