@@ -2,8 +2,8 @@
 const { defineConfig, devices } = require('@playwright/test');
 
 /**
- * Sequential configuration for SebDom tests in Bloque 3
- * Ensures tests run in correct order: loading first, then download
+ * Complete sequential configuration for Bloque 3
+ * Ensures tests run in correct order: creation first, then loading, then download
  */
 module.exports = defineConfig({
   testDir: './tests/03-funcionalidad-core',
@@ -28,11 +28,12 @@ module.exports = defineConfig({
 
   projects: [
     {
-      name: 'SebDom Sequential Tests',
+      name: 'Bloque 3 Complete Sequential Tests',
       use: { ...devices['Desktop Chrome'] },
       testMatch: [
-        'block-loading.spec.js',  // Test 2: Must run first
-        'block-download.spec.js'  // Test 1: Must run second
+        'sequential-block-test.spec.js', // Test 0: AndGar creates block (MUST run first)
+        'block-loading.spec.js',         // Test 1: JaiGon & SebDom load block
+        'block-download.spec.js'         // Test 2: SebDom downloads & AndGar deletes
       ],
     },
   ],
