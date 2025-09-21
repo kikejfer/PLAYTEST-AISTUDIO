@@ -907,7 +907,7 @@ class BloquesCreados {
                     <strong>Nivel:</strong> ${this.escapeHtml(block.metadata.nivel)}
                 </span>
                 <span class="bc-metadata-item">
-                    <strong>Estado:</strong> ${this.escapeHtml(block.metadata.estado)}
+                    <strong>Carácter:</strong> ${this.escapeHtml(block.metadata.estado)}
                 </span>
             </div>
             ` : ''}
@@ -1549,7 +1549,7 @@ class BloquesCreados {
                 </div>
                 
                 <div class="bc-char-edit-field">
-                    <label class="bc-char-label">Estado</label>
+                    <label class="bc-char-label">Carácter</label>
                     <select class="bc-char-edit-input" id="bc-edit-block-estado-${this.containerId}">
                         <option value="">Sin especificar</option>
                         ${metadataOptions.states?.map(estado => `

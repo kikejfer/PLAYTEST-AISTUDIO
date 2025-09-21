@@ -2949,7 +2949,7 @@
                         <div style="margin-bottom: 12px; font-size: 12px; color: #94A3B8; display: flex; flex-wrap: wrap; gap: 8px 16px; background: #1E293B; padding: 8px; border-radius: 6px;">
                             <span><strong>Tipo:</strong> ${block.metadata.tipo || 'N/A'}</span>
                             <span><strong>Nivel:</strong> ${block.metadata.nivel || 'N/A'}</span>
-                            <span><strong>Estado:</strong> ${block.metadata.estado || 'N/A'}</span>
+                            <span><strong>Carácter:</strong> ${block.metadata.estado || 'N/A'}</span>
                         </div>
                         ` : ''}
                         
@@ -2957,7 +2957,7 @@
                             <span><strong>Preguntas:</strong> ${block.questionCount || 0}</span>
                             <span><strong>Temas:</strong> ${block.stats?.totalTopics || 0}</span>
                             <span><strong>Usuarios:</strong> ${block.stats?.totalUsers || 0}</span>
-                            <span><strong>Creador:</strong> ${block.creatorNickname || 'Usuario'}</span>
+                            <span><strong>Autor:</strong> ${block.creatorNickname || 'Usuario'}</span>
                             ${block.stats?.loadedAt ? `<span><strong>Cargado:</strong> ${new Date(block.stats.loadedAt).toLocaleDateString()}</span>` : ''}
                         </div>
                         
