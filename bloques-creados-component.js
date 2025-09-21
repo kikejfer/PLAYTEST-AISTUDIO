@@ -930,6 +930,10 @@ class BloquesCreados {
                     <span class="bc-stat-number">${(block.stats?.loadedAt || block.loadedAt) ? new Date(block.stats?.loadedAt || block.loadedAt).toLocaleDateString('es-ES') : 'N/A'}</span>
                     <span class="bc-stat-label">Cargado</span>
                 </div>
+                <div class="bc-stat-item">
+                    <span class="bc-stat-number">${block.creatorNickname || 'N/A'}</span>
+                    <span class="bc-stat-label">Autor</span>
+                </div>
                 ` : `
                 <div class="bc-stat-item">
                     <span class="bc-stat-number">${block.stats?.totalUsers || 0}</span>
