@@ -1,6 +1,8 @@
 const { test, expect } = require('@playwright/test');
 const { login } = require('../../utils/login-helper');
 const { createLogoutStep } = require('../../utils/logout-helper');
+const { createAvailableBlockStep, createLoadedBlockStep } = require('../../utils/player-blocks-helper');
+const { createBlockSelectionStep } = require('../../utils/block-selector-helper');
 
 test.describe('Descarga de Bloque', () => {
   
@@ -12,78 +14,47 @@ test.describe('Descarga de Bloque', () => {
       // Verificar que llega al panel de jugador
       await expect(page).toHaveURL(/jugadores-panel-gaming/, { timeout: 10000 });
     });
-    
-    await test.step('Navegar a Carga de Bloques y buscar bloque CE1978', async () => {
-      // Navegar a la pestaña Carga de Bloques
-      const loadBlocksTab = page.locator('.tab-button:has-text("Carga de Bloques"), button:has-text("Carga de Bloques")').first();
-      await loadBlocksTab.click();
-      await page.waitForTimeout(2000);
-      console.log('✅ Navigated to Carga de Bloques tab');
 
-      // Buscar el bloque CE1978 en la sección Bloques Disponibles
-      const ce1978Block = page.locator('.block-card:has-text("CE1978"), .available-block:has-text("CE1978")').first();
-      if (await ce1978Block.count() > 0) {
-        console.log('✅ CE1978 block found in Bloques Disponibles');
-      } else {
-        console.log('⚠️ CE1978 block not found in Bloques Disponibles');
+    await test.step('Cargar bloque CE1978 desde Bloques Disponibles', async () => {
+      // DEPENDENCIA: Este test debe ejecutarse DESPUÉS del test 02-block-loading.spec.js
+      // para evitar conflictos ya que ambos cargan y descargan el mismo bloque CE1978
+
+      // Cargar el bloque desde Bloques Disponibles para poder descargarlo después
+      const result = await createAvailableBlockStep(test, page, 'CE1978', 'AndGar', 'Cargar');
+
+      if (result.action === 'cargared') {
+        console.log('✅ Block loaded successfully - waiting for UI to update');
+        await page.waitForTimeout(5000); // Increased wait time for UI to update
+        console.log('✅ Ready for download after extended wait');
       }
     });
 
-    await test.step('Buscar opción de descarga en el bloque CE1978', async () => {
-      // Buscar botón de descarga específicamente dentro del bloque CE1978
-      const ce1978Block = page.locator('.block-card:has-text("CE1978"), .available-block:has-text("CE1978")').first();
-      const downloadButton = ce1978Block.locator('button:has-text("Descargar"), a:has-text("Descargar"), .download-btn').first();
-      
-      if (await downloadButton.count() > 0) {
-        console.log('✅ Download option found');
-        
-        // Configurar manejo de descarga
-        const downloadPromise = page.waitForEvent('download');
-        
-        await downloadButton.click();
-        console.log('✅ Download button clicked');
-        
-        try {
-          // Esperar a que inicie la descarga
-          const download = await downloadPromise;
-          console.log('✅ Download started successfully');
-          
-          // Verificar que el archivo se descargó
-          const fileName = download.suggestedFilename();
-          if (fileName) {
-            console.log(`✅ Downloaded file: ${fileName}`);
-          }
-          
-        } catch (error) {
-          console.log('⚠️ Download may have started but not detected by Playwright');
-        }
-        
-        await page.waitForTimeout(3000);
-        
-      } else {
-        console.log('⚠️ Download button not found, checking alternative methods');
-        
-        // Buscar enlaces de descarga alternativos
-        const downloadLink = page.locator('a[href*="download"], a[href*=".zip"], a[href*=".txt"]').first();
-        if (await downloadLink.count() > 0) {
-          await downloadLink.click();
-          console.log('✅ Download link clicked');
-        }
+    await test.step('Eliminar bloque CE1978 desde Bloques Cargados', async () => {
+      // Usar helper para encontrar y eliminar bloque desde Bloques Cargados
+      const result = await createLoadedBlockStep(test, page, 'CE1978', 'AndGar', 'Eliminar');
+
+      if (result.action === 'deleted') {
+        console.log('✅ Block successfully deleted from loaded blocks list');
       }
     });
     
-    await test.step('Verificar estado de descarga', async () => {
-      // Verificar que el bloque muestra estado de descargado
-      const downloadedIndicator = page.locator('text=/descargado/i').or(page.locator('text=/downloaded/i')).or(page.locator('.downloaded')).first();
-      
-      if (await downloadedIndicator.count() > 0) {
-        console.log('✅ Block shows as downloaded');
+    await test.step('Verificar eliminación del bloque', async () => {
+      // Verificar que el bloque YA NO está en Bloques Cargados usando helper con throwOnNotFound=false
+      const loadedBlockResult = await createLoadedBlockStep(test, page, 'CE1978', 'AndGar', 'Autor', false);
+
+      if (loadedBlockResult.found) {
+        console.log('❌ ERROR: Block still found in Loaded Blocks - should have been deleted');
+      } else {
+        console.log('✅ Block correctly removed from Loaded Blocks');
       }
-      
-      // Verificar que sigue apareciendo el bloque para posibles futuras descargas
-      const blockStillVisible = page.locator('text=AndGar, text=/CE1978/i').first();
-      if (await blockStillVisible.count() > 0) {
-        console.log('✅ Block remains visible for future downloads');
+
+      // Verificar que el bloque SÍ está en Bloques Disponibles usando helper con throwOnNotFound=false
+      const availableBlockResult = await createAvailableBlockStep(test, page, 'CE1978', 'AndGar', 'Autor');
+
+      if (availableBlockResult.value) {
+        console.log('✅ Block still available in Available Blocks for future downloads');
+      } else {
+        console.log('❌ ERROR: Block not found in Available Blocks');
       }
     });
 
@@ -122,77 +93,16 @@ test.describe('Descarga de Bloque', () => {
       await expect(page).toHaveURL(/creators-panel-content/, { timeout: 10000 });
     });
 
-    await test.step('Navegar a Contenido para ver bloques cargados', async () => {
-      // Ir a la pestaña de Contenido
-      const contentTab = page.locator('.tab-button:has-text("Contenido"), button:has-text("📝 Contenido")').first();
-      await contentTab.click();
-      await page.waitForTimeout(2000);
-      console.log('✅ Navigated to Content tab');
-    });
+    await test.step('Eliminar bloque CE1978 usando helper', async () => {
+      // Usar helper para encontrar y eliminar bloque en sección Bloques Creados
+      const result = await createBlockSelectionStep(test, page, 'Contenido', 'Bloques Creados', 'CE1978', 'eliminar');
 
-    await test.step('Buscar y eliminar bloque CE1978 en Bloques Creados', async () => {
-      // Buscar el bloque CE1978 en la sección Bloques Creados
-      const ce1978Block = page.locator('.created-block:has-text("CE1978"), .block-card:has-text("CE1978")').first();
-
-      if (await ce1978Block.count() > 0) {
-        console.log('✅ CE1978 block found in Bloques Creados');
-
-        // Buscar botón de eliminar específicamente dentro del bloque CE1978
-        const deleteButton = ce1978Block.locator('button:has-text("Eliminar"), button:has-text("🗑️"), .delete-btn, .remove-btn').first();
-
-        if (await deleteButton.count() > 0) {
-          await deleteButton.click();
-          console.log('✅ Delete button clicked');
-
-          // Confirmar eliminación si aparece modal de confirmación
-          const confirmButton = page.locator('button:has-text("Confirmar"), button:has-text("Sí"), button:has-text("Eliminar")').first();
-          if (await confirmButton.count() > 0) {
-            await confirmButton.click();
-            console.log('✅ Deletion confirmed');
-          }
-
-          await page.waitForTimeout(3000);
-
-          // Verificar que el bloque ya no aparece
-          const blockStillExists = page.locator('text=/CE1978/i').first();
-          if (await blockStillExists.count() === 0) {
-            console.log('✅ CE1978 block successfully deleted');
-          } else {
-            console.log('⚠️ CE1978 block may still exist');
-          }
-
-        } else {
-          console.log('⚠️ Delete button not found in CE1978 block');
-        }
-      } else {
-        console.log('⚠️ CE1978 block not found in Bloques Creados section');
+      if (result.value === 'deleted') {
+        console.log('✅ CE1978 block successfully deleted using helper function');
+        console.log('🧹 LIMPIEZA COMPLETADA: AndGar ha procesado la eliminación de bloques CE1978');
+        console.log('🎉 VERIFICACIÓN COMPLETA: Sistema listo para próximos tests');
+        console.log('📋 RESULTADO FINAL: Ciclo completo de creación-uso-eliminación de bloques completado');
       }
-    });
-
-    await test.step('Verificar que AndGar completó la eliminación correctamente', async () => {
-      // Verificar que estamos en el panel de creador correcto
-      await expect(page).toHaveURL(/creators-panel-content/, { timeout: 5000 });
-
-      // Verificar acceso a la funcionalidad de gestión de contenido
-      const contentTab = page.locator('.tab-button:has-text("Contenido"), button:has-text("Content")').first();
-      const hasContentAccess = await contentTab.count();
-
-      if (hasContentAccess > 0) {
-        console.log('✅ CONFIRMACIÓN: AndGar tiene acceso a la gestión de contenido');
-      }
-
-      // Verificar que no hay errores de eliminación
-      const errorMessages = page.locator('text=/error/i, text=/failed/i, text=/falló/i').first();
-      const hasErrors = await errorMessages.count();
-
-      if (hasErrors === 0) {
-        console.log('✅ CONFIRMACIÓN: AndGar completó el proceso de eliminación sin errores');
-      }
-
-      // Verificar estado final del sistema
-      console.log('🧹 LIMPIEZA COMPLETADA: AndGar ha procesado la eliminación de bloques CE1978');
-      console.log('🎉 VERIFICACIÓN COMPLETA: Sistema listo para próximos tests');
-      console.log('📋 RESULTADO FINAL: Ciclo completo de creación-uso-eliminación de bloques completado');
     });
 
     await createLogoutStep(test, page);
