@@ -6,11 +6,12 @@
 /**
  * Selects an element within a content block (bc-block-card) and optionally extracts specific information
  * @param {import('@playwright/test').Page} page - Playwright page object
- * @param {string} tab - Tab to navigate to (Contenido, Añadir Preguntas, etc.)
+ * @param {string} tab - Tab to navigate to (Contenido, Añadir Preguntas, Recursos, etc.)
  * @param {string} section - Section within the tab (Bloques Creados, Bloques Disponibles, etc.)
  * @param {string} blockTitle - Title of the block to find (bc-block-title)
  * @param {string} [characteristic] - Optional: characteristic to extract (tipo, nivel, estado, or stat name)
  * @returns {Promise<{block: import('@playwright/test').Locator, value?: string}>} Block locator and optional extracted value
+ * @note For "Bloques Creados" section, no nickname verification is performed since all blocks belong to current user
  */
 async function selectBlockElement(page, tab, section, blockTitle, characteristic = null) {
   try {
@@ -23,6 +24,8 @@ async function selectBlockElement(page, tab, section, blockTitle, characteristic
     }
 
     // Step 3: Find the block by title
+    // Note: For "Bloques Creados" section, no nickname verification is needed
+    // since all blocks in this section belong to the current user
     const blockCard = await findBlockByTitle(page, blockTitle);
 
     if (!blockCard) {
@@ -45,7 +48,6 @@ async function selectBlockElement(page, tab, section, blockTitle, characteristic
     throw error;
   }
 }
-
 
 /**
  * Navigates to the specified tab
@@ -208,24 +210,31 @@ async function performBlockAction(blockCard, action, page) {
 
         if (buttonExists > 0 && await deleteButton.isVisible()) {
           console.log(`✅ Found delete button with selector: ${selector}`);
+
+          // Set up dialog handler for confirmation BEFORE clicking
+          const dialogHandler = async (dialog) => {
+            console.log(`📋 Dialog detected: ${dialog.message()}`);
+            if (dialog.message().includes('eliminar') || dialog.message().includes('seguro') || dialog.message().includes('eliminado correctamente')) {
+              await dialog.accept();
+              console.log(`✅ Accepted dialog`);
+            } else {
+              await dialog.accept(); // Accept all dialogs by default since they require confirmation
+              console.log(`✅ Accepted dialog (default behavior)`);
+            }
+          };
+
+          page.on('dialog', dialogHandler);
+
           console.log(`🔄 Clicking delete button...`);
           await deleteButton.click();
-          await page.waitForTimeout(1000); // Wait for action to complete
+          await page.waitForTimeout(2000); // Wait longer for deletion to process
+          console.log(`✅ Deletion confirmation handled`);
 
-          // Handle potential confirmation dialog
-          try {
-            await page.waitForTimeout(500);
-            const confirmButton = page.locator('button:has-text("Confirmar"), button:has-text("Sí"), button:has-text("Eliminar")').first();
-            const confirmExists = await confirmButton.count();
-            if (confirmExists > 0) {
-              await confirmButton.click();
-              await page.waitForTimeout(1000);
-              console.log(`✅ Confirmed deletion`);
-            }
-          } catch (e) {
-            // No confirmation dialog, continue
-          }
+          // Remove the dialog handler to avoid conflicts
+          page.off('dialog', dialogHandler);
 
+          // Wait for DOM to update after deletion
+          await page.waitForTimeout(1500);
           console.log(`✅ Delete action completed successfully`);
           return 'deleted';
         }

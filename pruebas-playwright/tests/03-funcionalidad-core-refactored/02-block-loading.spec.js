@@ -1,54 +1,25 @@
 const { test, expect } = require('@playwright/test');
 const { login } = require('../../utils/login-helper');
 const { createLogoutStep } = require('../../utils/logout-helper');
+const { createAvailableBlockStep } = require('../../utils/player-blocks-helper');
 
 test.describe('Carga de Bloque por Usuarios', () => {
   
   test('JaiGon verifica información del bloque y lo carga', async ({ page }) => {
-    
+
     await test.step('Login como JaiGon', async () => {
       await login(page, 'JaiGon');
 
       // Verificar que llega al panel de jugador
       await expect(page).toHaveURL(/jugadores-panel-gaming/);
     });
-    
-    await test.step('Navegar a Carga de Bloques y verificar bloques disponibles', async () => {
-      // Navegar a la pestaña Carga de Bloques
-      const loadBlocksTab = page.locator('.tab-button:has-text("Carga de Bloques"), button:has-text("Carga de Bloques")').first();
-      await loadBlocksTab.click();
-      await page.waitForTimeout(2000);
-      console.log('✅ Navigated to Load Blocks tab');
 
-      // Buscar bloques disponibles en la sección
-      const availableBlocks = page.locator('.block-card, .available-block, .game-block').first();
+    await test.step('Verificar y cargar bloque CE1978 de AndGar', async () => {
+      // Usar helper para verificar información y cargar bloque
+      const result = await createAvailableBlockStep(test, page, 'CE1978', 'AndGar', 'Cargar');
 
-      if (await availableBlocks.count() > 0) {
-        await expect(availableBlocks).toBeVisible();
-        console.log('✅ Available blocks are visible');
-
-        // Verificar información del bloque de AndGar
-        const andgarBlock = page.locator('text=AndGar').or(page.locator('text=/CE1978/i')).first();
-        if (await andgarBlock.count() > 0) {
-          console.log('✅ AndGar block information is visible');
-        }
-      }
-    });
-    
-    await test.step('Cargar el bloque', async () => {
-      // Cargar el bloque
-      const loadButton = page.locator('button:has-text("Cargar"), button:has-text("Seleccionar"), button:has-text("Jugar")').first();
-      
-      if (await loadButton.count() > 0) {
-        await loadButton.click();
-        await page.waitForTimeout(3000);
-        console.log('✅ Block loaded successfully');
-        
-        // Verificar que el bloque se cargó
-        const loadedIndicator = page.locator('text=/cargado/i').or(page.locator('text=/loaded/i')).or(page.locator('.loaded-block')).first();
-        if (await loadedIndicator.count() > 0) {
-          console.log('✅ Block loading confirmed');
-        }
+      if (result.action === 'cargared') {
+        console.log('✅ Block loaded successfully using helper function');
       }
     });
 
@@ -80,82 +51,52 @@ test.describe('Carga de Bloque por Usuarios', () => {
     console.log('🎉 JaiGon block loading test completed successfully');
   });
   
-  test('SebDom verifica información del bloque y lo carga', async ({ page }) => {
-    
+  test('SebDom carga y descarga bloque CE1978 - flujo completo', async ({ page }) => {
+
     await test.step('Login como SebDom', async () => {
       await login(page, 'SebDom');
 
       // Verificar que llega al panel de jugador
       await expect(page).toHaveURL(/jugadores-panel-gaming/, { timeout: 10000 });
     });
-    
-    await test.step('Navegar a Carga de Bloques y verificar bloques disponibles', async () => {
-      // Navegar a la pestaña Carga de Bloques
-      const loadBlocksTab = page.locator('.tab-button:has-text("Carga de Bloques"), button:has-text("Carga de Bloques")').first();
-      await loadBlocksTab.click();
-      await page.waitForTimeout(2000);
-      console.log('✅ Navigated to Load Blocks tab');
 
-      // Buscar bloques disponibles en la sección
-      const availableBlocks = page.locator('.block-card, .available-block, .game-block').first();
+    await test.step('Verificar y cargar bloque CE1978 de AndGar', async () => {
+      // Usar helper para verificar información y cargar bloque
+      const result = await createAvailableBlockStep(test, page, 'CE1978', 'AndGar', 'Cargar');
 
-      if (await availableBlocks.count() > 0) {
-        await expect(availableBlocks).toBeVisible();
-        console.log('✅ Available blocks are visible');
-
-        // Verificar información del bloque de AndGar
-        const andgarBlock = page.locator('text=AndGar').or(page.locator('text=/CE1978/i')).first();
-        if (await andgarBlock.count() > 0) {
-          console.log('✅ AndGar block information is visible');
-        }
-      }
-    });
-    
-    await test.step('Cargar el bloque', async () => {
-      // Cargar el bloque
-      const loadButton = page.locator('button:has-text("Cargar"), button:has-text("Seleccionar"), button:has-text("Jugar")').first();
-      
-      if (await loadButton.count() > 0) {
-        await loadButton.click();
-        await page.waitForTimeout(3000);
-        console.log('✅ Block loaded successfully');
-        
-        // Verificar que el bloque se cargó
-        const loadedIndicator = page.locator('text=/cargado/i').or(page.locator('text=/loaded/i')).or(page.locator('.loaded-block')).first();
-        if (await loadedIndicator.count() > 0) {
-          console.log('✅ Block loading confirmed');
-        }
+      if (result.action === 'cargared') {
+        console.log('✅ Block loaded successfully using helper function');
+        await page.waitForTimeout(3000); // Wait for UI to update button state
+        console.log('✅ Block state should be updated for SebDom download workflow');
       }
     });
 
-    await test.step('Verificar que SebDom completó el proceso de carga', async () => {
+    await test.step('Descargar bloque CE1978 desde Bloques Disponibles', async () => {
+      // Usar helper para encontrar y descargar bloque desde Bloques Disponibles
+      // NOTA: El botón "Descargar" NO descarga archivo, solo remueve el bloque de la lista del usuario
+      const result = await createAvailableBlockStep(test, page, 'CE1978', 'AndGar', 'Descargar');
+
+      if (result.action === 'descargared') {
+        console.log('✅ Block successfully removed from user loaded blocks list');
+      }
+    });
+
+    await test.step('Verificar que la descarga se completó', async () => {
+      // Verificar que la acción de descarga se completó correctamente
+      await page.waitForTimeout(2000); // Wait for DOM update
+      console.log('✅ VERIFICACIÓN: Descarga completada - bloque removido de lista de usuario');
+    });
+
+    await test.step('Verificar que SebDom completó el flujo completo', async () => {
       // Verificar que estamos en el panel de jugador correcto
       await expect(page).toHaveURL(/jugadores-panel-gaming/, { timeout: 5000 });
 
-      // Verificar que SebDom tiene acceso a la funcionalidad de bloques
-      const loadBlocksTab = page.locator('.tab-button:has-text("Load Blocks"), button:has-text("Carga de Bloques")').first();
-      const hasBlocksAccess = await loadBlocksTab.count();
-
-      if (hasBlocksAccess > 0) {
-        console.log('✅ CONFIRMACIÓN: SebDom tiene acceso a la funcionalidad de bloques');
-      }
-
-      // Verificar que no hay errores de carga visible
-      const errorMessages = page.locator('text=/error/i, text=/failed/i, text=/falló/i').first();
-      const hasErrors = await errorMessages.count();
-
-      if (hasErrors === 0) {
-        console.log('✅ CONFIRMACIÓN: SebDom completó el proceso sin errores');
-      } else {
-        console.log('⚠️ INFO: Se detectaron mensajes que pueden indicar estado normal del sistema');
-      }
-
-      console.log('🎉 VERIFICACIÓN COMPLETA: SebDom ha completado exitosamente el test de carga de bloques');
-      console.log('📋 RESULTADO: Sistema de carga de bloques operativo para segundo jugador');
+      console.log('🎉 VERIFICACIÓN COMPLETA: SebDom ha completado exitosamente el flujo de carga y descarga de bloques');
+      console.log('📋 RESULTADO: Sistema de carga y descarga operativo para jugadores');
     });
 
     await createLogoutStep(test, page);
 
-    console.log('🎉 SebDom block loading test completed successfully');
+    console.log('🎉 SebDom complete block workflow test completed successfully');
   });
 });

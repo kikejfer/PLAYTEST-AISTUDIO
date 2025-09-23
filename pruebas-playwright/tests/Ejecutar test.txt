@@ -1,0 +1,15 @@
+Para ejecutar los tests:
+- Abre símbolo del sistema.
+- Para ejecutar todos los tests: node run-tests.mjs
+- Para ejecutar un bloque: npx playwright test tests/directorio
+
+npx playwright test tests/03-funcionalidad-core
+01-infraestructura
+02-autenticacion
+03-funcionalidad-core
+04-administracion
+05-modulo-generico-bloques
+06-admin-principal-management
+07-verificacion
+08-frontend-utilities
+09-navigation-service

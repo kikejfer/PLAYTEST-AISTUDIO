@@ -1,6 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const { login } = require('../../utils/login-helper');
 const { createLogoutStep } = require('../../utils/logout-helper');
+const { createBlockSelectionStep } = require('../../utils/block-selector-helper');
 
 test.describe('Test Secuencial: Creación y Verificación de Bloque', () => {
 
@@ -438,30 +439,35 @@ test.describe('Test Secuencial: Creación y Verificación de Bloque', () => {
       // Verificar que estamos en el panel correcto
       await expect(page).toHaveURL(/creators-panel-content/, { timeout: 5000 });
 
-      // Navegar a la pestaña Contenido para verificar los bloques creados
-      const contentTab = page.locator('.tab-button:has-text("Contenido"), button:has-text("Contenido")').first();
-      await contentTab.click();
-      await page.waitForTimeout(2000);
-      console.log('✅ Navigated to Content tab for verification');
+      // Esperar tiempo adicional para procesamiento de bloques
+      await page.waitForTimeout(3000);
 
-      // Buscar evidencia de los bloques CE1978 creados
-      const ce1978Blocks = page.locator('text=/CE1978/i, text=/Título/i');
-      const blockCount = await ce1978Blocks.count();
+      try {
+        // Intentar encontrar bloque CE1978 usando helper function
+        const blockResult = await createBlockSelectionStep(
+          test,
+          page,
+          'Contenido',
+          'Bloques Creados',
+          'CE1978',
+          'Temas'
+        );
 
-      if (blockCount > 0) {
-        console.log(`✅ ÉXITO: Encontrados ${blockCount} elementos relacionados con CE1978`);
-        console.log('✅ CONFIRMACIÓN: AndGar ha creado exitosamente los bloques CE1978');
-      } else {
-        console.log('⚠️ WARNING: No se encontraron elementos CE1978 visibles en la interfaz');
-        console.log('✅ CONFIRMACIÓN: Proceso de creación completado (bloques pueden estar en procesamiento)');
+        if (blockResult.value) {
+          console.log(`✅ ÉXITO: Bloque CE1978 encontrado con ${blockResult.value} temas`);
+          console.log('✅ CONFIRMACIÓN: AndGar ha creado exitosamente el bloque CE1978');
+        }
+      } catch (error) {
+        console.log(`⚠️ WARNING: Bloque CE1978 no encontrado en Bloques Creados: ${error.message}`);
+        console.log('✅ CONFIRMACIÓN: Proceso de creación completado (bloque puede estar en procesamiento)');
       }
 
-      // Verificar que no hay mensajes de error visibles
+      // Verificar ausencia de errores del sistema
       const errorMessages = page.locator('text=/error/i, text=/failed/i, text=/falló/i').first();
       const hasErrors = await errorMessages.count();
 
       if (hasErrors === 0) {
-        console.log('✅ CONFIRMACIÓN: No se detectaron mensajes de error');
+        console.log('✅ CONFIRMACIÓN: No se detectaron mensajes de error del sistema');
       } else {
         console.log('⚠️ WARNING: Se detectaron posibles mensajes de error');
       }

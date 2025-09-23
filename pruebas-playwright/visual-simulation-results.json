@@ -1,0 +1,141 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\pruebas-playwright\\visual-simulation.config.js",
+    "rootDir": "C:/Users/kikej/OneDrive - UNED/Informatica/APPTest/PLAYTEST/PLAYTEST_AISTUDIO/pruebas-playwright",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "visual-simulation-report"
+        }
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "visual-simulation-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/kikej/OneDrive - UNED/Informatica/APPTest/PLAYTEST/PLAYTEST_AISTUDIO/pruebas-playwright/visual-simulation-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Visual Simulation Chrome",
+        "name": "Visual Simulation Chrome",
+        "testDir": "C:/Users/kikej/OneDrive - UNED/Informatica/APPTest/PLAYTEST/PLAYTEST_AISTUDIO/pruebas-playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "visual-simulation.spec.js"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "visual-simulation.spec.js",
+      "file": "visual-simulation.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Simulación Visual con Movimiento de Ratón",
+          "file": "visual-simulation.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Demostración visual de navegación con seguimiento de ratón",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Visual Simulation Chrome",
+                  "projectName": "Visual Simulation Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6,
+                      "error": {
+                        "message": "Error: browserType.launch: Target page, context or browser has been closed\nBrowser logs:\n\n<launching> C:\\Users\\kikej\\AppData\\Local\\ms-playwright\\chromium_headless_shell-1187\\chrome-win\\headless_shell.exe --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-extensions --disable-features=AcceptCHFrame,AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --enable-automation --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=C:\\Users\\kikej\\AppData\\Local\\Temp\\playwright_chromiumdev_profile-TXdnkj --remote-debugging-pipe --no-startup-window\n<launched> pid=26016\nCall log:\n\u001b[2m  - <launching> C:\\Users\\kikej\\AppData\\Local\\ms-playwright\\chromium_headless_shell-1187\\chrome-win\\headless_shell.exe --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-extensions --disable-features=AcceptCHFrame,AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --enable-automation --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=C:\\Users\\kikej\\AppData\\Local\\Temp\\playwright_chromiumdev_profile-TXdnkj --remote-debugging-pipe --no-startup-window\u001b[22m\n\u001b[2m  - <launched> pid=26016\u001b[22m\n\u001b[2m  - [pid=26016] <gracefully close start>\u001b[22m\n\u001b[2m  - [pid=26016] <kill>\u001b[22m\n\u001b[2m  - [pid=26016] <will force kill>\u001b[22m\n\u001b[2m  - [pid=26016] <process did exit: exitCode=3221225794, signal=null>\u001b[22m\n\u001b[2m  - [pid=26016] starting temporary directories cleanup\u001b[22m\n\u001b[2m  - [pid=26016] finished temporary directories cleanup\u001b[22m\n\u001b[2m  - [pid=26016] <gracefully close end>\u001b[22m\n",
+                        "stack": "Error: browserType.launch: Target page, context or browser has been closed\nBrowser logs:\n\n<launching> C:\\Users\\kikej\\AppData\\Local\\ms-playwright\\chromium_headless_shell-1187\\chrome-win\\headless_shell.exe --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-extensions --disable-features=AcceptCHFrame,AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --enable-automation --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=C:\\Users\\kikej\\AppData\\Local\\Temp\\playwright_chromiumdev_profile-TXdnkj --remote-debugging-pipe --no-startup-window\n<launched> pid=26016\nCall log:\n\u001b[2m  - <launching> C:\\Users\\kikej\\AppData\\Local\\ms-playwright\\chromium_headless_shell-1187\\chrome-win\\headless_shell.exe --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-extensions --disable-features=AcceptCHFrame,AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --enable-automation --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=C:\\Users\\kikej\\AppData\\Local\\Temp\\playwright_chromiumdev_profile-TXdnkj --remote-debugging-pipe --no-startup-window\u001b[22m\n\u001b[2m  - <launched> pid=26016\u001b[22m\n\u001b[2m  - [pid=26016] <gracefully close start>\u001b[22m\n\u001b[2m  - [pid=26016] <kill>\u001b[22m\n\u001b[2m  - [pid=26016] <will force kill>\u001b[22m\n\u001b[2m  - [pid=26016] <process did exit: exitCode=3221225794, signal=null>\u001b[22m\n\u001b[2m  - [pid=26016] starting temporary directories cleanup\u001b[22m\n\u001b[2m  - [pid=26016] finished temporary directories cleanup\u001b[22m\n\u001b[2m  - [pid=26016] <gracefully close end>\u001b[22m\n"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Target page, context or browser has been closed\nBrowser logs:\n\n<launching> C:\\Users\\kikej\\AppData\\Local\\ms-playwright\\chromium_headless_shell-1187\\chrome-win\\headless_shell.exe --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-extensions --disable-features=AcceptCHFrame,AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --enable-automation --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=C:\\Users\\kikej\\AppData\\Local\\Temp\\playwright_chromiumdev_profile-TXdnkj --remote-debugging-pipe --no-startup-window\n<launched> pid=26016\nCall log:\n\u001b[2m  - <launching> C:\\Users\\kikej\\AppData\\Local\\ms-playwright\\chromium_headless_shell-1187\\chrome-win\\headless_shell.exe --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-extensions --disable-features=AcceptCHFrame,AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --enable-automation --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=C:\\Users\\kikej\\AppData\\Local\\Temp\\playwright_chromiumdev_profile-TXdnkj --remote-debugging-pipe --no-startup-window\u001b[22m\n\u001b[2m  - <launched> pid=26016\u001b[22m\n\u001b[2m  - [pid=26016] <gracefully close start>\u001b[22m\n\u001b[2m  - [pid=26016] <kill>\u001b[22m\n\u001b[2m  - [pid=26016] <will force kill>\u001b[22m\n\u001b[2m  - [pid=26016] <process did exit: exitCode=3221225794, signal=null>\u001b[22m\n\u001b[2m  - [pid=26016] starting temporary directories cleanup\u001b[22m\n\u001b[2m  - [pid=26016] finished temporary directories cleanup\u001b[22m\n\u001b[2m  - [pid=26016] <gracefully close end>\u001b[22m\n"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-20T09:14:58.025Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\pruebas-playwright\\visual-simulation-results\\visual-simulation-Simulaci-bec0f-ón-con-seguimiento-de-ratón-Visual-Simulation-Chrome\\trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "c5928ebe124ed520589b-a6c1384c6dbe6aabd4cb",
+              "file": "visual-simulation.spec.js",
+              "line": 5,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-09-20T09:14:56.067Z",
+    "duration": 3067.8689999999997,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

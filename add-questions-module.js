@@ -1570,9 +1570,25 @@ const QuestionUploader = ({ currentUser, blocks, onSaveQuestions, onCreateBlock 
                     fileName: blockName 
                 }));
 
-                const existingBlock = blocks.find(b => b.nombreCorto?.toLowerCase() === blockName.toLowerCase());
-                
+                // CRITICAL: Check for duplicate blocks by: title + nickname + role (as per user requirement)
+                const currentUser = getCurrentUser();
+                const currentUserNickname = currentUser?.nickname || currentUser?.userName || '';
+                const currentUserRole = currentUser?.currentRole || currentUser?.role || '';
+
+                console.log('🔍 Checking for duplicate blocks with criteria:', {
+                    blockName: blockName.toLowerCase(),
+                    nickname: currentUserNickname,
+                    role: currentUserRole
+                });
+
+                const existingBlock = blocks.find(b =>
+                    b.nombreCorto?.toLowerCase() === blockName.toLowerCase() &&
+                    b.creatorNickname?.toLowerCase() === currentUserNickname.toLowerCase() &&
+                    b.created_with_role === currentUserRole
+                );
+
                 if (existingBlock) {
+                    console.log('✅ Found existing block with matching criteria - will merge questions:', existingBlock.id);
                     await onSaveQuestions(existingBlock.id, blockQuestions);
                 } else {
                     const { tipoId, nivelId, estadoId } = getMetadataIds();
@@ -2693,12 +2709,35 @@ const AddQuestionsApp = () => {
                     estado_id: estadoId
                 };
                 
-                const block = await apiDataService.createBlock(blockData);
-                
-                // Add questions to the new block using bulk API
-                console.log('🔍 Created block:', block);
-                console.log('🔍 Block ID:', block.id, 'Block.block.id:', block.block?.id);
-                
+                let block;
+                let blockId;
+
+                try {
+                    block = await apiDataService.createBlock(blockData);
+                    blockId = block.block?.id || block.id;
+                    console.log('✅ New block created successfully:', blockId);
+                } catch (createError) {
+                    // Check if it's a duplicate block error (409 Conflict)
+                    if (createError.status === 409 || createError.message.includes('409') || createError.message.includes('already exists')) {
+                        console.log('📝 Block already exists - merging questions into existing block');
+
+                        // Extract the existing block ID from error response
+                        const errorData = createError.data || {};
+                        if (errorData.existingBlockId) {
+                            blockId = errorData.existingBlockId;
+                            console.log('📝 Using existing block ID:', blockId);
+                        } else {
+                            throw createError; // Re-throw if we can't get the existing block ID
+                        }
+                    } else {
+                        throw createError; // Re-throw non-conflict errors
+                    }
+                }
+
+                // Add questions to the block (either new or existing) using bulk API
+                console.log('🔍 Block details:', block);
+                console.log('🔍 Final Block ID to use:', blockId);
+
                 if (questions.length > 0) {
                     // Format questions for bulk API
                     const formattedQuestions = questions.map(question => ({
@@ -2708,9 +2747,8 @@ const AddQuestionsApp = () => {
                         explicacionRespuesta: question.explicacionRespuesta,
                         difficulty: question.dificultad || 1
                     }));
-                    
-                    const blockId = block.block?.id || block.id;
-                    console.log(`💾 Adding ${questions.length} questions to new block ${blockId} using bulk API`);
+
+                    console.log(`💾 Adding ${questions.length} questions to block ${blockId} using bulk API`);
                     await apiDataService.createQuestionsBulk(blockId, formattedQuestions);
                 }
             }

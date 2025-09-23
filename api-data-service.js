@@ -128,7 +128,19 @@ class APIDataService {
             console.log('❌ API Debug - Response headers:', Object.fromEntries(response.headers.entries()));
           }
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `HTTP ${response.status}`);
+
+          // Create enhanced error object that preserves status and data for duplicate block handling
+          const error = new Error(errorData.error || errorData.message || `HTTP ${response.status}`);
+          error.status = response.status;
+          error.data = errorData;
+          error.response = response;
+
+          // Special handling for conflict errors (409) which indicate duplicate blocks
+          if (response.status === 409) {
+            console.log('⚠️ Conflict detected (409):', errorData);
+          }
+
+          throw error;
         }
 
         // Si la llamada fue exitosa con una URL diferente, actualizar la base URL

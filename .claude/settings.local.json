@@ -150,7 +150,8 @@
       "Bash(start test-jugadores-debug.html)",
       "Bash(git cherry-pick:*)",
       "Bash(npx playwright test:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(del \"C:\\Users\\kikej\\OneDrive - UNED\\Informatica\\APPTest\\PLAYTEST\\PLAYTEST_AISTUDIO\\pruebas-playwright\\tests\\03-funcionalidad-core\\block-creation.spec.js\")"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
