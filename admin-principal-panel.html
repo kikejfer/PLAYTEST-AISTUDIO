@@ -2191,10 +2191,14 @@ Esto hará que:
                 const result = await response.json();
                 
                 if (response.ok) {
+                    // Ahora reasignar todos los usuarios asignados a este admin al AdminPrincipal
+                    console.log(`🔄 Reasignando todos los usuarios de ${nickname} al AdminPrincipal...`);
+                    await reassignAllUsersToAdminPrincipal(nickname);
+
                     alert(`✅ Rol de Administrador Secundario removido exitosamente
 
-El usuario "${nickname}" ya no tiene privilegios administrativos pero mantiene su cuenta activa.`);
-                    
+El usuario "${nickname}" ya no tiene privilegios administrativos y todos sus usuarios asignados han sido transferidos al AdminPrincipal.`);
+
                     // Recargar el panel
                     window.location.reload();
                 } else {
@@ -2204,6 +2208,72 @@ El usuario "${nickname}" ya no tiene privilegios administrativos pero mantiene s
             } catch (error) {
                 console.error('Error removiendo rol:', error);
                 alert('❌ Error: ' + error.message);
+            }
+        }
+
+        /**
+         * Reasigna todos los usuarios asignados a un administrador específico al AdminPrincipal
+         * @param {string} removedAdminNickname - Nickname del administrador que fue removido
+         */
+        async function reassignAllUsersToAdminPrincipal(removedAdminNickname) {
+            try {
+                console.log(`🔍 Buscando usuarios asignados a ${removedAdminNickname} para reasignar al AdminPrincipal...`);
+
+                // Buscar en todas las secciones que contengan dropdowns de reasignación
+                const allDropdowns = document.querySelectorAll('select[onchange*="reasignarUsuario"]');
+                let reassignedCount = 0;
+
+                for (const dropdown of allDropdowns) {
+                    // Obtener el valor actual seleccionado (el admin asignado actualmente)
+                    const currentSelectedOption = dropdown.querySelector('option[selected], option[value=""]');
+                    const currentAdminText = currentSelectedOption ? currentSelectedOption.textContent.trim() : '';
+
+                    console.log(`🔍 Checking dropdown with current admin: "${currentAdminText}"`);
+
+                    // Si el administrador actual coincide con el que estamos removiendo
+                    if (currentAdminText === removedAdminNickname) {
+                        console.log(`✅ Found user assigned to ${removedAdminNickname}, reassigning to AdminPrincipal...`);
+
+                        // Buscar la opción "AdminPrincipal" en el dropdown
+                        let targetOption = null;
+                        const options = dropdown.querySelectorAll('option');
+
+                        // Buscar por valor primero, luego por texto
+                        for (const option of options) {
+                            const optionValue = option.value;
+                            const optionText = option.textContent.trim();
+
+                            if (optionValue.includes('AdminPrincipal') || optionText.includes('AdminPrincipal')) {
+                                targetOption = option;
+                                console.log(`✅ Found AdminPrincipal option: value="${optionValue}", text="${optionText}"`);
+                                break;
+                            }
+                        }
+
+                        if (targetOption) {
+                            // Simular el cambio seleccionando AdminPrincipal
+                            dropdown.value = targetOption.value;
+
+                            // Disparar el evento onchange para ejecutar la reasignación
+                            const changeEvent = new Event('change', { bubbles: true });
+                            dropdown.dispatchEvent(changeEvent);
+
+                            reassignedCount++;
+                            console.log(`✅ Usuario reasignado exitosamente al AdminPrincipal`);
+
+                            // Esperar un poco entre reasignaciones para evitar problemas de concurrencia
+                            await new Promise(resolve => setTimeout(resolve, 100));
+                        } else {
+                            console.warn(`⚠️ No se encontró la opción AdminPrincipal en dropdown`);
+                        }
+                    }
+                }
+
+                console.log(`✅ Proceso de reasignación completado. ${reassignedCount} usuarios reasignados al AdminPrincipal.`);
+
+            } catch (error) {
+                console.error('❌ Error durante la reasignación automática:', error);
+                // No lanzamos el error para que no interfiera con el flujo principal
             }
         }
 
