@@ -250,38 +250,64 @@ async function navigateToLoadBlocksTab(page) {
  */
 async function extractLoadedBlockStat(blockCard, statName) {
   try {
-    // Find all stat items within the block
+    // First try the new inline format (style="margin-bottom")
+    const inlineStatsDiv = blockCard.locator('div[style*="margin-bottom"]');
+    const inlineExists = await inlineStatsDiv.count();
+
+    if (inlineExists > 0) {
+      console.log(`🔍 Found inline stats format, searching for "${statName}"`);
+
+      // Look for span with strong containing the statName
+      const statSpan = inlineStatsDiv.locator(`span:has(strong:has-text("${statName}:"))`);
+      const spanExists = await statSpan.count();
+
+      if (spanExists > 0) {
+        const spanText = await statSpan.textContent();
+        console.log(`🔍 Found span text: "${spanText}"`);
+
+        // Extract value after the colon
+        const value = spanText.split(':')[1]?.trim();
+        if (value) {
+          console.log(`✅ Found loaded block ${statName}: "${value}"`);
+          return value;
+        }
+      }
+    }
+
+    // Fallback to old format (bc-stat-item) for backwards compatibility
     const statItems = blockCard.locator('.bc-stat-item');
     const itemCount = await statItems.count();
 
-    console.log(`🔍 Found ${itemCount} stat items in loaded block, searching for "${statName}"`);
+    if (itemCount > 0) {
+      console.log(`🔍 Found ${itemCount} stat items in old format, searching for "${statName}"`);
 
-    for (let i = 0; i < itemCount; i++) {
-      const item = statItems.nth(i);
+      for (let i = 0; i < itemCount; i++) {
+        const item = statItems.nth(i);
 
-      // Check the label
-      const labelElement = item.locator('.bc-stat-label');
-      const labelExists = await labelElement.count();
+        // Check the label
+        const labelElement = item.locator('.bc-stat-label');
+        const labelExists = await labelElement.count();
 
-      if (labelExists > 0) {
-        const labelText = await labelElement.textContent();
-        console.log(`🔍 Checking loaded block stat label: "${labelText}"`);
+        if (labelExists > 0) {
+          const labelText = await labelElement.textContent();
+          console.log(`🔍 Checking loaded block stat label: "${labelText}"`);
 
-        if (labelText && labelText.toLowerCase().includes(statName.toLowerCase())) {
-          // Extract the number
-          const numberElement = item.locator('.bc-stat-number');
-          const numberExists = await numberElement.count();
+          if (labelText && labelText.toLowerCase().includes(statName.toLowerCase())) {
+            // Extract the number
+            const numberElement = item.locator('.bc-stat-number');
+            const numberExists = await numberElement.count();
 
-          if (numberExists > 0) {
-            const value = await numberElement.textContent();
-            console.log(`✅ Found loaded block ${statName}: "${value}"`);
-            return value;
+            if (numberExists > 0) {
+              const value = await numberElement.textContent();
+              console.log(`✅ Found loaded block ${statName}: "${value}"`);
+              return value;
+            }
           }
         }
       }
     }
 
-    console.log(`⚠️ Loaded block statistic "${statName}" not found`);
+    console.log(`⚠️ Loaded block statistic "${statName}" not found in either format`);
     return null;
 
   } catch (error) {
