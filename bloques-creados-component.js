@@ -912,34 +912,12 @@ class BloquesCreados {
             </div>
             ` : ''}
             
-            <div class="bc-block-stats">
-                <div class="bc-stat-item">
-                    <span class="bc-stat-number">${block.stats?.totalTopics || 0}</span>
-                    <span class="bc-stat-label">Temas</span>
-                </div>
-                <div class="bc-stat-item">
-                    <span class="bc-stat-number">${block.stats?.totalQuestions || 0}</span>
-                    <span class="bc-stat-label">Preguntas</span>
-                </div>
-                ${this.displayMode === 'loaded' ? `
-                <div class="bc-stat-item">
-                    <span class="bc-stat-number">${block.stats?.totalUsers || 0}</span>
-                    <span class="bc-stat-label">${userLabel}</span>
-                </div>
-                <div class="bc-stat-item">
-                    <span class="bc-stat-number">${(block.stats?.loadedAt || block.loadedAt) ? new Date(block.stats?.loadedAt || block.loadedAt).toLocaleDateString('es-ES') : 'N/A'}</span>
-                    <span class="bc-stat-label">Cargado</span>
-                </div>
-                <div class="bc-stat-item">
-                    <span class="bc-stat-number">${block.creatorNickname || 'N/A'}</span>
-                    <span class="bc-stat-label">Autor</span>
-                </div>
-                ` : `
-                <div class="bc-stat-item">
-                    <span class="bc-stat-number">${block.stats?.totalUsers || 0}</span>
-                    <span class="bc-stat-label">${userLabel}</span>
-                </div>
-                `}
+            <div style="margin-bottom: 16px; font-size: 13px; color: #CBD5E1; display: flex; flex-wrap: wrap; gap: 8px 16px;">
+                <span><strong>Preguntas:</strong> ${block.stats?.totalQuestions || 0}</span>
+                <span><strong>Temas:</strong> ${block.stats?.totalTopics || 0}</span>
+                <span><strong>Usuarios:</strong> ${block.stats?.totalUsers || 0}</span>
+                <span><strong>Autor:</strong> ${block.creatorNickname || 'Usuario'}</span>
+                ${this.displayMode === 'loaded' && (block.stats?.loadedAt || block.loadedAt) ? `<span><strong>Cargado:</strong> ${new Date(block.stats?.loadedAt || block.loadedAt).toLocaleDateString()}</span>` : ''}
             </div>
             
             <div class="bc-block-actions">
