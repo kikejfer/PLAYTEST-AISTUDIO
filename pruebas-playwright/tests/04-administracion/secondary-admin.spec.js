@@ -1,4 +1,6 @@
 const { test, expect } = require('@playwright/test');
+const { login } = require('../../utils/login-helper');
+const { createLogoutStep } = require('../../utils/logout-helper');
 
 const BASE_URL = 'https://playtest-frontend.onrender.com/';
 const LOGIN_URL = `${BASE_URL}`;
@@ -7,17 +9,12 @@ test.describe('Verificación Admin Secundario', () => {
   
   test('kikejfer verifica información después de reasignación', async ({ page }) => {
     
-    await test.step('Login como kikejfer', async () => {
-      await page.goto(LOGIN_URL);
-      await page.waitForLoadState('networkidle');
-      await page.locator('input[name="nickname"]').fill('kikejfer');
-      await page.locator('input[name="password"]').fill('123');
-      await page.locator('button[type="submit"], #login-btn, .login-btn').first().click();
-      await page.waitForNavigation();
-      
+    await test.step('Login como kikejfer usando helper', async () => {
+      await login(page, 'kikejfer');
+
       // Verificar que llega al panel de admin secundario
-      await expect(page).toHaveURL(/admin-secundario-panel/);
-      console.log('✅ kikejfer logged in successfully');
+      await expect(page).toHaveURL(/admin-secundario-panel/, { timeout: 15000 });
+      console.log('✅ kikejfer logged in successfully using helper');
     });
     
     await test.step('Verificar AndGar asignado a kikejfer', async () => {
@@ -125,7 +122,12 @@ test.describe('Verificación Admin Secundario', () => {
       }
     });
     
+    // Logout using helper
+    await createLogoutStep(test, page);
+    console.log('✅ kikejfer logged out using helper');
+
     console.log('🎉 Secondary admin verification test completed successfully');
     console.log('📊 All information appears correctly in kikejfer admin panel');
+    console.log('🔧 Login and logout helpers validated successfully');
   });
 });
