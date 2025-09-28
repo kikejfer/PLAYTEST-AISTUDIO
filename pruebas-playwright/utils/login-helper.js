@@ -150,11 +150,54 @@ async function login(page, nickname, browser = null) {
   }
 }
 
+/**
+ * Login with independent browser session
+ * Creates a new browser, context, and page for completely independent user sessions
+ * @param {string} nickname - User nickname (AndGar, JaiGon, SebDom, kikejfer, AdminPrincipal, admin)
+ * @param {string} browserType - Browser type ('chromium', 'firefox', 'webkit') (optional, defaults to chromium)
+ * @returns {Promise<{page: Page, browser: Browser, context: BrowserContext}>} Browser session objects
+ */
+async function loginWithIndependentBrowser(nickname, browserType = 'chromium') {
+  const { chromium, firefox, webkit } = require('@playwright/test');
+
+  let browserEngine;
+  switch(browserType.toLowerCase()) {
+    case 'firefox':
+      browserEngine = firefox;
+      break;
+    case 'webkit':
+      browserEngine = webkit;
+      break;
+    default:
+      browserEngine = chromium;
+  }
+
+  try {
+    console.log(`🌐 Creating independent ${browserType} browser for ${nickname}`);
+
+    const browser = await browserEngine.launch();
+    const context = await browser.newContext();
+    const page = await context.newPage();
+
+    // Perform login on the new page
+    await login(page, nickname);
+
+    console.log(`✅ Independent browser session created for ${nickname}`);
+
+    return { page, browser, context };
+
+  } catch (error) {
+    console.log(`❌ Independent browser login failed for ${nickname}: ${error.message}`);
+    throw error;
+  }
+}
+
 module.exports = {
   login,
   performLogin,
   createLoginStep,
   setBrowserUserAgent,
+  loginWithIndependentBrowser,
   TEST_USERS,
   LOGIN_URL,
   BROWSER_USER_AGENTS

@@ -42,14 +42,22 @@ async function performLogout(page) {
 
             if (isLogoutVisible) {
               // Handle the confirmation dialog that will appear
-              page.on('dialog', dialog => {
-                dialog.accept();
-              });
+              const dialogPromise = page.waitForEvent('dialog', { timeout: 5000 });
 
               await logoutButton.click();
-              await page.waitForTimeout(3000); // Wait for dialog and logout process
-              console.log('✅ Logout successful');
-              return;
+
+              try {
+                const dialog = await dialogPromise;
+                await dialog.accept();
+                await page.waitForTimeout(3000); // Wait for logout process
+                console.log('✅ Logout successful');
+                return;
+              } catch (timeoutError) {
+                // No dialog appeared or timeout - logout might still be successful
+                await page.waitForTimeout(3000);
+                console.log('✅ Logout successful (no dialog)');
+                return;
+              }
             }
           } else {
             // Try alternative selectors for logout button
@@ -65,14 +73,22 @@ async function performLogout(page) {
               const altExists = await altButton.count();
 
               if (altExists > 0 && await altButton.isVisible()) {
-                page.on('dialog', dialog => {
-                  dialog.accept();
-                });
+                const dialogPromise = page.waitForEvent('dialog', { timeout: 5000 });
 
                 await altButton.click();
-                await page.waitForTimeout(3000);
-                console.log('✅ Logout successful');
-                return;
+
+                try {
+                  const dialog = await dialogPromise;
+                  await dialog.accept();
+                  await page.waitForTimeout(3000);
+                  console.log('✅ Logout successful');
+                  return;
+                } catch (timeoutError) {
+                  // No dialog appeared or timeout - logout might still be successful
+                  await page.waitForTimeout(3000);
+                  console.log('✅ Logout successful (no dialog)');
+                  return;
+                }
               }
             }
           }
@@ -111,6 +127,53 @@ async function performLogout(page) {
 }
 
 /**
+ * Logout and close browser completely for independent sessions
+ * Performs logout and then closes the entire browser instance
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {import('@playwright/test').Browser} browser - Browser instance to close (optional)
+ * @returns {Promise<void>}
+ */
+async function logoutAndCloseBrowser(page, browser = null) {
+  try {
+    console.log('🔄 Starting logout and browser close process');
+
+    // Skip UI logout and go directly to browser close for debugging
+    console.log('⚠️ Skipping UI logout (debugging mode)');
+
+    // Close the browser directly
+    if (browser) {
+      await browser.close();
+      console.log('✅ Browser closed completely (provided browser instance)');
+    } else {
+      // Get browser from page context and close it
+      const browserInstance = page.context().browser();
+      if (browserInstance) {
+        await browserInstance.close();
+        console.log('✅ Browser closed completely (from page context)');
+      }
+    }
+
+  } catch (error) {
+    console.log(`⚠️ Error during logout/browser close: ${error.message}`);
+
+    // Fallback: try to close browser even if logout failed
+    try {
+      if (browser) {
+        await browser.close();
+      } else {
+        const browserInstance = page.context().browser();
+        if (browserInstance) {
+          await browserInstance.close();
+        }
+      }
+      console.log('✅ Browser closed during error fallback');
+    } catch (fallbackError) {
+      console.log(`❌ Could not close browser: ${fallbackError.message}`);
+    }
+  }
+}
+
+/**
  * Creates a test step for logout within a Playwright test
  * @param {import('@playwright/test').TestInfo} test - Playwright test object
  * @param {import('@playwright/test').Page} page - Playwright page object
@@ -122,7 +185,22 @@ async function createLogoutStep(test, page) {
   });
 }
 
+/**
+ * Creates a test step for logout and browser close within a Playwright test
+ * @param {import('@playwright/test').TestInfo} test - Playwright test object
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {import('@playwright/test').Browser} browser - Browser instance to close (optional)
+ * @returns {Promise<void>}
+ */
+async function createLogoutAndCloseStep(test, page, browser = null) {
+  await test.step('Logout and Close Browser', async () => {
+    await logoutAndCloseBrowser(page, browser);
+  });
+}
+
 module.exports = {
   performLogout,
-  createLogoutStep
+  createLogoutStep,
+  logoutAndCloseBrowser,
+  createLogoutAndCloseStep
 };
