@@ -786,18 +786,26 @@ function initializeRoleSelector(roles, activeRole) {
  * Cambia el rol activo del usuario
  * @param {Object} newRole - Objeto del nuevo rol {code, name, panel}
  */
-function changeRole(newRole) {
+window.changeRole = function(newRole) {
     if (confirm(`¿Quieres cambiar a ${newRole.name}?`)) {
         // Guardar el nuevo rol activo (esto debería integrarse con tu sistema de sesión)
         localStorage.setItem('activeRole', newRole.code);
-        
+
         // Redirigir al panel correspondiente
         window.location.href = newRole.panel;
     }
-    
-    // Cerrar el dropdown
-    closeRoleSelector();
-}
+
+    // Cerrar el dropdown - usar window.closeRoleSelector si existe
+    if (typeof window.closeRoleSelector === 'function') {
+        window.closeRoleSelector();
+    } else {
+        // Fallback: cerrar directamente
+        const dropdown = document.getElementById('role-selector-dropdown');
+        if (dropdown) {
+            dropdown.style.display = 'none';
+        }
+    }
+};
 
 /**
  * Inicializa las funciones JavaScript del header
