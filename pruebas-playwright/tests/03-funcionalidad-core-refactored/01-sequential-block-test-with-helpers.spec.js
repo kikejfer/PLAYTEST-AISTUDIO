@@ -7,6 +7,7 @@ const { navigateToUploadSection, createMultipleUploadStep, createSingleUploadSte
 test.describe('Test Secuencial con Helpers: Creación y Verificación de Bloque', () => {
 
   test('AndGar crea bloque usando helpers de carga de archivos', async ({ page }) => {
+    test.setTimeout(60000); // 60 segundos para proceso completo de carga de archivos
 
     await test.step('1. Login como AndGar', async () => {
       await login(page, 'AndGar');

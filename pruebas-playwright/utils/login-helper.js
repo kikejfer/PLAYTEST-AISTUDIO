@@ -47,8 +47,8 @@ async function performLogin(page, nickname, password, expectedPanel = null, brow
     // Set browser user agent if specified
     await setBrowserUserAgent(page, browser);
 
-    // Navigate to login page
-    await page.goto(LOGIN_URL, { timeout: 15000 });
+    // Navigate to login page - increased timeout for Render startup
+    await page.goto(LOGIN_URL, { timeout: 45000 });
 
     // Wait for login form to be ready
     await page.waitForSelector('input[name="nickname"]', { timeout: 10000 });
@@ -126,8 +126,8 @@ async function login(page, nickname, browser = null) {
     // Set browser user agent if specified
     await setBrowserUserAgent(page, browser);
 
-    // Navigate to login page
-    await page.goto(LOGIN_URL, { timeout: 15000 });
+    // Navigate to login page - increased timeout for Render startup
+    await page.goto(LOGIN_URL, { timeout: 45000 });
 
     // Wait for login form to be ready
     await page.waitForSelector('input[name="nickname"]', { timeout: 10000 });

@@ -1,0 +1,21 @@
+🎉 API tests completed successfully
+
+Running 3 tests using 1 worker
+
+🎉 API tests completed successfully
+✅ Backend health check passed
+  ✓  1 tests\01-infraestructura-refactored\api-tests.spec.js:9:3 › Verificación de APIs Críticas › Health check del backend (2.6s)
+✅ AdminPrincipal logged in successfully
+✅ Logged in for API authentication
+🔍 Auth data found: [ [32m'playtest_auth_token'[39m ]
+📊 Response status: 200
+✅ loaded-stats endpoint responding correctly with auth
+✅ Logout successful
+  ✓  2 tests\01-infraestructura-refactored\api-tests.spec.js:17:3 › Verificación de APIs Críticas › Endpoint loaded-stats con autenticación (29.0s)
+✅ Frontend is accessible and login form is visible
+📊 Basic response time: 377ms
+📊 Response status: 200
+✅ Frontend responds within acceptable time limit
+  ✓  3 tests\01-infraestructura-refactored\api-tests.spec.js:72:3 › Verificación de APIs Críticas › Verificación de conectividad general (13.5s)
+
+  3 passed (4.4m)

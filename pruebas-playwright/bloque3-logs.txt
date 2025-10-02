@@ -1,0 +1,172 @@
+
+Running 5 tests using 1 worker
+
+✅ AndGar logged in successfully
+✅ Navigated to Add Questions tab
+✅ Navigated to Upload File subtab
+🔄 Starting multiple file upload from: C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests
+📁 Expected files: CE1978_Título I Derechos y Deberes.txt, CE1978_Título II La Corona.txt
+✅ Directory selected with files
+✅ Clicked first "Subir" button
+✅ Found modal button with selector: button:has-text("Subir")
+✅ Clicked modal "Subir" button
+✅ Selected checkbox for: CE1978_Título I Derechos y Deberes.txt
+✅ Selected checkbox for: CE1978_Título II La Corona.txt
+✅ Clicked "Cargar N archivos para revisar" button
+✅ Clicked "Guardar todas las preguntas" button
+🎉 Multiple file upload completed successfully for 2 files
+✅ Navigated to Add Questions tab
+✅ Navigated to Upload File subtab
+🔄 Starting single file upload: CE1978_Título III Cortes Generales.txt
+📁 File path: C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\CE1978_Título III Cortes Generales.txt
+✅ Found individual file input (no webkitdirectory)
+✅ Selected file: CE1978_Título III Cortes Generales.txt
+✅ Clicked "Subir" button
+✅ Found modal button with selector: button:has-text("Subir")
+✅ Clicked modal "Subir" button
+✅ Clicked "Cargar archivo para revisar" button
+✅ Clicked "Guardar todas las preguntas" button
+🎉 Single file upload completed successfully for: CE1978_Título III Cortes Generales.txt
+✅ Navigated to tab: Contenido
+✅ Navigated to section: Bloques Creados
+🔍 Found 4 block cards, searching for "CE1978"
+🔍 Checking block title: "
+                    CE1978
+                "
+✅ Found block with title: "CE1978"
+🔍 Found 0 stat items, searching for "Temas"
+⚠️ Statistic "Temas" not found
+✅ CONFIRMACIÓN: No se detectaron mensajes de error del sistema
+🎉 VERIFICACIÓN COMPLETA: AndGar ha completado el proceso de creación de bloques CE1978
+📋 RESULTADO: Bloques Título I, II y III procesados y guardados en el sistema
+✅ Logout successful
+🏁 Test secuencial con helpers completado - AndGar ha creado bloques con archivos CE1978
+  ✓  1 tests\03-funcionalidad-core-refactored\01-sequential-block-test-with-helpers.spec.js:9:3 › Test Secuencial con Helpers: Creación y Verificación de Bloque › AndGar crea bloque usando helpers de carga de archivos (37.3s)
+✅ JaiGon logged in successfully
+✅ Navigated to "Carga de Bloques" tab
+🔍 Found 12 available block elements, searching for "CE1978" by "AndGar"
+🔍 Checking available block title: "CE1978"
+✅ Found available block "CE1978" by "AndGar"
+✅ Found Cargar button for block: "CE1978" (text: "
+                            Cargar
+                        ")
+🔄 Clicking Cargar button...
+✅ Cargar button clicked successfully
+✅ Block loaded successfully using helper function
+✅ CONFIRMACIÓN: JaiGon tiene acceso a la funcionalidad de carga de bloques
+✅ CONFIRMACIÓN: JaiGon puede ver la interfaz de bloques disponibles
+🎉 VERIFICACIÓN COMPLETA: JaiGon ha completado exitosamente el test de carga de bloques
+📋 RESULTADO: Funcionalidad de carga operativa para jugadores
+✅ Logout successful
+🎉 JaiGon block loading test completed successfully
+  ✓  2 tests\03-funcionalidad-core-refactored\02-block-loading.spec.js:8:3 › Carga de Bloque por Usuarios › JaiGon verifica información del bloque y lo carga (17.7s)
+✅ SebDom logged in successfully
+✅ Navigated to "Carga de Bloques" tab
+🔍 Found 12 available block elements, searching for "CE1978" by "AndGar"
+🔍 Checking available block title: "CE1978"
+✅ Found available block "CE1978" by "AndGar"
+✅ Found Cargar button for block: "CE1978" (text: "
+                            Cargar
+                        ")
+🔄 Clicking Cargar button...
+✅ Cargar button clicked successfully
+✅ Block loaded successfully using helper function
+✅ Block state should be updated for SebDom download workflow
+✅ Navigated to "Carga de Bloques" tab
+🔍 Found 12 available block elements, searching for "CE1978" by "AndGar"
+🔍 Checking available block title: "CE1978"
+✅ Found available block "CE1978" by "AndGar"
+❌ Error in selectAvailableBlock: Expected "Descargar" button but found "
+                            Cargar
+                        " for block: "CE1978"
+  ✘  3 tests\03-funcionalidad-core-refactored\02-block-loading.spec.js:54:3 › Carga de Bloque por Usuarios › SebDom carga y descarga bloque CE1978 - flujo completo (24.3s)
+✅ SebDom logged in successfully
+✅ Navigated to "Carga de Bloques" tab
+🔍 Found 12 available block elements, searching for "CE1978" by "AndGar"
+🔍 Checking available block title: "CE1978"
+✅ Found available block "CE1978" by "AndGar"
+✅ Found Cargar button for block: "CE1978" (text: "
+                            Descargar
+                        ")
+🔄 Clicking Cargar button...
+✅ Cargar button clicked successfully
+✅ Block loaded successfully - waiting for UI to update
+✅ Ready for download after extended wait
+✅ Navigated to "Carga de Bloques" tab
+❌ Error in selectLoadedBlock: page.waitForTimeout: Test timeout of 30000ms exceeded.
+  ✘  4 tests\03-funcionalidad-core-refactored\03-block-download.spec.js:9:3 › Descarga de Bloque › SebDom descarga el bloque creado por AndGar (30.2s)
+✅ AndGar logged in successfully
+✅ Navigated to tab: Contenido
+✅ Navigated to section: Bloques Creados
+🔍 Found 4 block cards, searching for "CE1978"
+🔍 Checking block title: "
+                    CE1978
+                "
+✅ Found block with title: "CE1978"
+✅ Found delete button with selector: button:has-text("Eliminar")
+🔄 Clicking delete button...
+📋 Dialog detected: ¿Estás seguro de que quieres eliminar el bloque "CE1978"?\n\nEsta acción no se puede deshacer.
+✅ Accepted dialog
+📋 Dialog detected: Bloque eliminado correctamente
+✅ Accepted dialog
+✅ Deletion confirmation handled
+✅ Delete action completed successfully
+✅ CE1978 block successfully deleted using helper function
+🧹 LIMPIEZA COMPLETADA: AndGar ha procesado la eliminación de bloques CE1978
+🎉 VERIFICACIÓN COMPLETA: Sistema listo para próximos tests
+📋 RESULTADO FINAL: Ciclo completo de creación-uso-eliminación de bloques completado
+✅ Logout successful
+🎉 AndGar block deletion test completed
+  ✓  5 tests\03-funcionalidad-core-refactored\03-block-download.spec.js:87:3 › Descarga de Bloque › AndGar elimina el bloque CE1978 (18.6s)
+
+
+  1) tests\03-funcionalidad-core-refactored\02-block-loading.spec.js:54:3 › Carga de Bloque por Usuarios › SebDom carga y descarga bloque CE1978 - flujo completo › Descargar bloque CE1978 desde Bloques Disponibles › Select available block "CE1978" by AndGar - Descargar 
+
+    Error: Expected "Descargar" button but found "
+                                Cargar
+                            " for block: "CE1978"
+
+       at utils\player-blocks-helper.js:191
+
+      189 |                   };
+      190 |                 } else {
+    > 191 |                   throw new Error(`Expected "${action}" button but found "${buttonText}" for block: "${blockTitle}"`);
+          |                         ^
+      192 |                 }
+      193 |               } else {
+      194 |                 throw new Error(`Action button not found for block: "${blockTitle}"`);
+        at selectAvailableBlock (C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\utils\player-blocks-helper.js:191:25)
+        at C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\utils\player-blocks-helper.js:402:12
+        at createAvailableBlockStep (C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\utils\player-blocks-helper.js:401:10)
+        at C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\03-funcionalidad-core-refactored\02-block-loading.spec.js:77:22
+        at C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\03-funcionalidad-core-refactored\02-block-loading.spec.js:74:5
+
+    Error Context: test-results\tests-03-funcionalidad-cor-f8620-que-CE1978---flujo-completo\error-context.md
+
+  2) tests\03-funcionalidad-core-refactored\03-block-download.spec.js:9:3 › Descarga de Bloque › SebDom descarga el bloque creado por AndGar › Eliminar bloque CE1978 desde Bloques Cargados › Select loaded block "CE1978" by AndGar - Eliminar 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.waitForTimeout: Test timeout of 30000ms exceeded.
+
+       at utils\player-blocks-helper.js:21
+
+      19 |
+      20 |     // Make sure we're in the "Bloques Cargados" section
+    > 21 |     await page.waitForTimeout(2000);
+         |                ^
+      22 |
+      23 |     // Find all bc-block-card elements
+      24 |     const blockCards = page.locator('.bc-block-card');
+        at selectLoadedBlock (C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\utils\player-blocks-helper.js:21:16)
+        at C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\utils\player-blocks-helper.js:387:12
+        at createLoadedBlockStep (C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\utils\player-blocks-helper.js:386:10)
+        at C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\03-funcionalidad-core-refactored\03-block-download.spec.js:34:22
+        at C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\03-funcionalidad-core-refactored\03-block-download.spec.js:32:5
+
+    Error Context: test-results\tests-03-funcionalidad-cor-0b5b5-el-bloque-creado-por-AndGar\error-context.md
+
+  2 failed
+    tests\03-funcionalidad-core-refactored\02-block-loading.spec.js:54:3 › Carga de Bloque por Usuarios › SebDom carga y descarga bloque CE1978 - flujo completo 
+    tests\03-funcionalidad-core-refactored\03-block-download.spec.js:9:3 › Descarga de Bloque › SebDom descarga el bloque creado por AndGar 
+  3 passed (2.3m)

@@ -28,16 +28,16 @@ async function extractUserInfoFromPAP(section, nickname, action = '', page = nul
     }
 
     // Step 1: Find the section within containers
-    const sectionHeader = await findSectionHeader(page, section);
-    if (!sectionHeader) {
+    const sectionResult = await findSectionWithContainer(page, section);
+    if (!sectionResult) {
       throw new Error(`Section "${section}" not found in PAP`);
     }
 
     // Step 2: Get user ID from database (simulated - in real implementation would query user table)
     const userId = await getUserIdFromNickname(nickname);
 
-    // Step 3: Find user row by data-user-id in table-container
-    const userRow = await findUserRowById(page, userId);
+    // Step 3: Find user row by data-user-id in table-container WITHIN the specific section
+    const userRow = await findUserRowByIdInSection(sectionResult.container, userId, section);
     if (!userRow) {
       throw new Error(`User "${nickname}" (ID: ${userId}) not found in section "${section}"`);
     }
@@ -88,16 +88,16 @@ async function extractUserInfoFromPAS(section, nickname, action = '', page = nul
     }
 
     // Step 1: Find the section within containers
-    const sectionHeader = await findSectionHeader(page, section);
-    if (!sectionHeader) {
+    const sectionResult = await findSectionWithContainer(page, section);
+    if (!sectionResult) {
       throw new Error(`Section "${section}" not found in PAS`);
     }
 
     // Step 2: Get user ID from database (simulated - in real implementation would query user table)
     const userId = await getUserIdFromNickname(nickname);
 
-    // Step 3: Find user row by data-user-id in table-container
-    const userRow = await findUserRowById(page, userId);
+    // Step 3: Find user row by data-user-id in table-container WITHIN the specific section
+    const userRow = await findUserRowByIdInSection(sectionResult.container, userId, section);
     if (!userRow) {
       throw new Error(`User "${nickname}" (ID: ${userId}) not found in section "${section}"`);
     }
@@ -122,36 +122,102 @@ async function extractUserInfoFromPAS(section, nickname, action = '', page = nul
 }
 
 /**
- * Finds section header within containers
+ * Finds section header and its container within containers
  * @param {import('@playwright/test').Page} page - Playwright page object
  * @param {string} section - Section name to find
- * @returns {Promise<import('@playwright/test').Locator|null>} Section header locator or null
+ * @returns {Promise<{header: import('@playwright/test').Locator, container: import('@playwright/test').Locator}|null>} Section header and container locators or null
  */
-async function findSectionHeader(page, section) {
+async function findSectionWithContainer(page, section) {
   try {
     // Look for section-header within containers
     const containers = page.locator('.container');
     const containerCount = await containers.count();
 
-    console.log(`🔍 Found ${containerCount} containers, searching for section "${section}"`);
+    console.log(`\n🔍 DETAILED ANALYSIS - Found ${containerCount} containers, searching for section "${section}"`);
 
+    // Debug: Show all containers and their content
+    for (let i = 0; i < containerCount; i++) {
+      const container = containers.nth(i);
+      console.log(`\n📦 CONTAINER ${i + 1}:`);
+
+      // Check if this container has section headers
+      const allSectionHeaders = container.locator('.section-header');
+      const headerCount = await allSectionHeaders.count();
+      console.log(`   📋 Section headers in container ${i + 1}: ${headerCount}`);
+
+      if (headerCount > 0) {
+        for (let j = 0; j < headerCount; j++) {
+          const headerElement = allSectionHeaders.nth(j);
+          const headerText = await headerElement.textContent();
+          console.log(`   📝 Header ${j + 1}: "${headerText?.trim()}"`);
+
+          // Check if this header contains our target section
+          const targetSpan = headerElement.locator('span').filter({ hasText: section });
+          const hasTargetSection = await targetSpan.count() > 0;
+          console.log(`   🎯 Contains "${section}": ${hasTargetSection ? 'YES' : 'NO'}`);
+        }
+      }
+
+      // Check for table containers in this container
+      const tableContainers = container.locator('.table-container');
+      const tableCount = await tableContainers.count();
+      console.log(`   📊 Table containers in container ${i + 1}: ${tableCount}`);
+
+      if (tableCount > 0) {
+        for (let k = 0; k < tableCount; k++) {
+          const tableContainer = tableContainers.nth(k);
+          const rows = tableContainer.locator('tr[data-user-id]');
+          const rowCount = await rows.count();
+          console.log(`   📈 Table ${k + 1} has ${rowCount} user rows`);
+
+          // Show some user IDs in this table
+          if (rowCount > 0) {
+            console.log(`   👥 User IDs in table ${k + 1}:`);
+            for (let r = 0; r < Math.min(rowCount, 5); r++) {
+              const row = rows.nth(r);
+              const userId = await row.getAttribute('data-user-id');
+              const firstCell = row.locator('td').first();
+              const firstCellText = await firstCell.textContent();
+              console.log(`      - ID: ${userId}, First cell: "${firstCellText?.trim()}"`);
+            }
+          }
+        }
+      }
+    }
+
+    // Now find the target section
     for (let i = 0; i < containerCount; i++) {
       const container = containers.nth(i);
       const sectionHeader = container.locator('.section-header span').filter({ hasText: section });
 
       if (await sectionHeader.count() > 0) {
-        console.log(`✅ Found section "${section}" in container ${i + 1}`);
-        return sectionHeader;
+        console.log(`\n✅ FOUND TARGET SECTION "${section}" in container ${i + 1}`);
+        console.log(`   🔍 This container will be used for user searches`);
+        return {
+          header: sectionHeader,
+          container: container
+        };
       }
     }
 
-    console.log(`⚠️ Section "${section}" not found in any container`);
+    console.log(`\n⚠️ Section "${section}" not found in any container`);
     return null;
 
   } catch (error) {
     console.log(`❌ Error finding section header: ${error.message}`);
     return null;
   }
+}
+
+/**
+ * Finds section header within containers (legacy function for compatibility)
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {string} section - Section name to find
+ * @returns {Promise<import('@playwright/test').Locator|null>} Section header locator or null
+ */
+async function findSectionHeader(page, section) {
+  const result = await findSectionWithContainer(page, section);
+  return result ? result.header : null;
 }
 
 /**
@@ -209,7 +275,102 @@ async function getUserIdFromNickname(nickname) {
 }
 
 /**
- * Finds user row by data-user-id attribute
+ * Finds user row by data-user-id attribute within a specific section using correct table mapping
+ * @param {import('@playwright/test').Locator} sectionContainer - Section container locator
+ * @param {string} userId - User ID to find
+ * @param {string} sectionName - Section name for correct table mapping
+ * @returns {Promise<import('@playwright/test').Locator|null>} User row locator or null
+ */
+async function findUserRowByIdInSection(sectionContainer, userId, sectionName) {
+  try {
+    console.log(`\n🔍 SEARCHING FOR USER ID ${userId} within section "${sectionName}"`);
+
+    // Mapeo correcto de secciones a índices de tabla (0-based)
+    const sectionTableMapping = {
+      "Administradores Secundarios": 1,  // Tabla 2 (índice 1)
+      "Soporte Técnico": 2,              // Tabla 3 (índice 2)
+      "Profesores": 2,                   // Tabla 3 (índice 2) - Profesores: 9 usuarios
+      "Creadores": 3,                    // Tabla 4 (índice 3) - Creadores: 8 usuarios con 3 bloques cada uno
+      "Jugadores - Administrador Principal": 5,  // Tabla 6 (índice 5)
+      "Jugadores - Otros Administradores": 6     // Tabla 7 (índice 6)
+    };
+
+    const correctTableIndex = sectionTableMapping[sectionName];
+
+    if (correctTableIndex === undefined) {
+      console.log(`   ⚠️ No table mapping found for section "${sectionName}"`);
+      console.log(`   📋 Available sections: ${Object.keys(sectionTableMapping).join(', ')}`);
+      return null;
+    }
+
+    console.log(`   🎯 Using table index ${correctTableIndex} (Table ${correctTableIndex + 1}) for section "${sectionName}"`);
+
+    // Get all table containers
+    const tableContainers = sectionContainer.locator('.table-container');
+    const tableCount = await tableContainers.count();
+    console.log(`   📊 Total table containers found: ${tableCount}`);
+
+    if (correctTableIndex >= tableCount) {
+      console.log(`   ❌ Table index ${correctTableIndex} out of range. Available tables: 0-${tableCount - 1}`);
+      return null;
+    }
+
+    // Get the specific table for this section
+    const targetTable = tableContainers.nth(correctTableIndex);
+    console.log(`   🔍 Searching in table ${correctTableIndex + 1} for section "${sectionName}"`);
+
+    // Get all user rows in the target table
+    const allUserRows = targetTable.locator('tr[data-user-id]');
+    const rowCount = await allUserRows.count();
+    console.log(`   📈 User rows in target table: ${rowCount}`);
+
+    if (rowCount === 0) {
+      console.log(`   ⚠️ No user rows found in table ${correctTableIndex + 1}`);
+      return null;
+    }
+
+    // Show all users in this specific table
+    console.log(`   👥 All user IDs in table ${correctTableIndex + 1} (${sectionName}):`);
+    for (let j = 0; j < Math.min(rowCount, 10); j++) {  // Limit to first 10 for readability
+      const row = allUserRows.nth(j);
+      const rowUserId = await row.getAttribute('data-user-id');
+      const firstCell = row.locator('td').first();
+      const firstCellText = await firstCell.textContent();
+      const fourthCell = row.locator('td').nth(3);
+      const fourthCellText = await fourthCell.textContent();
+      console.log(`      - Row ${j + 1}: ID=${rowUserId}, Name="${firstCellText?.trim()}", 4th col="${fourthCellText?.trim()}"`);
+    }
+
+    // Look for our specific user ID in this table
+    const userRow = targetTable.locator(`tr[data-user-id="${userId}"]`);
+    const userRowCount = await userRow.count();
+
+    if (userRowCount > 0) {
+      console.log(`   ✅ FOUND user row with ID: ${userId} in table ${correctTableIndex + 1} (${sectionName})`);
+
+      // Show data from this specific row
+      const tds = userRow.locator('td');
+      const tdCount = await tds.count();
+      console.log(`   📋 Data from user row (${tdCount} columns):`);
+      for (let k = 0; k < Math.min(tdCount, 8); k++) {
+        const cellText = await tds.nth(k).textContent();
+        console.log(`      Column ${k + 1}: "${cellText?.trim()}"`);
+      }
+
+      return userRow;
+    } else {
+      console.log(`   ⚠️ User ID ${userId} not found in table ${correctTableIndex + 1} (${sectionName})`);
+      return null;
+    }
+
+  } catch (error) {
+    console.log(`❌ Error finding user row in section "${sectionName}": ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Finds user row by data-user-id attribute (legacy function - searches entire page)
  * @param {import('@playwright/test').Page} page - Playwright page object
  * @param {string} userId - User ID to find
  * @returns {Promise<import('@playwright/test').Locator|null>} User row locator or null
@@ -349,8 +510,10 @@ module.exports = {
   createPAPExtractionStep,
   createPASExtractionStep,
   findSectionHeader,
+  findSectionWithContainer,
   getUserIdFromNickname,
   findUserRowById,
+  findUserRowByIdInSection,
   clickExpandButton,
   getAdministratorValue,
   getUserStats

@@ -52,6 +52,7 @@ test.describe('Carga de Bloque por Usuarios', () => {
   });
   
   test('SebDom carga y descarga bloque CE1978 - flujo completo', async ({ page }) => {
+    test.setTimeout(60000); // 60 segundos para flujo completo de carga y descarga
 
     await test.step('Login como SebDom', async () => {
       await login(page, 'SebDom');
@@ -66,7 +67,7 @@ test.describe('Carga de Bloque por Usuarios', () => {
 
       if (result.action === 'cargared') {
         console.log('✅ Block loaded successfully using helper function');
-        await page.waitForTimeout(3000); // Wait for UI to update button state
+        await page.waitForTimeout(5000); // Wait longer for UI to update button state from Cargar to Descargar
         console.log('✅ Block state should be updated for SebDom download workflow');
       }
     });

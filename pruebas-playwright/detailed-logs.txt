@@ -1,0 +1,902 @@
+
+Running 1 test using 1 worker
+
+[1A[2K[1/1] tests\02-autenticacion-refactored\login-roles.spec.js:71:5 › Verificación de Login y Acceso a Paneles › administrador principal - AdminPrincipal
+[1A[2Ktests\02-autenticacion-refactored\login-roles.spec.js:71:5 › Verificación de Login y Acceso a Paneles › administrador principal - AdminPrincipal
+🔍 TEST 0: First test, skipping logout
+
+[1A[2K✅ AdminPrincipal logged in successfully
+
+[1A[2K📍 Current URL after login: https://playtest-frontend.onrender.com/admin-principal-panel
+
+[1A[2K📍 Expected panel pattern: admin-principal-panel
+
+[1A[2K✅ Login successful for AdminPrincipal
+
+[1A[2K Redirected to correct panel: admin-principal-panel
+
+[1A[2K🔄 Starting comprehensive admin panel verification for AdminPrincipal
+
+[1A[2K✅ Basic admin panel structure verified for AdminPrincipal
+
+[1A[2K📋 Starting cross-validation for AdminPrincipal panel...
+
+[1A[2K📋 Step 1: Extracting user data from AdminPrincipal panel...
+
+[1A[2K🔍 Extracting data for kikejfer from AdminPrincipal panel...
+
+[1A[2K📊 Getting kikejfer creator stats from AdminPrincipal...
+
+[1A[2K🔄 Extracting user info from PAP - Section: "Creadores", User: "kikejfer", Action: ""
+
+[1A[2K
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Creadores"
+
+[1A[2K
+📦 CONTAINER 1:
+
+[1A[2K   📋 Section headers in container 1: 8
+
+[1A[2K   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 2: "Administradores Secundarios
+                Añadir"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 4: "👨‍🏫 Profesores"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 5: "🎨 Creadores"
+
+[1A[2K   🎯 Contains "Creadores": YES
+
+[1A[2K   📝 Header 6: "Jugadores - Administrador Principal"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 7: "Jugadores - Otros Administradores"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📊 Table containers in container 1: 6
+
+[1A[2K   📈 Table 1 has 0 user rows
+
+[1A[2K   📈 Table 2 has 0 user rows
+
+[1A[2K   📈 Table 3 has 9 user rows
+
+[1A[2K   👥 User IDs in table 3:
+
+[1A[2K      - ID: 32, First cell: "+"
+
+[1A[2K      - ID: 17, First cell: "+"
+
+[1A[2K      - ID: 28, First cell: "+"
+
+[1A[2K      - ID: 27, First cell: "+"
+
+[1A[2K      - ID: 30, First cell: "+"
+
+[1A[2K   📈 Table 4 has 8 user rows
+
+[1A[2K   👥 User IDs in table 4:
+
+[1A[2K      - ID: 32, First cell: "+"
+
+[1A[2K      - ID: 18, First cell: "+"
+
+[1A[2K      - ID: 28, First cell: "+"
+
+[1A[2K      - ID: 27, First cell: "+"
+
+[1A[2K      - ID: 30, First cell: "+"
+
+[1A[2K   📈 Table 5 has 0 user rows
+
+[1A[2K   📈 Table 6 has 0 user rows
+
+[1A[2K
+✅ FOUND TARGET SECTION "Creadores" in container 1
+
+[1A[2K   🔍 This container will be used for user searches
+
+[1A[2K📋 User ID for "kikejfer" from database: 10
+
+[1A[2K
+🔍 SEARCHING FOR USER ID 10 within section container
+
+[1A[2K   📊 Table containers found in section: 6
+
+[1A[2K   🔍 Checking table container 1...
+
+[1A[2K   📈 User rows in table 1: 0
+
+[1A[2K   🔍 Checking table container 2...
+
+[1A[2K   📈 User rows in table 2: 0
+
+[1A[2K   🔍 Checking table container 3...
+
+[1A[2K   📈 User rows in table 3: 9
+
+[1A[2K   👥 All user IDs in this table:
+
+[1A[2K      - Row 1: ID=32, Name="+", 4th col="0"
+
+[1A[2K      - Row 2: ID=17, Name="+", 4th col="0"
+
+[1A[2K      - Row 3: ID=28, Name="+", 4th col="0"
+
+[1A[2K      - Row 4: ID=27, Name="+", 4th col="0"
+
+[1A[2K      - Row 5: ID=30, Name="+", 4th col="0"
+
+[1A[2K      - Row 6: ID=10, Name="+", 4th col="1"
+
+[1A[2K      - Row 7: ID=26, Name="+", 4th col="0"
+
+[1A[2K      - Row 8: ID=12, Name="+", 4th col="0"
+
+[1A[2K      - Row 9: ID=13, Name="+", 4th col="1"
+
+[1A[2K   ✅ FOUND user row with ID: 10 in table 3
+
+[1A[2K   📋 Data from user row (10 columns):
+
+[1A[2K      Column 1: "+"
+
+[1A[2K      Column 2: "kikejfer
+                            Enrique Fernandez"
+
+[1A[2K      Column 3: "enferlo@lumiquiz.es"
+
+[1A[2K      Column 4: "1"
+
+[1A[2K      Column 5: "3"
+
+[1A[2K      Column 6: "210"
+
+[1A[2K      Column 7: "2"
+
+[1A[2K      Column 8: "kikejfer
+                                    Sin asignarAdminPrincipalkikejfer"
+
+[1A[2K✅ User stats extracted: { bloquesCreados: [32m'1'[39m, temas: [32m'3'[39m, preguntas: [32m'210'[39m, alumnos: [32m'2'[39m }
+
+[1A[2K✅ kikejfer creator stats from AdminPrincipal: { bloquesCreados: [32m'1'[39m, temas: [32m'3'[39m, preguntas: [32m'210'[39m, alumnos: [32m'2'[39m }
+
+[1A[2K🔍 Extracting data for admin from AdminPrincipal panel...
+
+[1A[2K📊 Getting admin creator stats from AdminPrincipal...
+
+[1A[2K🔄 Extracting user info from PAP - Section: "Creadores", User: "admin", Action: ""
+
+[1A[2K
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Creadores"
+
+[1A[2K
+📦 CONTAINER 1:
+
+[1A[2K   📋 Section headers in container 1: 8
+
+[1A[2K   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 2: "Administradores Secundarios
+                Añadir"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 4: "👨‍🏫 Profesores"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 5: "🎨 Creadores"
+
+[1A[2K   🎯 Contains "Creadores": YES
+
+[1A[2K   📝 Header 6: "Jugadores - Administrador Principal"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 7: "Jugadores - Otros Administradores"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📊 Table containers in container 1: 6
+
+[1A[2K   📈 Table 1 has 0 user rows
+
+[1A[2K   📈 Table 2 has 0 user rows
+
+[1A[2K   📈 Table 3 has 9 user rows
+
+[1A[2K   👥 User IDs in table 3:
+
+[1A[2K      - ID: 32, First cell: "+"
+
+[1A[2K      - ID: 17, First cell: "+"
+
+[1A[2K      - ID: 28, First cell: "+"
+
+[1A[2K      - ID: 27, First cell: "+"
+
+[1A[2K      - ID: 30, First cell: "+"
+
+[1A[2K   📈 Table 4 has 8 user rows
+
+[1A[2K   👥 User IDs in table 4:
+
+[1A[2K      - ID: 32, First cell: "+"
+
+[1A[2K      - ID: 18, First cell: "+"
+
+[1A[2K      - ID: 28, First cell: "+"
+
+[1A[2K      - ID: 27, First cell: "+"
+
+[1A[2K      - ID: 30, First cell: "+"
+
+[1A[2K   📈 Table 5 has 0 user rows
+
+[1A[2K   📈 Table 6 has 0 user rows
+
+[1A[2K
+✅ FOUND TARGET SECTION "Creadores" in container 1
+
+[1A[2K   🔍 This container will be used for user searches
+
+[1A[2K📋 User ID for "admin" from database: 32
+
+[1A[2K
+🔍 SEARCHING FOR USER ID 32 within section container
+
+[1A[2K   📊 Table containers found in section: 6
+
+[1A[2K   🔍 Checking table container 1...
+
+[1A[2K   📈 User rows in table 1: 0
+
+[1A[2K   🔍 Checking table container 2...
+
+[1A[2K   📈 User rows in table 2: 0
+
+[1A[2K   🔍 Checking table container 3...
+
+[1A[2K   📈 User rows in table 3: 9
+
+[1A[2K   👥 All user IDs in this table:
+
+[1A[2K      - Row 1: ID=32, Name="+", 4th col="0"
+
+[1A[2K      - Row 2: ID=17, Name="+", 4th col="0"
+
+[1A[2K      - Row 3: ID=28, Name="+", 4th col="0"
+
+[1A[2K      - Row 4: ID=27, Name="+", 4th col="0"
+
+[1A[2K      - Row 5: ID=30, Name="+", 4th col="0"
+
+[1A[2K      - Row 6: ID=10, Name="+", 4th col="1"
+
+[1A[2K      - Row 7: ID=26, Name="+", 4th col="0"
+
+[1A[2K      - Row 8: ID=12, Name="+", 4th col="0"
+
+[1A[2K      - Row 9: ID=13, Name="+", 4th col="1"
+
+[1A[2K   ✅ FOUND user row with ID: 32 in table 3
+
+[1A[2K   📋 Data from user row (10 columns):
+
+[1A[2K      Column 1: "+"
+
+[1A[2K      Column 2: "admin
+                            admin admin"
+
+[1A[2K      Column 3: "kikejfer@lumiquiz.es"
+
+[1A[2K      Column 4: "0"
+
+[1A[2K      Column 5: "0"
+
+[1A[2K      Column 6: "0"
+
+[1A[2K      Column 7: "0"
+
+[1A[2K      Column 8: "AdminPrincipal
+                                    Sin asignarAdminPrincipalkikejfer"
+
+[1A[2K✅ User stats extracted: { bloquesCreados: [32m'0'[39m, temas: [32m'0'[39m, preguntas: [32m'0'[39m, alumnos: [32m'0'[39m }
+
+[1A[2K✅ admin creator stats from AdminPrincipal: { bloquesCreados: [32m'0'[39m, temas: [32m'0'[39m, preguntas: [32m'0'[39m, alumnos: [32m'0'[39m }
+
+[1A[2K📊 Getting admin professor stats from AdminPrincipal...
+
+[1A[2K🔄 Extracting user info from PAP - Section: "Profesores", User: "admin", Action: ""
+
+[1A[2K
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Profesores"
+
+[1A[2K
+📦 CONTAINER 1:
+
+[1A[2K   📋 Section headers in container 1: 8
+
+[1A[2K   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+
+[1A[2K   🎯 Contains "Profesores": NO
+
+[1A[2K   📝 Header 2: "Administradores Secundarios
+                Añadir"
+
+[1A[2K   🎯 Contains "Profesores": NO
+
+[1A[2K   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+
+[1A[2K   🎯 Contains "Profesores": NO
+
+[1A[2K   📝 Header 4: "👨‍🏫 Profesores"
+
+[1A[2K   🎯 Contains "Profesores": YES
+
+[1A[2K   📝 Header 5: "🎨 Creadores"
+
+[1A[2K   🎯 Contains "Profesores": NO
+
+[1A[2K   📝 Header 6: "Jugadores - Administrador Principal"
+
+[1A[2K   🎯 Contains "Profesores": NO
+
+[1A[2K   📝 Header 7: "Jugadores - Otros Administradores"
+
+[1A[2K   🎯 Contains "Profesores": NO
+
+[1A[2K   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+
+[1A[2K   🎯 Contains "Profesores": NO
+
+[1A[2K   📊 Table containers in container 1: 6
+
+[1A[2K   📈 Table 1 has 0 user rows
+
+[1A[2K   📈 Table 2 has 0 user rows
+
+[1A[2K   📈 Table 3 has 9 user rows
+
+[1A[2K   👥 User IDs in table 3:
+
+[1A[2K      - ID: 32, First cell: "+"
+
+[1A[2K      - ID: 17, First cell: "+"
+
+[1A[2K      - ID: 28, First cell: "+"
+
+[1A[2K      - ID: 27, First cell: "+"
+
+[1A[2K      - ID: 30, First cell: "+"
+
+[1A[2K   📈 Table 4 has 8 user rows
+
+[1A[2K   👥 User IDs in table 4:
+
+[1A[2K      - ID: 32, First cell: "+"
+
+[1A[2K      - ID: 18, First cell: "+"
+
+[1A[2K      - ID: 28, First cell: "+"
+
+[1A[2K      - ID: 27, First cell: "+"
+
+[1A[2K      - ID: 30, First cell: "+"
+
+[1A[2K   📈 Table 5 has 0 user rows
+
+[1A[2K   📈 Table 6 has 0 user rows
+
+[1A[2K
+✅ FOUND TARGET SECTION "Profesores" in container 1
+
+[1A[2K   🔍 This container will be used for user searches
+
+[1A[2K📋 User ID for "admin" from database: 32
+
+[1A[2K
+🔍 SEARCHING FOR USER ID 32 within section container
+
+[1A[2K   📊 Table containers found in section: 6
+
+[1A[2K   🔍 Checking table container 1...
+
+[1A[2K   📈 User rows in table 1: 0
+
+[1A[2K   🔍 Checking table container 2...
+
+[1A[2K   📈 User rows in table 2: 0
+
+[1A[2K   🔍 Checking table container 3...
+
+[1A[2K   📈 User rows in table 3: 9
+
+[1A[2K   👥 All user IDs in this table:
+
+[1A[2K      - Row 1: ID=32, Name="+", 4th col="0"
+
+[1A[2K      - Row 2: ID=17, Name="+", 4th col="0"
+
+[1A[2K      - Row 3: ID=28, Name="+", 4th col="0"
+
+[1A[2K      - Row 4: ID=27, Name="+", 4th col="0"
+
+[1A[2K      - Row 5: ID=30, Name="+", 4th col="0"
+
+[1A[2K      - Row 6: ID=10, Name="+", 4th col="1"
+
+[1A[2K      - Row 7: ID=26, Name="+", 4th col="0"
+
+[1A[2K      - Row 8: ID=12, Name="+", 4th col="0"
+
+[1A[2K      - Row 9: ID=13, Name="+", 4th col="1"
+
+[1A[2K   ✅ FOUND user row with ID: 32 in table 3
+
+[1A[2K   📋 Data from user row (10 columns):
+
+[1A[2K      Column 1: "+"
+
+[1A[2K      Column 2: "admin
+                            admin admin"
+
+[1A[2K      Column 3: "kikejfer@lumiquiz.es"
+
+[1A[2K      Column 4: "0"
+
+[1A[2K      Column 5: "0"
+
+[1A[2K      Column 6: "0"
+
+[1A[2K      Column 7: "0"
+
+[1A[2K      Column 8: "AdminPrincipal
+                                    Sin asignarAdminPrincipalkikejfer"
+
+[1A[2K✅ User stats extracted: { bloquesCreados: [32m'0'[39m, temas: [32m'0'[39m, preguntas: [32m'0'[39m, alumnos: [32m'0'[39m }
+
+[1A[2K✅ admin professor stats from AdminPrincipal: { bloquesCreados: [32m'0'[39m, temas: [32m'0'[39m, preguntas: [32m'0'[39m, alumnos: [32m'0'[39m }
+
+[1A[2K🔍 Extracting data for Toñi from AdminPrincipal panel...
+
+[1A[2K📊 Getting Toñi creator stats from AdminPrincipal...
+
+[1A[2K🔄 Extracting user info from PAP - Section: "Creadores", User: "Toñi", Action: ""
+
+[1A[2K
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Creadores"
+
+[1A[2K
+📦 CONTAINER 1:
+
+[1A[2K   📋 Section headers in container 1: 8
+
+[1A[2K   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 2: "Administradores Secundarios
+                Añadir"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 4: "👨‍🏫 Profesores"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 5: "🎨 Creadores"
+
+[1A[2K   🎯 Contains "Creadores": YES
+
+[1A[2K   📝 Header 6: "Jugadores - Administrador Principal"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 7: "Jugadores - Otros Administradores"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+
+[1A[2K   🎯 Contains "Creadores": NO
+
+[1A[2K   📊 Table containers in container 1: 6
+
+[1A[2K   📈 Table 1 has 0 user rows
+
+[1A[2K   📈 Table 2 has 0 user rows
+
+[1A[2K   📈 Table 3 has 9 user rows
+
+[1A[2K   👥 User IDs in table 3:
+
+[1A[2K      - ID: 32, First cell: "+"
+
+[1A[2K      - ID: 17, First cell: "+"
+
+[1A[2K      - ID: 28, First cell: "+"
+
+[1A[2K      - ID: 27, First cell: "+"
+
+[1A[2K      - ID: 30, First cell: "+"
+
+[1A[2K   📈 Table 4 has 8 user rows
+
+[1A[2K   👥 User IDs in table 4:
+
+[1A[2K      - ID: 32, First cell: "+"
+
+[1A[2K      - ID: 18, First cell: "+"
+
+[1A[2K      - ID: 28, First cell: "+"
+
+[1A[2K      - ID: 27, First cell: "+"
+
+[1A[2K      - ID: 30, First cell: "+"
+
+[1A[2K   📈 Table 5 has 0 user rows
+
+[1A[2K   📈 Table 6 has 0 user rows
+
+[1A[2K
+✅ FOUND TARGET SECTION "Creadores" in container 1
+
+[1A[2K   🔍 This container will be used for user searches
+
+[1A[2K📋 User ID for "Toñi" from database: 13
+
+[1A[2K
+🔍 SEARCHING FOR USER ID 13 within section container
+
+[1A[2K   📊 Table containers found in section: 6
+
+[1A[2K   🔍 Checking table container 1...
+
+[1A[2K   📈 User rows in table 1: 0
+
+[1A[2K   🔍 Checking table container 2...
+
+[1A[2K   📈 User rows in table 2: 0
+
+[1A[2K   🔍 Checking table container 3...
+
+[1A[2K   📈 User rows in table 3: 9
+
+[1A[2K   👥 All user IDs in this table:
+
+[1A[2K      - Row 1: ID=32, Name="+", 4th col="0"
+
+[1A[2K      - Row 2: ID=17, Name="+", 4th col="0"
+
+[1A[2K      - Row 3: ID=28, Name="+", 4th col="0"
+
+[1A[2K      - Row 4: ID=27, Name="+", 4th col="0"
+
+[1A[2K      - Row 5: ID=30, Name="+", 4th col="0"
+
+[1A[2K      - Row 6: ID=10, Name="+", 4th col="1"
+
+[1A[2K      - Row 7: ID=26, Name="+", 4th col="0"
+
+[1A[2K      - Row 8: ID=12, Name="+", 4th col="0"
+
+[1A[2K      - Row 9: ID=13, Name="+", 4th col="1"
+
+[1A[2K   ✅ FOUND user row with ID: 13 in table 3
+
+[1A[2K   📋 Data from user row (10 columns):
+
+[1A[2K      Column 1: "+"
+
+[1A[2K      Column 2: "Toñi
+                            Toñi Martinez"
+
+[1A[2K      Column 3: "tonyimartinez2@lumiquiz.es"
+
+[1A[2K      Column 4: "1"
+
+[1A[2K      Column 5: "2"
+
+[1A[2K      Column 6: "203"
+
+[1A[2K      Column 7: "2"
+
+[1A[2K      Column 8: "kikejfer
+                                    Sin asignarAdminPrincipalkikejfer"
+
+[1A[2K✅ User stats extracted: { bloquesCreados: [32m'1'[39m, temas: [32m'2'[39m, preguntas: [32m'203'[39m, alumnos: [32m'2'[39m }
+
+[1A[2K✅ Toñi creator stats from AdminPrincipal: { bloquesCreados: [32m'1'[39m, temas: [32m'2'[39m, preguntas: [32m'203'[39m, alumnos: [32m'2'[39m }
+
+[1A[2K📊 Getting Toñi professor stats from AdminPrincipal...
+
+[1A[2K🔄 Extracting user info from PAP - Section: "Profesores", User: "Toñi", Action: ""
+
+[1A[2K
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Profesores"
+
+[1A[2K
+📦 CONTAINER 1:
+
+[1A[2K   📋 Section headers in container 1: 8
+
+[1A[2K   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+
+[1A[2K   🎯 Contains "Profesores": NO
+
+[1A[2K   📝 Header 2: "Administradores Secundarios
+                Añadir"
+
+[1A[2K   🎯 Contains "Profesores": NO
+
+[1A[2K   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+
+[1A[2K   🎯 Contains "Profesores": NO
+
+[1A[2K   📝 Header 4: "👨‍🏫 Profesores"
+
+[1A[2K   🎯 Contains "Profesores": YES
+
+[1A[2K   📝 Header 5: "🎨 Creadores"
+
+[1A[2K   🎯 Contains "Profesores": NO
+
+[1A[2K   📝 Header 6: "Jugadores - Administrador Principal"
+
+[1A[2K   🎯 Contains "Profesores": NO
+
+[1A[2K   📝 Header 7: "Jugadores - Otros Administradores"
+
+[1A[2K   🎯 Contains "Profesores": NO
+
+[1A[2K   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+
+[1A[2K   🎯 Contains "Profesores": NO
+
+[1A[2K   📊 Table containers in container 1: 6
+
+[1A[2K   📈 Table 1 has 0 user rows
+
+[1A[2K   📈 Table 2 has 0 user rows
+
+[1A[2K   📈 Table 3 has 9 user rows
+
+[1A[2K   👥 User IDs in table 3:
+
+[1A[2K      - ID: 32, First cell: "+"
+
+[1A[2K      - ID: 17, First cell: "+"
+
+[1A[2K      - ID: 28, First cell: "+"
+
+[1A[2K      - ID: 27, First cell: "+"
+
+[1A[2K      - ID: 30, First cell: "+"
+
+[1A[2K   📈 Table 4 has 8 user rows
+
+[1A[2K   👥 User IDs in table 4:
+
+[1A[2K      - ID: 32, First cell: "+"
+
+[1A[2K      - ID: 18, First cell: "+"
+
+[1A[2K      - ID: 28, First cell: "+"
+
+[1A[2K      - ID: 27, First cell: "+"
+
+[1A[2K      - ID: 30, First cell: "+"
+
+[1A[2K   📈 Table 5 has 0 user rows
+
+[1A[2K   📈 Table 6 has 0 user rows
+
+[1A[2K
+✅ FOUND TARGET SECTION "Profesores" in container 1
+
+[1A[2K   🔍 This container will be used for user searches
+
+[1A[2K📋 User ID for "Toñi" from database: 13
+
+[1A[2K
+🔍 SEARCHING FOR USER ID 13 within section container
+
+[1A[2K   📊 Table containers found in section: 6
+
+[1A[2K   🔍 Checking table container 1...
+
+[1A[2K   📈 User rows in table 1: 0
+
+[1A[2K   🔍 Checking table container 2...
+
+[1A[2K   📈 User rows in table 2: 0
+
+[1A[2K   🔍 Checking table container 3...
+
+[1A[2K   📈 User rows in table 3: 9
+
+[1A[2K   👥 All user IDs in this table:
+
+[1A[2K      - Row 1: ID=32, Name="+", 4th col="0"
+
+[1A[2K      - Row 2: ID=17, Name="+", 4th col="0"
+
+[1A[2K      - Row 3: ID=28, Name="+", 4th col="0"
+
+[1A[2K      - Row 4: ID=27, Name="+", 4th col="0"
+
+[1A[2K      - Row 5: ID=30, Name="+", 4th col="0"
+
+[1A[2K      - Row 6: ID=10, Name="+", 4th col="1"
+
+[1A[2K      - Row 7: ID=26, Name="+", 4th col="0"
+
+[1A[2K      - Row 8: ID=12, Name="+", 4th col="0"
+
+[1A[2K      - Row 9: ID=13, Name="+", 4th col="1"
+
+[1A[2K   ✅ FOUND user row with ID: 13 in table 3
+
+[1A[2K   📋 Data from user row (10 columns):
+
+[1A[2K      Column 1: "+"
+
+[1A[2K      Column 2: "Toñi
+                            Toñi Martinez"
+
+[1A[2K      Column 3: "tonyimartinez2@lumiquiz.es"
+
+[1A[2K      Column 4: "1"
+
+[1A[2K      Column 5: "2"
+
+[1A[2K      Column 6: "203"
+
+[1A[2K      Column 7: "2"
+
+[1A[2K      Column 8: "kikejfer
+                                    Sin asignarAdminPrincipalkikejfer"
+
+[1A[2K✅ User stats extracted: { bloquesCreados: [32m'1'[39m, temas: [32m'2'[39m, preguntas: [32m'203'[39m, alumnos: [32m'2'[39m }
+
+[1A[2K✅ Toñi professor stats from AdminPrincipal: { bloquesCreados: [32m'1'[39m, temas: [32m'2'[39m, preguntas: [32m'203'[39m, alumnos: [32m'2'[39m }
+
+[1A[2K📋 Step 2: Extracting data from individual user panels...
+
+[1A[2K🔍 Processing user panel for kikejfer...
+
+[1A[2K🚪 Logging out before switching to kikejfer...
+
+[1A[2K✅ Logout successful
+
+[1A[2K🔐 Logging in as kikejfer...
+
+[1A[2K✅ kikejfer logged in successfully
+
+[1A[2K📊 Getting kikejfer creator blocks from their own panel...
+
+[1A[2K🔄 Getting all created blocks characteristics for user: kikejfer
+
+[1A[2K✅ Function placeholder for kikejfer
+
+[1A[2K✅ kikejfer creator totals from own panel: { totalBloques: [33m0[39m, totalTemas: [33m0[39m, totalPreguntas: [33m0[39m, totalUsuarios: [33m0[39m }
+
+[1A[2K🔍 Processing user panel for admin...
+
+[1A[2K🚪 Logging out before switching to admin...
+
+[1A[2K🔐 Logging in as admin...
+
+[1A[2K❌ Login failed for admin: page.goto: Target page, context or browser has been closed
+
+[1A[2K❌ Error processing user panel for admin: page.goto: Target page, context or browser has been closed
+
+[1A[2K🔍 Processing user panel for Toñi...
+
+[1A[2K🚪 Logging out before switching to Toñi...
+
+[1A[2K🔐 Logging in as Toñi...
+
+[1A[2K❌ Login failed for Toñi: page.goto: Target page, context or browser has been closed
+
+[1A[2K❌ Error processing user panel for Toñi: page.goto: Target page, context or browser has been closed
+
+[1A[2K🔐 Logging back in as AdminPrincipal...
+
+[1A[2K❌ Login failed for AdminPrincipal: page.goto: Target page, context or browser has been closed
+
+[1A[2K  1) tests\02-autenticacion-refactored\login-roles.spec.js:71:5 › Verificación de Login y Acceso a Paneles › administrador principal - AdminPrincipal 
+
+    Error: dialog.accept: Cannot accept dialog which is already handled!
+
+       at utils\logout-helper.js:46
+
+      44 |               // Handle the confirmation dialog that will appear
+      45 |               page.on('dialog', dialog => {
+    > 46 |                 dialog.accept();
+         |                        ^
+      47 |               });
+      48 |
+      49 |               await logoutButton.click();
+        at Page.<anonymous> (C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\utils\logout-helper.js:46:24)
+
+    Error: page.goto: Target page, context or browser has been closed
+
+       at utils\login-helper.js:130
+
+      128 |
+      129 |     // Navigate to login page
+    > 130 |     await page.goto(LOGIN_URL, { timeout: 15000 });
+          |                ^
+      131 |
+      132 |     // Wait for login form to be ready
+      133 |     await page.waitForSelector('input[name="nickname"]', { timeout: 10000 });
+        at login (C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\utils\login-helper.js:130:16)
+        at performCrossValidation (C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\02-autenticacion-refactored\login-roles.spec.js:303:3)
+        at verifyAdminPanel (C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\02-autenticacion-refactored\login-roles.spec.js:150:5)
+        at C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\02-autenticacion-refactored\login-roles.spec.js:112:11
+        at C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\02-autenticacion-refactored\login-roles.spec.js:107:7
+
+    Error Context: test-results\tests-02-autenticacion-ref-95d54--principal---AdminPrincipal\error-context.md
+
+
+[1A[2K  1 failed
+    tests\02-autenticacion-refactored\login-roles.spec.js:71:5 › Verificación de Login y Acceso a Paneles › administrador principal - AdminPrincipal 

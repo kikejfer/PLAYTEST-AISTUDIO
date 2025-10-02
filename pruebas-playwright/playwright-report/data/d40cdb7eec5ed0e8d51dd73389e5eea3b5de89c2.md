@@ -1,0 +1,86 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - img "LumiQuiz Logo" [ref=e4]
+      - generic [ref=e5]:
+        - generic [ref=e6]: La forma más divertida de estudiar
+        - generic [ref=e7]: PANEL SOPORTE TÉCNICO
+    - generic [ref=e8]:
+      - button "🛠️" [ref=e9] [cursor=pointer]
+      - button "📧" [ref=e10] [cursor=pointer]
+      - generic [ref=e11]:
+        - img "Luminarias" [ref=e12]
+        - generic [ref=e13]: "0"
+      - button "Soporte Técnico ▼" [ref=e15] [cursor=pointer]:
+        - generic [ref=e16] [cursor=pointer]: Soporte Técnico
+        - generic [ref=e17] [cursor=pointer]: ▼
+      - generic [ref=e18]:
+        - generic [ref=e19]: admin
+        - generic [ref=e20]: admin
+      - button "A" [ref=e22] [cursor=pointer]:
+        - generic [ref=e23] [cursor=pointer]: A
+  - generic [ref=e24]:
+    - generic [ref=e25]:
+      - heading "🛠️ Dashboard Soporte Técnico" [level=1] [ref=e26]
+      - paragraph [ref=e27]: Panel de control para gestión de soporte técnico y monitoreo del sistema
+    - generic [ref=e28]:
+      - heading "📊 Estadísticas del Sistema" [level=3] [ref=e29]
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - generic [ref=e32]: "12"
+          - generic [ref=e33]: 🎫 Tickets Abiertos
+        - generic [ref=e34]:
+          - generic [ref=e35]: "156"
+          - generic [ref=e36]: 👥 Usuarios Activos
+        - generic [ref=e37]:
+          - generic [ref=e38]: "89"
+          - generic [ref=e39]: ✅ Problemas Resueltos
+        - generic [ref=e40]:
+          - generic [ref=e41]: "15"
+          - generic [ref=e42]: ⏱️ Tiempo Respuesta (min)
+    - generic [ref=e43]:
+      - generic [ref=e44]:
+        - heading "🎫 Gestión de Tickets" [level=3] [ref=e45]
+        - paragraph [ref=e46]: Administra tickets de soporte, asigna prioridades y realiza seguimiento de problemas reportados por usuarios.
+        - button "Abrir Tickets" [ref=e47] [cursor=pointer]
+      - generic [ref=e48]:
+        - heading "👥 Soporte a Usuarios" [level=3] [ref=e49]
+        - paragraph [ref=e50]: Herramientas para brindar asistencia directa a usuarios, incluyendo chat en vivo y resolución de problemas.
+        - button "Iniciar Soporte" [ref=e51] [cursor=pointer]
+      - generic [ref=e52]:
+        - heading "🔧 Mantenimiento Sistema" [level=3] [ref=e53]
+        - paragraph [ref=e54]: Realiza tareas de mantenimiento preventivo y correctivo del sistema PLAYTEST.
+        - button "Ver Mantenimiento" [ref=e55] [cursor=pointer]
+      - generic [ref=e56]:
+        - heading "📊 Monitoreo en Tiempo Real" [level=3] [ref=e57]
+        - paragraph [ref=e58]: Supervisa el rendimiento del sistema, servidores y base de datos en tiempo real.
+        - button "Ver Estado Sistema" [ref=e59] [cursor=pointer]
+      - generic [ref=e60]:
+        - heading "🔍 Análisis de Logs" [level=3] [ref=e61]
+        - paragraph [ref=e62]: Revisa logs del sistema para identificar errores, patrones de uso y problemas potenciales.
+        - button "Ver Logs" [ref=e63] [cursor=pointer]
+      - generic [ref=e64]:
+        - heading "⚙️ Configuración Técnica" [level=3] [ref=e65]
+        - paragraph [ref=e66]: Accede a configuraciones avanzadas del sistema, parámetros técnicos y herramientas de desarrollo.
+        - button "Configurar Sistema" [ref=e67] [cursor=pointer]
+    - generic [ref=e68]:
+      - heading "🕐 Actividad Reciente" [level=3] [ref=e69]
+      - generic [ref=e70]:
+        - generic [ref=e71]: 🔧
+        - generic [ref=e72]:
+          - generic [ref=e73]: Sistema de roles actualizado
+          - generic [ref=e74]: Hace 5 minutos
+      - generic [ref=e75]:
+        - generic [ref=e76]: 🛠️
+        - generic [ref=e77]:
+          - generic [ref=e78]: Nuevo rol Soporte Técnico creado
+          - generic [ref=e79]: Hace 10 minutos
+      - generic [ref=e80]:
+        - generic [ref=e81]: 📊
+        - generic [ref=e82]:
+          - generic [ref=e83]: Dashboard de soporte inicializado
+          - generic [ref=e84]: Hace 15 minutos
+```

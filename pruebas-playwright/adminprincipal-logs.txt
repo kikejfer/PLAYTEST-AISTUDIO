@@ -1,0 +1,1102 @@
+
+Running 1 test using 1 worker
+
+🔍 TEST 0: First test, skipping logout
+✅ AdminPrincipal logged in successfully
+📍 Current URL after login: https://playtest-frontend.onrender.com/admin-principal-panel
+📍 Expected panel pattern: admin-principal-panel
+✅ Login successful for AdminPrincipal
+ Redirected to correct panel: admin-principal-panel
+🔄 Starting comprehensive admin panel verification for AdminPrincipal
+✅ Basic admin panel structure verified for AdminPrincipal
+📋 Starting cross-validation for AdminPrincipal panel...
+📋 Step 1: Extracting user data from AdminPrincipal panel...
+🔍 Extracting data for kikejfer from AdminPrincipal panel...
+📊 Getting kikejfer creator stats from AdminPrincipal...
+🔄 Extracting user info from PAP - Section: "Creadores", User: "kikejfer", Action: ""
+
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Creadores"
+
+📦 CONTAINER 1:
+   📋 Section headers in container 1: 8
+   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+   🎯 Contains "Creadores": NO
+   📝 Header 2: "Administradores Secundarios
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 4: "👨‍🏫 Profesores"
+   🎯 Contains "Creadores": NO
+   📝 Header 5: "🎨 Creadores"
+   🎯 Contains "Creadores": YES
+   📝 Header 6: "Jugadores - Administrador Principal"
+   🎯 Contains "Creadores": NO
+   📝 Header 7: "Jugadores - Otros Administradores"
+   🎯 Contains "Creadores": NO
+   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+   🎯 Contains "Creadores": NO
+   📊 Table containers in container 1: 6
+   📈 Table 1 has 0 user rows
+   📈 Table 2 has 0 user rows
+   📈 Table 3 has 9 user rows
+   👥 User IDs in table 3:
+      - ID: 32, First cell: "+"
+      - ID: 17, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 4 has 8 user rows
+   👥 User IDs in table 4:
+      - ID: 32, First cell: "+"
+      - ID: 18, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 5 has 0 user rows
+   📈 Table 6 has 0 user rows
+
+✅ FOUND TARGET SECTION "Creadores" in container 1
+   🔍 This container will be used for user searches
+📋 User ID for "kikejfer" from database: 10
+
+🔍 SEARCHING FOR USER ID 10 within section "Creadores"
+   🎯 Using table index 3 (Table 4) for section "Creadores"
+   📊 Total table containers found: 6
+   🔍 Searching in table 4 for section "Creadores"
+   📈 User rows in target table: 8
+   👥 All user IDs in table 4 (Creadores):
+      - Row 1: ID=32, Name="+", 4th col="0"
+      - Row 2: ID=18, Name="+", 4th col="2"
+      - Row 3: ID=28, Name="+", 4th col="0"
+      - Row 4: ID=27, Name="+", 4th col="..."
+      - Row 5: ID=30, Name="+", 4th col="..."
+      - Row 6: ID=10, Name="+", 4th col="..."
+      - Row 7: ID=29, Name="+", 4th col="..."
+      - Row 8: ID=13, Name="+", 4th col="..."
+   ✅ FOUND user row with ID: 10 in table 4 (Creadores)
+   📋 Data from user row (10 columns):
+      Column 1: "+"
+      Column 2: "kikejfer
+                            Enrique Fernandez"
+      Column 3: "enferlo@lumiquiz.es"
+      Column 4: "..."
+      Column 5: "..."
+      Column 6: "..."
+      Column 7: "..."
+      Column 8: "kikejfer
+                                    Sin asignarAdminPrincipalkikejfer"
+✅ User stats extracted: {
+  bloquesCreados: [32m'...'[39m,
+  temas: [32m'...'[39m,
+  preguntas: [32m'...'[39m,
+  alumnos: [32m'...'[39m
+}
+✅ kikejfer creator stats from AdminPrincipal: {
+  bloquesCreados: [32m'...'[39m,
+  temas: [32m'...'[39m,
+  preguntas: [32m'...'[39m,
+  alumnos: [32m'...'[39m
+}
+📊 Getting kikejfer professor stats from AdminPrincipal...
+🔄 Extracting user info from PAP - Section: "Profesores", User: "kikejfer", Action: ""
+
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Profesores"
+
+📦 CONTAINER 1:
+   📋 Section headers in container 1: 8
+   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+   🎯 Contains "Profesores": NO
+   📝 Header 2: "Administradores Secundarios
+                Añadir"
+   🎯 Contains "Profesores": NO
+   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+   🎯 Contains "Profesores": NO
+   📝 Header 4: "👨‍🏫 Profesores"
+   🎯 Contains "Profesores": YES
+   📝 Header 5: "🎨 Creadores"
+   🎯 Contains "Profesores": NO
+   📝 Header 6: "Jugadores - Administrador Principal"
+   🎯 Contains "Profesores": NO
+   📝 Header 7: "Jugadores - Otros Administradores"
+   🎯 Contains "Profesores": NO
+   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+   🎯 Contains "Profesores": NO
+   📊 Table containers in container 1: 6
+   📈 Table 1 has 0 user rows
+   📈 Table 2 has 0 user rows
+   📈 Table 3 has 9 user rows
+   👥 User IDs in table 3:
+      - ID: 32, First cell: "+"
+      - ID: 17, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 4 has 8 user rows
+   👥 User IDs in table 4:
+      - ID: 32, First cell: "+"
+      - ID: 18, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 5 has 0 user rows
+   📈 Table 6 has 0 user rows
+
+✅ FOUND TARGET SECTION "Profesores" in container 1
+   🔍 This container will be used for user searches
+📋 User ID for "kikejfer" from database: 10
+
+🔍 SEARCHING FOR USER ID 10 within section "Profesores"
+   🎯 Using table index 2 (Table 3) for section "Profesores"
+   📊 Total table containers found: 6
+   🔍 Searching in table 3 for section "Profesores"
+   📈 User rows in target table: 9
+   👥 All user IDs in table 3 (Profesores):
+      - Row 1: ID=32, Name="+", 4th col="0"
+      - Row 2: ID=17, Name="+", 4th col="0"
+      - Row 3: ID=28, Name="+", 4th col="0"
+      - Row 4: ID=27, Name="+", 4th col="0"
+      - Row 5: ID=30, Name="+", 4th col="0"
+      - Row 6: ID=10, Name="+", 4th col="1"
+      - Row 7: ID=26, Name="+", 4th col="0"
+      - Row 8: ID=12, Name="+", 4th col="..."
+      - Row 9: ID=13, Name="+", 4th col="..."
+   ✅ FOUND user row with ID: 10 in table 3 (Profesores)
+   📋 Data from user row (10 columns):
+      Column 1: "+"
+      Column 2: "kikejfer
+                            Enrique Fernandez"
+      Column 3: "enferlo@lumiquiz.es"
+      Column 4: "1"
+      Column 5: "3"
+      Column 6: "210"
+      Column 7: "2"
+      Column 8: "kikejfer
+                                    Sin asignarAdminPrincipalkikejfer"
+✅ User stats extracted: { bloquesCreados: [32m'1'[39m, temas: [32m'3'[39m, preguntas: [32m'210'[39m, alumnos: [32m'2'[39m }
+✅ kikejfer professor stats from AdminPrincipal: { bloquesCreados: [32m'1'[39m, temas: [32m'3'[39m, preguntas: [32m'210'[39m, alumnos: [32m'2'[39m }
+🔍 Extracting data for admin from AdminPrincipal panel...
+📊 Getting admin creator stats from AdminPrincipal...
+🔄 Extracting user info from PAP - Section: "Creadores", User: "admin", Action: ""
+
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Creadores"
+
+📦 CONTAINER 1:
+   📋 Section headers in container 1: 8
+   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+   🎯 Contains "Creadores": NO
+   📝 Header 2: "Administradores Secundarios
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 4: "👨‍🏫 Profesores"
+   🎯 Contains "Creadores": NO
+   📝 Header 5: "🎨 Creadores"
+   🎯 Contains "Creadores": YES
+   📝 Header 6: "Jugadores - Administrador Principal"
+   🎯 Contains "Creadores": NO
+   📝 Header 7: "Jugadores - Otros Administradores"
+   🎯 Contains "Creadores": NO
+   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+   🎯 Contains "Creadores": NO
+   📊 Table containers in container 1: 6
+   📈 Table 1 has 0 user rows
+   📈 Table 2 has 0 user rows
+   📈 Table 3 has 9 user rows
+   👥 User IDs in table 3:
+      - ID: 32, First cell: "+"
+      - ID: 17, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 4 has 8 user rows
+   👥 User IDs in table 4:
+      - ID: 32, First cell: "+"
+      - ID: 18, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 5 has 0 user rows
+   📈 Table 6 has 0 user rows
+
+✅ FOUND TARGET SECTION "Creadores" in container 1
+   🔍 This container will be used for user searches
+📋 User ID for "admin" from database: 32
+
+🔍 SEARCHING FOR USER ID 32 within section "Creadores"
+   🎯 Using table index 3 (Table 4) for section "Creadores"
+   📊 Total table containers found: 6
+   🔍 Searching in table 4 for section "Creadores"
+   📈 User rows in target table: 8
+   👥 All user IDs in table 4 (Creadores):
+      - Row 1: ID=32, Name="+", 4th col="0"
+      - Row 2: ID=18, Name="+", 4th col="2"
+      - Row 3: ID=28, Name="+", 4th col="0"
+      - Row 4: ID=27, Name="+", 4th col="0"
+      - Row 5: ID=30, Name="+", 4th col="0"
+      - Row 6: ID=10, Name="+", 4th col="3"
+      - Row 7: ID=29, Name="+", 4th col="0"
+      - Row 8: ID=13, Name="+", 4th col="3"
+   ✅ FOUND user row with ID: 32 in table 4 (Creadores)
+   📋 Data from user row (10 columns):
+      Column 1: "+"
+      Column 2: "admin
+                            admin admin"
+      Column 3: "kikejfer@lumiquiz.es"
+      Column 4: "0"
+      Column 5: "0"
+      Column 6: "0"
+      Column 7: "0"
+      Column 8: "kikejfer
+                                    Sin asignarAdminPrincipalkikejfer"
+✅ User stats extracted: { bloquesCreados: [32m'0'[39m, temas: [32m'0'[39m, preguntas: [32m'0'[39m, alumnos: [32m'0'[39m }
+✅ admin creator stats from AdminPrincipal: { bloquesCreados: [32m'0'[39m, temas: [32m'0'[39m, preguntas: [32m'0'[39m, alumnos: [32m'0'[39m }
+📊 Getting admin professor stats from AdminPrincipal...
+🔄 Extracting user info from PAP - Section: "Profesores", User: "admin", Action: ""
+
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Profesores"
+
+📦 CONTAINER 1:
+   📋 Section headers in container 1: 8
+   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+   🎯 Contains "Profesores": NO
+   📝 Header 2: "Administradores Secundarios
+                Añadir"
+   🎯 Contains "Profesores": NO
+   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+   🎯 Contains "Profesores": NO
+   📝 Header 4: "👨‍🏫 Profesores"
+   🎯 Contains "Profesores": YES
+   📝 Header 5: "🎨 Creadores"
+   🎯 Contains "Profesores": NO
+   📝 Header 6: "Jugadores - Administrador Principal"
+   🎯 Contains "Profesores": NO
+   📝 Header 7: "Jugadores - Otros Administradores"
+   🎯 Contains "Profesores": NO
+   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+   🎯 Contains "Profesores": NO
+   📊 Table containers in container 1: 6
+   📈 Table 1 has 0 user rows
+   📈 Table 2 has 0 user rows
+   📈 Table 3 has 9 user rows
+   👥 User IDs in table 3:
+      - ID: 32, First cell: "+"
+      - ID: 17, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 4 has 8 user rows
+   👥 User IDs in table 4:
+      - ID: 32, First cell: "+"
+      - ID: 18, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 5 has 0 user rows
+   📈 Table 6 has 0 user rows
+
+✅ FOUND TARGET SECTION "Profesores" in container 1
+   🔍 This container will be used for user searches
+📋 User ID for "admin" from database: 32
+
+🔍 SEARCHING FOR USER ID 32 within section "Profesores"
+   🎯 Using table index 2 (Table 3) for section "Profesores"
+   📊 Total table containers found: 6
+   🔍 Searching in table 3 for section "Profesores"
+   📈 User rows in target table: 9
+   👥 All user IDs in table 3 (Profesores):
+      - Row 1: ID=32, Name="+", 4th col="0"
+      - Row 2: ID=17, Name="+", 4th col="0"
+      - Row 3: ID=28, Name="+", 4th col="0"
+      - Row 4: ID=27, Name="+", 4th col="0"
+      - Row 5: ID=30, Name="+", 4th col="0"
+      - Row 6: ID=10, Name="+", 4th col="1"
+      - Row 7: ID=26, Name="+", 4th col="0"
+      - Row 8: ID=12, Name="+", 4th col="0"
+      - Row 9: ID=13, Name="+", 4th col="1"
+   ✅ FOUND user row with ID: 32 in table 3 (Profesores)
+   📋 Data from user row (10 columns):
+      Column 1: "+"
+      Column 2: "admin
+                            admin admin"
+      Column 3: "kikejfer@lumiquiz.es"
+      Column 4: "0"
+      Column 5: "0"
+      Column 6: "0"
+      Column 7: "0"
+      Column 8: "kikejfer
+                                    Sin asignarAdminPrincipalkikejfer"
+✅ User stats extracted: { bloquesCreados: [32m'0'[39m, temas: [32m'0'[39m, preguntas: [32m'0'[39m, alumnos: [32m'0'[39m }
+✅ admin professor stats from AdminPrincipal: { bloquesCreados: [32m'0'[39m, temas: [32m'0'[39m, preguntas: [32m'0'[39m, alumnos: [32m'0'[39m }
+🔍 Extracting data for Toñi from AdminPrincipal panel...
+📊 Getting Toñi creator stats from AdminPrincipal...
+🔄 Extracting user info from PAP - Section: "Creadores", User: "Toñi", Action: ""
+
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Creadores"
+
+📦 CONTAINER 1:
+   📋 Section headers in container 1: 8
+   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+   🎯 Contains "Creadores": NO
+   📝 Header 2: "Administradores Secundarios
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 4: "👨‍🏫 Profesores"
+   🎯 Contains "Creadores": NO
+   📝 Header 5: "🎨 Creadores"
+   🎯 Contains "Creadores": YES
+   📝 Header 6: "Jugadores - Administrador Principal"
+   🎯 Contains "Creadores": NO
+   📝 Header 7: "Jugadores - Otros Administradores"
+   🎯 Contains "Creadores": NO
+   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+   🎯 Contains "Creadores": NO
+   📊 Table containers in container 1: 6
+   📈 Table 1 has 0 user rows
+   📈 Table 2 has 0 user rows
+   📈 Table 3 has 9 user rows
+   👥 User IDs in table 3:
+      - ID: 32, First cell: "+"
+      - ID: 17, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 4 has 8 user rows
+   👥 User IDs in table 4:
+      - ID: 32, First cell: "+"
+      - ID: 18, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 5 has 0 user rows
+   📈 Table 6 has 0 user rows
+
+✅ FOUND TARGET SECTION "Creadores" in container 1
+   🔍 This container will be used for user searches
+📋 User ID for "Toñi" from database: 13
+
+🔍 SEARCHING FOR USER ID 13 within section "Creadores"
+   🎯 Using table index 3 (Table 4) for section "Creadores"
+   📊 Total table containers found: 6
+   🔍 Searching in table 4 for section "Creadores"
+   📈 User rows in target table: 8
+   👥 All user IDs in table 4 (Creadores):
+      - Row 1: ID=32, Name="+", 4th col="0"
+      - Row 2: ID=18, Name="+", 4th col="2"
+      - Row 3: ID=28, Name="+", 4th col="0"
+      - Row 4: ID=27, Name="+", 4th col="0"
+      - Row 5: ID=30, Name="+", 4th col="0"
+      - Row 6: ID=10, Name="+", 4th col="3"
+      - Row 7: ID=29, Name="+", 4th col="0"
+      - Row 8: ID=13, Name="+", 4th col="3"
+   ✅ FOUND user row with ID: 13 in table 4 (Creadores)
+   📋 Data from user row (10 columns):
+      Column 1: "+"
+      Column 2: "Toñi
+                            Toñi Martinez"
+      Column 3: "tonyimartinez2@lumiquiz.es"
+      Column 4: "3"
+      Column 5: "16"
+      Column 6: "1449"
+      Column 7: "2"
+      Column 8: "kikejfer
+                                    Sin asignarAdminPrincipalkikejfer"
+✅ User stats extracted: { bloquesCreados: [32m'3'[39m, temas: [32m'16'[39m, preguntas: [32m'1449'[39m, alumnos: [32m'2'[39m }
+✅ Toñi creator stats from AdminPrincipal: { bloquesCreados: [32m'3'[39m, temas: [32m'16'[39m, preguntas: [32m'1449'[39m, alumnos: [32m'2'[39m }
+📊 Getting Toñi professor stats from AdminPrincipal...
+🔄 Extracting user info from PAP - Section: "Profesores", User: "Toñi", Action: ""
+
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Profesores"
+
+📦 CONTAINER 1:
+   📋 Section headers in container 1: 8
+   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+   🎯 Contains "Profesores": NO
+   📝 Header 2: "Administradores Secundarios
+                Añadir"
+   🎯 Contains "Profesores": NO
+   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+   🎯 Contains "Profesores": NO
+   📝 Header 4: "👨‍🏫 Profesores"
+   🎯 Contains "Profesores": YES
+   📝 Header 5: "🎨 Creadores"
+   🎯 Contains "Profesores": NO
+   📝 Header 6: "Jugadores - Administrador Principal"
+   🎯 Contains "Profesores": NO
+   📝 Header 7: "Jugadores - Otros Administradores"
+   🎯 Contains "Profesores": NO
+   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+   🎯 Contains "Profesores": NO
+   📊 Table containers in container 1: 6
+   📈 Table 1 has 0 user rows
+   📈 Table 2 has 0 user rows
+   📈 Table 3 has 9 user rows
+   👥 User IDs in table 3:
+      - ID: 32, First cell: "+"
+      - ID: 17, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 4 has 8 user rows
+   👥 User IDs in table 4:
+      - ID: 32, First cell: "+"
+      - ID: 18, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 5 has 0 user rows
+   📈 Table 6 has 0 user rows
+
+✅ FOUND TARGET SECTION "Profesores" in container 1
+   🔍 This container will be used for user searches
+📋 User ID for "Toñi" from database: 13
+
+🔍 SEARCHING FOR USER ID 13 within section "Profesores"
+   🎯 Using table index 2 (Table 3) for section "Profesores"
+   📊 Total table containers found: 6
+   🔍 Searching in table 3 for section "Profesores"
+   📈 User rows in target table: 9
+   👥 All user IDs in table 3 (Profesores):
+      - Row 1: ID=32, Name="+", 4th col="0"
+      - Row 2: ID=17, Name="+", 4th col="0"
+      - Row 3: ID=28, Name="+", 4th col="0"
+      - Row 4: ID=27, Name="+", 4th col="0"
+      - Row 5: ID=30, Name="+", 4th col="0"
+      - Row 6: ID=10, Name="+", 4th col="1"
+      - Row 7: ID=26, Name="+", 4th col="0"
+      - Row 8: ID=12, Name="+", 4th col="0"
+      - Row 9: ID=13, Name="+", 4th col="1"
+   ✅ FOUND user row with ID: 13 in table 3 (Profesores)
+   📋 Data from user row (10 columns):
+      Column 1: "+"
+      Column 2: "Toñi
+                            Toñi Martinez"
+      Column 3: "tonyimartinez2@lumiquiz.es"
+      Column 4: "1"
+      Column 5: "2"
+      Column 6: "203"
+      Column 7: "2"
+      Column 8: "kikejfer
+                                    Sin asignarAdminPrincipalkikejfer"
+✅ User stats extracted: { bloquesCreados: [32m'1'[39m, temas: [32m'2'[39m, preguntas: [32m'203'[39m, alumnos: [32m'2'[39m }
+✅ Toñi professor stats from AdminPrincipal: { bloquesCreados: [32m'1'[39m, temas: [32m'2'[39m, preguntas: [32m'203'[39m, alumnos: [32m'2'[39m }
+📋 Step 2: Extracting data from individual user panels...
+🚪 Logging out from AdminPrincipal before processing individual users...
+✅ Logout successful
+🔍 Processing user panel for kikejfer...
+🔐 Logging in as kikejfer...
+✅ kikejfer logged in successfully
+📊 Getting kikejfer creator blocks from their own panel...
+🔄 [0ms] getAllCreatedBlocksCharacteristics: Getting all created blocks characteristics for user: kikejfer
+📍 [1ms] getAllCreatedBlocksCharacteristics: Using existing page with URL: https://playtest-frontend.onrender.com/admin-secundario-panel
+✅ [1ms] getAllCreatedBlocksCharacteristics: Already in panel, skipping login for kikejfer
+🔄 [1ms] getAllCreatedBlocksCharacteristics: Extracting blocks for role: Profesor
+🔄 [2ms] getAllCreatedBlocksCharacteristics: About to call navigateToCreatedBlocksTab...
+🔄 [0ms] navigateToCreatedBlocksTab: Starting for role Profesor
+🔄 [1ms] navigateToCreatedBlocksTab: About to call selectRole...
+🔄 [0ms] Selecting role: Profesor
+📋 [0ms] Executing changeRole with object: {"name":"Profesor","code":"PPF","panel":"https://playtest-frontend.onrender.com/teachers-panel-schedules"}
+🔄 [7ms] About to execute changeRole function...
+📋 [34ms] Dialog appeared: "¿Quieres cambiar a Profesor?"
+📋 [35ms] Dialog type: confirm
+📋 [35ms] Accepting confirmation dialog for role change
+📋 [42ms] Dialog accepted
+📋 [45ms] Direct changeRole result: {"success":true}
+📋 [45ms] Waiting for navigation to https://playtest-frontend.onrender.com/teachers-panel-schedules...
+📋 [45ms] Current URL before wait: https://playtest-frontend.onrender.com/admin-secundario-panel
+✅ [1649ms] Successfully navigated to Profesor panel: https://playtest-frontend.onrender.com/teachers-panel-schedules
+🔄 [1650ms] Waiting for panel to load (1s)...
+✅ [2662ms] Selected role: Profesor via direct JavaScript execution and navigation
+✅ [2665ms] navigateToCreatedBlocksTab: selectRole completed
+🔄 [2665ms] navigateToCreatedBlocksTab: Looking for tab with selector: .tab-button:has-text("Recursos"), button:has-text("Recursos")
+🔄 [2665ms] navigateToCreatedBlocksTab: About to click tab...
+✅ [2734ms] navigateToCreatedBlocksTab: Tab clicked, waiting 1.5s for content to load...
+✅ [4243ms] Navigated to Recursos tab
+✅ [4245ms] getAllCreatedBlocksCharacteristics: navigateToCreatedBlocksTab completed
+🔄 [4245ms] getAllCreatedBlocksCharacteristics: Waiting for container .bloques-creados-section...
+✅ [4268ms] getAllCreatedBlocksCharacteristics: Found container by class: bloques-creados-section
+🔍 Found 3 created block cards in Profesor role
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 669"
+✅ Found created block Preguntas: "669"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 4"
+✅ Found created block Temas: "4"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 1"
+✅ Found created block Usuarios: "1"
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 701"
+✅ Found created block Preguntas: "701"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 10"
+✅ Found created block Temas: "10"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 1"
+✅ Found created block Usuarios: "1"
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 60"
+✅ Found created block Preguntas: "60"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 1"
+✅ Found created block Temas: "1"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 5"
+✅ Found created block Usuarios: "5"
+✅ Added professor summary for kikejfer: {
+  nickname: [32m'kikejfer'[39m,
+  blocks: [32m'3'[39m,
+  topics: [32m'15'[39m,
+  questions: [32m'1430'[39m,
+  users: [32m'7'[39m
+}
+🔄 [4549ms] getAllCreatedBlocksCharacteristics: Extracting blocks for role: Creador
+🔄 [4549ms] getAllCreatedBlocksCharacteristics: About to call navigateToCreatedBlocksTab...
+🔄 [0ms] navigateToCreatedBlocksTab: Starting for role Creador
+🔄 [0ms] navigateToCreatedBlocksTab: About to call selectRole...
+🔄 [0ms] Selecting role: Creador
+📋 [0ms] Executing changeRole with object: {"name":"Creador","code":"PCC","panel":"https://playtest-frontend.onrender.com/creators-panel-content"}
+🔄 [2ms] About to execute changeRole function...
+📋 [9ms] Dialog appeared: "¿Quieres cambiar a Creador?"
+📋 [9ms] Dialog type: confirm
+📋 [9ms] Accepting confirmation dialog for role change
+📋 [15ms] Dialog accepted
+📋 [19ms] Direct changeRole result: {"success":true}
+📋 [19ms] Waiting for navigation to https://playtest-frontend.onrender.com/creators-panel-content...
+📋 [19ms] Current URL before wait: https://playtest-frontend.onrender.com/teachers-panel-schedules
+✅ [350ms] Successfully navigated to Creador panel: https://playtest-frontend.onrender.com/creators-panel-content
+🔄 [350ms] Waiting for panel to load (1s)...
+✅ [1366ms] Selected role: Creador via direct JavaScript execution and navigation
+✅ [1366ms] navigateToCreatedBlocksTab: selectRole completed
+🔄 [1366ms] navigateToCreatedBlocksTab: Looking for tab with selector: .tab-button:has-text("Contenido"), button:has-text("Contenido")
+🔄 [1366ms] navigateToCreatedBlocksTab: About to click tab...
+✅ [1481ms] navigateToCreatedBlocksTab: Tab clicked, waiting 1.5s for content to load...
+✅ [2995ms] Navigated to Contenido tab
+✅ [7545ms] getAllCreatedBlocksCharacteristics: navigateToCreatedBlocksTab completed
+🔄 [7545ms] getAllCreatedBlocksCharacteristics: Waiting for container .bloques-creados-section...
+✅ [7577ms] getAllCreatedBlocksCharacteristics: Found container by class: bloques-creados-section
+🔍 Found 3 created block cards in Creador role
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 669"
+✅ Found created block Preguntas: "669"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 4"
+✅ Found created block Temas: "4"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 1"
+✅ Found created block Usuarios: "1"
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 701"
+✅ Found created block Preguntas: "701"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 10"
+✅ Found created block Temas: "10"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 1"
+✅ Found created block Usuarios: "1"
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 60"
+✅ Found created block Preguntas: "60"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 1"
+✅ Found created block Temas: "1"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 5"
+✅ Found created block Usuarios: "5"
+✅ Added creator summary for kikejfer: {
+  nickname: [32m'kikejfer'[39m,
+  blocks: [32m'3'[39m,
+  topics: [32m'15'[39m,
+  questions: [32m'1430'[39m,
+  users: [32m'7'[39m
+}
+✅ Extracted data for kikejfer in AdminPrincipal format: {
+  creators: [
+    {
+      nickname: [32m'kikejfer'[39m,
+      blocks: [32m'3'[39m,
+      topics: [32m'15'[39m,
+      questions: [32m'1430'[39m,
+      users: [32m'7'[39m
+    }
+  ],
+  professors: [
+    {
+      nickname: [32m'kikejfer'[39m,
+      blocks: [32m'3'[39m,
+      topics: [32m'15'[39m,
+      questions: [32m'1430'[39m,
+      users: [32m'7'[39m
+    }
+  ]
+}
+✅ kikejfer creator totals from own panel: {
+  totalBloques: [33m1[39m,
+  totalTemas: [33m15[39m,
+  totalPreguntas: [33m1430[39m,
+  totalUsuarios: [33m7[39m
+}
+📊 Getting kikejfer professor blocks from their own panel...
+🔄 [0ms] getAllCreatedBlocksCharacteristics: Getting all created blocks characteristics for user: kikejfer
+📍 [0ms] getAllCreatedBlocksCharacteristics: Using existing page with URL: https://playtest-frontend.onrender.com/creators-panel-content
+✅ [0ms] getAllCreatedBlocksCharacteristics: Already in panel, skipping login for kikejfer
+🔄 [0ms] getAllCreatedBlocksCharacteristics: Extracting blocks for role: Profesor
+🔄 [0ms] getAllCreatedBlocksCharacteristics: About to call navigateToCreatedBlocksTab...
+🔄 [0ms] navigateToCreatedBlocksTab: Starting for role Profesor
+🔄 [0ms] navigateToCreatedBlocksTab: About to call selectRole...
+🔄 [0ms] Selecting role: Profesor
+📋 [0ms] Executing changeRole with object: {"name":"Profesor","code":"PPF","panel":"https://playtest-frontend.onrender.com/teachers-panel-schedules"}
+🔄 [1ms] About to execute changeRole function...
+📋 [12ms] Dialog appeared: "¿Quieres cambiar a Profesor?"
+📋 [12ms] Dialog type: confirm
+📋 [13ms] Accepting confirmation dialog for role change
+📋 [17ms] Dialog accepted
+📋 [21ms] Direct changeRole result: {"success":true}
+📋 [22ms] Waiting for navigation to https://playtest-frontend.onrender.com/teachers-panel-schedules...
+📋 [22ms] Current URL before wait: https://playtest-frontend.onrender.com/creators-panel-content
+✅ [1148ms] Successfully navigated to Profesor panel: https://playtest-frontend.onrender.com/teachers-panel-schedules
+🔄 [1149ms] Waiting for panel to load (1s)...
+✅ [2155ms] Selected role: Profesor via direct JavaScript execution and navigation
+✅ [2155ms] navigateToCreatedBlocksTab: selectRole completed
+🔄 [2155ms] navigateToCreatedBlocksTab: Looking for tab with selector: .tab-button:has-text("Recursos"), button:has-text("Recursos")
+🔄 [2155ms] navigateToCreatedBlocksTab: About to click tab...
+✅ [2228ms] navigateToCreatedBlocksTab: Tab clicked, waiting 1.5s for content to load...
+✅ [3737ms] Navigated to Recursos tab
+✅ [3739ms] getAllCreatedBlocksCharacteristics: navigateToCreatedBlocksTab completed
+🔄 [3739ms] getAllCreatedBlocksCharacteristics: Waiting for container .bloques-creados-section...
+✅ [3755ms] getAllCreatedBlocksCharacteristics: Found container by class: bloques-creados-section
+🔍 Found 3 created block cards in Profesor role
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 669"
+✅ Found created block Preguntas: "669"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 4"
+✅ Found created block Temas: "4"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 1"
+✅ Found created block Usuarios: "1"
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 701"
+✅ Found created block Preguntas: "701"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 10"
+✅ Found created block Temas: "10"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 1"
+✅ Found created block Usuarios: "1"
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 60"
+✅ Found created block Preguntas: "60"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 1"
+✅ Found created block Temas: "1"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 5"
+✅ Found created block Usuarios: "5"
+✅ Added professor summary for kikejfer: {
+  nickname: [32m'kikejfer'[39m,
+  blocks: [32m'3'[39m,
+  topics: [32m'15'[39m,
+  questions: [32m'1430'[39m,
+  users: [32m'7'[39m
+}
+🔄 [4061ms] getAllCreatedBlocksCharacteristics: Extracting blocks for role: Creador
+🔄 [4061ms] getAllCreatedBlocksCharacteristics: About to call navigateToCreatedBlocksTab...
+🔄 [0ms] navigateToCreatedBlocksTab: Starting for role Creador
+🔄 [0ms] navigateToCreatedBlocksTab: About to call selectRole...
+🔄 [0ms] Selecting role: Creador
+📋 [0ms] Executing changeRole with object: {"name":"Creador","code":"PCC","panel":"https://playtest-frontend.onrender.com/creators-panel-content"}
+🔄 [1ms] About to execute changeRole function...
+📋 [8ms] Dialog appeared: "¿Quieres cambiar a Creador?"
+📋 [8ms] Dialog type: confirm
+📋 [8ms] Accepting confirmation dialog for role change
+📋 [12ms] Dialog accepted
+📋 [14ms] Direct changeRole result: {"success":true}
+📋 [14ms] Waiting for navigation to https://playtest-frontend.onrender.com/creators-panel-content...
+📋 [14ms] Current URL before wait: https://playtest-frontend.onrender.com/teachers-panel-schedules
+✅ [302ms] Successfully navigated to Creador panel: https://playtest-frontend.onrender.com/creators-panel-content
+🔄 [302ms] Waiting for panel to load (1s)...
+✅ [1317ms] Selected role: Creador via direct JavaScript execution and navigation
+✅ [1318ms] navigateToCreatedBlocksTab: selectRole completed
+🔄 [1318ms] navigateToCreatedBlocksTab: Looking for tab with selector: .tab-button:has-text("Contenido"), button:has-text("Contenido")
+🔄 [1319ms] navigateToCreatedBlocksTab: About to click tab...
+✅ [1443ms] navigateToCreatedBlocksTab: Tab clicked, waiting 1.5s for content to load...
+✅ [2953ms] Navigated to Contenido tab
+✅ [7015ms] getAllCreatedBlocksCharacteristics: navigateToCreatedBlocksTab completed
+🔄 [7015ms] getAllCreatedBlocksCharacteristics: Waiting for container .bloques-creados-section...
+✅ [7051ms] getAllCreatedBlocksCharacteristics: Found container by class: bloques-creados-section
+🔍 Found 3 created block cards in Creador role
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 669"
+✅ Found created block Preguntas: "669"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 4"
+✅ Found created block Temas: "4"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 1"
+✅ Found created block Usuarios: "1"
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 701"
+✅ Found created block Preguntas: "701"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 10"
+✅ Found created block Temas: "10"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 1"
+✅ Found created block Usuarios: "1"
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 60"
+✅ Found created block Preguntas: "60"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 1"
+✅ Found created block Temas: "1"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 5"
+✅ Found created block Usuarios: "5"
+✅ Added creator summary for kikejfer: {
+  nickname: [32m'kikejfer'[39m,
+  blocks: [32m'3'[39m,
+  topics: [32m'15'[39m,
+  questions: [32m'1430'[39m,
+  users: [32m'7'[39m
+}
+✅ Extracted data for kikejfer in AdminPrincipal format: {
+  creators: [
+    {
+      nickname: [32m'kikejfer'[39m,
+      blocks: [32m'3'[39m,
+      topics: [32m'15'[39m,
+      questions: [32m'1430'[39m,
+      users: [32m'7'[39m
+    }
+  ],
+  professors: [
+    {
+      nickname: [32m'kikejfer'[39m,
+      blocks: [32m'3'[39m,
+      topics: [32m'15'[39m,
+      questions: [32m'1430'[39m,
+      users: [32m'7'[39m
+    }
+  ]
+}
+✅ kikejfer professor totals from own panel: {
+  totalBloques: [33m1[39m,
+  totalTemas: [33m15[39m,
+  totalPreguntas: [33m1430[39m,
+  totalUsuarios: [33m7[39m
+}
+🚪 Logging out from kikejfer panel...
+✅ Logout successful
+🔍 Processing user panel for admin...
+🔐 Logging in as admin...
+✅ admin logged in successfully
+📊 Getting admin creator blocks from their own panel...
+🔄 [0ms] getAllCreatedBlocksCharacteristics: Getting all created blocks characteristics for user: admin
+📍 [0ms] getAllCreatedBlocksCharacteristics: Using existing page with URL: https://playtest-frontend.onrender.com/support-dashboard
+🔄 [1ms] getAllCreatedBlocksCharacteristics: Page not in panel, performing login...
+❌ Login failed for admin: page.waitForSelector: Timeout 10000ms exceeded.
+Call log:
+[2m  - waiting for locator('input[name="nickname"]') to be visible[22m
+
+❌ Error in getAllCreatedBlocksCharacteristics: page.waitForSelector: Timeout 10000ms exceeded.
+Call log:
+[2m  - waiting for locator('input[name="nickname"]') to be visible[22m
+
+⚠️ Could not extract creator blocks for admin: page.waitForSelector: Timeout 10000ms exceeded.
+Call log:
+[2m  - waiting for locator('input[name="nickname"]') to be visible[22m
+
+📊 Getting admin professor blocks from their own panel...
+🔄 [0ms] getAllCreatedBlocksCharacteristics: Getting all created blocks characteristics for user: admin
+📍 [0ms] getAllCreatedBlocksCharacteristics: Using existing page with URL: https://playtest-frontend.onrender.com/support-dashboard
+🔄 [0ms] getAllCreatedBlocksCharacteristics: Page not in panel, performing login...
+❌ Login failed for admin: page.waitForSelector: Timeout 10000ms exceeded.
+Call log:
+[2m  - waiting for locator('input[name="nickname"]') to be visible[22m
+
+❌ Error in getAllCreatedBlocksCharacteristics: page.waitForSelector: Timeout 10000ms exceeded.
+Call log:
+[2m  - waiting for locator('input[name="nickname"]') to be visible[22m
+
+⚠️ Could not extract professor blocks for admin: page.waitForSelector: Timeout 10000ms exceeded.
+Call log:
+[2m  - waiting for locator('input[name="nickname"]') to be visible[22m
+
+🚪 Logging out from admin panel...
+✅ Logout successful
+🔍 Processing user panel for Toñi...
+🔐 Logging in as Toñi...
+✅ Toñi logged in successfully
+📊 Getting Toñi creator blocks from their own panel...
+🔄 [0ms] getAllCreatedBlocksCharacteristics: Getting all created blocks characteristics for user: Toñi
+📍 [1ms] getAllCreatedBlocksCharacteristics: Using existing page with URL: https://playtest-frontend.onrender.com/creators-panel-content
+✅ [1ms] getAllCreatedBlocksCharacteristics: Already in panel, skipping login for Toñi
+🔄 [1ms] getAllCreatedBlocksCharacteristics: Extracting blocks for role: Profesor
+🔄 [1ms] getAllCreatedBlocksCharacteristics: About to call navigateToCreatedBlocksTab...
+🔄 [0ms] navigateToCreatedBlocksTab: Starting for role Profesor
+🔄 [0ms] navigateToCreatedBlocksTab: About to call selectRole...
+🔄 [0ms] Selecting role: Profesor
+📋 [0ms] Executing changeRole with object: {"name":"Profesor","code":"PPF","panel":"https://playtest-frontend.onrender.com/teachers-panel-schedules"}
+🔄 [2ms] About to execute changeRole function...
+📋 [20ms] Dialog appeared: "¿Quieres cambiar a Profesor?"
+📋 [20ms] Dialog type: confirm
+📋 [21ms] Accepting confirmation dialog for role change
+📋 [25ms] Dialog accepted
+📋 [29ms] Direct changeRole result: {"success":true}
+📋 [29ms] Waiting for navigation to https://playtest-frontend.onrender.com/teachers-panel-schedules...
+📋 [29ms] Current URL before wait: https://playtest-frontend.onrender.com/creators-panel-content
+✅ [1600ms] Successfully navigated to Profesor panel: https://playtest-frontend.onrender.com/teachers-panel-schedules
+🔄 [1600ms] Waiting for panel to load (1s)...
+✅ [2608ms] Selected role: Profesor via direct JavaScript execution and navigation
+✅ [2609ms] navigateToCreatedBlocksTab: selectRole completed
+🔄 [2609ms] navigateToCreatedBlocksTab: Looking for tab with selector: .tab-button:has-text("Recursos"), button:has-text("Recursos")
+🔄 [2609ms] navigateToCreatedBlocksTab: About to click tab...
+✅ [2687ms] navigateToCreatedBlocksTab: Tab clicked, waiting 1.5s for content to load...
+✅ [4196ms] Navigated to Recursos tab
+✅ [4197ms] getAllCreatedBlocksCharacteristics: navigateToCreatedBlocksTab completed
+🔄 [4197ms] getAllCreatedBlocksCharacteristics: Waiting for container .bloques-creados-section...
+✅ [4228ms] getAllCreatedBlocksCharacteristics: Found container by class: bloques-creados-section
+🔍 Found 3 created block cards in Profesor role
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 79"
+✅ Found created block Preguntas: "79"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 2"
+✅ Found created block Temas: "2"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 1"
+✅ Found created block Usuarios: "1"
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 669"
+✅ Found created block Preguntas: "669"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 4"
+✅ Found created block Temas: "4"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 0"
+✅ Found created block Usuarios: "0"
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 701"
+✅ Found created block Preguntas: "701"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 10"
+✅ Found created block Temas: "10"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 0"
+✅ Found created block Usuarios: "0"
+✅ Added professor summary for Toñi: {
+  nickname: [32m'Toñi'[39m,
+  blocks: [32m'3'[39m,
+  topics: [32m'16'[39m,
+  questions: [32m'1449'[39m,
+  users: [32m'1'[39m
+}
+🔄 [4515ms] getAllCreatedBlocksCharacteristics: Extracting blocks for role: Creador
+🔄 [4515ms] getAllCreatedBlocksCharacteristics: About to call navigateToCreatedBlocksTab...
+🔄 [0ms] navigateToCreatedBlocksTab: Starting for role Creador
+🔄 [0ms] navigateToCreatedBlocksTab: About to call selectRole...
+🔄 [0ms] Selecting role: Creador
+📋 [0ms] Executing changeRole with object: {"name":"Creador","code":"PCC","panel":"https://playtest-frontend.onrender.com/creators-panel-content"}
+🔄 [0ms] About to execute changeRole function...
+📋 [6ms] Dialog appeared: "¿Quieres cambiar a Creador?"
+📋 [6ms] Dialog type: confirm
+📋 [6ms] Accepting confirmation dialog for role change
+📋 [9ms] Dialog accepted
+📋 [11ms] Direct changeRole result: {"success":true}
+📋 [11ms] Waiting for navigation to https://playtest-frontend.onrender.com/creators-panel-content...
+📋 [11ms] Current URL before wait: https://playtest-frontend.onrender.com/teachers-panel-schedules
+✅ [385ms] Successfully navigated to Creador panel: https://playtest-frontend.onrender.com/creators-panel-content
+🔄 [385ms] Waiting for panel to load (1s)...
+✅ [1400ms] Selected role: Creador via direct JavaScript execution and navigation
+✅ [1400ms] navigateToCreatedBlocksTab: selectRole completed
+🔄 [1400ms] navigateToCreatedBlocksTab: Looking for tab with selector: .tab-button:has-text("Contenido"), button:has-text("Contenido")
+🔄 [1400ms] navigateToCreatedBlocksTab: About to click tab...
+✅ [1491ms] navigateToCreatedBlocksTab: Tab clicked, waiting 1.5s for content to load...
+✅ [3004ms] Navigated to Contenido tab
+✅ [7520ms] getAllCreatedBlocksCharacteristics: navigateToCreatedBlocksTab completed
+🔄 [7520ms] getAllCreatedBlocksCharacteristics: Waiting for container .bloques-creados-section...
+✅ [7546ms] getAllCreatedBlocksCharacteristics: Found container by class: bloques-creados-section
+🔍 Found 3 created block cards in Creador role
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 79"
+✅ Found created block Preguntas: "79"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 2"
+✅ Found created block Temas: "2"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 1"
+✅ Found created block Usuarios: "1"
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 669"
+✅ Found created block Preguntas: "669"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 4"
+✅ Found created block Temas: "4"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 0"
+✅ Found created block Usuarios: "0"
+🔍 Found inline stats format, searching for "Preguntas"
+🔍 Found span text: "Preguntas: 701"
+✅ Found created block Preguntas: "701"
+🔍 Found inline stats format, searching for "Temas"
+🔍 Found span text: "Temas: 10"
+✅ Found created block Temas: "10"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 0"
+✅ Found created block Usuarios: "0"
+✅ Added creator summary for Toñi: {
+  nickname: [32m'Toñi'[39m,
+  blocks: [32m'3'[39m,
+  topics: [32m'16'[39m,
+  questions: [32m'1449'[39m,
+  users: [32m'1'[39m
+}
+✅ Extracted data for Toñi in AdminPrincipal format: {
+  creators: [
+    {
+      nickname: [32m'Toñi'[39m,
+      blocks: [32m'3'[39m,
+      topics: [32m'16'[39m,
+      questions: [32m'1449'[39m,
+      users: [32m'1'[39m
+    }
+  ],
+  professors: [
+    {
+      nickname: [32m'Toñi'[39m,
+      blocks: [32m'3'[39m,
+      topics: [32m'16'[39m,
+      questions: [32m'1449'[39m,
+      users: [32m'1'[39m
+    }
+  ]
+}
+✅ Toñi creator totals from own panel: {
+  totalBloques: [33m1[39m,
+  totalTemas: [33m16[39m,
+  totalPreguntas: [33m1449[39m,
+  totalUsuarios: [33m1[39m
+}
+📊 Getting Toñi professor blocks from their own panel...
+🔄 [0ms] getAllCreatedBlocksCharacteristics: Getting all created blocks characteristics for user: Toñi
+📍 [1ms] getAllCreatedBlocksCharacteristics: Using existing page with URL: https://playtest-frontend.onrender.com/creators-panel-content
+✅ [1ms] getAllCreatedBlocksCharacteristics: Already in panel, skipping login for Toñi
+🔄 [1ms] getAllCreatedBlocksCharacteristics: Extracting blocks for role: Profesor
+🔄 [1ms] getAllCreatedBlocksCharacteristics: About to call navigateToCreatedBlocksTab...
+🔄 [0ms] navigateToCreatedBlocksTab: Starting for role Profesor
+🔄 [0ms] navigateToCreatedBlocksTab: About to call selectRole...
+🔄 [0ms] Selecting role: Profesor
+📋 [0ms] Executing changeRole with object: {"name":"Profesor","code":"PPF","panel":"https://playtest-frontend.onrender.com/teachers-panel-schedules"}
+🔄 [1ms] About to execute changeRole function...
+📋 [6ms] Dialog appeared: "¿Quieres cambiar a Profesor?"
+📋 [6ms] Dialog type: confirm
+📋 [6ms] Accepting confirmation dialog for role change
+📋 [8ms] Dialog accepted
+📋 [9ms] Direct changeRole result: {"success":true}
+📋 [9ms] Waiting for navigation to https://playtest-frontend.onrender.com/teachers-panel-schedules...
+📋 [10ms] Current URL before wait: https://playtest-frontend.onrender.com/creators-panel-content
+✅ [1477ms] Successfully navigated to Profesor panel: https://playtest-frontend.onrender.com/teachers-panel-schedules
+🔄 [1477ms] Waiting for panel to load (1s)...
+✅ [2484ms] Selected role: Profesor via direct JavaScript execution and navigation
+✅ [2485ms] navigateToCreatedBlocksTab: selectRole completed
+🔄 [2485ms] navigateToCreatedBlocksTab: Looking for tab with selector: .tab-button:has-text("Recursos"), button:has-text("Recursos")
+🔄 [2485ms] navigateToCreatedBlocksTab: About to click tab...
+✅ [2574ms] navigateToCreatedBlocksTab: Tab clicked, waiting 1.5s for content to load...
+❌ [3893ms] Error navigating to tab for Profesor: page.waitForTimeout: Test timeout of 90000ms exceeded.
+⚠️ Error processing role Profesor: page.waitForTimeout: Test timeout of 90000ms exceeded.
+🔄 [3895ms] getAllCreatedBlocksCharacteristics: Extracting blocks for role: Creador
+🔄 [3895ms] getAllCreatedBlocksCharacteristics: About to call navigateToCreatedBlocksTab...
+🔄 [0ms] navigateToCreatedBlocksTab: Starting for role Creador
+🔄 [0ms] navigateToCreatedBlocksTab: About to call selectRole...
+🔄 [0ms] Selecting role: Creador
+📋 [0ms] Executing changeRole with object: {"name":"Creador","code":"PCC","panel":"https://playtest-frontend.onrender.com/creators-panel-content"}
+🔄 [2ms] About to execute changeRole function...
+❌ [14ms] Error selecting role Creador: page.evaluate: Target page, context or browser has been closed
+❌ [14ms] Error navigating to tab for Creador: page.evaluate: Target page, context or browser has been closed
+⚠️ Error processing role Creador: page.evaluate: Target page, context or browser has been closed
+✅ Extracted data for Toñi in AdminPrincipal format: {
+  creators: [
+    {
+      nickname: [32m'Toñi'[39m,
+      blocks: [32m'0'[39m,
+      topics: [32m'0'[39m,
+      questions: [32m'0'[39m,
+      users: [32m'0'[39m
+    }
+  ],
+  professors: [
+    {
+      nickname: [32m'Toñi'[39m,
+      blocks: [32m'0'[39m,
+      topics: [32m'0'[39m,
+      questions: [32m'0'[39m,
+      users: [32m'0'[39m
+    }
+  ]
+}
+✅ Toñi professor totals from own panel: { totalBloques: [33m1[39m, totalTemas: [33m0[39m, totalPreguntas: [33m0[39m, totalUsuarios: [33m0[39m }
+🚪 Logging out from Toñi panel...
+🔐 Logging back in as AdminPrincipal...
+❌ Login failed for AdminPrincipal: page.goto: Target page, context or browser has been closed
+  ✘  1 tests\02-autenticacion-refactored\login-roles.spec.js:71:5 › Verificación de Login y Acceso a Paneles › administrador principal - AdminPrincipal (1.5m)
+
+
+  1) tests\02-autenticacion-refactored\login-roles.spec.js:71:5 › Verificación de Login y Acceso a Paneles › administrador principal - AdminPrincipal › Verificar Panel 
+
+    [31mTest timeout of 90000ms exceeded.[39m
+
+    Error: page.goto: Target page, context or browser has been closed
+
+       at utils\login-helper.js:130
+
+      128 |
+      129 |     // Navigate to login page - increased timeout for Render startup
+    > 130 |     await page.goto(LOGIN_URL, { timeout: 45000 });
+          |                ^
+      131 |
+      132 |     // Wait for login form to be ready
+      133 |     await page.waitForSelector('input[name="nickname"]', { timeout: 10000 });
+        at login (C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\utils\login-helper.js:130:16)
+        at performCrossValidation (C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\02-autenticacion-refactored\login-roles.spec.js:380:3)
+        at verifyAdminPanel (C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\02-autenticacion-refactored\login-roles.spec.js:215:5)
+        at C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\02-autenticacion-refactored\login-roles.spec.js:119:11
+        at C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\02-autenticacion-refactored\login-roles.spec.js:113:7
+
+    Error Context: test-results\tests-02-autenticacion-ref-95d54--principal---AdminPrincipal\error-context.md
+
+  1 failed
+    tests\02-autenticacion-refactored\login-roles.spec.js:71:5 › Verificación de Login y Acceso a Paneles › administrador principal - AdminPrincipal 

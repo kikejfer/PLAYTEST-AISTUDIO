@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 const { loginWithIndependentBrowser } = require('../../utils/login-helper');
-const { logoutAndCloseBrowser } = require('../../utils/logout-helper');
+const { performSafeLogout } = require('../../utils/logout-helper');
 const { createAvailableBlockStep, createLoadedBlockStep } = require('../../utils/player-blocks-helper');
 const { navigateToUploadSection, createSingleUploadStep } = require('../../utils/file-upload-helper');
 const { extractUserInfoFromPAP, extractUserInfoFromPAS } = require('../../utils/admin-panel-helper');
@@ -13,9 +13,12 @@ test.describe('Bloque 4: Workflow Completo de Administración', () => {
 
   test('Workflow completo: Creación de bloque → Carga → Gestión administrativa', async () => {
 
+    // Store browser sessions to close them all at the end
+    let andgarSession, adminSession;
+
     // PASO 0: AndGar crea un bloque (prerequisito para test 1) - Sesión independiente
     await test.step('PASO 0: AndGar crea bloque usando helpers', async () => {
-      const andgarSession = await loginWithIndependentBrowser('AndGar');
+      andgarSession = await loginWithIndependentBrowser('AndGar');
       const { page } = andgarSession;
 
       // Verificar que llegó al panel correcto
@@ -36,13 +39,12 @@ test.describe('Bloque 4: Workflow Completo de Administración', () => {
         console.log('⚠️ Upload step simulated (prerequisite for admin tests)');
       }
 
-      // Cerrar navegador completamente
-      await logoutAndCloseBrowser(page, andgarSession.browser);
-      console.log('✅ AndGar session closed completely');
+      // Perform safe logout but DO NOT close browser yet
+      await performSafeLogout(page);
+      console.log('✅ AndGar session logged out safely (browser kept open until test completion)');
     });
 
-    // TEST 1: Gestión Administrativa - Sesión independiente AdminPrincipal
-    let adminSession;
+    // TEST 1: Gestión Administrativa - Sesión AdminPrincipal independiente
     await test.step('TEST 1: Login como AdminPrincipal usando helper', async () => {
       adminSession = await loginWithIndependentBrowser('AdminPrincipal');
       const { page } = adminSession;
@@ -295,6 +297,22 @@ test.describe('Bloque 4: Workflow Completo de Administración', () => {
       // Cerrar sesión JaiGon completamente
       await logoutAndCloseBrowser(page, jaiGonSession2.browser);
       console.log('✅ JaiGon TEST 3 session closed completely');
+    });
+
+    // Cleanup: Close all remaining browser sessions
+    await test.step('CLEANUP: Close all browser sessions', async () => {
+      try {
+        if (andgarSession && andgarSession.browser && !andgarSession.browser.isClosed()) {
+          await andgarSession.browser.close();
+          console.log('✅ AndGar browser session closed');
+        }
+        if (adminSession && adminSession.browser && !adminSession.browser.isClosed()) {
+          await adminSession.browser.close();
+          console.log('✅ AdminPrincipal browser session closed');
+        }
+      } catch (cleanupError) {
+        console.log(`⚠️ Cleanup warning: ${cleanupError.message}`);
+      }
     });
 
     console.log('🎉 Workflow completo del Bloque 4 completado exitosamente');

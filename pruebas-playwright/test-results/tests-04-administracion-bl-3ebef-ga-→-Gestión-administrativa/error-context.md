@@ -1,0 +1,89 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - img "LumiQuiz Logo" [ref=e4]
+      - generic [ref=e5]:
+        - generic [ref=e6]: La forma más divertida de estudiar
+        - generic [ref=e7]: PANEL CREADOR DE CONTENIDO
+    - generic [ref=e8]:
+      - button "🛠️" [ref=e9] [cursor=pointer]
+      - button "📧" [ref=e10] [cursor=pointer]
+      - generic [ref=e11]:
+        - img "Luminarias" [ref=e12]
+        - generic [ref=e13]: "0"
+      - button "Creador de Contenido ▼" [ref=e15] [cursor=pointer]:
+        - generic [ref=e16] [cursor=pointer]: Creador de Contenido
+        - generic [ref=e17] [cursor=pointer]: ▼
+      - generic [ref=e18]:
+        - generic [ref=e19]: AndGar
+        - generic [ref=e20]: Andres
+      - button "A" [ref=e22] [cursor=pointer]:
+        - generic [ref=e23] [cursor=pointer]: A
+  - generic [ref=e24]:
+    - paragraph [ref=e26]: Herramientas completas para crear, gestionar y monetizar contenido educativo con análisis detallado de rendimiento.
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - button "📝 Contenido" [ref=e29] [cursor=pointer]
+        - button "➕ Añadir Preguntas" [ref=e30] [cursor=pointer]
+        - button "👥 Gestión de Jugadores" [ref=e31] [cursor=pointer]
+        - button "📊 Estadísticas" [ref=e32] [cursor=pointer]
+        - button "🏆 Torneos" [ref=e33] [cursor=pointer]
+        - button "💰 Monetización" [ref=e34] [cursor=pointer]
+        - button "📢 Marketing" [ref=e35] [cursor=pointer]
+        - button "📊 Analytics de Mercado" [ref=e36] [cursor=pointer]
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - button "📁 Subir Fichero" [ref=e42] [cursor=pointer]
+          - button "✏️ Agregar Manualmente" [ref=e43] [cursor=pointer]
+          - button "🤖 Generar con IA" [ref=e44] [cursor=pointer]
+        - generic [ref=e46]:
+          - heading "Subir Preguntas desde Fichero" [level=3] [ref=e47]
+          - generic [ref=e48]:
+            - generic [ref=e49]:
+              - generic [ref=e50] [cursor=pointer]:
+                - img [ref=e51] [cursor=pointer]
+                - generic [ref=e53] [cursor=pointer]:
+                  - generic [ref=e54] [cursor=pointer]: Subida Múltiple desde Carpeta
+                  - paragraph [ref=e55] [cursor=pointer]:
+                    - text: Selecciona una carpeta que contenga ficheros .txt con el formato
+                    - strong [ref=e56] [cursor=pointer]: NombreBloque_NombreTema.txt
+                    - text: . Cada fichero será procesado de forma secuencial.
+              - button "Subida Múltiple desde Carpeta Selecciona una carpeta que contenga ficheros .txt con el formato NombreBloque_NombreTema.txt. Cada fichero será procesado de forma secuencial." [ref=e57]
+            - generic [ref=e58]:
+              - generic [ref=e59]: O sube un único fichero
+              - generic [ref=e60]:
+                - generic [ref=e61]:
+                  - generic [ref=e62]: Bloque
+                  - generic [ref=e64]:
+                    - textbox "Escribe un bloque nuevo o elige uno existente" [ref=e65]: CE1978
+                    - button [ref=e66] [cursor=pointer]:
+                      - img [ref=e67] [cursor=pointer]
+                - generic [ref=e69]:
+                  - generic [ref=e70]: Tema
+                  - textbox "Elige o crea un tema nuevo" [ref=e71]: Título III Cortes Generales
+              - generic [ref=e72]:
+                - generic [ref=e73]: Subir Fichero (.txt)
+                - button "Choose File" [ref=e74]
+              - button "Cargar Preguntas para Revisar" [disabled] [ref=e75]
+            - generic [ref=e76]:
+              - heading "Formatos Soportados" [level=4] [ref=e77]
+              - paragraph [ref=e78]: "Tu archivo debe usar uno de estos formatos:"
+              - generic [ref=e79]:
+                - generic [ref=e80]:
+                  - 'heading "Formato 1: Separadores ## y @@" [level=5] [ref=e81]'
+                  - paragraph [ref=e82]: Pregunta##Respuesta1##Respuesta2##@@RespuestaCorrecta##Respuesta4
+                  - code [ref=e83]: ¿Cuál es la capital de España?##Barcelona##Valencia##@@Madrid##Sevilla
+                - generic [ref=e84]:
+                  - 'heading "Formato 2: Formato Estándar" [level=5] [ref=e85]'
+                  - paragraph [ref=e86]: Preguntas numeradas con respuestas marcadas con * para la correcta
+                  - generic [ref=e87]: 1. ¿Cuál es la capital de España?\na) Barcelona\nb) Valencia\n*c) Madrid\nd) Sevilla
+              - generic [ref=e88]:
+                - heading "Formato de Nombres de Archivo" [level=5] [ref=e89]
+                - paragraph [ref=e90]:
+                  - text: "Para subida múltiple:"
+                  - strong [ref=e91]: NombreBloque_NombreTema.txt
+                - code [ref=e92]: "Ejemplo: Constitución_Título1.txt, Historia_Edad Media.txt"
+```

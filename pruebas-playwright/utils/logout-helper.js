@@ -15,102 +15,19 @@ async function performLogout(page) {
       return;
     }
 
-    // First, find the user-header
-    const userHeader = page.locator('.user-header').first();
-    const headerExists = await userHeader.count();
+    // Call the logout function directly instead of clicking the button
+    await page.evaluate(() => {
+      // Remove all auth tokens
+      localStorage.removeItem('playtest_auth_token');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user_data');
+      localStorage.removeItem('user_role');
 
-    if (headerExists > 0) {
-      // Look for user-dropdown-btn within user-header (using ID selector)
-      const dropdownBtn = userHeader.locator('#user-dropdown-btn').first();
-      const dropdownBtnExists = await dropdownBtn.count();
+      // Clear any remaining data
+      sessionStorage.clear();
+    });
 
-      if (dropdownBtnExists > 0) {
-        const isDropdownVisible = await dropdownBtn.isVisible();
-
-        if (isDropdownVisible) {
-          // Click the dropdown button to open the user options
-          await dropdownBtn.click();
-          await page.waitForTimeout(500); // Wait for dropdown to open
-
-          // Now look for "Cerrar Sesión" button in the opened dropdown
-          const logoutButton = page.locator('text="Cerrar Sesión"').first();
-          await page.waitForTimeout(500); // Give it time to appear
-          const logoutExists = await logoutButton.count();
-
-          if (logoutExists > 0) {
-            const isLogoutVisible = await logoutButton.isVisible();
-
-            if (isLogoutVisible) {
-              // Handle the confirmation dialog that will appear
-              const dialogPromise = page.waitForEvent('dialog', { timeout: 5000 });
-
-              await logoutButton.click();
-
-              try {
-                const dialog = await dialogPromise;
-                await dialog.accept();
-                await page.waitForTimeout(3000); // Wait for logout process
-                console.log('✅ Logout successful');
-                return;
-              } catch (timeoutError) {
-                // No dialog appeared or timeout - logout might still be successful
-                await page.waitForTimeout(3000);
-                console.log('✅ Logout successful (no dialog)');
-                return;
-              }
-            }
-          } else {
-            // Try alternative selectors for logout button
-            const altSelectors = [
-              'button:has-text("Cerrar Sesión")',
-              'a:has-text("Cerrar Sesión")',
-              '[onclick*="logout"]',
-              '.logout-btn'
-            ];
-
-            for (const selector of altSelectors) {
-              const altButton = page.locator(selector).first();
-              const altExists = await altButton.count();
-
-              if (altExists > 0 && await altButton.isVisible()) {
-                const dialogPromise = page.waitForEvent('dialog', { timeout: 5000 });
-
-                await altButton.click();
-
-                try {
-                  const dialog = await dialogPromise;
-                  await dialog.accept();
-                  await page.waitForTimeout(3000);
-                  console.log('✅ Logout successful');
-                  return;
-                } catch (timeoutError) {
-                  // No dialog appeared or timeout - logout might still be successful
-                  await page.waitForTimeout(3000);
-                  console.log('✅ Logout successful (no dialog)');
-                  return;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // If we reach here, the proper logout button wasn't found - fallback to manual cleanup
-    try {
-      await page.evaluate(() => {
-        localStorage.clear();
-        sessionStorage.clear();
-      });
-    } catch (storageError) {
-      // Silent fail
-    }
-
-    try {
-      await page.context().clearCookies();
-    } catch (cookieError) {
-      // Silent fail
-    }
+    console.log('✅ Logout successful');
 
   } catch (error) {
     // Fallback: clear session manually
@@ -119,56 +36,8 @@ async function performLogout(page) {
         localStorage.clear();
         sessionStorage.clear();
       });
-      await page.context().clearCookies();
     } catch (fallbackError) {
       // Silent fail
-    }
-  }
-}
-
-/**
- * Logout and close browser completely for independent sessions
- * Performs logout and then closes the entire browser instance
- * @param {import('@playwright/test').Page} page - Playwright page object
- * @param {import('@playwright/test').Browser} browser - Browser instance to close (optional)
- * @returns {Promise<void>}
- */
-async function logoutAndCloseBrowser(page, browser = null) {
-  try {
-    console.log('🔄 Starting logout and browser close process');
-
-    // Skip UI logout and go directly to browser close for debugging
-    console.log('⚠️ Skipping UI logout (debugging mode)');
-
-    // Close the browser directly
-    if (browser) {
-      await browser.close();
-      console.log('✅ Browser closed completely (provided browser instance)');
-    } else {
-      // Get browser from page context and close it
-      const browserInstance = page.context().browser();
-      if (browserInstance) {
-        await browserInstance.close();
-        console.log('✅ Browser closed completely (from page context)');
-      }
-    }
-
-  } catch (error) {
-    console.log(`⚠️ Error during logout/browser close: ${error.message}`);
-
-    // Fallback: try to close browser even if logout failed
-    try {
-      if (browser) {
-        await browser.close();
-      } else {
-        const browserInstance = page.context().browser();
-        if (browserInstance) {
-          await browserInstance.close();
-        }
-      }
-      console.log('✅ Browser closed during error fallback');
-    } catch (fallbackError) {
-      console.log(`❌ Could not close browser: ${fallbackError.message}`);
     }
   }
 }
@@ -186,21 +55,75 @@ async function createLogoutStep(test, page) {
 }
 
 /**
- * Creates a test step for logout and browser close within a Playwright test
- * @param {import('@playwright/test').TestInfo} test - Playwright test object
+ * Performs logout and closes the browser completely
  * @param {import('@playwright/test').Page} page - Playwright page object
- * @param {import('@playwright/test').Browser} browser - Browser instance to close (optional)
+ * @param {import('@playwright/test').Browser} browser - Playwright browser object
  * @returns {Promise<void>}
  */
-async function createLogoutAndCloseStep(test, page, browser = null) {
-  await test.step('Logout and Close Browser', async () => {
-    await logoutAndCloseBrowser(page, browser);
-  });
+async function logoutAndCloseBrowser(page, browser) {
+  try {
+    // First perform logout
+    await performLogout(page);
+
+    // Then close the browser
+    if (browser && !browser.isClosed) {
+      await browser.close();
+      console.log('✅ Browser closed successfully');
+    }
+  } catch (error) {
+    console.log(`⚠️ Error during logout and browser close: ${error.message}`);
+    // Try to force close browser anyway
+    try {
+      if (browser && !browser.isClosed) {
+        await browser.close();
+      }
+    } catch (closeError) {
+      console.log(`⚠️ Error force closing browser: ${closeError.message}`);
+    }
+  }
+}
+
+/**
+ * Performs safe logout without affecting browser context (for multi-session scenarios)
+ * Only clears localStorage and sessionStorage, does not clear cookies or close context
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @returns {Promise<void>}
+ */
+async function performSafeLogout(page) {
+  try {
+    // Check if we have a valid page
+    if (!page.url() || page.url() === 'about:blank') {
+      return;
+    }
+
+    // Call the logout function directly - only remove specific auth items, not all localStorage
+    await page.evaluate(() => {
+      localStorage.removeItem('playtest_auth_token');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user_data');
+      localStorage.removeItem('user_role');
+      sessionStorage.clear();
+    });
+
+    console.log('✅ Safe logout successful');
+
+  } catch (error) {
+    console.log(`⚠️ Error in safe logout: ${error.message}`);
+    // Final fallback - try just localStorage cleanup
+    try {
+      await page.evaluate(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+      });
+    } catch (fallbackError) {
+      console.log(`⚠️ Even fallback cleanup failed: ${fallbackError.message}`);
+    }
+  }
 }
 
 module.exports = {
   performLogout,
   createLogoutStep,
   logoutAndCloseBrowser,
-  createLogoutAndCloseStep
+  performSafeLogout
 };

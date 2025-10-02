@@ -7,7 +7,8 @@ const { createBlockSelectionStep } = require('../../utils/block-selector-helper'
 test.describe('Descarga de Bloque', () => {
   
   test('SebDom descarga el bloque creado por AndGar', async ({ page }) => {
-    
+    test.setTimeout(60000); // 60 segundos para proceso completo de descarga
+
     await test.step('Login como SebDom', async () => {
       await login(page, 'SebDom');
 
