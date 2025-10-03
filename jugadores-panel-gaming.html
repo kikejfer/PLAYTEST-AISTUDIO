@@ -842,7 +842,7 @@
                 }
             };
 
-            const activeGames = games.filter(g => g.status === 'active');
+            const activeGames = games.filter(g => g.status === 'active' || g.status === 'waiting');
             const completedGames = games.filter(g => g.status === 'completed');
             // Separate incoming challenges (where current user is challenged) from outgoing (where current user is challenger)
             const incomingChallenges = challenges.filter(c => 
