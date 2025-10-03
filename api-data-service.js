@@ -1254,7 +1254,7 @@ class APIDataService {
       console.warn('⚠️ Failed to create configuration metadata for challenge:', error.message);
     }
     
-    const response = await this.apiCall('/games/challenges', {
+    const response = await this.apiCall('/challenges', {
       method: 'POST',
       body: JSON.stringify({
         challengedUserId: challengedUser.id,
