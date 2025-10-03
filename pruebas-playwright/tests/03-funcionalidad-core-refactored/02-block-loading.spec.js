@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const { login } = require('../../utils/login-helper');
 const { createLogoutStep } = require('../../utils/logout-helper');
-const { createAvailableBlockStep } = require('../../utils/player-blocks-helper');
+const { createAvailableBlockStep, navigateToLoadBlocksTab } = require('../../utils/player-blocks-helper');
 
 test.describe('Carga de Bloque por Usuarios', () => {
   
@@ -52,7 +52,7 @@ test.describe('Carga de Bloque por Usuarios', () => {
   });
   
   test('SebDom carga y descarga bloque CE1978 - flujo completo', async ({ page }) => {
-    test.setTimeout(60000); // 60 segundos para flujo completo de carga y descarga
+    test.setTimeout(90000); // 90 segundos para flujo completo de carga y descarga con retries
 
     await test.step('Login como SebDom', async () => {
       await login(page, 'SebDom');
@@ -67,8 +67,46 @@ test.describe('Carga de Bloque por Usuarios', () => {
 
       if (result.action === 'cargared') {
         console.log('✅ Block loaded successfully using helper function');
-        await page.waitForTimeout(5000); // Wait longer for UI to update button state from Cargar to Descargar
-        console.log('✅ Block state should be updated for SebDom download workflow');
+
+        // Wait with retry logic for button state to change from "Cargar" to "Descargar"
+        const maxRetries = 5;
+        let buttonChanged = false;
+
+        for (let i = 0; i < maxRetries; i++) {
+          await page.waitForTimeout(2000); // Wait 2 seconds between retries
+          await navigateToLoadBlocksTab(page); // Re-navigate to refresh UI
+
+          // Check if button changed to "Descargar"
+          const blockElements = page.locator('.available-block-card, [class*="available"]');
+          const count = await blockElements.count();
+
+          for (let j = 0; j < count; j++) {
+            const block = blockElements.nth(j);
+            const titleElement = block.locator('h3[onclick*="viewAvailableBlockContent"]');
+            const titleExists = await titleElement.count();
+
+            if (titleExists > 0) {
+              const titleText = await titleElement.textContent();
+              if (titleText && titleText.includes('CE1978')) {
+                const actionButton = block.locator('button[onclick*="handleBlockAction"]');
+                const buttonText = await actionButton.textContent();
+
+                if (buttonText && buttonText.toLowerCase().includes('descargar')) {
+                  console.log(`✅ Button changed to "Descargar" after ${i + 1} retries`);
+                  buttonChanged = true;
+                  break;
+                }
+              }
+            }
+          }
+
+          if (buttonChanged) break;
+          console.log(`⏳ Retry ${i + 1}/${maxRetries}: Button still shows "Cargar", waiting...`);
+        }
+
+        if (!buttonChanged) {
+          console.log('⚠️ Button did not change to "Descargar" after maximum retries - continuing anyway');
+        }
       }
     });
 

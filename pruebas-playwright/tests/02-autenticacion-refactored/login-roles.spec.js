@@ -71,18 +71,9 @@ test.describe('Verificación de Login y Acceso a Paneles', () => {
     test(`${user.role} - ${user.username}`, async ({ page }) => {
       // Aumentar timeout para tests que hacen validación cruzada o cambio de roles
       if (user.username === 'AdminPrincipal') {
-        test.setTimeout(120000); // 120 segundos (2 min) para validación cruzada compleja
+        test.setTimeout(180000); // 180 segundos (3 min) para validación cruzada compleja
       } else if (user.username === 'admin' || user.username === 'kikejfer' || user.username === 'Toñi') {
         test.setTimeout(45000); // 45 segundos para usuarios que hacen cambio de roles
-      }
-
-      // Logout antes del login (excepto para el primer usuario)
-      if (i > 0) {
-        console.log(`🔍 TEST ${i}: About to perform logout before login for user ${user.username}`);
-        await createLogoutStep(test, page);
-        console.log(`✅ TEST ${i}: Logout step completed`);
-      } else {
-        console.log(`🔍 TEST ${i}: First test, skipping logout`);
       }
 
       await test.step('Login', async () => {

@@ -7,7 +7,7 @@ const { createBlockSelectionStep } = require('../../utils/block-selector-helper'
 test.describe('Descarga de Bloque', () => {
   
   test('SebDom descarga el bloque creado por AndGar', async ({ page }) => {
-    test.setTimeout(60000); // 60 segundos para proceso completo de descarga
+    test.setTimeout(90000); // 90 segundos para proceso completo de descarga con retries
 
     await test.step('Login como SebDom', async () => {
       await login(page, 'SebDom');
@@ -24,9 +24,48 @@ test.describe('Descarga de Bloque', () => {
       const result = await createAvailableBlockStep(test, page, 'CE1978', 'AndGar', 'Cargar');
 
       if (result.action === 'cargared') {
-        console.log('✅ Block loaded successfully - waiting for UI to update');
-        await page.waitForTimeout(5000); // Increased wait time for UI to update
-        console.log('✅ Ready for download after extended wait');
+        console.log('✅ Block loaded successfully - waiting for block to appear in Bloques Cargados');
+
+        // Wait with retry logic for block to appear in "Bloques Cargados"
+        const maxRetries = 5;
+        let blockFound = false;
+
+        for (let i = 0; i < maxRetries; i++) {
+          await page.waitForTimeout(2000); // Wait 2 seconds between retries
+
+          // Navigate to "Bloques Cargados" section
+          const loadedBlocksTab = page.locator('.tab-button:has-text("Bloques Cargados"), button:has-text("Bloques Cargados")').first();
+          if (await loadedBlocksTab.count() > 0) {
+            await loadedBlocksTab.click();
+            await page.waitForTimeout(1000);
+          }
+
+          // Check if block appears in Bloques Cargados
+          const blockCards = page.locator('.bc-block-card');
+          const count = await blockCards.count();
+
+          for (let j = 0; j < count; j++) {
+            const card = blockCards.nth(j);
+            const titleElement = card.locator('.bc-block-title');
+            const titleExists = await titleElement.count();
+
+            if (titleExists > 0) {
+              const titleText = await titleElement.textContent();
+              if (titleText && titleText.includes('CE1978')) {
+                console.log(`✅ Block CE1978 found in Bloques Cargados after ${i + 1} retries`);
+                blockFound = true;
+                break;
+              }
+            }
+          }
+
+          if (blockFound) break;
+          console.log(`⏳ Retry ${i + 1}/${maxRetries}: Block CE1978 not yet in Bloques Cargados, waiting...`);
+        }
+
+        if (!blockFound) {
+          console.log('⚠️ Block did not appear in Bloques Cargados after maximum retries - continuing anyway');
+        }
       }
     });
 

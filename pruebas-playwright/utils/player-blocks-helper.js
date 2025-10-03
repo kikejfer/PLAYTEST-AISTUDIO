@@ -17,8 +17,18 @@ async function selectLoadedBlock(page, blockTitle, authorNickname, action, throw
     // Navigate to "Carga de Bloques" tab if not already there
     await navigateToLoadBlocksTab(page);
 
-    // Make sure we're in the "Bloques Cargados" section
-    await page.waitForTimeout(2000);
+    // Navigate to "Bloques Cargados" sub-section
+    const loadedBlocksTab = page.locator('.tab-button:has-text("Bloques Cargados"), button:has-text("Bloques Cargados")').first();
+    const loadedTabExists = await loadedBlocksTab.count();
+
+    if (loadedTabExists > 0 && await loadedBlocksTab.isVisible()) {
+      await loadedBlocksTab.click();
+      await page.waitForTimeout(2000);
+      console.log('✅ Navigated to "Bloques Cargados" sub-section');
+    } else {
+      console.log('⚠️ "Bloques Cargados" tab not found, assuming already in correct section');
+      await page.waitForTimeout(2000);
+    }
 
     // Find all bc-block-card elements
     const blockCards = page.locator('.bc-block-card');
