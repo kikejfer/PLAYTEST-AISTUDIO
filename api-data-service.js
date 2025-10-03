@@ -67,6 +67,12 @@ class APIDataService {
               else if (userRoles.includes('administrador_secundario')) roleHeader = 'PAS';
 
               console.log('🔍 Recovered role from token:', roleHeader);
+
+              // Fix localStorage with recovered value
+              if (roleHeader) {
+                localStorage.setItem('activeRole', roleHeader);
+                console.log('✅ Fixed activeRole in localStorage:', roleHeader);
+              }
             } catch (tokenError) {
               console.error('❌ Could not recover role from token:', tokenError);
             }
@@ -75,6 +81,7 @@ class APIDataService {
           if (!roleHeader) {
             console.warn('⚠️ Could not recover role, defaulting to PCC');
             roleHeader = 'PCC'; // Safe fallback
+            localStorage.setItem('activeRole', roleHeader);
           }
         } else {
           try {
@@ -84,6 +91,12 @@ class APIDataService {
               // Extract meaningful value from object
               roleHeader = parsed.code || parsed.name || parsed.id || null;
               console.log('🔍 Extracted from parsed object:', roleHeader);
+
+              // Fix localStorage with extracted value
+              if (roleHeader) {
+                localStorage.setItem('activeRole', roleHeader);
+                console.log('✅ Fixed activeRole in localStorage:', roleHeader);
+              }
             } else {
               roleHeader = String(parsed);
             }
