@@ -2440,8 +2440,12 @@
                 try {
                     if (window.apiDataService) {
                         await window.apiDataService.declineChallenge(currentUser.id, challengeId);
-                        // Recargar datos
-                        const challengesData = await window.apiDataService.fetchChallengesForUser(currentUser.id);
+                        // Recargar datos - refresh BOTH games and challenges
+                        const [gamesData, challengesData] = await Promise.all([
+                            window.apiDataService.fetchGamesForUser(currentUser.id),
+                            window.apiDataService.fetchChallengesForUser(currentUser.id)
+                        ]);
+                        setGames(gamesData || []);
                         setChallenges(challengesData || []);
                     }
                 } catch (error) {
@@ -2464,9 +2468,13 @@
                         
                         // Send decline with reason to backend
                         await window.apiDataService.declineChallengeWithReason(currentUser.id, challengeId, reason || '');
-                        
-                        // Recargar datos
-                        const challengesData = await window.apiDataService.fetchChallengesForUser(currentUser.id);
+
+                        // Recargar datos - refresh BOTH games and challenges
+                        const [gamesData, challengesData] = await Promise.all([
+                            window.apiDataService.fetchGamesForUser(currentUser.id),
+                            window.apiDataService.fetchChallengesForUser(currentUser.id)
+                        ]);
+                        setGames(gamesData || []);
                         setChallenges(challengesData || []);
                     }
                 } catch (error) {
