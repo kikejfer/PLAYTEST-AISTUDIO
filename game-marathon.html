@@ -568,7 +568,7 @@
               let questions = [];
               const blockId = Object.keys(game.config)[0];
               console.log('🔍 Marathon - Processing blockId:', blockId);
-              const block = blocks.find(b => b.id === blockId);
+              const block = blocks.find(b => b.id === parseInt(blockId) || b.id === blockId);
               console.log('📦 Marathon - Found block:', !!block, 'questions:', block?.questions?.length || 0);
               if (block && block.questions) {
                   questions.push(...block.questions.map(q => ({...q, blockId: block.id})));

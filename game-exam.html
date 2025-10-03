@@ -497,7 +497,7 @@
               if (!game || !game.config || !blocks || blocks.length === 0) return [];
               let questions = [];
               for (const [blockId, blockConfig] of Object.entries(game.config)) {
-                  const block = blocks.find(b => b.id === blockId);
+                  const block = blocks.find(b => b.id === parseInt(blockId) || b.id === blockId);
                   if (!block || !block.questions) continue;
                   
                   const questionsWithMeta = block.questions.map(q => ({...q, blockId: block.id }));

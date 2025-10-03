@@ -332,7 +332,7 @@
           const includedContent = useMemo(() => {
               if (!game || !game.config || !blocks) return [];
               return Object.entries(game.config).map(([blockId, blockConfig]) => {
-                  const block = blocks.find(b => b.id === blockId);
+                  const block = blocks.find(b => b.id === parseInt(blockId) || b.id === blockId);
                   if (!block) return null;
                   const topics = blockConfig.topics === 'all'
                       ? t('game_setup_all_topics')
