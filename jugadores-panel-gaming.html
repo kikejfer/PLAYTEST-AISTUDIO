@@ -2380,17 +2380,23 @@
             }, []);
 
             const onNavigateToGame = (game) => {
-                console.log('🎮 ActiveGamesComponent - Navigating to game:', { id: game.id, mode: game.mode, status: game.status });
-                
+                console.log('🎮 ActiveGamesComponent - Navigating to game:', { id: game.id, mode: game.mode, status: game.status, fullGame: game });
+
+                if (!game || !game.id) {
+                    console.error('❌ Cannot navigate - game or game.id is missing:', game);
+                    alert('Error: No se puede continuar la partida. ID de juego no encontrado.');
+                    return;
+                }
+
                 // For competition games (Duelo/Trivial), go directly to their specific pages
                 if (game.mode === 'Duelo') {
-                    console.log('🥊 ActiveGamesComponent - Redirecting to Duelo game');
+                    console.log('🥊 ActiveGamesComponent - Redirecting to Duelo game with ID:', game.id);
                     window.location.href = `game-duel.html?gameId=${game.id}`;
                 } else if (game.mode === 'Trivial') {
-                    console.log('🧠 ActiveGamesComponent - Redirecting to Trivial game');
+                    console.log('🧠 ActiveGamesComponent - Redirecting to Trivial game with ID:', game.id);
                     window.location.href = `game-trivial.html?gameId=${game.id}`;
                 } else {
-                    console.log('🎯 ActiveGamesComponent - Redirecting to generic active game');
+                    console.log('🎯 ActiveGamesComponent - Redirecting to generic active game with ID:', game.id);
                     window.location.href = `active-game.html?gameId=${game.id}`;
                 }
             };
