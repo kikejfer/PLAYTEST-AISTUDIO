@@ -109,13 +109,14 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
         
         const requiredRole = panelToRoleMapping[panelType];
         if (requiredRole) {
-            // Check if user has this role (from userData.roles)
-            if (userInfo.roles && userInfo.roles.includes(requiredRole)) {
+            // Check if user has this role (from userData.roles array of objects)
+            const hasRequiredRole = userInfo.roles && userInfo.roles.some(role => role.code === requiredRole);
+            if (hasRequiredRole) {
                 localStorage.setItem('activeRole', requiredRole);
                 console.log('💾 Database role saved as activeRole:', requiredRole);
             } else {
                 console.warn('⚠️ User does not have required role for panel:', requiredRole);
-                // Fallback to first available role or panelType
+                // Fallback to first available role code or panelType
                 const fallbackRole = userInfo.roles?.[0]?.code || panelType;
                 localStorage.setItem('activeRole', fallbackRole);
                 console.log('💾 Fallback role saved as activeRole:', fallbackRole);
