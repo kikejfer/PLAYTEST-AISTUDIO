@@ -469,17 +469,35 @@
           const [gameQuestions, setGameQuestions] = useState([]);
 
           useEffect(() => {
+              console.log('🎮 [DUEL] Iniciando carga del modo duelo...');
+              console.log('🔍 [DUEL] URL completa:', window.location.href);
+
               const params = new URLSearchParams(window.location.search);
               const gameId = params.get('gameId');
-              if (!gameId) { setError("No game ID provided."); setIsLoading(false); return; }
+
+              console.log('📋 [DUEL] Parámetros URL:', Object.fromEntries(params.entries()));
+              console.log('🆔 [DUEL] gameId extraído:', gameId);
+
+              if (!gameId) {
+                  console.error('❌ [DUEL] No se proporcionó gameId en la URL');
+                  setError("No game ID provided.");
+                  setIsLoading(false);
+                  return;
+              }
 
               const loadData = async () => {
                   try {
-                      console.log('🔄 Duel - Loading game ID:', gameId);
-                       const [fetchedGame, fetchedBlocks] = await Promise.all([ 
-                          apiDataService.fetchGame(gameId), 
-                          apiDataService.fetchAllBlocks() 
+                      console.log('🔄 [DUEL] Cargando datos del juego:', gameId);
+                      console.log('⏰ [DUEL] Timestamp inicio carga:', new Date().toISOString());
+
+                       const [fetchedGame, fetchedBlocks] = await Promise.all([
+                          apiDataService.fetchGame(gameId),
+                          apiDataService.fetchAllBlocks()
                         ]);
+
+                      console.log('✅ [DUEL] Datos cargados exitosamente');
+                      console.log('🎲 [DUEL] Juego recibido:', fetchedGame);
+                      console.log('📦 [DUEL] Bloques recibidos:', fetchedBlocks?.length || 0, 'bloques');
                       if (!fetchedGame) {
                           console.error('❌ Duel - Game not found, clearing localStorage');
                           localStorage.removeItem('current_game_id');
@@ -497,59 +515,150 @@
           }, []);
           
           useEffect(() => {
-            if (!game || !blocks || blocks.length === 0) return;
+            console.log('🔄 [DUEL] useEffect prepareQuestions disparado');
+            console.log('🎲 [DUEL] game:', game ? `ID ${game.id}` : 'null');
+            console.log('📦 [DUEL] blocks:', blocks?.length || 0, 'bloques');
+
+            if (!game || !blocks || blocks.length === 0) {
+                console.log('⏭️ [DUEL] Saltando prepareQuestions - datos incompletos');
+                return;
+            }
 
             const prepareQuestions = async () => {
+                console.log('🎯 [DUEL] Preparando preguntas del duelo...');
+                console.log('⚙️ [DUEL] Configuración del juego:', game.config);
+                console.log('📊 [DUEL] Metadata de configuración:', game.configurationMetadata);
+
                 let allQuestions = [];
-                
+
                 // Use metadata if available for more efficient loading
                 if (game.configurationMetadata && game.configurationMetadata.blocks) {
+                    console.log('✅ [DUEL] Usando configurationMetadata para cargar preguntas');
+                    console.log('📋 [DUEL] Bloques en metadata:', game.configurationMetadata.blocks);
+
                     for (const blockMetadata of game.configurationMetadata.blocks) {
+                        console.log(`🔍 [DUEL] Procesando bloque ${blockMetadata.blockId}...`);
+
                         const block = blocks.find(b => b.id === blockMetadata.blockId);
-                        if (!block || !block.questions) continue;
-                        
+
+                        if (!block) {
+                            console.warn(`⚠️ [DUEL] Bloque ${blockMetadata.blockId} no encontrado en blocks`);
+                            continue;
+                        }
+
+                        if (!block.questions) {
+                            console.warn(`⚠️ [DUEL] Bloque ${blockMetadata.blockId} no tiene preguntas`);
+                            continue;
+                        }
+
+                        console.log(`📝 [DUEL] Bloque ${blockMetadata.blockId}: ${block.questions.length} preguntas totales`);
+
                         const questionsWithMeta = block.questions.map(q => ({...q, blockId: block.id }));
+
                         if (blockMetadata.isAllTopics) {
+                            console.log(`✅ [DUEL] Bloque ${blockMetadata.blockId}: Usando TODOS los temas`);
                             allQuestions.push(...questionsWithMeta);
                         } else {
-                            allQuestions.push(...questionsWithMeta.filter(q => 
+                            console.log(`🎯 [DUEL] Bloque ${blockMetadata.blockId}: Filtrando por temas:`, blockMetadata.selectedTopics);
+                            const filtered = questionsWithMeta.filter(q =>
                                 blockMetadata.selectedTopics.includes(q.tema)
-                            ));
+                            );
+                            console.log(`✅ [DUEL] Bloque ${blockMetadata.blockId}: ${filtered.length} preguntas después de filtrar`);
+                            allQuestions.push(...filtered);
                         }
                     }
                 } else {
+                    console.log('⚠️ [DUEL] No hay configurationMetadata, usando método fallback');
+                    console.log('📋 [DUEL] game.config:', game.config);
+
                     // Fallback to original method
                     for (const [blockId, blockConfig] of Object.entries(game.config)) {
+                        console.log(`🔍 [DUEL] Procesando bloque ${blockId} (fallback)...`);
+
                         const block = blocks.find(b => b.id === parseInt(blockId) || b.id === blockId);
-                        if (!block || !block.questions) continue;
+
+                        if (!block) {
+                            console.warn(`⚠️ [DUEL] Bloque ${blockId} no encontrado`);
+                            continue;
+                        }
+
+                        if (!block.questions) {
+                            console.warn(`⚠️ [DUEL] Bloque ${blockId} no tiene preguntas`);
+                            continue;
+                        }
+
+                        console.log(`📝 [DUEL] Bloque ${blockId}: ${block.questions.length} preguntas`);
+
                         const questionsWithMeta = block.questions.map(q => ({...q, blockId: block.id }));
-                        if (blockConfig.topics === 'all') { allQuestions.push(...questionsWithMeta); } 
-                        else if (Array.isArray(blockConfig.topics)) { allQuestions.push(...questionsWithMeta.filter(q => blockConfig.topics.includes(q.tema))); }
+
+                        if (blockConfig.topics === 'all') {
+                            console.log(`✅ [DUEL] Bloque ${blockId}: Usando TODOS los temas`);
+                            allQuestions.push(...questionsWithMeta);
+                        } else if (Array.isArray(blockConfig.topics)) {
+                            console.log(`🎯 [DUEL] Bloque ${blockId}: Filtrando por ${blockConfig.topics.length} temas`);
+                            const filtered = questionsWithMeta.filter(q => blockConfig.topics.includes(q.tema));
+                            console.log(`✅ [DUEL] Bloque ${blockId}: ${filtered.length} preguntas después de filtrar`);
+                            allQuestions.push(...filtered);
+                        }
                     }
                 }
 
+                console.log(`📊 [DUEL] Total preguntas recopiladas: ${allQuestions.length}`);
+
                 if (game.shuffledQuestionIds) {
+                    console.log('🔀 [DUEL] Usando shuffledQuestionIds existente:', game.shuffledQuestionIds.length, 'IDs');
                     const questionMap = new Map(allQuestions.map(q => [q.id, q]));
                     const orderedQuestions = game.shuffledQuestionIds.map(id => questionMap.get(id)).filter(Boolean);
+                    console.log(`✅ [DUEL] ${orderedQuestions.length} preguntas ordenadas según shuffledQuestionIds`);
                     setGameQuestions(orderedQuestions);
                 } else {
+                    console.log('🔀 [DUEL] Mezclando preguntas y guardando orden...');
                     const shuffled = allQuestions.sort(() => Math.random() - 0.5);
                     const shuffledIds = shuffled.map(q => q.id);
+                    console.log(`✅ [DUEL] ${shuffled.length} preguntas mezcladas`);
                     setGameQuestions(shuffled);
                     await apiDataService.updateGame(game.id, { shuffledQuestionIds: shuffledIds });
+                    console.log('💾 [DUEL] Orden de preguntas guardado en el juego');
                 }
             };
             prepareQuestions();
           }, [game, blocks]);
 
           const renderContent = () => {
-              if (isLoading) { return <div className="flex justify-center items-center h-64"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>; }
-              if (error) { return <div className="text-center text-brand-danger bg-red-500/10 p-4 rounded-lg">{t('error')}: {error}</div>; }
-              if (game.status === 'pending') { return <div className="text-center text-brand-accent p-8">Esperando a que el oponente acepte el reto...</div> }
-              if (gameQuestions.length === 0) {
-                 return <div className="flex justify-center items-center h-64"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>;
+              console.log('🎨 [DUEL] renderContent llamado');
+              console.log('📊 [DUEL] Estado actual:', {
+                  isLoading,
+                  error,
+                  gameStatus: game?.status,
+                  questionsCount: gameQuestions.length
+              });
+
+              if (isLoading) {
+                  console.log('⏳ [DUEL] Mostrando spinner de carga');
+                  return <div className="flex justify-center items-center h-64"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>;
               }
-              if (gameQuestions.length < 10) { return <div className="text-center text-brand-accent p-8">No hay suficientes preguntas para un Duelo (se necesitan 10).</div> }
+
+              if (error) {
+                  console.error('❌ [DUEL] Mostrando error:', error);
+                  return <div className="text-center text-brand-danger bg-red-500/10 p-4 rounded-lg">{t('error')}: {error}</div>;
+              }
+
+              if (game.status === 'pending') {
+                  console.log('⏸️ [DUEL] Juego en estado pending - esperando aceptación');
+                  return <div className="text-center text-brand-accent p-8">Esperando a que el oponente acepte el reto...</div>
+              }
+
+              if (gameQuestions.length === 0) {
+                  console.log('⏳ [DUEL] No hay preguntas aún - mostrando spinner');
+                  return <div className="flex justify-center items-center h-64"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>;
+              }
+
+              if (gameQuestions.length < 10) {
+                  console.warn(`⚠️ [DUEL] Insuficientes preguntas: ${gameQuestions.length}/10`);
+                  return <div className="text-center text-brand-accent p-8">No hay suficientes preguntas para un Duelo (se necesitan 10).</div>
+              }
+
+              console.log('✅ [DUEL] Renderizando componente DuelGamePage con', gameQuestions.length, 'preguntas');
               return <DuelGamePage questions={gameQuestions} game={game} />;
           };
 

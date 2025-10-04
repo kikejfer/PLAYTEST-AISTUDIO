@@ -2386,24 +2386,38 @@
             }, []);
 
             const onNavigateToGame = (game) => {
-                console.log('🎮 ActiveGamesComponent - Navigating to game:', { id: game.id, mode: game.mode, status: game.status, fullGame: game });
+                console.log('🎮 [NAV] ==================== NAVEGANDO A JUEGO ====================');
+                console.log('🎮 [NAV] Juego completo recibido:', game);
+                console.log('🆔 [NAV] Game ID:', game?.id);
+                console.log('🎯 [NAV] Modo de juego:', game?.mode);
+                console.log('📊 [NAV] Estado:', game?.status);
+                console.log('⚙️ [NAV] Configuración:', game?.config);
 
                 if (!game || !game.id) {
-                    console.error('❌ Cannot navigate - game or game.id is missing:', game);
+                    console.error('❌ [NAV] Cannot navigate - game or game.id is missing:', game);
                     alert('Error: No se puede continuar la partida. ID de juego no encontrado.');
                     return;
                 }
 
                 // For competition games (Duelo/Trivial), go directly to their specific pages
                 if (game.mode === 'Duelo') {
-                    console.log('🥊 ActiveGamesComponent - Redirecting to Duelo game with ID:', game.id);
-                    window.location.href = `game-duel.html?gameId=${game.id}`;
+                    const targetUrl = `game-duel.html?gameId=${game.id}`;
+                    console.log('🥊 [NAV] Modo DUELO detectado');
+                    console.log('🌐 [NAV] URL destino:', targetUrl);
+                    console.log('⏰ [NAV] Navegando a las:', new Date().toISOString());
+                    window.location.href = targetUrl;
                 } else if (game.mode === 'Trivial') {
-                    console.log('🧠 ActiveGamesComponent - Redirecting to Trivial game with ID:', game.id);
-                    window.location.href = `game-trivial.html?gameId=${game.id}`;
+                    const targetUrl = `game-trivial.html?gameId=${game.id}`;
+                    console.log('🧠 [NAV] Modo TRIVIAL detectado');
+                    console.log('🌐 [NAV] URL destino:', targetUrl);
+                    console.log('⏰ [NAV] Navegando a las:', new Date().toISOString());
+                    window.location.href = targetUrl;
                 } else {
-                    console.log('🎯 ActiveGamesComponent - Redirecting to generic active game with ID:', game.id);
-                    window.location.href = `active-game.html?gameId=${game.id}`;
+                    const targetUrl = `active-game.html?gameId=${game.id}`;
+                    console.log('🎯 [NAV] Modo genérico detectado');
+                    console.log('🌐 [NAV] URL destino:', targetUrl);
+                    console.log('⏰ [NAV] Navegando a las:', new Date().toISOString());
+                    window.location.href = targetUrl;
                 }
             };
 
@@ -2420,19 +2434,39 @@
             };
 
             const handleAcceptChallenge = async (challengeId) => {
+                console.log('🎯 [CHALLENGE] Aceptando reto:', challengeId);
+                console.log('👤 [CHALLENGE] Usuario actual:', currentUser);
+
                 try {
                     if (window.apiDataService) {
-                        await window.apiDataService.acceptChallenge(currentUser.id, challengeId);
+                        console.log('📡 [CHALLENGE] Llamando a acceptChallenge...');
+                        const result = await window.apiDataService.acceptChallenge(currentUser.id, challengeId);
+                        console.log('✅ [CHALLENGE] Reto aceptado, resultado:', result);
+
                         // Recargar datos
+                        console.log('🔄 [CHALLENGE] Recargando juegos y retos...');
                         const [gamesData, challengesData] = await Promise.all([
                             window.apiDataService.fetchGamesForUser(currentUser.id),
                             window.apiDataService.fetchChallengesForUser(currentUser.id)
                         ]);
+
+                        console.log('📊 [CHALLENGE] Datos recargados:');
+                        console.log('  - Juegos:', gamesData?.length || 0);
+                        console.log('  - Retos:', challengesData?.length || 0);
+
                         setGames(gamesData || []);
                         setChallenges(challengesData || []);
+
+                        console.log('✅ [CHALLENGE] Estado actualizado');
+                    } else {
+                        console.error('❌ [CHALLENGE] apiDataService no disponible');
                     }
                 } catch (error) {
-                    console.error('Error accepting challenge:', error);
+                    console.error('❌ [CHALLENGE] Error aceptando reto:', error);
+                    console.error('📋 [CHALLENGE] Detalles del error:', {
+                        message: error.message,
+                        stack: error.stack
+                    });
                 }
             };
 
