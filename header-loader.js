@@ -116,7 +116,7 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
             } else {
                 console.warn('⚠️ User does not have required role for panel:', requiredRole);
                 // Fallback to first available role or panelType
-                const fallbackRole = userInfo.roles?.[0] || panelType;
+                const fallbackRole = userInfo.roles?.[0]?.code || panelType;
                 localStorage.setItem('activeRole', fallbackRole);
                 console.log('💾 Fallback role saved as activeRole:', fallbackRole);
             }
