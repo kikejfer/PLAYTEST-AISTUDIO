@@ -2393,6 +2393,17 @@
                 console.log('📊 [NAV] Estado:', game?.status);
                 console.log('⚙️ [NAV] Configuración:', game?.config);
 
+                // Guardar información de navegación en localStorage
+                const navInfo = {
+                    timestamp: new Date().toISOString(),
+                    gameId: game?.id,
+                    mode: game?.mode,
+                    status: game?.status,
+                    config: game?.config,
+                    fullGame: game
+                };
+                localStorage.setItem('last_navigation_info', JSON.stringify(navInfo));
+
                 if (!game || !game.id) {
                     console.error('❌ [NAV] Cannot navigate - game or game.id is missing:', game);
                     alert('Error: No se puede continuar la partida. ID de juego no encontrado.');
@@ -2434,6 +2445,20 @@
             };
 
             const handleAcceptChallenge = async (challengeId) => {
+                // Guardar logs en array
+                const challengeLogs = [];
+                const originalLog = console.log;
+                const originalError = console.error;
+
+                console.log = (...args) => {
+                    challengeLogs.push({ type: 'log', timestamp: new Date().toISOString(), args: args.map(a => JSON.stringify(a, null, 2)) });
+                    originalLog.apply(console, args);
+                };
+                console.error = (...args) => {
+                    challengeLogs.push({ type: 'error', timestamp: new Date().toISOString(), args: args.map(a => JSON.stringify(a, null, 2)) });
+                    originalError.apply(console, args);
+                };
+
                 console.log('🎯 [CHALLENGE] Aceptando reto:', challengeId);
                 console.log('👤 [CHALLENGE] Usuario actual:', currentUser);
 
@@ -2458,6 +2483,13 @@
                         setChallenges(challengesData || []);
 
                         console.log('✅ [CHALLENGE] Estado actualizado');
+
+                        // Guardar logs en localStorage
+                        localStorage.setItem('challenge_accept_logs', JSON.stringify(challengeLogs));
+
+                        // Restaurar console
+                        console.log = originalLog;
+                        console.error = originalError;
                     } else {
                         console.error('❌ [CHALLENGE] apiDataService no disponible');
                     }
@@ -2467,6 +2499,13 @@
                         message: error.message,
                         stack: error.stack
                     });
+
+                    // Guardar logs en localStorage incluso en caso de error
+                    localStorage.setItem('challenge_accept_logs', JSON.stringify(challengeLogs));
+
+                    // Restaurar console
+                    console.log = originalLog;
+                    console.error = originalError;
                 }
             };
 

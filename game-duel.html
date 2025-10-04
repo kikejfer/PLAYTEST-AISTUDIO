@@ -472,6 +472,51 @@
               console.log('🎮 [DUEL] Iniciando carga del modo duelo...');
               console.log('🔍 [DUEL] URL completa:', window.location.href);
 
+              // Recuperar y mostrar logs de la aceptación del reto (si existen)
+              const savedLogs = localStorage.getItem('challenge_accept_logs');
+              if (savedLogs) {
+                  console.log('📜 [DUEL] ==================== LOGS DE ACEPTACIÓN DEL RETO ====================');
+                  try {
+                      const logs = JSON.parse(savedLogs);
+                      logs.forEach(log => {
+                          if (log.type === 'log') {
+                              console.log(`[${log.timestamp}]`, ...log.args.map(a => {
+                                  try { return JSON.parse(a); } catch { return a; }
+                              }));
+                          } else if (log.type === 'error') {
+                              console.error(`[${log.timestamp}]`, ...log.args.map(a => {
+                                  try { return JSON.parse(a); } catch { return a; }
+                              }));
+                          }
+                      });
+                      console.log('📜 [DUEL] ==================== FIN LOGS DE ACEPTACIÓN ====================');
+                      // Limpiar los logs después de mostrarlos
+                      localStorage.removeItem('challenge_accept_logs');
+                  } catch (e) {
+                      console.error('❌ [DUEL] Error al parsear logs guardados:', e);
+                  }
+              }
+
+              // Recuperar y mostrar información de navegación
+              const navInfo = localStorage.getItem('last_navigation_info');
+              if (navInfo) {
+                  console.log('🧭 [DUEL] ==================== INFORMACIÓN DE NAVEGACIÓN ====================');
+                  try {
+                      const info = JSON.parse(navInfo);
+                      console.log('⏰ [DUEL] Timestamp navegación:', info.timestamp);
+                      console.log('🆔 [DUEL] Game ID navegado:', info.gameId);
+                      console.log('🎯 [DUEL] Modo:', info.mode);
+                      console.log('📊 [DUEL] Estado:', info.status);
+                      console.log('⚙️ [DUEL] Configuración:', info.config);
+                      console.log('🎲 [DUEL] Juego completo:', info.fullGame);
+                      console.log('🧭 [DUEL] ==================== FIN INFO NAVEGACIÓN ====================');
+                      // Limpiar después de mostrar
+                      localStorage.removeItem('last_navigation_info');
+                  } catch (e) {
+                      console.error('❌ [DUEL] Error al parsear info de navegación:', e);
+                  }
+              }
+
               const params = new URLSearchParams(window.location.search);
               const gameId = params.get('gameId');
 
