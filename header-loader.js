@@ -98,32 +98,24 @@ async function loadHeader(panelType, containerId = 'header-container', userData 
             activeRole: userData.activeRole || panelType
         };
         
-        // Determine appropriate database role for this panel
-        const panelToRoleMapping = {
-            'PAP': 'administrador_principal',
-            'PAS': 'administrador_secundario', 
-            'PPF': 'profesor',
-            'PCC': 'creador',
-            'PJG': 'jugador'
-        };
-        
-        const requiredRole = panelToRoleMapping[panelType];
-        if (requiredRole) {
-            // Check if user has this role (from userData.roles array of objects)
-            const hasRequiredRole = userInfo.roles && userInfo.roles.some(role => role.code === requiredRole);
-            if (hasRequiredRole) {
-                localStorage.setItem('activeRole', requiredRole);
-                console.log('💾 Database role saved as activeRole:', requiredRole);
-            } else {
-                console.warn('⚠️ User does not have required role for panel:', requiredRole);
-                // Fallback to first available role code or panelType
-                const fallbackRole = userInfo.roles?.[0]?.code || panelType;
-                localStorage.setItem('activeRole', fallbackRole);
-                console.log('💾 Fallback role saved as activeRole:', fallbackRole);
-            }
-        } else {
+        // Check if user has a role that matches this panel's code
+        // userInfo.roles is array of objects like: [{code: 'PJG', name: 'Jugador'}, {code: 'PCC', name: 'Creador'}]
+        const hasRoleForPanel = userInfo.roles && userInfo.roles.some(role => role.code === panelType);
+
+        if (hasRoleForPanel) {
+            // User has this panel's role, use the panel code
             localStorage.setItem('activeRole', panelType);
-            console.log('💾 Panel code saved as activeRole (no mapping found):', panelType);
+            console.log('💾 Panel role saved as activeRole:', panelType);
+        } else if (userInfo.roles && userInfo.roles.length > 0) {
+            // User doesn't have this panel's role, use first available role code
+            console.warn('⚠️ User does not have role for panel:', panelType);
+            const fallbackRole = userInfo.roles[0].code;
+            localStorage.setItem('activeRole', fallbackRole);
+            console.log('💾 Fallback role code saved as activeRole:', fallbackRole);
+        } else {
+            // No roles at all, use panel code as fallback
+            localStorage.setItem('activeRole', panelType);
+            console.log('💾 Panel code saved as activeRole (no user roles):', panelType);
         }
         
         console.log('🔍 DEBUG userInfo processed:', {
