@@ -435,7 +435,17 @@
               );
           }
 
-          if (!currentQuestion) return <div className="text-center p-8">{t('loading')}</div>
+          if (!currentQuestion) {
+              return (
+                  <div className="max-w-4xl mx-auto animate-fade-in">
+                      <div className="text-center text-brand-danger bg-red-500/10 p-8 rounded-lg">
+                          <p className="text-xl mb-4">Error: No se pudo cargar la pregunta</p>
+                          <p className="text-sm">Pregunta index: {currentQuestionIndex}, Total preguntas: {questions.length}</p>
+                          <p className="text-sm mt-2">Console logs deberían mostrar más información sobre el estado de los bloques y configuración del juego.</p>
+                      </div>
+                  </div>
+              );
+          }
 
           return (
               <div className="max-w-4xl mx-auto animate-fade-in">
@@ -461,7 +471,7 @@
                       </div>
                       <p className="text-sm text-brand-accent mb-3 italic">{t('game_marathon_desc')}</p>
                   </div>
-                  
+
                   <div className="bg-brand-secondary p-6 sm:p-8 rounded-xl shadow-2xl">
                       <div className="flex justify-between items-center mb-4 text-brand-light">
                            <h3 className="font-bold">{t('game_score')}: <span className="text-brand-success">{userAnswers.filter(a => a.isCorrect).length}</span></h3>
@@ -473,11 +483,11 @@
                       </div>
 
                       <div className="w-full bg-brand-primary rounded-full h-2.5 mb-6"><div className="bg-brand-cta h-2.5 rounded-full transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}></div></div>
-                      
+
                       <div className="bg-brand-primary p-6 rounded-lg mb-6 min-h-[150px] flex items-center justify-center">
                           <p className="text-xl sm:text-2xl font-semibold text-brand-light leading-relaxed text-center">{currentQuestion.textoPregunta}</p>
                       </div>
-                      
+
                        <fieldset className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <legend className="sr-only">{t('game_select_answer')}</legend>
                             {currentQuestion.respuestas.map((answer, index) => (
