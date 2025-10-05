@@ -518,17 +518,42 @@
               }
 
               const params = new URLSearchParams(window.location.search);
-              const gameId = params.get('gameId');
+              let gameId = params.get('gameId');
 
               console.log('📋 [DUEL] Parámetros URL:', Object.fromEntries(params.entries()));
-              console.log('🆔 [DUEL] gameId extraído:', gameId);
+              console.log('🆔 [DUEL] gameId extraído de URL:', gameId);
+
+              // Fallback: Try to get gameId from localStorage if not in URL
+              if (!gameId) {
+                  console.warn('⚠️ [DUEL] No gameId en URL, intentando recuperar de localStorage...');
+                  const storedGameId = localStorage.getItem('current_game_id');
+
+                  // Also check navigation info
+                  const navInfo = localStorage.getItem('last_navigation_info');
+                  let navGameId = null;
+                  if (navInfo) {
+                      try {
+                          const info = JSON.parse(navInfo);
+                          navGameId = info.gameId;
+                      } catch (e) {
+                          console.error('❌ [DUEL] Error parsing navigation info for gameId:', e);
+                      }
+                  }
+
+                  gameId = navGameId || storedGameId;
+                  console.log('🔄 [DUEL] gameId recuperado de localStorage:', gameId);
+                  console.log('   - De navigation info:', navGameId);
+                  console.log('   - De current_game_id:', storedGameId);
+              }
 
               if (!gameId) {
-                  console.error('❌ [DUEL] No se proporcionó gameId en la URL');
+                  console.error('❌ [DUEL] No se pudo obtener gameId ni de URL ni de localStorage');
                   setError("No game ID provided.");
                   setIsLoading(false);
                   return;
               }
+
+              console.log('✅ [DUEL] gameId final a usar:', gameId);
 
               const loadData = async () => {
                   try {
