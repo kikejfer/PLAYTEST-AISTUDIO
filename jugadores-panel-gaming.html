@@ -845,11 +845,12 @@
             const activeGames = games.filter(g => g.status === 'active' || g.status === 'waiting');
             const completedGames = games.filter(g => g.status === 'completed');
             // Separate incoming challenges (where current user is challenged) from outgoing (where current user is challenger)
-            const incomingChallenges = challenges.filter(c => 
-                c.status === 'pending' && c.direction === 'incoming'
+            // Status can be 'waiting' (pending challenge) or 'pending' (legacy)
+            const incomingChallenges = challenges.filter(c =>
+                (c.status === 'waiting' || c.status === 'pending') && c.direction === 'incoming'
             );
-            const outgoingChallenges = challenges.filter(c => 
-                c.status === 'pending' && c.direction === 'outgoing'
+            const outgoingChallenges = challenges.filter(c =>
+                (c.status === 'waiting' || c.status === 'pending') && c.direction === 'outgoing'
             );
 
             // Enhanced function to accept challenge and start game directly
