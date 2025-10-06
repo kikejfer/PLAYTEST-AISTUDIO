@@ -580,9 +580,16 @@ class APIDataService {
         // Create a new object to avoid corrupting the original
         const transformedGame = {
           ...game,
-          mode: typeToMode[game.gameType] || game.gameType
+          mode: typeToMode[game.gameType] || game.gameType,
+          // Extract nested game state fields for duel games
+          ...(game.gameState && typeof game.gameState === 'object' ? {
+            gameState: game.gameState.gameState,
+            turnState: game.gameState.turnState,
+            round: game.gameState.round,
+            roundAnswers: game.gameState.roundAnswers
+          } : {})
         };
-        
+
         console.log('✅ fetchGame - Returning transformed game:', transformedGame);
         return this.simulateDelay(transformedGame);
       }
