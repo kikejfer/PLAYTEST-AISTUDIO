@@ -833,8 +833,27 @@
 
             // Helper to get turn information for duel games
             const getTurnInfo = (game) => {
-                if (game.mode !== 'Duelo') return null;
-                if (!game.turnState || !game.players || game.players.length < 2) return null;
+                console.log('🎯 getTurnInfo called for game:', game.id, {
+                    mode: game.mode,
+                    turnState: game.turnState,
+                    players: game.players,
+                    playersLength: game.players?.length,
+                    gameState: game.gameState
+                });
+
+                if (game.mode !== 'Duelo') {
+                    console.log('⏭️ Not a Duelo game, returning null');
+                    return null;
+                }
+
+                if (!game.turnState || !game.players || game.players.length < 2) {
+                    console.log('❌ Missing required data:', {
+                        hasTurnState: !!game.turnState,
+                        hasPlayers: !!game.players,
+                        playersCount: game.players?.length
+                    });
+                    return null;
+                }
 
                 const turnState = game.turnState;
                 let currentPlayerIndex = -1;
@@ -845,10 +864,19 @@
                     currentPlayerIndex = 1;
                 }
 
+                console.log('👤 Current player index:', currentPlayerIndex, 'for turnState:', turnState);
+
                 if (currentPlayerIndex === -1) return null;
 
                 const currentPlayer = game.players[currentPlayerIndex];
                 const isMyTurn = currentPlayer.userId === currentUser.id;
+
+                console.log('✅ Turn info:', {
+                    playerNickname: currentPlayer.nickname,
+                    isMyTurn,
+                    currentUserId: currentUser.id,
+                    currentPlayerUserId: currentPlayer.userId
+                });
 
                 return {
                     playerNickname: currentPlayer.nickname,

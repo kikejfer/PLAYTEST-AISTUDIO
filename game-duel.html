@@ -220,8 +220,18 @@
         const isMyTurn = (turnState.startsWith('p1') && currentUser.id === game.players[0].userId) || (turnState.startsWith('p2') && currentUser.id === game.players[1].userId);
 
         const updateSharedGameState = useCallback((data) => {
-            apiDataService.updateGame(game.id, data);
-        }, [game.id]);
+            // Wrap state fields in gameState object for backend
+            const wrappedData = {
+                gameState: {
+                    gameState: data.gameState || gameState,
+                    turnState: data.turnState || turnState,
+                    round: data.round !== undefined ? data.round : currentRound,
+                    roundAnswers: data.roundAnswers || roundAnswers
+                }
+            };
+            console.log('💾 [DUEL] Updating game state:', wrappedData);
+            apiDataService.updateGame(game.id, wrappedData);
+        }, [game.id, gameState, turnState, currentRound, roundAnswers]);
 
         const startTurn = useCallback(() => {
             const newTurnState = turnState === 'p1_ready' ? 'p1_answering' : 'p2_answering';
@@ -253,6 +263,48 @@
           }
           return () => clearInterval(timerRef.current);
         }, [turnState, isMyTurn]);
+
+        // Poll for game state updates when it's not my turn
+        useEffect(() => {
+            if (isMyTurn || gameState !== 'playing') return;
+
+            console.log('📡 [DUEL] Starting polling - waiting for opponent');
+            const pollInterval = setInterval(async () => {
+                try {
+                    const updatedGame = await apiDataService.fetchGame(game.id);
+                    console.log('🔄 [DUEL] Polled game state:', {
+                        turnState: updatedGame.turnState,
+                        gameState: updatedGame.gameState,
+                        round: updatedGame.round,
+                        roundAnswers: updatedGame.roundAnswers
+                    });
+
+                    // Update state if changed
+                    if (updatedGame.turnState && updatedGame.turnState !== turnState) {
+                        console.log('✨ [DUEL] Turn state changed!', turnState, '->', updatedGame.turnState);
+                        setTurnState(updatedGame.turnState);
+                    }
+                    if (updatedGame.gameState && updatedGame.gameState !== gameState) {
+                        console.log('✨ [DUEL] Game state changed!', gameState, '->', updatedGame.gameState);
+                        setGameState(updatedGame.gameState);
+                    }
+                    if (updatedGame.round !== undefined && updatedGame.round !== currentRound) {
+                        console.log('✨ [DUEL] Round changed!', currentRound, '->', updatedGame.round);
+                        setCurrentRound(updatedGame.round);
+                    }
+                    if (updatedGame.roundAnswers) {
+                        setRoundAnswers(updatedGame.roundAnswers);
+                    }
+                } catch (error) {
+                    console.error('❌ [DUEL] Polling error:', error);
+                }
+            }, 2000); // Poll every 2 seconds
+
+            return () => {
+                console.log('🛑 [DUEL] Stopping polling');
+                clearInterval(pollInterval);
+            };
+        }, [isMyTurn, gameState, game.id, turnState, currentRound]);
 
         useEffect(() => {
             if (gameState === 'finished' && currentUser) {
