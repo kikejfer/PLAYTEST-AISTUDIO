@@ -824,11 +824,36 @@
                 return Object.entries(config).map(([blockId, blockConfig]) => {
                     const block = blocks.find(b => b.id === parseInt(blockId) || b.id === blockId);
                     const blockName = block ? block.nombreCorto : 'Bloque Desconocido';
-                    const topicInfo = blockConfig.topics === 'all' 
-                        ? 'todos los temas' 
+                    const topicInfo = blockConfig.topics === 'all'
+                        ? 'todos los temas'
                         : `${Array.isArray(blockConfig.topics) ? blockConfig.topics.length : 0} temas`;
                     return `${blockName} (${topicInfo})`;
                 }).join(' | ');
+            };
+
+            // Helper to get turn information for duel games
+            const getTurnInfo = (game) => {
+                if (game.mode !== 'Duelo') return null;
+                if (!game.turnState || !game.players || game.players.length < 2) return null;
+
+                const turnState = game.turnState;
+                let currentPlayerIndex = -1;
+
+                if (turnState.startsWith('p1')) {
+                    currentPlayerIndex = 0;
+                } else if (turnState.startsWith('p2')) {
+                    currentPlayerIndex = 1;
+                }
+
+                if (currentPlayerIndex === -1) return null;
+
+                const currentPlayer = game.players[currentPlayerIndex];
+                const isMyTurn = currentPlayer.userId === currentUser.id;
+
+                return {
+                    playerNickname: currentPlayer.nickname,
+                    isMyTurn
+                };
             };
 
             const handleDeleteClick = (gameId) => {
@@ -1115,7 +1140,15 @@
                                 React.createElement('p', {
                                     key: 'config-details',
                                     className: "text-xs text-gray-300"
-                                }, getGameConfigDetails(game.config, game.configurationMetadata))
+                                }, getGameConfigDetails(game.config, game.configurationMetadata)),
+                                (() => {
+                                    const turnInfo = getTurnInfo(game);
+                                    if (!turnInfo) return null;
+                                    return React.createElement('p', {
+                                        key: 'turn-info',
+                                        className: `text-xs font-semibold mt-1 ${turnInfo.isMyTurn ? 'text-green-400' : 'text-amber-400'}`
+                                    }, turnInfo.isMyTurn ? '🎯 Tu turno' : `⏳ Turno de ${turnInfo.playerNickname}`);
+                                })()
                             ]),
                             React.createElement('button', {
                                 key: 'continue-game',
@@ -2556,19 +2589,24 @@
                 }
             };
 
-            // Enhanced accept to start game for ActiveGamesComponent  
+            // Enhanced accept to start game for ActiveGamesComponent
             const handleAcceptAndStartGame = async (challengeId, challenge) => {
                 try {
                     if (window.apiDataService && onNavigateToGame) {
                         console.log('🎮 Accepting challenge and starting game:', { challengeId, challenge });
-                        
-                        // Accept the challenge (this changes status from 'pending' to 'active')
-                        await window.apiDataService.acceptChallenge(currentUser.id, challengeId);
-                        
-                        // Navigate directly to the game with the challenge's game ID
-                        console.log('🚀 Redirecting to game:', challengeId);
-                        onNavigateToGame(challengeId);
-                        
+
+                        // Accept the challenge (this changes status from 'waiting' to 'active')
+                        const response = await window.apiDataService.acceptChallenge(currentUser.id, challengeId);
+                        console.log('✅ Challenge accepted, response:', response);
+
+                        // Extract game from response or fallback to challenge data
+                        const acceptedGame = response?.game || { ...challenge, id: challengeId, status: 'active' };
+                        console.log('🎯 Game object for navigation:', acceptedGame);
+
+                        // Navigate directly to the game with the full game object
+                        console.log('🚀 Redirecting to game with full object');
+                        onNavigateToGame(acceptedGame);
+
                         // Refresh data to remove the challenge from pending list
                         const [gamesData, challengesData] = await Promise.all([
                             window.apiDataService.fetchGamesForUser(currentUser.id),
