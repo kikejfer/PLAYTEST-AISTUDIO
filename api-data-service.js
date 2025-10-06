@@ -696,6 +696,13 @@ class APIDataService {
     return this.deleteGame(gameId);
   }
 
+  async abandonGame(gameId) {
+    const response = await this.apiCall(`/games/${gameId}/abandon`, {
+      method: 'POST'
+    });
+    return this.simulateDelay(response);
+  }
+
   // === SCORES ===
   async saveTrivialScore(gameId, scoreData) {
     const response = await this.apiCall(`/games/${gameId}/scores`, {

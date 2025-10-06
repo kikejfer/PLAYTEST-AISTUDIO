@@ -430,7 +430,24 @@
                 </div>
             )
         }
-        
+
+        if (gameState === 'abandoned') {
+            return (
+                <div className="max-w-3xl mx-auto text-center animate-fade-in p-8 bg-brand-secondary rounded-xl">
+                    <h2 className="text-4xl font-bold text-brand-light mb-4">Partida Abandonada</h2>
+                    <h3 className="text-2xl font-semibold text-amber-400 mb-8">
+                        Un jugador ha abandonado la partida
+                    </h3>
+                    <div className="flex justify-center gap-4">
+                        <button onClick={() => window.location.href = 'jugadores-panel-gaming.html'} className="flex items-center gap-2 bg-brand-cta hover:bg-brand-cta-hover text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                            <ArrowUturnLeftIcon className="h-5 w-5" />
+                            {t('game_button_dashboard')}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
         const PlayerScorecard = ({ playerNum }) => (
             <div className={`text-center p-4 rounded-lg transition-colors duration-300 ${turnState.startsWith(`p${playerNum+1}`) ? 'bg-brand-cta/20' : ''}`}>
                 <p className="font-bold text-brand-light truncate">{game.players[playerNum].nickname}</p>
@@ -440,9 +457,25 @@
 
         if(!currentQuestion) return <div className="text-center p-8">{t('loading')}</div>;
 
+        const handleAbandonGame = async () => {
+            try {
+                console.log('🏳️ [DUEL] Abandoning game:', game.id);
+                const response = await apiDataService.abandonGame(game.id);
+                console.log('✅ [DUEL] Game abandoned:', response);
+
+                // Set game state to abandoned and show results
+                setGameState('abandoned');
+                setIsConfirmingFinish(false);
+            } catch (error) {
+                console.error('❌ [DUEL] Error abandoning game:', error);
+                alert('Error al abandonar la partida');
+                setIsConfirmingFinish(false);
+            }
+        };
+
         return (
              <div className="max-w-4xl mx-auto animate-fade-in">
-                {isConfirmingFinish && ( <ConfirmationDialog title={t('game_finish_confirm_title')} message={t('game_finish_confirm_message')} confirmText={t('game_button_finish')} onConfirm={() => setGameState('finished')} onCancel={() => setIsConfirmingFinish(false)} danger={true}/> )}
+                {isConfirmingFinish && ( <ConfirmationDialog title={t('game_finish_confirm_title')} message={t('game_finish_confirm_message')} confirmText={t('game_button_finish')} onConfirm={handleAbandonGame} onCancel={() => setIsConfirmingFinish(false)} danger={true}/> )}
                  
                 {gameState === 'playing' && !isMyTurn && (
                     <div className="mb-4">

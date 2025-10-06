@@ -2780,6 +2780,9 @@
                     }, [
                         React.createElement('th', { key: 'block-header', className: "py-2 px-2 text-left text-gray-300 font-semibold truncate" }, 'Bloque'),
                         React.createElement('th', { key: 'mode-header', className: "py-2 px-2 text-left text-gray-300 font-semibold" }, 'Modo'),
+                        React.createElement('th', { key: 'correct-header', className: "py-2 px-2 text-center text-gray-300 font-semibold" }, 'Aciertos'),
+                        React.createElement('th', { key: 'incorrect-header', className: "py-2 px-2 text-center text-gray-300 font-semibold" }, 'Fallos'),
+                        React.createElement('th', { key: 'blank-header', className: "py-2 px-2 text-center text-gray-300 font-semibold" }, 'Blancos'),
                         React.createElement('th', { key: 'score-header', className: "py-2 px-2 text-center text-gray-300 font-semibold" }, 'Punt.'),
                         React.createElement('th', { key: 'date-header', className: "py-2 px-2 text-left text-gray-300 font-semibold" }, 'Fecha')
                     ])),
@@ -2793,17 +2796,19 @@
                                 className: "py-3 px-2 font-medium text-white truncate max-w-32",
                                 title: game.blockName
                             }, game.blockName),
-                            React.createElement('td', { key: 'mode-info', className: "py-3 px-2 text-gray-400" }, [
-                                React.createElement('div', { key: 'game-mode', className: "font-medium text-white" }, game.gameMode || 'Clásico'),
-                                React.createElement('div', { key: 'config-info', className: "text-xs" }, `${game.totalQuestions || 0} preguntas`)
-                            ]),
+                            React.createElement('td', { key: 'mode-info', className: "py-3 px-2 text-gray-400" },
+                                React.createElement('div', { key: 'game-mode', className: "font-medium text-white" }, game.mode || 'Clásico')
+                            ),
+                            React.createElement('td', { key: 'correct-cell', className: "py-3 px-2 text-center text-green-400 font-semibold" }, game.correct || 0),
+                            React.createElement('td', { key: 'incorrect-cell', className: "py-3 px-2 text-center text-red-400 font-semibold" }, game.incorrect || 0),
+                            React.createElement('td', { key: 'blank-cell', className: "py-3 px-2 text-center text-gray-400 font-semibold" }, game.blank || 0),
                             React.createElement('td', { key: 'score-cell', className: "py-3 px-2 text-center" }, React.createElement('span', {
                                 key: 'score-value',
                                 className: "font-bold px-2 py-1 rounded text-xs",
                                 style: { color: game.score >= 5 ? '#10B981' : '#EF4444' }
-                            }, game.score || 0)),
+                            }, game.score ? game.score.toFixed(1) : '0.0')),
                             React.createElement('td', { key: 'date-cell', className: "py-3 px-2 text-gray-400 text-xs" }, (() => {
-                                const date = new Date(game.createdAt || Date.now());
+                                const date = new Date(game.date || Date.now());
                                 return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
                             })())
                         ])
