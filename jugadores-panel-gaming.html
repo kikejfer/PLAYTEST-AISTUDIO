@@ -2438,6 +2438,10 @@
                 };
                 localStorage.setItem('last_navigation_info', JSON.stringify(navInfo));
 
+                // Update current_game_id with the latest game ID
+                localStorage.setItem('current_game_id', game?.id);
+                console.log('💾 [NAV] Updated current_game_id in localStorage:', game?.id);
+
                 if (!game || !game.id) {
                     console.error('❌ [NAV] Cannot navigate - game or game.id is missing:', game);
                     alert('Error: No se puede continuar la partida. ID de juego no encontrado.');
