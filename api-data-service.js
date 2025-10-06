@@ -531,7 +531,14 @@ class APIDataService {
         // Transform each game properly without corrupting original
         const transformedGames = games.map(game => ({
           ...game,
-          mode: game.gameType ? typeToMode[game.gameType] || game.gameType : game.mode
+          mode: game.gameType ? typeToMode[game.gameType] || game.gameType : game.mode,
+          // Extract nested game state fields for duel games
+          ...(game.gameState && typeof game.gameState === 'object' ? {
+            gameState: game.gameState.gameState,
+            turnState: game.gameState.turnState,
+            round: game.gameState.round,
+            roundAnswers: game.gameState.roundAnswers
+          } : {})
         }));
         
         console.log('✅ fetchGamesForUser - Transformed games:', transformedGames);
