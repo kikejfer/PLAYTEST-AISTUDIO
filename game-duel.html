@@ -202,15 +202,35 @@
         const DUEL_ROUNDS = Math.min(10, Math.floor(questions.length / 2) * 2);
         const duelQuestions = useMemo(() => questions.slice(0, DUEL_ROUNDS), [questions]);
 
-        const [gameState, setGameState] = useState(game.gameState || 'playing'); // playing, round_summary, finished
-        const [turnState, setTurnState] = useState(game.turnState || 'p1_ready'); // p1_ready, p1_answering, p2_ready, p2_answering
-        const [myAnswersHistory, setMyAnswersHistory] = useState([]);
-        const [currentRound, setCurrentRound] = useState(game.round || 0);
-        const [playerScores, setPlayerScores] = useState({
+        // Try to restore saved state from localStorage
+        const getSavedState = () => {
+            try {
+                const savedState = localStorage.getItem(`duel_game_${game.id}`);
+                if (savedState) {
+                    const parsed = JSON.parse(savedState);
+                    // Only restore if saved within last hour
+                    if (Date.now() - parsed.timestamp < 3600000) {
+                        console.log('📂 [DUEL] Restoring saved game state');
+                        return parsed;
+                    }
+                }
+            } catch (error) {
+                console.error('❌ [DUEL] Error restoring saved state:', error);
+            }
+            return null;
+        };
+
+        const savedState = getSavedState();
+
+        const [gameState, setGameState] = useState(savedState?.gameState || game.gameState || 'playing');
+        const [turnState, setTurnState] = useState(savedState?.turnState || game.turnState || 'p1_ready');
+        const [myAnswersHistory, setMyAnswersHistory] = useState(savedState?.myAnswersHistory || []);
+        const [currentRound, setCurrentRound] = useState(savedState?.currentRound || game.round || 0);
+        const [playerScores, setPlayerScores] = useState(savedState?.playerScores || {
           0: game.players?.[0]?.score || 0,
           1: game.players?.[1]?.score || 0
         });
-        const [roundAnswers, setRoundAnswers] = useState(game.roundAnswers || { 0: null, 1: null });
+        const [roundAnswers, setRoundAnswers] = useState(savedState?.roundAnswers || game.roundAnswers || { 0: null, 1: null });
         const [isConfirmingFinish, setIsConfirmingFinish] = useState(false);
         const [timeLeft, setTimeLeft] = useState(30);
         const turnStartTime = useRef(null);
@@ -306,10 +326,31 @@
             };
         }, [isMyTurn, gameState, game.id, turnState, currentRound]);
 
+        // Persist game state to localStorage for recovery
+        useEffect(() => {
+            if (gameState === 'playing') {
+                const gameStateToSave = {
+                    gameId: game.id,
+                    gameState,
+                    turnState,
+                    currentRound,
+                    playerScores,
+                    roundAnswers,
+                    myAnswersHistory,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(`duel_game_${game.id}`, JSON.stringify(gameStateToSave));
+                console.log('💾 [DUEL] Game state persisted to localStorage');
+            }
+        }, [game.id, gameState, turnState, currentRound, playerScores, roundAnswers, myAnswersHistory]);
+
         useEffect(() => {
             if (gameState === 'finished' && currentUser) {
                 const finishGame = async () => {
                     try {
+                        // Clear saved state
+                        localStorage.removeItem(`duel_game_${game.id}`);
+
                         // Save duel score to rankings
                         const winner = playerScores[0] > playerScores[1] ? game.players[0] : 
                                       (playerScores[1] > playerScores[0] ? game.players[1] : null);
@@ -340,8 +381,9 @@
                                 await apiDataService.updateUserStats(player.userId, game.id, gameResults, game.mode);
                             }
                         }
-                        
-                        await apiDataService.deleteGame(game.id);
+
+                        // Don't delete the game - keep it in history
+                        // await apiDataService.deleteGame(game.id);
                     } catch (error) {
                         console.error("Failed to finish duel game:", error);
                     }
@@ -460,15 +502,39 @@
         const handleAbandonGame = async () => {
             try {
                 console.log('🏳️ [DUEL] Abandoning game:', game.id);
+
+                // Save scores before abandoning
+                const currentPlayerIdx = game.players.findIndex(p => p.userId === currentUser.id);
+                const opponentIdx = currentPlayerIdx === 0 ? 1 : 0;
+
+                const duelScoreData = {
+                    winner: game.players[opponentIdx].nickname,
+                    winnerId: game.players[opponentIdx].userId,
+                    loser: game.players[currentPlayerIdx].nickname,
+                    loserId: currentUser.id,
+                    p1: game.players[0].nickname,
+                    p2: game.players[1].nickname,
+                    scores: { p1: playerScores[0], p2: playerScores[1] },
+                    rounds: currentRound,
+                    abandoned: true,
+                    date: new Date().toISOString()
+                };
+
+                console.log('💾 [DUEL] Saving scores before abandon:', duelScoreData);
+                await apiDataService.saveDuelScore(game.id, duelScoreData);
+
                 const response = await apiDataService.abandonGame(game.id);
                 console.log('✅ [DUEL] Game abandoned:', response);
+
+                // Clear saved state
+                localStorage.removeItem(`duel_game_${game.id}`);
 
                 // Set game state to abandoned and show results
                 setGameState('abandoned');
                 setIsConfirmingFinish(false);
             } catch (error) {
                 console.error('❌ [DUEL] Error abandoning game:', error);
-                alert('Error al abandonar la partida');
+                alert('Error al abandonar la partida: ' + error.message);
                 setIsConfirmingFinish(false);
             }
         };
