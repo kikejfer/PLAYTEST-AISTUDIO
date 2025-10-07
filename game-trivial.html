@@ -480,7 +480,14 @@
           const updateSharedGameState = useCallback((data) => {
               const updatedGame = { ...game, ...data };
               setGame(updatedGame);
-              apiDataService.updateGame(game.id, updatedGame);
+
+              // Only send fields that are valid for update (gameState, status, config)
+              const updateData = {};
+              if (data.gameState !== undefined) updateData.gameState = data.gameState;
+              if (data.status !== undefined) updateData.status = data.status;
+              if (data.config !== undefined) updateData.config = data.config;
+
+              apiDataService.updateGame(game.id, updateData);
           }, [game]);
           
           const onSpinEnd = useCallback((resultTopic) => {
