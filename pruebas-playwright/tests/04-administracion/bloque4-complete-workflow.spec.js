@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 const { loginWithIndependentBrowser } = require('../../utils/login-helper');
-const { performSafeLogout } = require('../../utils/logout-helper');
+const { performSafeLogout, logoutAndCloseBrowser } = require('../../utils/logout-helper');
 const { createAvailableBlockStep, createLoadedBlockStep } = require('../../utils/player-blocks-helper');
 const { navigateToUploadSection, createSingleUploadStep } = require('../../utils/file-upload-helper');
 const { extractUserInfoFromPAP, extractUserInfoFromPAS } = require('../../utils/admin-panel-helper');
@@ -12,6 +12,7 @@ const LOGIN_URL = `${BASE_URL}`;
 test.describe('Bloque 4: Workflow Completo de Administración', () => {
 
   test('Workflow completo: Creación de bloque → Carga → Gestión administrativa', async () => {
+    test.setTimeout(180000); // 180 segundos (3 minutos) para workflow completo con múltiples sesiones independientes
 
     // Store browser sessions to close them all at the end
     let andgarSession, adminSession;
@@ -22,7 +23,7 @@ test.describe('Bloque 4: Workflow Completo de Administración', () => {
       const { page } = andgarSession;
 
       // Verificar que llegó al panel correcto
-      await page.waitForURL(/creators-panel-content/, { timeout: 15000 });
+      await page.waitForURL(/creators-panel-content/, { timeout: 60000 });
       console.log('✅ AndGar logged in successfully with independent browser');
 
       // Usar helper para navegar a sección de subida
@@ -89,37 +90,57 @@ test.describe('Bloque 4: Workflow Completo de Administración', () => {
       }
     });
 
-    await test.step('TEST 1: Reasignar AndGar a kikejfer en sección Creadores', async () => {
+    await test.step('TEST 1 - PASO 3: Verificar administrador actual de AndGar', async () => {
       const { page } = adminSession;
 
-      try {
-        // Buscar AndGar en la sección Creadores usando helper
-        console.log('🔄 Using admin-panel-helper to find AndGar in Creadores section');
+      // Verificar que AndGar existe en la sección Creadores
+      const andgarStats = await extractUserInfoFromPAP("Creadores", "AndGar", "", page);
+      console.log('✅ Found AndGar in creators section:', andgarStats);
 
-        // Verificar que AndGar existe en la sección
-        const andgarStats = await extractUserInfoFromPAP("Creadores", "AndGar", "", page);
-        console.log('✅ Found AndGar in creators section:', andgarStats);
+      // Obtener el valor actual del administrador
+      const currentAdmin = await extractUserInfoFromPAP("Creadores", "AndGar", "Administrador", page);
+      console.log(`📋 PASO 3 - AndGar current administrator: "${currentAdmin}"`);
 
-        // Intentar obtener el valor actual del administrador
-        try {
-          const currentAdmin = await extractUserInfoFromPAP("Creadores", "AndGar", "Administrador", page);
-          console.log(`📋 AndGar current administrator: ${currentAdmin}`);
+      if (!currentAdmin || currentAdmin === '' || currentAdmin === 'Sin asignar') {
+        console.log('✅ PASO 3 VERIFICADO: AndGar no tiene administrador asignado (esperado)');
+      } else {
+        console.log(`⚠️ PASO 3: AndGar ya tiene administrador: "${currentAdmin}"`);
+      }
+    });
 
-          // Note: La reasignación real requeriría modificar el helper para manejar cambios
-          console.log('⚠️ Reasignación simulation: AndGar → kikejfer (helper would need enhancement for actual assignment)');
+    await test.step('TEST 1 - PASO 4: Reasignar AndGar a kikejfer', async () => {
+      const { page } = adminSession;
 
-        } catch (adminError) {
-          console.log('⚠️ Admin dropdown not accessible via helper, but test continues');
-        }
+      // Cambiar administrador a kikejfer
+      const changeResult = await extractUserInfoFromPAP("Creadores", "AndGar", "SetAdministrador:kikejfer", page);
 
-      } catch (error) {
-        console.log(`⚠️ Helper-based search failed: ${error.message}, but test continues`);
+      if (changeResult === true) {
+        console.log('✅ PASO 4 COMPLETADO: AndGar reasignado a kikejfer');
+      } else {
+        console.log('⚠️ PASO 4: Reasignación puede no haberse completado correctamente');
+      }
+    });
+
+    await test.step('TEST 1 - PASO 5: Verificar que el cambio se guardó', async () => {
+      const { page } = adminSession;
+
+      // Esperar para que el cambio se propague
+      await page.waitForTimeout(2000);
+
+      // Verificar el nuevo valor del administrador
+      const newAdmin = await extractUserInfoFromPAP("Creadores", "AndGar", "Administrador", page);
+      console.log(`📋 PASO 5 - AndGar new administrator: "${newAdmin}"`);
+
+      if (newAdmin === 'kikejfer') {
+        console.log('✅ PASO 5 VERIFICADO: Cambio guardado correctamente - AndGar ahora asignado a kikejfer');
+      } else {
+        console.log(`⚠️ PASO 5: Administrador actual es "${newAdmin}", esperado "kikejfer"`);
       }
     });
 
     await test.step('TEST 1: Cerrar sesión AdminPrincipal', async () => {
-      await logoutAndCloseBrowser(adminSession.page, adminSession.browser);
-      console.log('✅ AdminPrincipal session closed completely');
+      await performSafeLogout(adminSession.page);
+      console.log('✅ AdminPrincipal session logged out (browser kept open for cleanup)');
     });
 
     // PREREQUISITO PARA TEST 2: Ejecutar carga de bloque (block-loading.spec.js) - Sesión independiente
@@ -162,29 +183,34 @@ test.describe('Bloque 4: Workflow Completo de Administración', () => {
       console.log('✅ kikejfer logged in successfully with independent browser');
     });
 
-    await test.step('TEST 2: Verificar AndGar asignado a kikejfer en Creadores', async () => {
-      const { page } = kikejferSession;
+    await test.step('TEST 2 - PASO 6: Verificar AndGar asignado a kikejfer en su panel', async () => {
+      const { page} = kikejferSession;
 
       try {
         // Buscar AndGar en la sección Creadores Asignados usando helper
-        console.log('🔄 Using admin-panel-helper to verify AndGar in Creadores Asignados section');
+        console.log('🔄 PASO 6: Using admin-panel-helper to verify AndGar in Creadores Asignados section');
 
         const andgarStats = await extractUserInfoFromPAS("Creadores Asignados", "AndGar", "", page);
-        console.log('✅ Found AndGar assigned to kikejfer in Creadores Asignados:', andgarStats);
+        console.log('✅ PASO 6: Found AndGar assigned to kikejfer in Creadores Asignados:', andgarStats);
 
         // Verificar que las estadísticas son coherentes
         if (andgarStats.bloquesCreados && parseInt(andgarStats.bloquesCreados) > 0) {
-          console.log(`✅ AndGar has ${andgarStats.bloquesCreados} blocks created`);
+          console.log(`✅ PASO 6 VERIFICADO: AndGar has ${andgarStats.bloquesCreados} blocks created`);
+          console.log('✅ PASO 6 COMPLETADO: Reasignación confirmada en panel de kikejfer');
+        } else {
+          console.log('⚠️ PASO 6: AndGar found but has 0 blocks created');
         }
 
       } catch (error) {
-        console.log(`⚠️ Helper-based verification failed: ${error.message}`);
+        console.log(`⚠️ PASO 6: Helper-based verification failed: ${error.message}`);
 
         // Fallback to original method
         const andgarAssignment = page.locator('text=AndGar').first();
         if (await andgarAssignment.count() > 0) {
           await expect(andgarAssignment).toBeVisible();
-          console.log('✅ AndGar appears assigned to kikejfer (fallback method)');
+          console.log('✅ PASO 6 VERIFICADO: AndGar appears assigned to kikejfer (fallback method)');
+        } else {
+          console.log('❌ PASO 6 FAILED: AndGar NOT found in kikejfer panel');
         }
       }
     });

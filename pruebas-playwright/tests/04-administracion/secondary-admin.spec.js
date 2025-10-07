@@ -84,19 +84,19 @@ test.describe('Verificación Admin Secundario', () => {
     
     await test.step('Verificar estadísticas y contadores', async () => {
       // Verificar contadores de usuarios
-      const userCounter = page.locator('text=/[0-9]+.*usuario/i, .user-count').first();
+      const userCounter = page.locator('text=/[0-9]+.*usuario/i').or(page.locator('.user-count')).first();
       if (await userCounter.count() > 0) {
         console.log('✅ User counter is visible');
       }
-      
+
       // Verificar contadores de bloques
-      const blockCounter = page.locator('text=/[0-9]+.*bloque/i, .block-count').first();
+      const blockCounter = page.locator('text=/[0-9]+.*bloque/i').or(page.locator('.block-count')).first();
       if (await blockCounter.count() > 0) {
         console.log('✅ Block counter is visible');
       }
-      
+
       // Verificar estadísticas generales
-      const statsSection = page.locator('.stats, .statistics, .admin-stats').first();
+      const statsSection = page.locator('.stats').or(page.locator('.statistics')).or(page.locator('.admin-stats')).first();
       if (await statsSection.count() > 0) {
         console.log('✅ Statistics section is visible');
       }
@@ -104,19 +104,19 @@ test.describe('Verificación Admin Secundario', () => {
     
     await test.step('Verificar funcionalidades de admin secundario', async () => {
       // Verificar que kikejfer tiene acceso a funcionalidades de admin secundario
-      const adminActions = page.locator('.admin-actions, .secondary-admin-controls').first();
+      const adminActions = page.locator('.admin-actions').or(page.locator('.secondary-admin-controls')).first();
       if (await adminActions.count() > 0) {
         console.log('✅ Admin actions are available');
       }
-      
+
       // Verificar que puede ver detalles de usuarios asignados
-      const userDetails = page.locator('.user-details, .assigned-user-info').first();
+      const userDetails = page.locator('.user-details').or(page.locator('.assigned-user-info')).first();
       if (await userDetails.count() > 0) {
         console.log('✅ User details are accessible');
       }
-      
+
       // Verificar acceso a información de bloques
-      const blockDetails = page.locator('.block-details, .block-management').first();
+      const blockDetails = page.locator('.block-details').or(page.locator('.block-management')).first();
       if (await blockDetails.count() > 0) {
         console.log('✅ Block details are accessible');
       }

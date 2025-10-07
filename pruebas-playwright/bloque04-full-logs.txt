@@ -1,0 +1,30 @@
+
+Running 1 test using 1 worker
+
+🌐 Creating independent chromium browser for AndGar
+✅ AndGar logged in successfully
+✅ Independent browser session created for AndGar
+  ✘  1 tests\04-administracion\bloque4-complete-workflow.spec.js:14:3 › Bloque 4: Workflow Completo de Administración › Workflow completo: Creación de bloque → Carga → Gestión administrativa (1.3m)
+
+
+  1) tests\04-administracion\bloque4-complete-workflow.spec.js:14:3 › Bloque 4: Workflow Completo de Administración › Workflow completo: Creación de bloque → Carga → Gestión administrativa › PASO 0: AndGar crea bloque usando helpers 
+
+    TimeoutError: page.waitForURL: Timeout 60000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation until "load"
+    ============================================================
+
+      24 |
+      25 |       // Verificar que llegó al panel correcto
+    > 26 |       await page.waitForURL(/creators-panel-content/, { timeout: 60000 });
+         |                  ^
+      27 |       console.log('✅ AndGar logged in successfully with independent browser');
+      28 |
+      29 |       // Usar helper para navegar a sección de subida
+        at C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\04-administracion\bloque4-complete-workflow.spec.js:26:18
+        at C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\04-administracion\bloque4-complete-workflow.spec.js:21:5
+
+    Error Context: test-results\tests-04-administracion-bl-3ebef-ga-→-Gestión-administrativa\error-context.md
+
+  1 failed
+    tests\04-administracion\bloque4-complete-workflow.spec.js:14:3 › Bloque 4: Workflow Completo de Administración › Workflow completo: Creación de bloque → Carga → Gestión administrativa 

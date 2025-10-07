@@ -7,9 +7,9 @@
  * Extracts user information from PAP (Panel Administrador Principal)
  * @param {string} section - Section name (e.g., "Creadores", "Jugadores - Administrador Principal")
  * @param {string} nickname - User nickname to find
- * @param {string} [action] - Action to perform: "bloques", "Administrador", or empty for stats
+ * @param {string} [action] - Action to perform: "bloques", "Administrador", "SetAdministrador:kikejfer", or empty for stats
  * @param {import('@playwright/test').Page} page - Playwright page object (optional, defaults to new Chrome browser)
- * @returns {Promise<string|Object|null>} Extracted value, stats object, or null
+ * @returns {Promise<string|Object|boolean|null>} Extracted value, stats object, boolean for set operations, or null
  */
 async function extractUserInfoFromPAP(section, nickname, action = '', page = null) {
   let browser = null;
@@ -47,6 +47,9 @@ async function extractUserInfoFromPAP(section, nickname, action = '', page = nul
       return await clickExpandButton(userRow);
     } else if (action === 'Administrador') {
       return await getAdministratorValue(userRow);
+    } else if (action.startsWith('SetAdministrador:')) {
+      const adminNickname = action.split(':')[1];
+      return await setAdministratorValue(userRow, adminNickname);
     } else {
       return await getUserStats(userRow);
     }
@@ -286,7 +289,8 @@ async function findUserRowByIdInSection(sectionContainer, userId, sectionName) {
     console.log(`\n🔍 SEARCHING FOR USER ID ${userId} within section "${sectionName}"`);
 
     // Mapeo correcto de secciones a índices de tabla (0-based)
-    const sectionTableMapping = {
+    // PAP (Panel Admin Principal) - Tiene 6-7 tablas
+    const papSectionTableMapping = {
       "Administradores Secundarios": 1,  // Tabla 2 (índice 1)
       "Soporte Técnico": 2,              // Tabla 3 (índice 2)
       "Profesores": 2,                   // Tabla 3 (índice 2) - Profesores: 9 usuarios
@@ -295,20 +299,45 @@ async function findUserRowByIdInSection(sectionContainer, userId, sectionName) {
       "Jugadores - Otros Administradores": 6     // Tabla 7 (índice 6)
     };
 
-    const correctTableIndex = sectionTableMapping[sectionName];
+    // PAS (Panel Admin Secundario) - Tiene 3 tablas
+    const pasSectionTableMapping = {
+      "Profesores Asignados": 0,         // Tabla 1 (índice 0)
+      "Creadores Asignados": 1,          // Tabla 2 (índice 1)
+      "Jugadores Asignados": 2           // Tabla 3 (índice 2)
+    };
+
+    // Intentar primero con mapeo PAP, luego con PAS
+    let correctTableIndex = papSectionTableMapping[sectionName];
+    let mappingType = 'PAP';
+
+    if (correctTableIndex === undefined) {
+      correctTableIndex = pasSectionTableMapping[sectionName];
+      mappingType = 'PAS';
+    }
 
     if (correctTableIndex === undefined) {
       console.log(`   ⚠️ No table mapping found for section "${sectionName}"`);
-      console.log(`   📋 Available sections: ${Object.keys(sectionTableMapping).join(', ')}`);
+      console.log(`   📋 Available PAP sections: ${Object.keys(papSectionTableMapping).join(', ')}`);
+      console.log(`   📋 Available PAS sections: ${Object.keys(pasSectionTableMapping).join(', ')}`);
       return null;
     }
 
-    console.log(`   🎯 Using table index ${correctTableIndex} (Table ${correctTableIndex + 1}) for section "${sectionName}"`);
+    console.log(`   🎯 Using ${mappingType} mapping - table index ${correctTableIndex} (Table ${correctTableIndex + 1}) for section "${sectionName}"`);
 
     // Get all table containers
-    const tableContainers = sectionContainer.locator('.table-container');
-    const tableCount = await tableContainers.count();
-    console.log(`   📊 Total table containers found: ${tableCount}`);
+    let tableContainers = sectionContainer.locator('.table-container');
+    let tableCount = await tableContainers.count();
+    console.log(`   📊 Total table containers found in section container: ${tableCount}`);
+
+    // Si es PAS y no hay suficientes tablas, buscar en el container padre (page-wide)
+    if (mappingType === 'PAS' && tableCount <= correctTableIndex) {
+      console.log(`   ⚠️ Not enough tables in section container for PAS, searching page-wide...`);
+      // Buscar todas las tablas en la página
+      const page = sectionContainer.page();
+      tableContainers = page.locator('.table-container');
+      tableCount = await tableContainers.count();
+      console.log(`   📊 Total table containers found page-wide: ${tableCount}`);
+    }
 
     if (correctTableIndex >= tableCount) {
       console.log(`   ❌ Table index ${correctTableIndex} out of range. Available tables: 0-${tableCount - 1}`);
@@ -430,15 +459,66 @@ async function getAdministratorValue(userRow) {
     const selectElement = eighthTd.locator('select');
 
     if (await selectElement.count() > 0) {
-      const selectedValue = await selectElement.inputValue();
-      console.log(`✅ Administrator value: "${selectedValue}"`);
-      return selectedValue;
+      // Get text of selected option (nickname) instead of value (ID)
+      const selectedText = await selectElement.evaluate(el => el.selectedOptions[0]?.text);
+      console.log(`✅ Administrator value: "${selectedText}"`);
+      return selectedText;
     } else {
       throw new Error('Administrator select element not found in 8th td');
     }
 
   } catch (error) {
     console.log(`❌ Error getting administrator value: ${error.message}`);
+    throw error;
+  }
+}
+
+/**
+ * Sets administrator value in the dropdown
+ * @param {import('@playwright/test').Locator} userRow - User row locator
+ * @param {string} adminNickname - Administrator nickname to select
+ * @returns {Promise<boolean>} True if successfully changed
+ */
+async function setAdministratorValue(userRow, adminNickname) {
+  try {
+    const eighthTd = userRow.locator('td').nth(7); // 8th td (0-indexed)
+    const selectElement = eighthTd.locator('select');
+
+    if (await selectElement.count() > 0) {
+      // Get current selected option text
+      const currentText = await selectElement.evaluate(el => el.selectedOptions[0]?.text);
+      console.log(`📋 Current administrator: "${currentText}"`);
+
+      // Get admin ID from nickname (same function used for users)
+      const adminId = await getUserIdFromNickname(adminNickname);
+      console.log(`📋 Admin ID for "${adminNickname}": ${adminId}`);
+
+      // Select by admin ID (value attribute)
+      await selectElement.selectOption({ value: String(adminId) });
+      console.log(`✅ Selected administrator option with value: "${adminId}"`);
+
+      // Wait for onChange event to complete (calls adminPanelSection.reasignarUsuario)
+      await userRow.page().waitForTimeout(2000);
+
+      // Verify the change by checking selected option text
+      const newText = await selectElement.evaluate(el => el.selectedOptions[0]?.text);
+      const newValue = await selectElement.evaluate(el => el.selectedOptions[0]?.value);
+
+      console.log(`📋 After change - selected text: "${newText}", value: "${newValue}"`);
+
+      if (newText === adminNickname || newValue === String(adminId)) {
+        console.log(`✅ Administrator successfully changed from "${currentText}" to "${newText}"`);
+        return true;
+      } else {
+        console.log(`⚠️ Administrator text is "${newText}", expected "${adminNickname}"`);
+        return false;
+      }
+    } else {
+      throw new Error('Administrator select element not found in 8th td');
+    }
+
+  } catch (error) {
+    console.log(`❌ Error setting administrator value: ${error.message}`);
     throw error;
   }
 }

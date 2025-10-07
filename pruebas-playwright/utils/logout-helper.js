@@ -15,7 +15,7 @@ async function performLogout(page) {
       return;
     }
 
-    // Call the logout function directly instead of clicking the button
+    // Clear all storage and cookies
     await page.evaluate(() => {
       // Remove all auth tokens
       localStorage.removeItem('playtest_auth_token');
@@ -25,7 +25,12 @@ async function performLogout(page) {
 
       // Clear any remaining data
       sessionStorage.clear();
+      localStorage.clear();
     });
+
+    // Clear all cookies
+    const context = page.context();
+    await context.clearCookies();
 
     console.log('✅ Logout successful');
 
@@ -36,6 +41,8 @@ async function performLogout(page) {
         localStorage.clear();
         sessionStorage.clear();
       });
+      const context = page.context();
+      await context.clearCookies();
     } catch (fallbackError) {
       // Silent fail
     }

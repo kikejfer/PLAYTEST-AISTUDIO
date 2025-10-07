@@ -1,0 +1,235 @@
+
+Running 2 tests using 1 worker
+
+🌐 Creating independent chromium browser for AndGar
+✅ AndGar logged in successfully
+✅ Independent browser session created for AndGar
+✅ AndGar logged in successfully with independent browser
+✅ Navigated to Add Questions tab
+✅ Navigated to Upload File subtab
+🔄 Starting single file upload: CE1978_Título III Cortes Generales.txt
+📁 File path: C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\CE1978_Título III Cortes Generales.txt
+✅ Found individual file input (no webkitdirectory)
+✅ Selected file: CE1978_Título III Cortes Generales.txt
+✅ Clicked "Subir" button
+✅ Found modal button with selector: button:has-text("Subir")
+✅ Clicked modal "Subir" button
+✅ Clicked "Cargar archivo para revisar" button
+✅ Clicked "Guardar todas las preguntas" button
+🎉 Single file upload completed successfully for: CE1978_Título III Cortes Generales.txt
+✅ Block creation process completed using helper
+✅ Safe logout successful
+✅ AndGar session logged out safely (browser kept open until test completion)
+🌐 Creating independent chromium browser for AdminPrincipal
+✅ AdminPrincipal logged in successfully
+✅ Independent browser session created for AdminPrincipal
+✅ AdminPrincipal logged in successfully with independent browser
+✅ Users section is visible
+✅ AndGar information is visible
+🔄 Using admin-panel-helper to find AndGar in Creadores section
+🔄 Extracting user info from PAP - Section: "Creadores", User: "AndGar", Action: ""
+
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Creadores"
+
+📦 CONTAINER 1:
+   📋 Section headers in container 1: 8
+   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+   🎯 Contains "Creadores": NO
+   📝 Header 2: "Administradores Secundarios
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 4: "👨‍🏫 Profesores"
+   🎯 Contains "Creadores": NO
+   📝 Header 5: "🎨 Creadores"
+   🎯 Contains "Creadores": YES
+   📝 Header 6: "Jugadores - Administrador Principal"
+   🎯 Contains "Creadores": NO
+   📝 Header 7: "Jugadores - Otros Administradores"
+   🎯 Contains "Creadores": NO
+   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+   🎯 Contains "Creadores": NO
+   📊 Table containers in container 1: 6
+   📈 Table 1 has 0 user rows
+   📈 Table 2 has 0 user rows
+   📈 Table 3 has 9 user rows
+   👥 User IDs in table 3:
+      - ID: 32, First cell: "+"
+      - ID: 17, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 4 has 8 user rows
+   👥 User IDs in table 4:
+      - ID: 32, First cell: "+"
+      - ID: 18, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 5 has 0 user rows
+   📈 Table 6 has 0 user rows
+
+✅ FOUND TARGET SECTION "Creadores" in container 1
+   🔍 This container will be used for user searches
+📋 User ID for "AndGar" from database: 18
+
+🔍 SEARCHING FOR USER ID 18 within section "Creadores"
+   🎯 Using table index 3 (Table 4) for section "Creadores"
+   📊 Total table containers found: 6
+   🔍 Searching in table 4 for section "Creadores"
+   📈 User rows in target table: 8
+   👥 All user IDs in table 4 (Creadores):
+      - Row 1: ID=32, Name="+", 4th col="0"
+      - Row 2: ID=18, Name="+", 4th col="3"
+      - Row 3: ID=28, Name="+", 4th col="0"
+      - Row 4: ID=27, Name="+", 4th col="0"
+      - Row 5: ID=30, Name="+", 4th col="0"
+      - Row 6: ID=10, Name="+", 4th col="3"
+      - Row 7: ID=29, Name="+", 4th col="0"
+      - Row 8: ID=13, Name="+", 4th col="3"
+   ✅ FOUND user row with ID: 18 in table 4 (Creadores)
+   📋 Data from user row (10 columns):
+      Column 1: "+"
+      Column 2: "AndGar
+                            Andres Garcia"
+      Column 3: "andres.garcia@lumiquiz.es"
+      Column 4: "3"
+      Column 5: "7"
+      Column 6: "33"
+      Column 7: "0"
+      Column 8: "AdminPrincipal
+                                    Sin asignarAdminPrincipalkikejfer"
+✅ User stats extracted: { bloquesCreados: [32m'3'[39m, temas: [32m'7'[39m, preguntas: [32m'33'[39m, alumnos: [32m'0'[39m }
+✅ Found AndGar in creators section: { bloquesCreados: [32m'3'[39m, temas: [32m'7'[39m, preguntas: [32m'33'[39m, alumnos: [32m'0'[39m }
+🔄 Extracting user info from PAP - Section: "Creadores", User: "AndGar", Action: "Administrador"
+
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Creadores"
+
+📦 CONTAINER 1:
+   📋 Section headers in container 1: 8
+   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+   🎯 Contains "Creadores": NO
+   📝 Header 2: "Administradores Secundarios
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 4: "👨‍🏫 Profesores"
+   🎯 Contains "Creadores": NO
+   📝 Header 5: "🎨 Creadores"
+   🎯 Contains "Creadores": YES
+   📝 Header 6: "Jugadores - Administrador Principal"
+   🎯 Contains "Creadores": NO
+   📝 Header 7: "Jugadores - Otros Administradores"
+   🎯 Contains "Creadores": NO
+   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+   🎯 Contains "Creadores": NO
+   📊 Table containers in container 1: 6
+   📈 Table 1 has 0 user rows
+   📈 Table 2 has 0 user rows
+   📈 Table 3 has 9 user rows
+   👥 User IDs in table 3:
+      - ID: 32, First cell: "+"
+      - ID: 17, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 4 has 8 user rows
+   👥 User IDs in table 4:
+      - ID: 32, First cell: "+"
+      - ID: 18, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 5 has 0 user rows
+   📈 Table 6 has 0 user rows
+
+✅ FOUND TARGET SECTION "Creadores" in container 1
+   🔍 This container will be used for user searches
+📋 User ID for "AndGar" from database: 18
+
+🔍 SEARCHING FOR USER ID 18 within section "Creadores"
+   🎯 Using table index 3 (Table 4) for section "Creadores"
+   📊 Total table containers found: 6
+   🔍 Searching in table 4 for section "Creadores"
+   📈 User rows in target table: 8
+   👥 All user IDs in table 4 (Creadores):
+      - Row 1: ID=32, Name="+", 4th col="0"
+      - Row 2: ID=18, Name="+", 4th col="3"
+      - Row 3: ID=28, Name="+", 4th col="0"
+      - Row 4: ID=27, Name="+", 4th col="0"
+      - Row 5: ID=30, Name="+", 4th col="0"
+      - Row 6: ID=10, Name="+", 4th col="3"
+      - Row 7: ID=29, Name="+", 4th col="0"
+      - Row 8: ID=13, Name="+", 4th col="3"
+   ✅ FOUND user row with ID: 18 in table 4 (Creadores)
+   📋 Data from user row (10 columns):
+      Column 1: "+"
+      Column 2: "AndGar
+                            Andres Garcia"
+      Column 3: "andres.garcia@lumiquiz.es"
+      Column 4: "3"
+      Column 5: "7"
+      Column 6: "33"
+      Column 7: "0"
+      Column 8: "AdminPrincipal
+                                    Sin asignarAdminPrincipalkikejfer"
+✅ Administrator value: ""
+📋 AndGar current administrator: 
+⚠️ Reasignación simulation: AndGar → kikejfer (helper would need enhancement for actual assignment)
+✅ Logout successful
+✅ Browser closed successfully
+✅ AdminPrincipal session closed completely
+🌐 Creating independent chromium browser for JaiGon
+  ✘  1 tests\04-administracion\bloque4-complete-workflow.spec.js:14:3 › Bloque 4: Workflow Completo de Administración › Workflow completo: Creación de bloque → Carga → Gestión administrativa (30.0s)
+❌ Login failed for JaiGon: page.waitForTimeout: Target page, context or browser has been closed
+❌ Independent browser login failed for JaiGon: page.waitForTimeout: Target page, context or browser has been closed
+✅ kikejfer logged in successfully
+✅ kikejfer logged in successfully using helper
+✅ SebDom appears in user interactions
+  ✘  2 tests\04-administracion\secondary-admin.spec.js:10:3 › Verificación Admin Secundario › kikejfer verifica información después de reasignación (8.9s)
+
+
+  1) tests\04-administracion\bloque4-complete-workflow.spec.js:14:3 › Bloque 4: Workflow Completo de Administración › Workflow completo: Creación de bloque → Carga → Gestión administrativa 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error Context: test-results\tests-04-administracion-bl-3ebef-ga-→-Gestión-administrativa\error-context.md
+
+  2) tests\04-administracion\secondary-admin.spec.js:10:3 › Verificación Admin Secundario › kikejfer verifica información después de reasignación › Verificar estadísticas y contadores 
+
+    Error: locator.count: SyntaxError: Invalid flags supplied to RegExp constructor 'i, .user-count'
+        at new RegExp (<anonymous>)
+        at createTextMatcher (<anonymous>:7696:16)
+        at Object.queryAll (<anonymous>:6613:33)
+        at InjectedScript._queryEngineAll (<anonymous>:6586:49)
+        at InjectedScript.querySelectorAll (<anonymous>:6573:30)
+        at eval (eval at evaluate (:291:30), <anonymous>:2:23)
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at createTextMatcher (<anonymous>:7696:16)
+        at Object.queryAll (<anonymous>:6613:33)
+        at InjectedScript._queryEngineAll (<anonymous>:6586:49)
+        at InjectedScript.querySelectorAll (<anonymous>:6573:30)
+        at eval (eval at evaluate (:291:30), <anonymous>:2:23)
+        at UtilityScript.evaluate (<anonymous>:293:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\04-administracion\secondary-admin.spec.js:88:29
+        at C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\04-administracion\secondary-admin.spec.js:85:16
+
+    Error Context: test-results\tests-04-administracion-se-9d4da-ión-después-de-reasignación\error-context.md
+
+  2 failed
+    tests\04-administracion\bloque4-complete-workflow.spec.js:14:3 › Bloque 4: Workflow Completo de Administración › Workflow completo: Creación de bloque → Carga → Gestión administrativa 
+    tests\04-administracion\secondary-admin.spec.js:10:3 › Verificación Admin Secundario › kikejfer verifica información después de reasignación 

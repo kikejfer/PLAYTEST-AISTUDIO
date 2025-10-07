@@ -51,7 +51,7 @@ async function performLogin(page, nickname, password, expectedPanel = null, brow
     await page.goto(LOGIN_URL, { timeout: 45000 });
 
     // Wait for login form to be ready
-    await page.waitForSelector('input[name="nickname"]', { timeout: 10000 });
+    await page.waitForSelector('input[name="nickname"]', { timeout: 30000 });
 
     // Fill login form
     await page.locator('input[name="nickname"]').fill(nickname);
@@ -130,7 +130,7 @@ async function login(page, nickname, browser = null) {
     await page.goto(LOGIN_URL, { timeout: 45000 });
 
     // Wait for login form to be ready
-    await page.waitForSelector('input[name="nickname"]', { timeout: 10000 });
+    await page.waitForSelector('input[name="nickname"]', { timeout: 30000 });
 
     // Fill login form
     await page.locator('input[name="nickname"]').fill(nickname);

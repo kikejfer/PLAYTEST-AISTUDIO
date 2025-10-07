@@ -1,0 +1,468 @@
+
+Running 1 test using 1 worker
+
+🌐 Creating independent chromium browser for AndGar
+✅ AndGar logged in successfully
+✅ Independent browser session created for AndGar
+✅ AndGar logged in successfully with independent browser
+✅ Navigated to Add Questions tab
+✅ Navigated to Upload File subtab
+🔄 Starting single file upload: CE1978_Título III Cortes Generales.txt
+📁 File path: C:\Users\kikej\OneDrive - UNED\Informatica\APPTest\PLAYTEST\PLAYTEST_AISTUDIO\pruebas-playwright\tests\CE1978_Título III Cortes Generales.txt
+✅ Found individual file input (no webkitdirectory)
+✅ Selected file: CE1978_Título III Cortes Generales.txt
+✅ Clicked "Subir" button
+✅ Found modal button with selector: button:has-text("Subir")
+✅ Clicked modal "Subir" button
+✅ Clicked "Cargar archivo para revisar" button
+✅ Clicked "Guardar todas las preguntas" button
+🎉 Single file upload completed successfully for: CE1978_Título III Cortes Generales.txt
+✅ Block creation process completed using helper
+✅ Safe logout successful
+✅ AndGar session logged out safely (browser kept open until test completion)
+🌐 Creating independent chromium browser for AdminPrincipal
+✅ AdminPrincipal logged in successfully
+✅ Independent browser session created for AdminPrincipal
+✅ AdminPrincipal logged in successfully with independent browser
+✅ Users section is visible
+✅ AndGar information is visible
+🔄 Extracting user info from PAP - Section: "Creadores", User: "AndGar", Action: ""
+
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Creadores"
+
+📦 CONTAINER 1:
+   📋 Section headers in container 1: 8
+   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+   🎯 Contains "Creadores": NO
+   📝 Header 2: "Administradores Secundarios
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 4: "👨‍🏫 Profesores"
+   🎯 Contains "Creadores": NO
+   📝 Header 5: "🎨 Creadores"
+   🎯 Contains "Creadores": YES
+   📝 Header 6: "Jugadores - Administrador Principal"
+   🎯 Contains "Creadores": NO
+   📝 Header 7: "Jugadores - Otros Administradores"
+   🎯 Contains "Creadores": NO
+   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+   🎯 Contains "Creadores": NO
+   📊 Table containers in container 1: 5
+   📈 Table 1 has 0 user rows
+   📈 Table 2 has 0 user rows
+   📈 Table 3 has 9 user rows
+   👥 User IDs in table 3:
+      - ID: 32, First cell: "+"
+      - ID: 17, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 4 has 8 user rows
+   👥 User IDs in table 4:
+      - ID: 32, First cell: "+"
+      - ID: 18, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 5 has 0 user rows
+
+✅ FOUND TARGET SECTION "Creadores" in container 1
+   🔍 This container will be used for user searches
+📋 User ID for "AndGar" from database: 18
+
+🔍 SEARCHING FOR USER ID 18 within section "Creadores"
+   🎯 Using PAP mapping - table index 3 (Table 4) for section "Creadores"
+   📊 Total table containers found in section container: 6
+   🔍 Searching in table 4 for section "Creadores"
+   📈 User rows in target table: 8
+   👥 All user IDs in table 4 (Creadores):
+      - Row 1: ID=32, Name="+", 4th col="0"
+      - Row 2: ID=18, Name="+", 4th col="3"
+      - Row 3: ID=28, Name="+", 4th col="0"
+      - Row 4: ID=27, Name="+", 4th col="0"
+      - Row 5: ID=30, Name="+", 4th col="0"
+      - Row 6: ID=10, Name="+", 4th col="3"
+      - Row 7: ID=29, Name="+", 4th col="0"
+      - Row 8: ID=13, Name="+", 4th col="3"
+   ✅ FOUND user row with ID: 18 in table 4 (Creadores)
+   📋 Data from user row (10 columns):
+      Column 1: "+"
+      Column 2: "AndGar
+                            Andres Garcia"
+      Column 3: "andres.garcia@lumiquiz.es"
+      Column 4: "3"
+      Column 5: "7"
+      Column 6: "51"
+      Column 7: "0"
+      Column 8: "Sin asignar
+                                    Sin asignarAdminPrincipalkikejfer"
+✅ User stats extracted: { bloquesCreados: [32m'3'[39m, temas: [32m'7'[39m, preguntas: [32m'51'[39m, alumnos: [32m'0'[39m }
+✅ Found AndGar in creators section: { bloquesCreados: [32m'3'[39m, temas: [32m'7'[39m, preguntas: [32m'51'[39m, alumnos: [32m'0'[39m }
+🔄 Extracting user info from PAP - Section: "Creadores", User: "AndGar", Action: "Administrador"
+
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Creadores"
+
+📦 CONTAINER 1:
+   📋 Section headers in container 1: 8
+   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+   🎯 Contains "Creadores": NO
+   📝 Header 2: "Administradores Secundarios
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 4: "👨‍🏫 Profesores"
+   🎯 Contains "Creadores": NO
+   📝 Header 5: "🎨 Creadores"
+   🎯 Contains "Creadores": YES
+   📝 Header 6: "Jugadores - Administrador Principal"
+   🎯 Contains "Creadores": NO
+   📝 Header 7: "Jugadores - Otros Administradores"
+   🎯 Contains "Creadores": NO
+   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+   🎯 Contains "Creadores": NO
+   📊 Table containers in container 1: 6
+   📈 Table 1 has 0 user rows
+   📈 Table 2 has 0 user rows
+   📈 Table 3 has 9 user rows
+   👥 User IDs in table 3:
+      - ID: 32, First cell: "+"
+      - ID: 17, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 4 has 8 user rows
+   👥 User IDs in table 4:
+      - ID: 32, First cell: "+"
+      - ID: 18, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 5 has 0 user rows
+   📈 Table 6 has 0 user rows
+
+✅ FOUND TARGET SECTION "Creadores" in container 1
+   🔍 This container will be used for user searches
+📋 User ID for "AndGar" from database: 18
+
+🔍 SEARCHING FOR USER ID 18 within section "Creadores"
+   🎯 Using PAP mapping - table index 3 (Table 4) for section "Creadores"
+   📊 Total table containers found in section container: 6
+   🔍 Searching in table 4 for section "Creadores"
+   📈 User rows in target table: 8
+   👥 All user IDs in table 4 (Creadores):
+      - Row 1: ID=32, Name="+", 4th col="0"
+      - Row 2: ID=18, Name="+", 4th col="3"
+      - Row 3: ID=28, Name="+", 4th col="0"
+      - Row 4: ID=27, Name="+", 4th col="0"
+      - Row 5: ID=30, Name="+", 4th col="0"
+      - Row 6: ID=10, Name="+", 4th col="3"
+      - Row 7: ID=29, Name="+", 4th col="0"
+      - Row 8: ID=13, Name="+", 4th col="3"
+   ✅ FOUND user row with ID: 18 in table 4 (Creadores)
+   📋 Data from user row (10 columns):
+      Column 1: "+"
+      Column 2: "AndGar
+                            Andres Garcia"
+      Column 3: "andres.garcia@lumiquiz.es"
+      Column 4: "3"
+      Column 5: "7"
+      Column 6: "51"
+      Column 7: "0"
+      Column 8: "Sin asignar
+                                    Sin asignarAdminPrincipalkikejfer"
+✅ Administrator value: "Sin asignar"
+📋 PASO 3 - AndGar current administrator: "Sin asignar"
+✅ PASO 3 VERIFICADO: AndGar no tiene administrador asignado (esperado)
+🔄 Extracting user info from PAP - Section: "Creadores", User: "AndGar", Action: "SetAdministrador:kikejfer"
+
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Creadores"
+
+📦 CONTAINER 1:
+   📋 Section headers in container 1: 8
+   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+   🎯 Contains "Creadores": NO
+   📝 Header 2: "Administradores Secundarios
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 4: "👨‍🏫 Profesores"
+   🎯 Contains "Creadores": NO
+   📝 Header 5: "🎨 Creadores"
+   🎯 Contains "Creadores": YES
+   📝 Header 6: "Jugadores - Administrador Principal"
+   🎯 Contains "Creadores": NO
+   📝 Header 7: "Jugadores - Otros Administradores"
+   🎯 Contains "Creadores": NO
+   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+   🎯 Contains "Creadores": NO
+   📊 Table containers in container 1: 6
+   📈 Table 1 has 0 user rows
+   📈 Table 2 has 0 user rows
+   📈 Table 3 has 9 user rows
+   👥 User IDs in table 3:
+      - ID: 32, First cell: "+"
+      - ID: 17, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 4 has 8 user rows
+   👥 User IDs in table 4:
+      - ID: 32, First cell: "+"
+      - ID: 18, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 5 has 0 user rows
+   📈 Table 6 has 0 user rows
+
+✅ FOUND TARGET SECTION "Creadores" in container 1
+   🔍 This container will be used for user searches
+📋 User ID for "AndGar" from database: 18
+
+🔍 SEARCHING FOR USER ID 18 within section "Creadores"
+   🎯 Using PAP mapping - table index 3 (Table 4) for section "Creadores"
+   📊 Total table containers found in section container: 6
+   🔍 Searching in table 4 for section "Creadores"
+   📈 User rows in target table: 8
+   👥 All user IDs in table 4 (Creadores):
+      - Row 1: ID=32, Name="+", 4th col="0"
+      - Row 2: ID=18, Name="+", 4th col="3"
+      - Row 3: ID=28, Name="+", 4th col="0"
+      - Row 4: ID=27, Name="+", 4th col="0"
+      - Row 5: ID=30, Name="+", 4th col="0"
+      - Row 6: ID=10, Name="+", 4th col="3"
+      - Row 7: ID=29, Name="+", 4th col="0"
+      - Row 8: ID=13, Name="+", 4th col="3"
+   ✅ FOUND user row with ID: 18 in table 4 (Creadores)
+   📋 Data from user row (10 columns):
+      Column 1: "+"
+      Column 2: "AndGar
+                            Andres Garcia"
+      Column 3: "andres.garcia@lumiquiz.es"
+      Column 4: "3"
+      Column 5: "7"
+      Column 6: "51"
+      Column 7: "0"
+      Column 8: "Sin asignar
+                                    Sin asignarAdminPrincipalkikejfer"
+📋 Current administrator: "Sin asignar"
+📋 User ID for "kikejfer" from database: 10
+📋 Admin ID for "kikejfer": 10
+✅ Selected administrator option with value: "10"
+📋 After change - selected text: "kikejfer", value: "10"
+✅ Administrator successfully changed from "Sin asignar" to "kikejfer"
+✅ PASO 4 COMPLETADO: AndGar reasignado a kikejfer
+🔄 Extracting user info from PAP - Section: "Creadores", User: "AndGar", Action: "Administrador"
+
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Creadores"
+
+📦 CONTAINER 1:
+   📋 Section headers in container 1: 8
+   📝 Header 1: "📊 Estadísticas Generales del Sistema
+                
+                    🔄 Actualizar"
+   🎯 Contains "Creadores": NO
+   📝 Header 2: "Administradores Secundarios
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 3: "🛠️ Soporte Técnico
+                Añadir"
+   🎯 Contains "Creadores": NO
+   📝 Header 4: "👨‍🏫 Profesores"
+   🎯 Contains "Creadores": NO
+   📝 Header 5: "🎨 Creadores"
+   🎯 Contains "Creadores": YES
+   📝 Header 6: "Jugadores - Administrador Principal"
+   🎯 Contains "Creadores": NO
+   📝 Header 7: "Jugadores - Otros Administradores"
+   🎯 Contains "Creadores": NO
+   📝 Header 8: "⚙️ Panel de Control de Funcionalidades
+                    
+                        🔄 Recargar Estado"
+   🎯 Contains "Creadores": NO
+   📊 Table containers in container 1: 6
+   📈 Table 1 has 0 user rows
+   📈 Table 2 has 0 user rows
+   📈 Table 3 has 9 user rows
+   👥 User IDs in table 3:
+      - ID: 32, First cell: "+"
+      - ID: 17, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 4 has 8 user rows
+   👥 User IDs in table 4:
+      - ID: 32, First cell: "+"
+      - ID: 18, First cell: "+"
+      - ID: 28, First cell: "+"
+      - ID: 27, First cell: "+"
+      - ID: 30, First cell: "+"
+   📈 Table 5 has 0 user rows
+   📈 Table 6 has 0 user rows
+
+✅ FOUND TARGET SECTION "Creadores" in container 1
+   🔍 This container will be used for user searches
+📋 User ID for "AndGar" from database: 18
+
+🔍 SEARCHING FOR USER ID 18 within section "Creadores"
+   🎯 Using PAP mapping - table index 3 (Table 4) for section "Creadores"
+   📊 Total table containers found in section container: 6
+   🔍 Searching in table 4 for section "Creadores"
+   📈 User rows in target table: 8
+   👥 All user IDs in table 4 (Creadores):
+      - Row 1: ID=32, Name="+", 4th col="0"
+      - Row 2: ID=18, Name="+", 4th col="3"
+      - Row 3: ID=28, Name="+", 4th col="0"
+      - Row 4: ID=27, Name="+", 4th col="0"
+      - Row 5: ID=30, Name="+", 4th col="0"
+      - Row 6: ID=10, Name="+", 4th col="3"
+      - Row 7: ID=29, Name="+", 4th col="0"
+      - Row 8: ID=13, Name="+", 4th col="3"
+   ✅ FOUND user row with ID: 18 in table 4 (Creadores)
+   📋 Data from user row (10 columns):
+      Column 1: "+"
+      Column 2: "AndGar
+                            Andres Garcia"
+      Column 3: "andres.garcia@lumiquiz.es"
+      Column 4: "3"
+      Column 5: "7"
+      Column 6: "51"
+      Column 7: "0"
+      Column 8: "Sin asignar
+                                    Sin asignarAdminPrincipalkikejfer"
+✅ Administrator value: "kikejfer"
+📋 PASO 5 - AndGar new administrator: "kikejfer"
+✅ PASO 5 VERIFICADO: Cambio guardado correctamente - AndGar ahora asignado a kikejfer
+✅ Safe logout successful
+✅ AdminPrincipal session logged out (browser kept open for cleanup)
+🌐 Creating independent chromium browser for JaiGon
+✅ JaiGon logged in successfully
+✅ Independent browser session created for JaiGon
+✅ JaiGon logged in successfully with independent browser
+✅ Navigated to Load Blocks tab
+✅ Logout successful
+✅ Browser closed successfully
+✅ JaiGon session closed completely
+🌐 Creating independent chromium browser for kikejfer
+✅ kikejfer logged in successfully
+✅ Independent browser session created for kikejfer
+✅ kikejfer logged in successfully with independent browser
+🔄 PASO 6: Using admin-panel-helper to verify AndGar in Creadores Asignados section
+🔄 Extracting user info from PAS - Section: "Creadores Asignados", User: "AndGar", Action: ""
+
+🔍 DETAILED ANALYSIS - Found 1 containers, searching for section "Creadores Asignados"
+
+📦 CONTAINER 1:
+   📋 Section headers in container 1: 4
+   📝 Header 1: "📊 Estadísticas del Administrador
+                
+                    🔄 Actualizar"
+   🎯 Contains "Creadores Asignados": NO
+   📝 Header 2: "👨‍🏫 Profesores Asignados"
+   🎯 Contains "Creadores Asignados": NO
+   📝 Header 3: "🎨 Creadores Asignados"
+   🎯 Contains "Creadores Asignados": YES
+   📝 Header 4: "Jugadores Asignados"
+   🎯 Contains "Creadores Asignados": NO
+   📊 Table containers in container 1: 1
+   📈 Table 1 has 0 user rows
+
+✅ FOUND TARGET SECTION "Creadores Asignados" in container 1
+   🔍 This container will be used for user searches
+📋 User ID for "AndGar" from database: 18
+
+🔍 SEARCHING FOR USER ID 18 within section "Creadores Asignados"
+   🎯 Using PAS mapping - table index 1 (Table 2) for section "Creadores Asignados"
+   📊 Total table containers found in section container: 1
+   ⚠️ Not enough tables in section container for PAS, searching page-wide...
+   📊 Total table containers found page-wide: 1
+   ❌ Table index 1 out of range. Available tables: 0-0
+❌ Error extracting user info from PAS: User "AndGar" (ID: 18) not found in section "Creadores Asignados"
+⚠️ PASO 6: Helper-based verification failed: User "AndGar" (ID: 18) not found in section "Creadores Asignados"
+❌ PASO 6 FAILED: AndGar NOT found in kikejfer panel
+✅ SebDom appears in user interactions
+✅ Logout successful
+✅ Browser closed successfully
+✅ kikejfer session closed completely
+🌐 Creating independent chromium browser for JaiGon
+✅ JaiGon logged in successfully
+✅ Independent browser session created for JaiGon
+✅ JaiGon logged in to player panel with independent browser
+✅ Navigated to "Carga de Bloques" tab
+🔍 Found 11 available block elements, searching for "CE1978" by "AndGar"
+🔍 Checking available block title: "CE1978"
+✅ Found available block "CE1978" by "AndGar"
+✅ Found Cargar button for block: "CE1978" (text: "
+                            Cargar
+                        ")
+🔄 Clicking Cargar button...
+✅ Cargar button clicked successfully
+✅ Block loaded successfully using helper
+✅ Navigated to "Carga de Bloques" tab
+🔍 Found 1 loaded block cards, searching for "CE1978" by "AndGar"
+🔍 Checking loaded block title: "
+                    Constitución Española 1978
+                "
+❌ Error in selectLoadedBlock: Loaded block "CE1978" by "AndGar" not found
+⚠️ Helper-based block loading test: Loaded block "CE1978" by "AndGar" not found
+✅ Block management functionality verified (may already be loaded)
+✅ Navigated to "Carga de Bloques" tab
+🔍 Found 1 loaded block cards, searching for "CE1978" by "AndGar"
+🔍 Checking loaded block title: "
+                    Constitución Española 1978
+                "
+⚠️ Loaded block "CE1978" by "AndGar" not found (expected)
+✅ Navigated to "Carga de Bloques" tab
+🔍 Found 2 loaded block cards, searching for "CE1978" by "AndGar"
+🔍 Checking loaded block title: "
+                    CE1978
+                "
+🔍 Found inline stats format, searching for "Autor"
+🔍 Found span text: "Autor: AndGar"
+✅ Found loaded block Autor: "AndGar"
+✅ Found loaded block "CE1978" by "AndGar"
+🔍 Found inline stats format, searching for "Usuarios"
+🔍 Found span text: "Usuarios: 0"
+✅ Found loaded block Usuarios: "0"
+✅ Navigated to "Carga de Bloques" tab
+🔍 Found 2 loaded block cards, searching for "CE1978" by "AndGar"
+🔍 Checking loaded block title: "
+                    CE1978
+                "
+🔍 Found inline stats format, searching for "Autor"
+🔍 Found span text: "Autor: AndGar"
+✅ Found loaded block Autor: "AndGar"
+✅ Found loaded block "CE1978" by "AndGar"
+🔍 Found inline stats format, searching for "Autor"
+🔍 Found span text: "Autor: AndGar"
+✅ Found loaded block Autor: "AndGar"
+✅ Player-blocks-helper successfully validated block statistics
+✅ Logout successful
+✅ Browser closed successfully
+✅ JaiGon TEST 3 session closed completely
+⚠️ Cleanup warning: andgarSession.browser.isClosed is not a function
+🎉 Workflow completo del Bloque 4 completado exitosamente
+📊 Todas las verificaciones administrativas funcionan correctamente
+🔧 Player-blocks-helper integration validated successfully
+  ✓  1 tests\04-administracion\bloque4-complete-workflow.spec.js:14:3 › Bloque 4: Workflow Completo de Administración › Workflow completo: Creación de bloque → Carga → Gestión administrativa (2.6m)
+
+  1 passed (2.8m)

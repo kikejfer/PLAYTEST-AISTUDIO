@@ -1,0 +1,400 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - img "LumiQuiz Logo" [ref=e4]
+      - generic [ref=e5]:
+        - generic [ref=e6]: La forma más divertida de estudiar
+        - generic [ref=e7]: PANEL JUGADOR
+    - generic [ref=e8]:
+      - button "🛠️" [ref=e9] [cursor=pointer]
+      - button "📧" [ref=e10] [cursor=pointer]
+      - generic [ref=e11]:
+        - img "Luminarias" [ref=e12]
+        - generic [ref=e13]: "0"
+      - generic [ref=e14]:
+        - generic [ref=e15]: SebDom
+        - generic [ref=e16]: Sebastian
+      - button "S" [ref=e18] [cursor=pointer]:
+        - generic [ref=e19] [cursor=pointer]: S
+  - generic [ref=e20]:
+    - paragraph [ref=e22]: Plataforma completa para jugar, gestionar bloques de contenido y revisar tu progreso académico.
+    - generic [ref=e24]:
+      - button "🎮 Partidas" [ref=e25] [cursor=pointer]
+      - button "📚 Carga de Bloques" [active] [ref=e26] [cursor=pointer]
+      - button "📊 Histórico" [ref=e27] [cursor=pointer]
+    - generic [ref=e28]:
+      - generic [ref=e30]:
+        - heading "Cargados Bloques Cargados" [level=2] [ref=e31]:
+          - img "Cargados" [ref=e32]
+          - text: Bloques Cargados
+        - generic [ref=e35]:
+          - generic [ref=e36]:
+            - heading "Ley Procedimiento Administrativo 39 2015" [level=3] [ref=e37] [cursor=pointer]
+            - generic [ref=e38]: Público
+          - generic [ref=e39]: Ley Procedimiento Administrativo 39/2015
+          - generic [ref=e40]:
+            - generic [ref=e41]:
+              - strong [ref=e42]: "Preguntas:"
+              - text: "210"
+            - generic [ref=e43]:
+              - strong [ref=e44]: "Temas:"
+              - text: "3"
+            - generic [ref=e45]:
+              - strong [ref=e46]: "Usuarios:"
+              - text: "2"
+            - generic [ref=e47]:
+              - strong [ref=e48]: "Autor:"
+              - text: kikejfer
+            - generic [ref=e49]:
+              - strong [ref=e50]: "Cargado:"
+              - text: 10/7/2025
+          - button "Eliminar" [ref=e52] [cursor=pointer]
+      - generic [ref=e53]:
+        - heading "Disponibles Bloques Disponibles" [level=2] [ref=e54]:
+          - img "Disponibles" [ref=e55]
+          - text: Bloques Disponibles
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - generic [ref=e59]:
+              - generic [ref=e60]: "Tipo de Bloque:"
+              - combobox [ref=e61]:
+                - option "Todos los tipos" [selected]
+                - option "Asignatura"
+                - option "Certificación"
+                - option "Competencia profesional"
+                - option "Curso libre"
+                - option "Legislación"
+                - option "Normativa"
+                - option "Oposición"
+                - option "Otro"
+                - option "Simulacro"
+                - option "Test personalizado"
+            - generic [ref=e62]:
+              - generic [ref=e63]: "Nivel:"
+              - combobox [ref=e64]:
+                - option "Todos los niveles" [selected]
+                - option "Autoformación"
+                - option "Bachillerato"
+                - option "Competencia profesional"
+                - option "Doctorado"
+                - option "Formación Profesional"
+                - option "Formación profesional no reglada"
+                - option "Máster"
+                - option "Otro"
+                - option "Primaria"
+                - option "Secundaria"
+                - option "Universidad"
+            - generic [ref=e65]:
+              - generic [ref=e66]: "Carácter:"
+              - combobox [ref=e67]:
+                - option "Todos los caracteres" [selected]
+                - option "Archivado"
+                - option "Oficial"
+                - option "Privado"
+                - option "Público"
+                - option "Restringido"
+            - button "🗑️ Limpiar Filtros" [ref=e68] [cursor=pointer]
+          - generic [ref=e69]:
+            - generic [ref=e70]:
+              - heading "CE1978" [level=3] [ref=e72] [cursor=pointer]
+              - paragraph [ref=e73]: CE1978 - Custom block created with questions
+              - generic [ref=e74]:
+                - generic [ref=e75]:
+                  - strong [ref=e76]: "Tipo:"
+                  - text: Sin especificar
+                - generic [ref=e77]:
+                  - strong [ref=e78]: "Nivel:"
+                  - text: Sin especificar
+                - generic [ref=e79]:
+                  - strong [ref=e80]: "Carácter:"
+                  - text: Sin especificar
+              - generic [ref=e81]:
+                - generic [ref=e82]:
+                  - strong [ref=e83]: "Preguntas:"
+                  - text: "9"
+                - generic [ref=e84]:
+                  - strong [ref=e85]: "Temas:"
+                  - text: "3"
+                - generic [ref=e86]:
+                  - strong [ref=e87]: "Usuarios:"
+                  - text: "0"
+                - generic [ref=e88]:
+                  - strong [ref=e89]: "Autor:"
+                  - text: AndGar
+              - button "Cargar" [ref=e90] [cursor=pointer]
+            - generic [ref=e91]:
+              - heading "CE1978" [level=3] [ref=e93] [cursor=pointer]
+              - paragraph [ref=e94]: CE1978 - Custom block created with questions
+              - generic [ref=e95]:
+                - generic [ref=e96]:
+                  - strong [ref=e97]: "Tipo:"
+                  - text: Sin especificar
+                - generic [ref=e98]:
+                  - strong [ref=e99]: "Nivel:"
+                  - text: Sin especificar
+                - generic [ref=e100]:
+                  - strong [ref=e101]: "Carácter:"
+                  - text: Sin especificar
+              - generic [ref=e102]:
+                - generic [ref=e103]:
+                  - strong [ref=e104]: "Preguntas:"
+                  - text: "12"
+                - generic [ref=e105]:
+                  - strong [ref=e106]: "Temas:"
+                  - text: "3"
+                - generic [ref=e107]:
+                  - strong [ref=e108]: "Usuarios:"
+                  - text: "0"
+                - generic [ref=e109]:
+                  - strong [ref=e110]: "Autor:"
+                  - text: AndGar
+              - button "Cargar" [ref=e111] [cursor=pointer]
+            - generic [ref=e112]:
+              - heading "CE1978" [level=3] [ref=e114] [cursor=pointer]
+              - paragraph [ref=e115]: CE1978 - Custom block created with questions
+              - generic [ref=e116]:
+                - generic [ref=e117]:
+                  - strong [ref=e118]: "Tipo:"
+                  - text: Sin especificar
+                - generic [ref=e119]:
+                  - strong [ref=e120]: "Nivel:"
+                  - text: Sin especificar
+                - generic [ref=e121]:
+                  - strong [ref=e122]: "Carácter:"
+                  - text: Sin especificar
+              - generic [ref=e123]:
+                - generic [ref=e124]:
+                  - strong [ref=e125]: "Preguntas:"
+                  - text: "6"
+                - generic [ref=e126]:
+                  - strong [ref=e127]: "Temas:"
+                  - text: "2"
+                - generic [ref=e128]:
+                  - strong [ref=e129]: "Usuarios:"
+                  - text: "0"
+                - generic [ref=e130]:
+                  - strong [ref=e131]: "Autor:"
+                  - text: AndGar
+              - button "Cargar" [ref=e132] [cursor=pointer]
+            - generic [ref=e133]:
+              - heading "Patrón de Yate (PY)" [level=3] [ref=e135] [cursor=pointer]
+              - paragraph [ref=e136]: Patrón de Yate (PY) - Custom block created with questions
+              - generic [ref=e137]:
+                - generic [ref=e138]:
+                  - strong [ref=e139]: "Tipo:"
+                  - text: Sin especificar
+                - generic [ref=e140]:
+                  - strong [ref=e141]: "Nivel:"
+                  - text: Sin especificar
+                - generic [ref=e142]:
+                  - strong [ref=e143]: "Carácter:"
+                  - text: Sin especificar
+              - generic [ref=e144]:
+                - generic [ref=e145]:
+                  - strong [ref=e146]: "Preguntas:"
+                  - text: "669"
+                - generic [ref=e147]:
+                  - strong [ref=e148]: "Temas:"
+                  - text: "4"
+                - generic [ref=e149]:
+                  - strong [ref=e150]: "Usuarios:"
+                  - text: "0"
+                - generic [ref=e151]:
+                  - strong [ref=e152]: "Autor:"
+                  - text: kikejfer
+              - button "Cargar" [ref=e153] [cursor=pointer]
+            - generic [ref=e154]:
+              - heading "Patrón Embarcación Recreo (PER)" [level=3] [ref=e156] [cursor=pointer]
+              - paragraph [ref=e157]: Patrón Embarcación Recreo (PER) - Custom block created with questions
+              - generic [ref=e158]:
+                - generic [ref=e159]:
+                  - strong [ref=e160]: "Tipo:"
+                  - text: Sin especificar
+                - generic [ref=e161]:
+                  - strong [ref=e162]: "Nivel:"
+                  - text: Sin especificar
+                - generic [ref=e163]:
+                  - strong [ref=e164]: "Carácter:"
+                  - text: Sin especificar
+              - generic [ref=e165]:
+                - generic [ref=e166]:
+                  - strong [ref=e167]: "Preguntas:"
+                  - text: "701"
+                - generic [ref=e168]:
+                  - strong [ref=e169]: "Temas:"
+                  - text: "10"
+                - generic [ref=e170]:
+                  - strong [ref=e171]: "Usuarios:"
+                  - text: "0"
+                - generic [ref=e172]:
+                  - strong [ref=e173]: "Autor:"
+                  - text: kikejfer
+              - button "Cargar" [ref=e174] [cursor=pointer]
+            - generic [ref=e175]:
+              - heading "Constitución Española 1978" [level=3] [ref=e177] [cursor=pointer]
+              - paragraph [ref=e178]: Constitución Española 1978. Academia Puerta Nueva
+              - generic [ref=e179]:
+                - generic [ref=e180]:
+                  - strong [ref=e181]: "Tipo:"
+                  - text: Legislación
+                - generic [ref=e182]:
+                  - strong [ref=e183]: "Nivel:"
+                  - text: Otro
+                - generic [ref=e184]:
+                  - strong [ref=e185]: "Carácter:"
+                  - text: Público
+              - generic [ref=e186]:
+                - generic [ref=e187]:
+                  - strong [ref=e188]: "Preguntas:"
+                  - text: "60"
+                - generic [ref=e189]:
+                  - strong [ref=e190]: "Temas:"
+                  - text: "1"
+                - generic [ref=e191]:
+                  - strong [ref=e192]: "Usuarios:"
+                  - text: "2"
+                - generic [ref=e193]:
+                  - strong [ref=e194]: "Autor:"
+                  - text: kikejfer
+              - button "Cargar" [ref=e195] [cursor=pointer]
+            - generic [ref=e196]:
+              - generic [ref=e197]:
+                - heading "Ley Procedimiento Administrativo 39 2015" [level=3] [ref=e198] [cursor=pointer]
+                - generic [ref=e199]: Cargado
+              - paragraph [ref=e200]: Ley Procedimiento Administrativo 39/2015
+              - generic [ref=e201]:
+                - generic [ref=e202]:
+                  - strong [ref=e203]: "Tipo:"
+                  - text: Legislación
+                - generic [ref=e204]:
+                  - strong [ref=e205]: "Nivel:"
+                  - text: Otro
+                - generic [ref=e206]:
+                  - strong [ref=e207]: "Carácter:"
+                  - text: Público
+              - generic [ref=e208]:
+                - generic [ref=e209]:
+                  - strong [ref=e210]: "Preguntas:"
+                  - text: "210"
+                - generic [ref=e211]:
+                  - strong [ref=e212]: "Temas:"
+                  - text: "3"
+                - generic [ref=e213]:
+                  - strong [ref=e214]: "Usuarios:"
+                  - text: "2"
+                - generic [ref=e215]:
+                  - strong [ref=e216]: "Autor:"
+                  - text: kikejfer
+              - button "Descargar" [ref=e217] [cursor=pointer]
+            - generic [ref=e218]:
+              - heading "Grado Informática Redes" [level=3] [ref=e220] [cursor=pointer]
+              - paragraph [ref=e221]: Grado Informática Redes - Custom block created with questions
+              - generic [ref=e222]:
+                - generic [ref=e223]:
+                  - strong [ref=e224]: "Tipo:"
+                  - text: Asignatura
+                - generic [ref=e225]:
+                  - strong [ref=e226]: "Nivel:"
+                  - text: Universidad
+                - generic [ref=e227]:
+                  - strong [ref=e228]: "Carácter:"
+                  - text: Público
+              - generic [ref=e229]:
+                - generic [ref=e230]:
+                  - strong [ref=e231]: "Preguntas:"
+                  - text: "79"
+                - generic [ref=e232]:
+                  - strong [ref=e233]: "Temas:"
+                  - text: "2"
+                - generic [ref=e234]:
+                  - strong [ref=e235]: "Usuarios:"
+                  - text: "0"
+                - generic [ref=e236]:
+                  - strong [ref=e237]: "Autor:"
+                  - text: Toñi
+              - button "Cargar" [ref=e238] [cursor=pointer]
+            - generic [ref=e239]:
+              - heading "Constitución Española 1978" [level=3] [ref=e241] [cursor=pointer]
+              - paragraph [ref=e242]: Constitución Española 1978 - Custom block created with questions
+              - generic [ref=e243]:
+                - generic [ref=e244]:
+                  - strong [ref=e245]: "Tipo:"
+                  - text: Legislación
+                - generic [ref=e246]:
+                  - strong [ref=e247]: "Nivel:"
+                  - text: Otro
+                - generic [ref=e248]:
+                  - strong [ref=e249]: "Carácter:"
+                  - text: Oficial
+              - generic [ref=e250]:
+                - generic [ref=e251]:
+                  - strong [ref=e252]: "Preguntas:"
+                  - text: "203"
+                - generic [ref=e253]:
+                  - strong [ref=e254]: "Temas:"
+                  - text: "2"
+                - generic [ref=e255]:
+                  - strong [ref=e256]: "Usuarios:"
+                  - text: "2"
+                - generic [ref=e257]:
+                  - strong [ref=e258]: "Autor:"
+                  - text: Toñi
+              - button "Cargar" [ref=e259] [cursor=pointer]
+            - generic [ref=e260]:
+              - heading "Patrón de Yate (PY)" [level=3] [ref=e262] [cursor=pointer]
+              - paragraph [ref=e263]: Patrón de Yate (PY) - Custom block created with questions
+              - generic [ref=e264]:
+                - generic [ref=e265]:
+                  - strong [ref=e266]: "Tipo:"
+                  - text: Certificación
+                - generic [ref=e267]:
+                  - strong [ref=e268]: "Nivel:"
+                  - text: Otro
+                - generic [ref=e269]:
+                  - strong [ref=e270]: "Carácter:"
+                  - text: Oficial
+              - generic [ref=e271]:
+                - generic [ref=e272]:
+                  - strong [ref=e273]: "Preguntas:"
+                  - text: "669"
+                - generic [ref=e274]:
+                  - strong [ref=e275]: "Temas:"
+                  - text: "4"
+                - generic [ref=e276]:
+                  - strong [ref=e277]: "Usuarios:"
+                  - text: "1"
+                - generic [ref=e278]:
+                  - strong [ref=e279]: "Autor:"
+                  - text: Toñi
+              - button "Cargar" [ref=e280] [cursor=pointer]
+            - generic [ref=e281]:
+              - heading "Patrón Embarcación Recreo (PER)" [level=3] [ref=e283] [cursor=pointer]
+              - paragraph [ref=e284]: Patrón Embarcación Recreo (PER) - Custom block created with questions
+              - generic [ref=e285]:
+                - generic [ref=e286]:
+                  - strong [ref=e287]: "Tipo:"
+                  - text: Certificación
+                - generic [ref=e288]:
+                  - strong [ref=e289]: "Nivel:"
+                  - text: Otro
+                - generic [ref=e290]:
+                  - strong [ref=e291]: "Carácter:"
+                  - text: Oficial
+              - generic [ref=e292]:
+                - generic [ref=e293]:
+                  - strong [ref=e294]: "Preguntas:"
+                  - text: "701"
+                - generic [ref=e295]:
+                  - strong [ref=e296]: "Temas:"
+                  - text: "10"
+                - generic [ref=e297]:
+                  - strong [ref=e298]: "Usuarios:"
+                  - text: "2"
+                - generic [ref=e299]:
+                  - strong [ref=e300]: "Autor:"
+                  - text: Toñi
+              - button "Cargar" [ref=e301] [cursor=pointer]
+```

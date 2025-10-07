@@ -353,10 +353,11 @@ Antes de ejecutar: confirmar que estas tablas NO existen ya con otro nombre.
 
 ## ETAPA 1.3: Verificación de Guardado en Modalidades
 
-**Estado:** ⏳ **PENDIENTE**
-**Fecha de inicio:** Pendiente (después de ETAPA 1.2)
+**Estado:** 🟡 **LISTA PARA COMENZAR**
+**Fecha de inicio:** 7 Oct 2025 - 15:45
 **Fecha de finalización:** Pendiente
 **Responsable:** Usuario (testing manual) + Claude (análisis)
+**Documento de referencia:** `PROTOCOLO_TESTING_MODALIDADES.md`
 
 ### Descripción
 Aunque el análisis mostró que todas las modalidades tienen código de guardado, verificar que **realmente funciona end-to-end** con la BD.
@@ -503,12 +504,24 @@ Para que una modalidad se considere **✅ FUNCIONAL**, debe cumplir:
 
 ### Notas y comentarios
 ```
-[Pendiente de inicio]
+[7 Oct 2025 - 15:45] Claude:
+✅ PROTOCOLO DE TESTING CREADO
+
+Documento creado: PROTOCOLO_TESTING_MODALIDADES.md
+Contiene:
+- Instrucciones generales de preparación
+- Queries SQL para verificación en pgAdmin4
+- Checklist detallado para cada una de las 9 modalidades
+- Categorización por tipo (Entrenamiento, Competición Individual, Multiplayer)
+- Espacio para documentar resultados y problemas
 
 Esta etapa requiere testing manual exhaustivo. Estimado: 3-4 horas.
 Se recomienda hacer en sesiones separadas (3 modalidades por sesión).
 
-Recordatorio: Testear DESPUÉS de crear tablas game_players y game_scores.
+✅ IMPORTANTE: Las tablas game_players y game_scores YA EXISTEN (verificado en ETAPA 1.1)
+Por lo tanto, se puede proceder con el testing inmediatamente.
+
+Próximo paso: Usuario debe ejecutar el protocolo de testing en cada modalidad.
 ```
 
 ---
@@ -2829,6 +2842,21 @@ Las siguientes fases serán detalladas completamente cuando estemos cerca de imp
   - ✅ 5 tablas de luminarias
   - ✅ 25 tablas adicionales de sistemas avanzados
 - **Próximo paso:** ETAPA 1.3 - Testing de guardado en modalidades (sin necesidad de crear tablas)
+
+## 2025-10-07 15:45 - ETAPA 1.3 lista para comenzar
+- **Autor:** Claude
+- **Cambios:**
+  - ✅ Creado documento PROTOCOLO_TESTING_MODALIDADES.md
+  - ETAPA 1.3 actualizada con referencia al protocolo
+  - Estado cambiado a "LISTA PARA COMENZAR"
+  - Añadidas notas sobre el protocolo de testing
+- **Protocolo incluye:**
+  - Instrucciones generales de preparación
+  - Queries SQL para verificación en pgAdmin4
+  - Checklist detallado para las 9 modalidades
+  - Categorización: Entrenamiento (3), Competición Individual (4), Multiplayer (2)
+  - Espacio para documentar resultados y problemas encontrados
+- **Próximo paso:** Usuario ejecuta testing manual siguiendo el protocolo
 
 ---
 
