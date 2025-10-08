@@ -468,19 +468,33 @@ Para cada modalidad, verificar:
 
 ## 📈 RESUMEN FINAL
 
-### Modalidades funcionando correctamente: 0/9
-- Ninguna probada aún
+**Fecha de testing:** 7 de Octubre de 2025
+**Partidas analizadas:** 8 partidas (últimas 24h)
 
-### Modalidades con problemas: 0/9
-- Ninguna probada aún
+### Modalidades funcionando correctamente: 2/9 (22%)
+- ✅ **Exam** - Guarda score (falta campo totalAnswered)
+- ✅ **Trivial** - Guarda scores multiplayer (estructura incompleta)
 
-### Modalidades completamente rotas: 0/9
-- Ninguna probada aún
+### Modalidades con problemas graves: 6/9 (67%)
+- ❌ **Classic** - NO guarda score, status queda en "active"
+- ❌ **Streak** - NO guarda score, status queda en "active"
+- ❌ **By Levels** - NO guarda score, status queda en "active"
+- ❌ **Time Trial** - NO guarda score, status queda en "active"
+- ❌ **Lives** - NO guarda score, status queda en "active"
+- ❌ **Marathon** - NO guarda score, status queda en "active"
+
+### Modalidades no testeadas: 1/9 (11%)
+- ⏳ **Duel** - Pendiente de testing
 
 ### Prioridad de corrección:
-1. **CRÍTICO:** [Pendiente]
-2. **IMPORTANTE:** [Pendiente]
-3. **MENOR:** [Pendiente]
+1. **🔴 CRÍTICO:** Modalidades que NO guardan scores (Classic, Streak, By Levels, Time Trial, Lives, Marathon)
+   - Frontend NO llama a `POST /api/games/:id/scores`
+   - Status NO se actualiza a "completed"
+
+2. **⚠️ IMPORTANTE:** Estructura de score_data incompleta (Exam, Trivial)
+   - Campos faltantes en score_data JSONB
+
+3. **ℹ️ MENOR:** Testing pendiente de Duel mode
 
 ---
 
