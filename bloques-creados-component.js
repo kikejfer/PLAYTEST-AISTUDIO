@@ -2004,7 +2004,7 @@ class BloquesCreados {
                 headers['X-Current-Role'] = activeRole;
             }
             
-            const response = await fetch(`${API_BASE_URL}/api/blocks/${this.currentBlockId}/questions/${questionId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/questions/${questionId}`, {
                 method: 'PUT',
                 headers,
                 body: JSON.stringify({
