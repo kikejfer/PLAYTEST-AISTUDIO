@@ -140,6 +140,16 @@ LIMIT 10;
 
 ## 📊 CHECKLIST POR MODALIDAD
 
+**⚠️ IMPORTANTE:** Muchos campos usan JSONB. Ver `DATABASE_SCHEMA_REFERENCE.md` para estructura exacta.
+
+**Campos JSONB críticos:**
+- `games.config` → Configuración inicial del juego
+- `games.game_state` → Estado actual (para partidas guardadas)
+- `game_scores.score_data` → Todos los datos de puntuación
+- `user_profiles.answer_history` → Array de respuestas históricas
+- `user_profiles.stats` → Estadísticas y consolidación
+- `user_game_configurations.config` → Configuración guardada
+
 Para cada modalidad, verificar:
 
 ### Frontend:
@@ -151,9 +161,11 @@ Para cada modalidad, verificar:
 
 ### Backend - Endpoint `/api/games` (POST):
 - [ ] La partida se crea en tabla `games`
-- [ ] Campo `mode` corresponde a la modalidad
-- [ ] Campo `user_id` es correcto
-- [ ] Campo `status` = 'in_progress'
+- [ ] Campo `game_type` corresponde a la modalidad (classic, streak, exam, etc.)
+- [ ] Campo `created_by` es correcto (user_id del creador)
+- [ ] Campo `status` = 'pending' o 'in_progress'
+- [ ] Campo `config` (JSONB) tiene la configuración inicial
+- [ ] Campo `game_state` (JSONB) se inicializa
 
 ### Backend - Tabla `game_players`:
 - [ ] Se crea registro para cada jugador
@@ -165,10 +177,14 @@ Para cada modalidad, verificar:
 ### Backend - Endpoint `/api/games/:id/scores` (POST):
 - [ ] Se guarda puntuación en tabla `game_scores`
 - [ ] Campo `game_id` apunta correctamente
-- [ ] Campo `user_id` es correcto
-- [ ] Campo `score` tiene el valor final
-- [ ] Campos `correct_answers`, `wrong_answers` son correctos
-- [ ] Campo `time_elapsed` tiene el tiempo (si aplica)
+- [ ] Campo `game_type` coincide con el tipo de juego
+- [ ] Campo `score_data` (JSONB) contiene todos los datos:
+  - `score`: puntuación final
+  - `totalAnswered`: total de preguntas respondidas
+  - `correct`: respuestas correctas
+  - `incorrect`: respuestas incorrectas
+  - `timeElapsed`: tiempo transcurrido (si aplica)
+  - `blocks`: array de IDs de bloques usados
 
 ### Backend - Tabla `games` (UPDATE):
 - [ ] Campo `status` cambia a 'completed'
@@ -496,4 +512,4 @@ Una vez completado este testing:
 
 ---
 
-**Última actualización:** 7 de Octubre de 2025 - 15:45
+**Última actualización:** 7 de Octubre de 2025 - 16:15 (Columnas actualizadas según esquema real de BD)
