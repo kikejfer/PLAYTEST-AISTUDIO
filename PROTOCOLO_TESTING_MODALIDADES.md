@@ -17,36 +17,104 @@
 
 ### Queries SQL para verificación:
 
+**IMPORTANTE:** Consulta DATABASE_SCHEMA_REFERENCE.md para ver todas las columnas disponibles.
+
 ```sql
--- Ver todas las partidas creadas (últimas 10)
-SELECT id, user_id, mode, status, created_at, finished_at, final_score
+-- 1. Ver todas las partidas creadas (últimas 10)
+SELECT
+    id,
+    game_type,
+    status,
+    created_by,
+    created_at,
+    updated_at,
+    config,
+    game_state
 FROM games
 ORDER BY created_at DESC
 LIMIT 10;
 
--- Ver jugadores de una partida específica
-SELECT gp.*, u.nickname
+-- 2. Ver jugadores de una partida específica
+SELECT
+    gp.id,
+    gp.game_id,
+    gp.user_id,
+    gp.player_index,
+    gp.nickname,
+    gp.joined_at,
+    u.nickname as current_nickname
 FROM game_players gp
 JOIN users u ON gp.user_id = u.id
 WHERE gp.game_id = [GAME_ID];
 
--- Ver puntuaciones de una partida
-SELECT gs.*, u.nickname
+-- 3. Ver puntuaciones de una partida
+SELECT
+    gs.id,
+    gs.game_id,
+    gs.game_type,
+    gs.score_data,
+    gs.created_at
 FROM game_scores gs
-JOIN users u ON gs.user_id = u.id
 WHERE gs.game_id = [GAME_ID];
 
--- Ver configuraciones guardadas (Active Games)
-SELECT id, user_id, game_type, created_at, last_played_at
+-- 4. Ver configuraciones guardadas (Active Games)
+SELECT
+    id,
+    user_id,
+    game_type,
+    config,
+    metadata,
+    created_at,
+    last_used,
+    use_count
 FROM user_game_configurations
-ORDER BY created_at DESC
+WHERE user_id = [USER_ID]
+ORDER BY last_used DESC
 LIMIT 10;
 
--- Ver stats de usuario actualizados
-SELECT id, nickname, total_games_played, total_score, correct_answers,
-       wrong_answers, answer_history
-FROM user_profiles
-WHERE id = [USER_ID];
+-- 5. Ver stats de usuario actualizados (desde user_profiles)
+SELECT
+    up.id,
+    up.user_id,
+    u.nickname,
+    up.answer_history,
+    up.stats,
+    up.preferences,
+    up.loaded_blocks,
+    up.updated_at
+FROM user_profiles up
+JOIN users u ON up.user_id = u.id
+WHERE up.user_id = [USER_ID];
+
+-- 6. Ver balance de luminarias del usuario
+SELECT
+    ul.user_id,
+    u.nickname,
+    ul.current_balance,
+    ul.total_earned,
+    ul.total_spent,
+    ul.lifetime_earnings,
+    ul.last_activity
+FROM user_luminarias ul
+JOIN users u ON ul.user_id = u.id
+WHERE ul.user_id = [USER_ID];
+
+-- 7. Ver últimas transacciones de luminarias
+SELECT
+    lt.id,
+    lt.user_id,
+    lt.transaction_type,
+    lt.amount,
+    lt.balance_before,
+    lt.balance_after,
+    lt.category,
+    lt.action_type,
+    lt.description,
+    lt.created_at
+FROM luminarias_transactions lt
+WHERE lt.user_id = [USER_ID]
+ORDER BY lt.created_at DESC
+LIMIT 10;
 ```
 
 ---
@@ -104,21 +172,24 @@ Para cada modalidad, verificar:
 
 ### Backend - Tabla `games` (UPDATE):
 - [ ] Campo `status` cambia a 'completed'
-- [ ] Campo `finished_at` tiene timestamp
-- [ ] Campo `final_score` tiene puntuación final
+- [ ] Campo `updated_at` tiene timestamp actualizado
+- [ ] Campo `game_state` refleja estado final
 
 ### Backend - Tabla `user_profiles` (UPDATE):
-- [ ] `total_games_played` incrementa en 1
-- [ ] `total_score` incrementa correctamente
-- [ ] `correct_answers` suma correctamente
-- [ ] `wrong_answers` suma correctamente
-- [ ] `answer_history` se actualiza con nuevas respuestas
+- [ ] Campo `stats` JSONB se actualiza correctamente
+- [ ] `stats.consolidation.byBlock` se actualiza (si aplica)
+- [ ] `stats.consolidation.byTopic` se actualiza (si aplica)
+- [ ] `stats.totalGames` incrementa en 1
+- [ ] `stats.totalScore` suma correctamente
+- [ ] Campo `answer_history` (array JSONB) se actualiza con nuevas respuestas
 
 ### Backend - Tabla `user_game_configurations`:
 - [ ] Se guarda configuración (para Active Games)
 - [ ] Campo `game_type` es correcto
-- [ ] Campo `config` tiene la configuración JSON
-- [ ] Campo `last_played_at` se actualiza
+- [ ] Campo `config` tiene la configuración JSONB
+- [ ] Campo `metadata` tiene metadatos JSONB (si aplica)
+- [ ] Campo `last_used` se actualiza
+- [ ] Campo `use_count` incrementa
 
 ---
 

@@ -66,7 +66,9 @@ Verificar qué tablas existen actualmente en Aiven y cuáles faltan según los e
 3. ✅ Comparar y crear lista de diferencias
 4. ⏳ **PENDIENTE:** Consultar con usuario sobre estructura de tablas faltantes
 
-### Hallazgos principales - ACTUALIZADO 7 Oct 2025 - 15:30
+### Hallazgos principales - ACTUALIZADO 7 Oct 2025 - 16:00
+
+**📋 REFERENCIA COMPLETA:** Ver `DATABASE_SCHEMA_REFERENCE.md` para estructura detallada de todas las tablas y columnas.
 
 #### ✅ Tablas CORE (todas existen):
 - ✅ `users` - Usuarios del sistema
@@ -181,6 +183,19 @@ IMPACTO EN EL PLAN:
 - FASE 6 (Luminarias) → Infraestructura lista, saltar a testing
 
 Próximo paso REAL: ETAPA 1.3 - Verificar que modalidades guardan datos correctamente
+
+[7 Oct 2025 - 16:00] Claude:
+✅ ESQUEMA DE BASE DE DATOS DOCUMENTADO
+
+Documento creado: DATABASE_SCHEMA_REFERENCE.md
+Contiene estructura completa de las 46 tablas con:
+- Nombres de todas las columnas
+- Tipos de datos exactos
+- Constraints (NOT NULL, DEFAULT, PRIMARY KEY, FOREIGN KEY)
+- Ejemplos de campos JSONB más usados
+- Referencias cruzadas entre tablas
+
+Esta información es crítica para verificar que los endpoints guardan datos en los campos correctos.
 ```
 
 ---
@@ -2857,6 +2872,21 @@ Las siguientes fases serán detalladas completamente cuando estemos cerca de imp
   - Categorización: Entrenamiento (3), Competición Individual (4), Multiplayer (2)
   - Espacio para documentar resultados y problemas encontrados
 - **Próximo paso:** Usuario ejecuta testing manual siguiendo el protocolo
+
+## 2025-10-07 16:00 - Esquema de base de datos documentado
+- **Autor:** Usuario + Claude
+- **Cambios:**
+  - ✅ Creado documento DATABASE_SCHEMA_REFERENCE.md
+  - Documentadas todas las columnas de las 46 tablas
+  - Actualizado PROTOCOLO_TESTING_MODALIDADES.md con queries correctas
+  - Actualizado PLAN_MAESTRO_DESARROLLO.md con referencia al esquema
+  - Añadidas notas en ETAPA 1.1 sobre el esquema documentado
+- **Esquema incluye:**
+  - Estructura completa de todas las tablas (nombre, tipo, nullable, default, keys)
+  - Ejemplos de campos JSONB más importantes
+  - Referencias de foreign keys entre tablas
+  - Notas sobre uso de cada tabla principal
+- **Próximo paso:** Usuario ejecuta testing con información correcta de columnas
 
 ---
 

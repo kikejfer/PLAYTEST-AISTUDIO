@@ -3,13 +3,48 @@ Para ejecutar los tests:
 - Para ejecutar todos los tests: node run-tests.mjs
 - Para ejecutar un bloque: npx playwright test tests/directorio
 
-npx playwright test tests/03-funcionalidad-core
-01-infraestructura
-02-autenticacion
+npx playwright test tests/06-admin-principal-management
+01-infraestructura  OK
+02-autenticacion  OK
 03-funcionalidad-core
-04-administracion
-05-modulo-generico-bloques
-06-admin-principal-management
-07-verificacion
-08-frontend-utilities
-09-navigation-service
+04-administracion  
+05-modulo-generico-bloques  
+06-admin-principal-management  
+07-verificacion  
+08-frontend-utilities  
+09-navigation-service  
+
+  Comandos para ejecutar cada bloque:
+
+Bloque 1 - Infraestructura: npx playwright test --config=bloque1-infrastructure.config.js
+Bloque 2 - Autenticación: npx playwright test --config=bloque2-authentication.config.js
+Bloque 3 - Funcionalidad Core: npx playwright test --config=bloque3-optimized.config.js
+Bloque 4 - Administración: npx playwright test --config=bloque4-admin.config.js
+prueba test 1, 2 y 3, mostrandome pasos e indicando lo que funciona y lo que no, pero no cambies codigo
+
+  # Bloque 1 - Infraestructura
+  npx playwright test --config=bloque1-infrastructure.config.js
+  npx playwright test --config=bloque1-refactored.config.js
+
+  # Bloque 2 - Autenticación
+  npx playwright test --config=bloque2-authentication.config.js
+  npx playwright test --config=bloque2-refactored.config.js
+
+  # Bloque 3 - Funcionalidad Core (ORDEN SECUENCIAL)
+  npx playwright test tests/03-funcionalidad-core-refactored/01-sequential-block-test.spec.js
+  npx playwright test tests/03-funcionalidad-core-refactored/01-sequential-block-test-with-helpers.spec.js
+  npx playwright test tests/03-funcionalidad-core-refactored/02-block-loading.spec.js
+  npx playwright test tests/03-funcionalidad-core-refactored/03-block-download.spec.js
+
+  npx playwright test --config=bloque3-sequential.config.js
+  npx playwright test --config=bloque3-refactored.config.js
+
+  # Bloque 4 - Workflow Completo de Administración
+  
+  1. Test principal (con helpers integrados):
+  npx playwright test tests/04-administracion/bloque4-complete-workflow.spec.js
+  2. Test de admin secundario (con helpers):
+  npx playwright test tests/04-administracion/secondary-admin.spec.js
+
+  npx playwright test tests/04-administracion/bloque4-complete-workflow.spec.js --headed
+
