@@ -289,45 +289,48 @@
           const handleFinish = async () => {
               setGameState('finished');
               setIsConfirmingFinish(false);
-              
+
               const correctAnswers = userAnswers.filter(a => a.isCorrect).length;
               const wrongAnswers = userAnswers.length - correctAnswers;
-              
+
               if (!currentUser || !game) {
                   console.error('❌ Missing currentUser or game data');
                   return;
               }
-              
+
+              const answersForApi = userAnswers.map(answer => ({
+                  blockId: answer.blockId || 'unknown',
+                  questionId: answer.questionId || answer.id || 'unknown',
+                  topicName: answer.topicName || answer.tema || 'unknown',
+                  result: answer.isCorrect ? 'ACIERTO' : 'FALLO',
+                  responseTime: answer.responseTime || 0
+              }));
+
+              // CRITICAL: Save score FIRST (independent operation)
+              try {
+                  await apiDataService.saveTimeTrialScore(game.id, {
+                      score: userAnswers.filter(a => a.isCorrect).length,
+                      totalQuestions: questions.length,
+                      questionsAnswered: userAnswers.length,
+                      timeRemaining: 0,
+                      timeLimit: initialTime,
+                      answers: answersForApi
+                  });
+                  console.log('✅ Time Trial score saved successfully');
+              } catch (scoreError) {
+                  console.error('❌ Failed to save time trial score:', scoreError);
+              }
+
+              // IMPORTANT: Update user stats (independent, non-critical)
               try {
                   const gameResults = {
                       gameId: game.id,
-                      answers: userAnswers.map(answer => ({
-                          blockId: answer.blockId || 'unknown',
-                          questionId: answer.questionId || answer.id || 'unknown',
-                          topicName: answer.topicName || answer.tema || 'unknown',
-                          result: answer.isCorrect ? 'ACIERTO' : 'FALLO',
-                          responseTime: answer.responseTime || 0
-                      }))
+                      answers: answersForApi
                   };
-                  
-                  // Save game results to user stats via API
-                  await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
-                  console.log('✅ Time Trial user stats saved to API');
-                  
-                  // Also save time trial score
-                  await apiDataService.saveTimeTrialScore(game.id, {
-                      score: userAnswers.filter(a => a.isCorrect).length,
-                      totalQuestions: questions.length, // Total questions in configuration, not just answered
-                      questionsAnswered: userAnswers.length, // Questions actually answered
-                      timeRemaining: 0, // Game finished manually
-                      timeLimit: initialTime,
-                      answers: gameResults.answers
-                  });
-                  console.log('✅ Time Trial score saved to API');
-              } catch (error) {
-                  console.error('❌ Failed to save game results to API:', error);
-                  // No fallback to localStorage - API must work for proper data persistence
-                  throw error;
+                  await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, 'time-trial');
+                  console.log('✅ User stats updated successfully');
+              } catch (statsError) {
+                  console.error('❌ Failed to update user stats:', statsError);
               }
           };
 

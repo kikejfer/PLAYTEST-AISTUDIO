@@ -245,7 +245,7 @@
               if (gameState === 'finished') return;
               setGameState('finished');
               setIsConfirmingFinish(false);
-          
+
               if (currentUser) {
                   const answersForStats = userAnswers.map(answer => ({
                       ...answer,
@@ -254,24 +254,38 @@
                       questionId: answer.questionId || answer.id || 'unknown',
                       topicName: answer.topicName || answer.tema || 'unknown'
                   }));
-                  const gameResults = { 
-                      answers: answersForStats,
-                      blocksInfo: 'Lives Mode'
-                  };
-                  
+
+                  // CRITICAL: Save score FIRST (independent operation)
                   try {
-                      if (answersForStats.length > 0) {
-                          await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
-                      }
-              
                       const correctAnswers = userAnswers.filter(a => a.isCorrect).length;
-                      const score = { correct: correctAnswers, date: new Date().toISOString() };
-                      await apiDataService.saveLivesScore(game.id, score);
-                  } catch (error) {
-                      console.error("Failed to save lives mode scores:", error);
+                      const scoreData = {
+                          correct: correctAnswers,
+                          incorrect: userAnswers.length - correctAnswers,
+                          totalQuestions: userAnswers.length,
+                          livesRemaining: lives,
+                          answers: answersForStats
+                      };
+                      await apiDataService.saveLivesScore(game.id, scoreData);
+                      console.log('✅ Lives score saved successfully');
+                  } catch (scoreError) {
+                      console.error('❌ Failed to save lives score:', scoreError);
+                  }
+
+                  // IMPORTANT: Update user stats (independent, non-critical)
+                  if (answersForStats.length > 0) {
+                      try {
+                          const gameResults = {
+                              answers: answersForStats,
+                              blocksInfo: 'Lives Mode'
+                          };
+                          await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, 'lives');
+                          console.log('✅ User stats updated successfully');
+                      } catch (statsError) {
+                          console.error('❌ Failed to update user stats:', statsError);
+                      }
                   }
               }
-          }, [gameState, currentUser, userAnswers, game]);
+          }, [gameState, currentUser, userAnswers, game, lives]);
           
           useEffect(() => {
             if (lives <= 0 && gameState === 'playing') {

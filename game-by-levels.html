@@ -258,21 +258,40 @@
 
           useEffect(() => {
             if (gameState === 'finished' && currentUser && allUserAnswers.length > 0) {
-                const updateStats = async () => {
+                const saveGameData = async () => {
+                    const answersForStats = allUserAnswers.map(answer => ({
+                        ...answer,
+                        result: answer.isCorrect ? 'ACIERTO' : 'FALLO',
+                    }));
+
+                    // CRITICAL: Save score FIRST (independent operation)
                     try {
-                        const answersForStats = allUserAnswers.map(answer => ({
-                            ...answer,
-                            result: answer.isCorrect ? 'ACIERTO' : 'FALLO',
-                        }));
+                        const scoreData = {
+                            score: allUserAnswers.filter(a => a.isCorrect).length,
+                            totalQuestions: allUserAnswers.length,
+                            totalAnswered: allUserAnswers.length,
+                            correctAnswers: allUserAnswers.filter(a => a.isCorrect).length,
+                            incorrectAnswers: allUserAnswers.filter(a => !a.isCorrect).length,
+                            answers: answersForStats
+                        };
+                        await apiDataService.saveByLevelsScore(game.id, scoreData);
+                        console.log('✅ By-levels score saved successfully');
+                    } catch (scoreError) {
+                        console.error('❌ Failed to save by-levels score:', scoreError);
+                    }
+
+                    // IMPORTANT: Update user stats (independent, non-critical)
+                    try {
                         const gameResults = {
                             answers: answersForStats
                         };
-                        await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
-                    } catch (error) {
-                        console.error("Failed to update by-levels game stats:", error);
+                        await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, 'by-levels');
+                        console.log('✅ User stats updated successfully');
+                    } catch (statsError) {
+                        console.error('❌ Failed to update user stats:', statsError);
                     }
                 };
-                updateStats();
+                saveGameData();
             }
           }, [gameState, currentUser, allUserAnswers, game]);
           

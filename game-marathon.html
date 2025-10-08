@@ -339,23 +339,26 @@
                     questionId: answer.questionId || answer.id || 'unknown',
                     topicName: answer.topicName || answer.tema || 'unknown'
                 }));
-                const gameResults = {
-                    answers: answersForStats,
-                    blocksInfo: 'Marathon Mode'
-                };
-                
+
                 (async () => {
+                  // CRITICAL: Save score FIRST (independent operation)
                   try {
-                    // Save marathon score to PostgreSQL
                     await apiDataService.saveMarathonScore(game.id, scoreData);
-                    console.log('✅ Marathon score saved to PostgreSQL');
-                    
-                    // Save user stats to PostgreSQL  
-                    await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
-                    console.log('✅ Marathon user stats saved to PostgreSQL');
-                  } catch (error) {
-                    console.error('❌ Failed to save Marathon game results to PostgreSQL:', error);
-                    // No fallback to localStorage - API must work for proper data persistence
+                    console.log('✅ Marathon score saved successfully');
+                  } catch (scoreError) {
+                    console.error('❌ Failed to save marathon score:', scoreError);
+                  }
+
+                  // IMPORTANT: Update user stats (independent, non-critical)
+                  try {
+                    const gameResults = {
+                      answers: answersForStats,
+                      blocksInfo: 'Marathon Mode'
+                    };
+                    await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, 'marathon');
+                    console.log('✅ User stats updated successfully');
+                  } catch (statsError) {
+                    console.error('❌ Failed to update user stats:', statsError);
                   }
                 })();
             }

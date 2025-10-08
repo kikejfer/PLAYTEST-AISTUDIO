@@ -251,14 +251,10 @@
                     questionId: answer.questionId || answer.id || 'unknown',
                     topicName: answer.topicName || answer.tema || 'unknown'
                  }));
-                 const gameResults = {
-                    answers: answersForStats,
-                    blocksInfo: 'Streak Mode'
-                };
+
                 (async () => {
+                  // CRITICAL: Save score FIRST (independent operation)
                   try {
-                    await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
-                    // Also save streak game score
                     await apiDataService.saveStreakScore(game.id, {
                       maxStreak: maxStreak,
                       finalStreak: currentStreak,
@@ -266,8 +262,21 @@
                       correctAnswers: userAnswers.filter(a => a.isCorrect).length,
                       answers: answersForStats
                     });
-                  } catch (error) {
-                    console.error('Failed to save game results:', error);
+                    console.log('✅ Streak score saved successfully');
+                  } catch (scoreError) {
+                    console.error('❌ Failed to save streak score:', scoreError);
+                  }
+
+                  // IMPORTANT: Update user stats (independent, non-critical)
+                  try {
+                    const gameResults = {
+                      answers: answersForStats,
+                      blocksInfo: 'Streak Mode'
+                    };
+                    await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, 'streak');
+                    console.log('✅ User stats updated successfully');
+                  } catch (statsError) {
+                    console.error('❌ Failed to update user stats:', statsError);
                   }
                 })();
             }

@@ -278,19 +278,10 @@
           const handleFinish = async () => {
               setGameState('finished');
               setIsConfirmingFinish(false);
+
               if (currentUser && userAnswers.length > 0) {
-                  const gameResults = {
-                      answers: userAnswers,
-                      timeElapsed: timeElapsed
-                  };
+                  // CRITICAL: Save score FIRST (independent operation)
                   try {
-                      console.log('💾 Saving game results for gameId:', game.id);
-                      console.log('🎯 Game results:', gameResults);
-                      
-                      await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, game.mode);
-                      console.log('✅ User stats updated successfully');
-                      
-                      // Also save classic game score
                       const totalAnswered = userAnswers.filter(a => a.result !== 'BLANCO' && a.result !== 'BLANK').length;
                       const scoreData = {
                           score: userAnswers.filter(a => a.result === 'ACIERTO').length,
@@ -302,39 +293,25 @@
                       console.log('📊 Saving score data:', scoreData);
                       await apiDataService.saveClassicScore(game.id, scoreData);
                       console.log('✅ Classic score saved successfully');
-                      
-                      // Update user statistics and answer history
-                      console.log('📈 Updating user statistics...');
-                      try {
-                          await apiDataService.updateUserStats(currentUser.id, game.id, {
-                              answers: userAnswers.map(answer => {
-                                  const question = questions.find(q => q.id === answer.questionId);
-                                  const block = blocks.find(b => b.questions && b.questions.some(q => q.id === answer.questionId));
-                                  return {
-                                      blockId: block ? parseInt(block.id) : null,
-                                      questionId: answer.questionId,
-                                      topicName: question ? question.tema : 'Unknown',
-                                      result: answer.correct ? 'ACIERTO' : 'FALLO',
-                                      responseTime: answer.responseTime || 0
-                                  };
-                              })
-                          }, 'classic');
-                          console.log('✅ User statistics updated successfully');
-                      } catch (statsError) {
-                          console.error('❌ Failed to update user statistics:', statsError);
-                      }
-                      
-                      // Mark game as completed for history tracking
-                      console.log('🏁 Marking game as completed, gameId:', game.id);
-                      try {
-                          await dataService.updateGame(game.id, { status: 'completed' });
-                          console.log('✅ Game marked as completed successfully');
-                      } catch (updateError) {
-                          console.error('❌ Failed to update game status to completed:', updateError);
-                      }
-                  } catch (error) {
-                      console.error('❌ Failed to save game results:', error);
+                  } catch (scoreError) {
+                      console.error('❌ Failed to save score:', scoreError);
                   }
+
+                  // IMPORTANT: Update user stats (independent, non-critical)
+                  try {
+                      const gameResults = {
+                          answers: userAnswers,
+                          timeElapsed: timeElapsed
+                      };
+                      console.log('💾 Updating user stats for gameId:', game.id);
+                      await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, 'classic');
+                      console.log('✅ User stats updated successfully');
+                  } catch (statsError) {
+                      console.error('❌ Failed to update user stats:', statsError);
+                  }
+
+                  // Note: Game status is now updated by backend when score is saved
+                  // No need for separate updateGame call
               }
           };
           

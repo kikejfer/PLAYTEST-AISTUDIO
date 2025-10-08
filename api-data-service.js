@@ -784,9 +784,20 @@ class APIDataService {
   async saveTimeTrialScore(gameId, scoreData) {
     const response = await this.apiCall(`/games/${gameId}/scores`, {
       method: 'POST',
-      body: JSON.stringify({ 
-        scoreData, 
-        gameType: 'time-trial' 
+      body: JSON.stringify({
+        scoreData,
+        gameType: 'time-trial'
+      })
+    });
+    return this.simulateDelay(response);
+  }
+
+  async saveByLevelsScore(gameId, scoreData) {
+    const response = await this.apiCall(`/games/${gameId}/scores`, {
+      method: 'POST',
+      body: JSON.stringify({
+        scoreData,
+        gameType: 'by-levels'
       })
     });
     return this.simulateDelay(response);
