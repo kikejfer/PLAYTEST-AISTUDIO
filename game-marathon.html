@@ -422,12 +422,15 @@
                   responseTime,
               }]);
 
+              // Ensure dificultad is a valid number (default to 2 if undefined/null)
+              const difficulty = currentQuestion.dificultad ?? 2;
+
               let timeChange = 0;
               if (isCorrect) {
-                  timeChange = 5 + Math.floor((3 - currentQuestion.dificultad) * 2); // More time for easier questions
+                  timeChange = 5 + Math.floor((3 - difficulty) * 2); // More time for easier questions
                   timeChange = Math.max(2, timeChange); // Min 2s bonus
               } else {
-                  timeChange = -(5 + Math.floor(currentQuestion.dificultad * 2)); // More penalty for harder questions
+                  timeChange = -(5 + Math.floor(difficulty * 2)); // More penalty for harder questions
                   timeChange = Math.min(-5, timeChange); // Max -5s penalty
               }
               
@@ -461,8 +464,10 @@
           };
 
           const formatTime = (seconds) => {
-              const minutes = Math.floor(seconds / 60);
-              const remainingSeconds = seconds % 60;
+              // Safety check: if seconds is NaN or undefined, default to 0
+              const validSeconds = isNaN(seconds) || seconds === undefined ? 0 : seconds;
+              const minutes = Math.floor(validSeconds / 60);
+              const remainingSeconds = validSeconds % 60;
               return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
           };
           
