@@ -368,7 +368,10 @@
                           <button onClick={() => window.location.reload()} className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-bold py-3 px-6 rounded-lg transition-colors">
                               <ArrowPathIcon className="h-5 w-5" />{t('game_button_play_again')}
                           </button>
-                          <button onClick={() => window.location.href = 'jugadores-panel-gaming.html'} className="flex items-center gap-2 bg-brand-cta hover:bg-brand-cta-hover text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                          <button onClick={() => {
+                              const panelUrl = window.navigationService?.getPanelUrl() || 'jugadores-panel-gaming.html';
+                              window.location.href = panelUrl;
+                          }} className="flex items-center gap-2 bg-brand-cta hover:bg-brand-cta-hover text-white font-bold py-3 px-6 rounded-lg transition-colors">
                               <ArrowUturnLeftIcon className="h-5 w-5" />{t('game_button_dashboard')}
                           </button>
                       </div>

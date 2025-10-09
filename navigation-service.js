@@ -173,12 +173,40 @@ class NavigationService {
         console.log(`🛠️ Opening contextual support for role: ${this.currentRole}`);
     }
 
+    // Obtener URL del panel basado en el rol
+    getPanelUrl(roleCode = null) {
+        // Si no se proporciona un roleCode, usar el rol actual
+        const role = roleCode || this.currentRole || localStorage.getItem('activeRole');
+
+        const panelMap = {
+            'PAP': 'admin-principal-panel.html',
+            'ADP': 'admin-principal-panel.html',
+            'PAS': 'admin-secundario-panel.html',
+            'ADS': 'admin-secundario-panel.html',
+            'PST': 'support-dashboard.html',
+            'SPT': 'support-dashboard.html',
+            'PCC': 'creators-panel-content.html',
+            'PPF': 'teachers-panel-schedules.html',
+            'PJG': 'jugadores-panel-gaming.html',
+            'JGD': 'jugadores-panel-gaming.html'
+        };
+
+        const panelUrl = panelMap[role];
+        if (!panelUrl) {
+            console.warn(`⚠️ No panel URL found for role: ${role}, defaulting to jugadores-panel-gaming.html`);
+            return 'jugadores-panel-gaming.html';
+        }
+
+        console.log(`🧭 Panel URL for role ${role}: ${panelUrl}`);
+        return panelUrl;
+    }
+
     // Refrescar servicio
     refresh() {
         // Limpiar elementos existentes
         const existingElements = document.querySelectorAll('.nav-support-btn, .navigation-service-floating');
         existingElements.forEach(el => el.remove());
-        
+
         // Reinicializar
         this.injectNavigationElements();
     }
