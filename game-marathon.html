@@ -371,7 +371,7 @@
                   }
                 })();
             }
-          }, [gameState, currentUser, userAnswers]);
+          }, [gameState, currentUser, userAnswers, game, questions, timeLeft, gameStartTime]);
 
           useEffect(() => {
             setQuestionStartTime(Date.now());
@@ -503,7 +503,7 @@
                        <fieldset className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <legend className="sr-only">{t('game_select_answer')}</legend>
                             {currentQuestion.respuestas.map((answer, index) => (
-                               <button key={index} onClick={() => handleAnswerSelect(index)} disabled={gameState === 'feedback'} className="w-full text-left p-4 rounded-lg text-brand-light font-medium transition-all transform disabled:cursor-not-allowed bg-brand-tertiary hover:bg-brand-accent disabled:bg-brand-tertiary">
+                               <button key={index} onClick={() => handleAnswerSelect(index)} disabled={gameState === 'feedback'} className="w-full text-left p-4 rounded-lg text-white font-medium transition-all transform disabled:cursor-not-allowed bg-brand-tertiary hover:bg-brand-accent disabled:bg-brand-tertiary">
                                    {answer.textoRespuesta}
                                </button>
                             ))}
