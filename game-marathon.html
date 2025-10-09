@@ -589,9 +589,24 @@
               const params = new URLSearchParams(window.location.search);
               console.log('🏁 [MARATHON START] URL params:', [...params.entries()]);
               const id = params.get('gameId');
-              console.log('🏁 [MARATHON START] Extracted gameId:', id);
-              if (id) setGameId(id);
-              else { setError("No game ID provided."); setIsLoading(false); }
+              console.log('🏁 [MARATHON START] Extracted gameId from URL:', id);
+
+              if (id) {
+                  setGameId(id);
+              } else {
+                  // Fallback to localStorage if URL param is missing
+                  console.log('⚠️ [MARATHON START] No gameId in URL, checking localStorage...');
+                  const backupGameId = localStorage.getItem('current_game_id');
+                  console.log('💾 [MARATHON START] Backup gameId from localStorage:', backupGameId);
+                  if (backupGameId) {
+                      console.log('✅ [MARATHON START] Using backup gameId:', backupGameId);
+                      setGameId(backupGameId);
+                  } else {
+                      console.error('❌ [MARATHON START] No gameId found in URL or localStorage!');
+                      setError("No game ID provided.");
+                      setIsLoading(false);
+                  }
+              }
           }, []);
           
           useEffect(() => {
