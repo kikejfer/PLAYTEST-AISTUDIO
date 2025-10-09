@@ -862,9 +862,10 @@
                             <MarathonRankingPreview scores={marathonScores} t={t} />
                         </div>
                     </div>
-                    <button onClick={() => { 
-                        console.log('🖱️ Marathon button clicked! Starting integrated gameplay');
-                        setShowGameplay(true);
+                    <button onClick={() => {
+                        console.log('🖱️ Marathon button clicked! Navigating to game-marathon.html');
+                        console.log('🖱️ Button disabled?', totalQuestions === 0);
+                        handleStartGame();
                     }} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
                          {t('game_page_start')} ({t('game_page_total_questions')} {totalQuestions})
                     </button>
