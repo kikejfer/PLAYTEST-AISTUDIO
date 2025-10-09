@@ -422,22 +422,12 @@
                   responseTime,
               }]);
 
-              // Ensure difficulty is a valid number (default to 2 if undefined/null)
-              const difficulty = currentQuestion.difficulty ?? 2;
-              console.log('⏱️ Marathon - Time calculation:', {
-                  questionId: currentQuestion.id,
-                  rawDifficulty: currentQuestion.difficulty,
-                  usedDifficulty: difficulty,
-                  isCorrect: isCorrect
-              });
-
+              // Calculate time change: +10s for correct, -15s for incorrect
               let timeChange = 0;
               if (isCorrect) {
-                  timeChange = 5 + Math.floor((3 - difficulty) * 2); // More time for easier questions
-                  timeChange = Math.max(2, timeChange); // Min 2s bonus
+                  timeChange = 10; // Fixed +10s bonus for correct answers
               } else {
-                  timeChange = -(5 + Math.floor(difficulty * 2)); // More penalty for harder questions
-                  timeChange = Math.min(-5, timeChange); // Max -5s penalty
+                  timeChange = -15; // Fixed -15s penalty for incorrect answers
               }
 
               console.log('⏱️ Marathon - Calculated time change:', {
