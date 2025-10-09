@@ -398,9 +398,22 @@
 
           const handleAnswerSelect = (answerIndex) => {
               if (gameState !== 'playing') return;
+
+              console.log('🎯 Marathon - Answer selected:', {
+                  questionIndex: currentQuestionIndex,
+                  answerIndex: answerIndex,
+                  questionId: currentQuestion.id
+              });
+
               const responseTime = (Date.now() - questionStartTime) / 1000;
               const isCorrect = currentQuestion.respuestas[answerIndex].esCorrecta;
-              
+
+              console.log('✅/❌ Marathon - Answer result:', {
+                  isCorrect: isCorrect,
+                  responseTime: responseTime + 's',
+                  totalAnswered: userAnswers.length + 1
+              });
+
               setUserAnswers(prev => [...prev, {
                   questionId: currentQuestion.id,
                   isCorrect,
@@ -424,12 +437,20 @@
           };
 
           const handleNext = () => {
+              console.log('➡️ Marathon - Moving to next question:', {
+                  currentIndex: currentQuestionIndex,
+                  totalQuestions: questions.length,
+                  isLastQuestion: currentQuestionIndex >= questions.length - 1
+              });
+
               if (currentQuestionIndex < questions.length - 1) {
                   setCurrentQuestionIndex(prev => prev + 1);
                   setGameState('playing');
                   setFeedback(null);
                   setSelectedAnswerIndex(null);
+                  console.log('▶️ Marathon - Next question loaded, index:', currentQuestionIndex + 1);
               } else {
+                  console.log('🏁 Marathon - Last question answered, finishing game...');
                   setGameState('finished');
               }
           };
