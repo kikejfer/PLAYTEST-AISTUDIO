@@ -422,8 +422,14 @@
                   responseTime,
               }]);
 
-              // Ensure dificultad is a valid number (default to 2 if undefined/null)
-              const difficulty = currentQuestion.dificultad ?? 2;
+              // Ensure difficulty is a valid number (default to 2 if undefined/null)
+              const difficulty = currentQuestion.difficulty ?? 2;
+              console.log('⏱️ Marathon - Time calculation:', {
+                  questionId: currentQuestion.id,
+                  rawDifficulty: currentQuestion.difficulty,
+                  usedDifficulty: difficulty,
+                  isCorrect: isCorrect
+              });
 
               let timeChange = 0;
               if (isCorrect) {
@@ -433,7 +439,12 @@
                   timeChange = -(5 + Math.floor(difficulty * 2)); // More penalty for harder questions
                   timeChange = Math.min(-5, timeChange); // Max -5s penalty
               }
-              
+
+              console.log('⏱️ Marathon - Calculated time change:', {
+                  timeChange: timeChange,
+                  display: (timeChange > 0 ? '+' : '') + timeChange + 's'
+              });
+
               setTimeLeft(prev => Math.max(0, prev + timeChange));
               setFeedback({ isCorrect, timeChange });
               setGameState('feedback');
