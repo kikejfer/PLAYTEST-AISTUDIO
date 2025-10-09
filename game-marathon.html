@@ -315,9 +315,17 @@
           }, [gameState, timeLeft, t]);
           
           useEffect(() => {
+            console.log('🔄 Marathon useEffect triggered - gameState:', gameState, 'userAnswers:', userAnswers.length, 'game:', game?.id);
+
             if (gameState === 'finished' && currentUser && userAnswers.length > 0) {
                 console.log('🏁 Marathon game finished - Starting save process');
-                console.log('📊 Marathon - gameId:', game?.id, 'userAnswers:', userAnswers.length);
+                console.log('📊 Marathon Details:', {
+                  gameId: game?.id,
+                  currentUser: currentUser?.id,
+                  userAnswersCount: userAnswers.length,
+                  questionsCount: questions.length,
+                  timeLeft: timeLeft
+                });
 
                 if (!game || !game.id) {
                   console.error('❌ Marathon - Missing game or game.id');
@@ -340,6 +348,8 @@
                     questionStats: userAnswers
                 };
 
+                console.log('📦 Marathon scoreData prepared:', JSON.stringify(scoreData, null, 2));
+
                 const answersForStats = userAnswers.map(answer => ({
                     ...answer,
                     result: answer.isCorrect ? 'ACIERTO' : 'FALLO',
@@ -349,13 +359,16 @@
                 }));
 
                 (async () => {
+                  console.log('🚀 Marathon - Starting async save operations');
+
                   // CRITICAL: Save score FIRST (independent operation)
                   try {
-                    console.log('📊 Marathon - Attempting to save score for gameId:', game.id);
+                    console.log('📊 Marathon - Calling saveMarathonScore for gameId:', game.id);
                     await apiDataService.saveMarathonScore(game.id, scoreData);
                     console.log('✅ Marathon score saved successfully');
                   } catch (scoreError) {
                     console.error('❌ Failed to save marathon score:', scoreError);
+                    console.error('❌ Score error details:', scoreError.message, scoreError.stack);
                   }
 
                   // IMPORTANT: Update user stats (independent, non-critical)
@@ -364,14 +377,20 @@
                       answers: answersForStats,
                       blocksInfo: 'Marathon Mode'
                     };
+                    console.log('📊 Marathon - Calling updateUserStats for userId:', currentUser.id);
                     await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, 'marathon');
                     console.log('✅ User stats updated successfully');
                   } catch (statsError) {
                     console.error('❌ Failed to update user stats:', statsError);
+                    console.error('❌ Stats error details:', statsError.message, statsError.stack);
                   }
+
+                  console.log('🏁 Marathon - Save operations completed');
                 })();
+            } else {
+              console.log('⏭️  Marathon - Skipping save (conditions not met)');
             }
-          }, [gameState, currentUser, userAnswers, game, questions, timeLeft, gameStartTime]);
+          }, [gameState, currentUser, userAnswers, game, questions, timeLeft]);
 
           useEffect(() => {
             setQuestionStartTime(Date.now());
