@@ -254,7 +254,51 @@
               return () => clearInterval(timerId);
           }, [gameState, isPaused, timeLeft, t]);
 
-          // Game saving is handled in handleFinish function
+          // CRITICAL: Auto-save when game finishes (either time up or manual finish)
+          useEffect(() => {
+            if (gameState === 'finished' && currentUser && game && userAnswers.length > 0) {
+              console.log('🏁 Time Trial game finished - Starting save process');
+              console.log('📊 Time Trial - gameId:', game.id, 'userAnswers:', userAnswers.length);
+
+              const answersForApi = userAnswers.map(answer => ({
+                  blockId: answer.blockId || 'unknown',
+                  questionId: answer.questionId || answer.id || 'unknown',
+                  topicName: answer.topicName || answer.tema || 'unknown',
+                  result: answer.isCorrect ? 'ACIERTO' : 'FALLO',
+                  responseTime: answer.responseTime || 0
+              }));
+
+              (async () => {
+                // CRITICAL: Save score FIRST (independent operation)
+                try {
+                  console.log('📊 Time Trial - Attempting to save score for gameId:', game.id);
+                  await apiDataService.saveTimeTrialScore(game.id, {
+                      score: userAnswers.filter(a => a.isCorrect).length,
+                      totalQuestions: questions.length,
+                      questionsAnswered: userAnswers.length,
+                      timeRemaining: timeLeft > 0 ? timeLeft : 0,
+                      timeLimit: initialTime,
+                      answers: answersForApi
+                  });
+                  console.log('✅ Time Trial score saved successfully');
+                } catch (scoreError) {
+                  console.error('❌ Failed to save time trial score:', scoreError);
+                }
+
+                // IMPORTANT: Update user stats (independent, non-critical)
+                try {
+                  const gameResults = {
+                      gameId: game.id,
+                      answers: answersForApi
+                  };
+                  await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, 'time-trial');
+                  console.log('✅ User stats updated successfully');
+                } catch (statsError) {
+                  console.error('❌ Failed to update user stats:', statsError);
+                }
+              })();
+            }
+          }, [gameState, currentUser, userAnswers]);
 
           useEffect(() => {
             setQuestionStartTime(Date.now());
@@ -286,52 +330,10 @@
               }
           };
 
-          const handleFinish = async () => {
+          const handleFinish = () => {
+              // Just change state - saving is handled by useEffect above
               setGameState('finished');
               setIsConfirmingFinish(false);
-
-              const correctAnswers = userAnswers.filter(a => a.isCorrect).length;
-              const wrongAnswers = userAnswers.length - correctAnswers;
-
-              if (!currentUser || !game) {
-                  console.error('❌ Missing currentUser or game data');
-                  return;
-              }
-
-              const answersForApi = userAnswers.map(answer => ({
-                  blockId: answer.blockId || 'unknown',
-                  questionId: answer.questionId || answer.id || 'unknown',
-                  topicName: answer.topicName || answer.tema || 'unknown',
-                  result: answer.isCorrect ? 'ACIERTO' : 'FALLO',
-                  responseTime: answer.responseTime || 0
-              }));
-
-              // CRITICAL: Save score FIRST (independent operation)
-              try {
-                  await apiDataService.saveTimeTrialScore(game.id, {
-                      score: userAnswers.filter(a => a.isCorrect).length,
-                      totalQuestions: questions.length,
-                      questionsAnswered: userAnswers.length,
-                      timeRemaining: 0,
-                      timeLimit: initialTime,
-                      answers: answersForApi
-                  });
-                  console.log('✅ Time Trial score saved successfully');
-              } catch (scoreError) {
-                  console.error('❌ Failed to save time trial score:', scoreError);
-              }
-
-              // IMPORTANT: Update user stats (independent, non-critical)
-              try {
-                  const gameResults = {
-                      gameId: game.id,
-                      answers: answersForApi
-                  };
-                  await apiDataService.updateUserStats(currentUser.id, game.id, gameResults, 'time-trial');
-                  console.log('✅ User stats updated successfully');
-              } catch (statsError) {
-                  console.error('❌ Failed to update user stats:', statsError);
-              }
           };
 
           const formatTime = (seconds) => {

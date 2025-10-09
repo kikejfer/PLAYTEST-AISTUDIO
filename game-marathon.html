@@ -315,11 +315,19 @@
           }, [gameState, timeLeft, t]);
           
           useEffect(() => {
-            if (gameState === 'finished' && currentUser) {
-                 const correctAnswers = userAnswers.filter(a => a.isCorrect).length;
-                 const wrongAnswers = userAnswers.filter(a => !a.isCorrect).length;
-                 const blockId = Object.keys(game.config)[0];
-                 const scoreData = {
+            if (gameState === 'finished' && currentUser && userAnswers.length > 0) {
+                console.log('🏁 Marathon game finished - Starting save process');
+                console.log('📊 Marathon - gameId:', game?.id, 'userAnswers:', userAnswers.length);
+
+                if (!game || !game.id) {
+                  console.error('❌ Marathon - Missing game or game.id');
+                  return;
+                }
+
+                const correctAnswers = userAnswers.filter(a => a.isCorrect).length;
+                const wrongAnswers = userAnswers.filter(a => !a.isCorrect).length;
+                const blockId = Object.keys(game.config)[0];
+                const scoreData = {
                     blockId: blockId,
                     startTime: new Date(gameStartTime.current).toISOString(),
                     endTime: new Date().toISOString(),
@@ -330,7 +338,7 @@
                     finalTimeRemaining: timeLeft > 0 ? timeLeft : 0,
                     totalTimePlayedSec: Math.floor((Date.now() - gameStartTime.current) / 1000),
                     questionStats: userAnswers
-                 };
+                };
 
                 const answersForStats = userAnswers.map(answer => ({
                     ...answer,
@@ -343,6 +351,7 @@
                 (async () => {
                   // CRITICAL: Save score FIRST (independent operation)
                   try {
+                    console.log('📊 Marathon - Attempting to save score for gameId:', game.id);
                     await apiDataService.saveMarathonScore(game.id, scoreData);
                     console.log('✅ Marathon score saved successfully');
                   } catch (scoreError) {
@@ -362,7 +371,7 @@
                   }
                 })();
             }
-          }, [gameState, currentUser, userAnswers, game.id, timeLeft, questions.length, game.config, t]);
+          }, [gameState, currentUser, userAnswers]);
 
           useEffect(() => {
             setQuestionStartTime(Date.now());
