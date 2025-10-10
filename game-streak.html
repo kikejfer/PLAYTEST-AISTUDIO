@@ -511,17 +511,39 @@
           const gameQuestions = useMemo(() => {
               if (!game || !game.config || !blocks || blocks.length === 0) return [];
               let questions = [];
+
+              // Read game options from localStorage
+              const shuffleAnswers = localStorage.getItem('game_shuffle_answers') === 'true';
+
               for (const [blockId, blockConfig] of Object.entries(game.config)) {
                   const block = blocks.find(b => b.id === parseInt(blockId) || b.id === blockId);
                   if (!block || !block.questions) continue;
-                  const questionsWithMeta = block.questions.map(q => ({...q, blockId: block.id }));
+
+                  const questionsWithMeta = block.questions.map(q => {
+                      const processedQuestion = {...q, blockId: block.id };
+                      // Shuffle answers if option is enabled
+                      if (shuffleAnswers && processedQuestion.respuestas) {
+                          processedQuestion.respuestas = [...processedQuestion.respuestas].sort(() => Math.random() - 0.5);
+                      }
+                      return processedQuestion;
+                  });
+
                   if (blockConfig.topics === 'all') {
                       questions.push(...questionsWithMeta);
                   } else if (Array.isArray(blockConfig.topics)) {
                       questions.push(...questionsWithMeta.filter(q => blockConfig.topics.includes(q.tema)));
                   }
               }
-              return questions.sort(() => Math.random() - 0.5);
+
+              // Read game options from localStorage
+              const randomQuestions = localStorage.getItem('game_random_questions') === 'true';
+              console.log('🎲 Streak - Game options:', { randomQuestions, shuffleAnswers });
+
+              // Shuffle questions if option is enabled
+              if (randomQuestions) {
+                  questions = questions.sort(() => Math.random() - 0.5);
+              }
+              return questions;
           }, [game, blocks]);
 
           const renderContent = () => {

@@ -554,14 +554,35 @@
                   );
                   console.log('📦 By-Levels - Found block:', !!block, 'questions:', block?.questions?.length || 0);
                   if (!block || !block.questions) continue;
-                  const questionsWithMeta = block.questions.map(q => ({...q, blockId: block.id, dificultad: q.dificultad || q.difficulty }));
+
+                  // Read game options from localStorage
+                  const shuffleAnswers = localStorage.getItem('game_shuffle_answers') === 'true';
+
+                  const questionsWithMeta = block.questions.map(q => {
+                      const processedQuestion = {...q, blockId: block.id, dificultad: q.dificultad || q.difficulty };
+                      // Shuffle answers if option is enabled
+                      if (shuffleAnswers && processedQuestion.respuestas) {
+                          processedQuestion.respuestas = [...processedQuestion.respuestas].sort(() => Math.random() - 0.5);
+                      }
+                      return processedQuestion;
+                  });
+
                   if (blockConfig.topics === 'all') {
                     questions.push(...questionsWithMeta);
                   } else if (Array.isArray(blockConfig.topics)) {
                     questions.push(...questionsWithMeta.filter(q => blockConfig.topics.includes(q.tema)));
                   }
               }
+
+              // Read game options from localStorage
+              const randomQuestions = localStorage.getItem('game_random_questions') === 'true';
+              console.log('🎲 By-Levels - Game options:', { randomQuestions, shuffleAnswers: localStorage.getItem('game_shuffle_answers') === 'true' });
+
               console.log('✅ By-Levels - Final questions count:', questions.length);
+              // Shuffle questions if option is enabled
+              if (randomQuestions) {
+                  questions = questions.sort(() => Math.random() - 0.5);
+              }
               return questions;
           }, [game, blocks]);
 
