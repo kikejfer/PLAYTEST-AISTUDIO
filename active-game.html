@@ -89,11 +89,11 @@
           ranking_title: 'Ranking Maratón', ranking_title_timetrial: 'Ranking Contrarreloj', ranking_title_lives: 'Ranking Vidas', ranking_title_streak: 'Ranking Racha', ranking_title_exam: 'Ranking Examen Simulado', ranking_title_duel: 'Ranking Duelo', ranking_title_trivial: 'Ranking Trivial', ranking_no_scores: 'Aún no hay puntuaciones. ¡Sé el primero!',
           ranking_header_rank: '#', ranking_header_player: 'Jugador', ranking_header_correct: 'Aciertos', ranking_header_incorrect: 'Fallos', ranking_header_date: 'Fecha', ranking_header_streak: 'Racha', ranking_header_score: 'Nota', ranking_header_questions: 'Preguntas', ranking_header_winner: 'Ganador', ranking_header_player1: 'Jugador 1', ranking_header_player2: 'Jugador 2', ranking_header_rounds: 'Rondas',
           game_classic_desc: 'Responde a las preguntas a tu ritmo. No hay límite de tiempo ni vidas. ¡Ideal para aprender y repasar!',
-          game_time_trial_desc: '¡Rápido! Responde tantas preguntas como puedas antes de que se acabe el tiempo. Cada acierto suma puntos.',
-          game_lives_desc: 'Tienes 5 vidas. Cada error te cuesta una. ¡Intenta conseguir la máxima puntuación antes de quedarte sin oportunidades! <strong>Por cada racha de 10 aciertos seguidos, recuperarás una vida.</strong>',
+          game_time_trial_desc: '¡Rápido! Responde tantas preguntas como puedas antes de que se acabe el tiempo. <strong>Tiempo inicial: 10 segundos por pregunta disponible.</strong> <strong>Puntuación: Se calcula sobre el total de preguntas disponibles en la configuración (Aciertos / Total Preguntas × 10)</strong>.',
+          game_lives_desc: 'Tienes 5 vidas. Cada error te cuesta una. ¡Intenta conseguir la máxima puntuación antes de quedarte sin oportunidades! <strong>Por cada racha de 10 aciertos seguidos, recuperarás una vida.</strong> <strong>Puntuación: Se calcula sobre el total de preguntas disponibles en la configuración (Aciertos / Total Preguntas × 10)</strong>.',
           game_levels_desc: 'Supera los niveles acertando un número mínimo de preguntas. La dificultad aumenta con cada nivel. ¿Hasta dónde puedes llegar? <strong>Importante: Esta modalidad solo está disponible si las preguntas tienen un nivel de dificultad asignado.</strong>',
-          game_streak_desc: 'El objetivo es conseguir la racha de aciertos más larga. Un error reinicia tu racha, pero no termina el juego. ¡A por el récord!',
-          game_exam_desc: 'Simula un examen real con una selección de 60, 90 o 120 preguntas y un tiempo límite (Nº Preguntas / 2 minutos). Elige una penalización por fallo (cada 1, 2 o 3 fallos restan un acierto) para calcular tu nota final. ¡Compite por el mejor puesto en el ranking! No hay feedback hasta el final. ¡Buena suerte!',
+          game_streak_desc: 'El objetivo es conseguir la racha de aciertos más larga. Un error reinicia tu racha, pero no termina el juego. ¡A por el récord! <strong>Puntuación: Se calcula sobre el total de preguntas disponibles en la configuración (Aciertos / Total Preguntas × 10)</strong>.',
+          game_exam_desc: 'Simula un examen real con una selección de 60, 90 o 120 preguntas y un tiempo límite (Nº Preguntas / 2 minutos). Elige una penalización por fallo (cada 1, 2 o 3 fallos restan un acierto). <strong>La puntuación se calcula sobre 10 puntos: (Aciertos - Fallos/Penalización) / Nº Preguntas × 10</strong>. ¡Compite por el mejor puesto en el ranking! No hay feedback hasta el final. ¡Buena suerte!',
           game_duel_desc: 'Enfréntate a otro jugador en turnos alternos. Ganas puntos por acertar y por responder más rápido.',
           game_trivial_desc: 'Los jugadores eligen temas para ganar "fichas". Gana el primero que consiga una ficha de cada tema.',
           game_marathon_desc: 'Responde a todas las preguntas antes de que se acabe el tiempo. Los aciertos suman tiempo, los errores restan. ¡Sobrevive a la maratón!',
@@ -123,11 +123,11 @@
           ranking_title: 'Marathon Ranking', ranking_title_timetrial: 'Time Trial Ranking', ranking_title_lives: 'Lives Ranking', ranking_title_streak: 'Streak Ranking', ranking_title_exam: 'Simulated Exam Ranking', ranking_title_duel: 'Duel Ranking', ranking_title_trivial: 'Trivial Ranking', ranking_no_scores: 'No scores yet. Be the first!',
           ranking_header_rank: '#', ranking_header_player: 'Player', ranking_header_correct: 'Correct', ranking_header_incorrect: 'Incorrect', ranking_header_date: 'Date', ranking_header_streak: 'Streak', ranking_header_score: 'Score', ranking_header_questions: 'Questions', ranking_header_winner: 'Winner', ranking_header_player1: 'Player 1', ranking_header_player2: 'Player 2', ranking_header_rounds: 'Rounds',
           game_classic_desc: 'Answer questions at your own pace. There are no time limits or lives. Ideal for learning and reviewing!',
-          game_time_trial_desc: 'Quickly! Answer as many questions as you can before time runs out. Every correct answer scores points.',
-          game_lives_desc: 'You have 5 lives. Each mistake costs you one. Try to get the highest score before you run out of chances! <strong>For every streak of 10 correct answers in a row, you will recover one life.</strong>',
+          game_time_trial_desc: 'Quickly! Answer as many questions as you can before time runs out. <strong>Initial time: 10 seconds per available question.</strong> <strong>Score: Calculated based on total available questions (Correct / Total Questions × 10)</strong>.',
+          game_lives_desc: 'You have 5 lives. Each mistake costs you one. Try to get the highest score before you run out of chances! <strong>For every streak of 10 correct answers in a row, you will recover one life.</strong> <strong>Score: Calculated based on total available questions (Correct / Total Questions × 10)</strong>.',
           game_levels_desc: 'Pass the levels by answering a minimum number of questions correctly. The difficulty increases with each level. How far can you go? <strong>Important: This mode is only available if the questions have an assigned difficulty level.</strong>',
-          game_streak_desc: 'The goal is to get the longest streak of correct answers. A mistake resets your streak but doesn\'t end the game. Go for the record!',
-          game_exam_desc: 'Simulate a real exam with a selection of 60, 90, or 120 questions and a time limit (Number of Questions / 2 minutes). Choose a penalty for wrong answers (every 1, 2, or 3 mistakes cancel a correct one) to calculate your final grade. Compete for the best spot in the ranking! No feedback until the end. Good luck!',
+          game_streak_desc: 'The goal is to get the longest streak of correct answers. A mistake resets your streak but doesn\'t end the game. Go for the record! <strong>Score: Calculated based on total available questions (Correct / Total Questions × 10)</strong>.',
+          game_exam_desc: 'Simulate a real exam with a selection of 60, 90, or 120 questions and a time limit (Number of Questions / 2 minutes). Choose a penalty for wrong answers (every 1, 2, or 3 mistakes cancel a correct one). <strong>Score is calculated out of 10 points: (Correct - Wrong/Penalty) / Num Questions × 10</strong>. Compete for the best spot in the ranking! No feedback until the end. Good luck!',
           game_duel_desc: 'Face another player in alternating turns. You earn points for correct answers and for being faster.',
           game_trivial_desc: 'Players choose topics to win "wedges". The first to collect a wedge from every topic wins.',
           game_marathon_desc: 'Answer all questions before time runs out. Correct answers add time, mistakes subtract it. Survive the marathon!',
@@ -440,6 +440,7 @@
                             <th scope="col" className="px-4 py-3 text-center">{t('ranking_header_rank')}</th>
                             <th scope="col" className="px-4 py-3 text-center">{t('ranking_header_score')}</th>
                             <th scope="col" className="px-4 py-3 text-center">{t('ranking_header_questions')}</th>
+                            <th scope="col" className="px-4 py-3 text-center">Penaliz.</th>
                             <th scope="col" className="px-4 py-3 text-center">{t('ranking_header_correct')}</th>
                             <th scope="col" className="px-4 py-3 text-center">{t('ranking_header_incorrect')}</th>
                             <th scope="col" className="px-4 py-3">{t('ranking_header_date')}</th>
@@ -451,6 +452,7 @@
                                 <td className="px-4 py-4 font-medium text-brand-light text-center">{index + 1}</td>
                                 <td className="px-4 py-4 font-bold text-center" style={{color: score.score >= 5 ? '#10B981' : '#EF4444' }}>{score.score}</td>
                                 <td className="px-4 py-4 text-brand-light text-center">{score.numQuestions}</td>
+                                <td className="px-4 py-4 text-brand-accent text-center">{score.penalty || 'N/A'}</td>
                                 <td className="px-4 py-4 text-brand-success font-semibold text-center">{score.correct}</td>
                                 <td className="px-4 py-4 text-brand-danger font-semibold text-center">{score.incorrect}</td>
                                 <td className="px-4 py-4">{formatDate(score.date)}</td>
