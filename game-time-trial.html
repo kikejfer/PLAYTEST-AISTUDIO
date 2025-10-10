@@ -552,8 +552,18 @@
                   const foundBlock = block || blockById || blockByIdNum;
                   console.log('📦 Using block:', !!foundBlock, 'questions:', foundBlock?.questions?.length || 0);
                   if (!foundBlock || !foundBlock.questions) continue;
-                  
-                  const questionsWithMeta = foundBlock.questions.map(q => ({ ...q, blockId: foundBlock.id }));
+
+                  // Read game options from localStorage
+                  const shuffleAnswers = localStorage.getItem('game_shuffle_answers') === 'true';
+
+                  const questionsWithMeta = foundBlock.questions.map(q => {
+                      const processedQuestion = { ...q, blockId: foundBlock.id };
+                      // Shuffle answers if option is enabled
+                      if (shuffleAnswers && processedQuestion.respuestas) {
+                          processedQuestion.respuestas = [...processedQuestion.respuestas].sort(() => Math.random() - 0.5);
+                      }
+                      return processedQuestion;
+                  });
 
                   if (blockConfig.topics === 'all') {
                       questions.push(...questionsWithMeta);
@@ -561,8 +571,17 @@
                       questions.push(...questionsWithMeta.filter(q => blockConfig.topics.includes(q.tema)));
                   }
               }
+
+              // Read game options from localStorage
+              const randomQuestions = localStorage.getItem('game_random_questions') === 'true';
+              console.log('🎲 Time-Trial - Game options:', { randomQuestions, shuffleAnswers: localStorage.getItem('game_shuffle_answers') === 'true' });
+
               console.log('✅ Final questions count:', questions.length);
-              return questions.sort(() => Math.random() - 0.5);
+              // Shuffle questions if option is enabled
+              if (randomQuestions) {
+                  questions = questions.sort(() => Math.random() - 0.5);
+              }
+              return questions;
           }, [game, blocks]);
           
           const initialTime = useMemo(() => {

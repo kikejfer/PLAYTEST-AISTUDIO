@@ -659,10 +659,27 @@
               const block = blocks.find(b => b.id === parseInt(blockId) || b.id === blockId);
               console.log('📦 Marathon - Found block:', !!block, 'questions:', block?.questions?.length || 0);
               if (block && block.questions) {
-                  questions.push(...block.questions.map(q => ({...q, blockId: block.id})));
+                  // Read game options from localStorage
+                  const randomQuestions = localStorage.getItem('game_random_questions') === 'true';
+                  const shuffleAnswers = localStorage.getItem('game_shuffle_answers') === 'true';
+                  console.log('🎲 Marathon - Game options:', { randomQuestions, shuffleAnswers });
+
+                  questions.push(...block.questions.map(q => {
+                      const processedQuestion = {...q, blockId: block.id};
+                      // Shuffle answers if option is enabled
+                      if (shuffleAnswers && processedQuestion.respuestas) {
+                          processedQuestion.respuestas = [...processedQuestion.respuestas].sort(() => Math.random() - 0.5);
+                      }
+                      return processedQuestion;
+                  }));
+
+                  // Shuffle questions if option is enabled
+                  if (randomQuestions) {
+                      questions = questions.sort(() => Math.random() - 0.5);
+                  }
               }
               console.log('✅ Marathon - Final questions count:', questions.length);
-              return questions.sort(() => Math.random() - 0.5);
+              return questions;
           }, [game, blocks]);
 
           const renderContent = () => {
