@@ -266,12 +266,26 @@
 
                     // CRITICAL: Save score FIRST (independent operation)
                     try {
-                        const scoreData = {
-                            score: allUserAnswers.filter(a => a.isCorrect).length,
-                            totalQuestions: allUserAnswers.length,
+                        const correctAnswers = allUserAnswers.filter(a => a.isCorrect).length;
+                        const totalQuestions = allQuestions.length;
+                        const calculatedScore = totalQuestions > 0 ? ((correctAnswers / totalQuestions) * 10).toFixed(2) : 0;
+
+                        console.log('📊 By-Levels - Score calculation:', {
+                            correct: correctAnswers,
+                            totalQuestions: totalQuestions,
                             totalAnswered: allUserAnswers.length,
-                            correctAnswers: allUserAnswers.filter(a => a.isCorrect).length,
-                            incorrectAnswers: allUserAnswers.filter(a => !a.isCorrect).length,
+                            levelReached: currentLevelIndex,
+                            calculatedScore: calculatedScore,
+                            formula: `(${correctAnswers} / ${totalQuestions}) × 10`
+                        });
+
+                        const scoreData = {
+                            score: parseFloat(calculatedScore),
+                            correct: correctAnswers,
+                            incorrect: allUserAnswers.filter(a => !a.isCorrect).length,
+                            totalQuestions: totalQuestions,
+                            totalAnswered: allUserAnswers.length,
+                            levelReached: currentLevelIndex,
                             answers: answersForStats
                         };
                         await apiDataService.saveByLevelsScore(game.id, scoreData);

@@ -258,10 +258,23 @@
                   // CRITICAL: Save score FIRST (independent operation)
                   try {
                       const correctAnswers = userAnswers.filter(a => a.isCorrect).length;
+                      const totalQuestions = questions.length;
+                      const calculatedScore = totalQuestions > 0 ? ((correctAnswers / totalQuestions) * 10).toFixed(2) : 0;
+
+                      console.log('📊 Lives - Score calculation:', {
+                          correct: correctAnswers,
+                          totalQuestions: totalQuestions,
+                          totalAnswered: userAnswers.length,
+                          calculatedScore: calculatedScore,
+                          formula: `(${correctAnswers} / ${totalQuestions}) × 10`
+                      });
+
                       const scoreData = {
+                          score: parseFloat(calculatedScore),
                           correct: correctAnswers,
                           incorrect: userAnswers.length - correctAnswers,
-                          totalQuestions: userAnswers.length,
+                          totalQuestions: totalQuestions,
+                          totalAnswered: userAnswers.length,
                           livesRemaining: lives,
                           answers: answersForStats
                       };

@@ -259,15 +259,32 @@
 
               const correctAnswers = Array.from(userAnswers.entries()).filter(([qIndex, aIndex]) => examQuestions[qIndex].respuestas[aIndex].esCorrecta).length;
               const wrongAnswers = userAnswers.size - correctAnswers;
+              const blankAnswers = examSettings.numQuestions - userAnswers.size;
               const penaltyValue = examSettings.penalty;
               const penaltyDeduction = penaltyValue > 0 ? wrongAnswers / penaltyValue : 0;
               const finalScore = Math.max(0, (correctAnswers - penaltyDeduction) / examSettings.numQuestions * 10).toFixed(2);
+
+              console.log('📊 Exam - Score calculation:', {
+                  correct: correctAnswers,
+                  incorrect: wrongAnswers,
+                  blank: blankAnswers,
+                  totalQuestions: examSettings.numQuestions,
+                  totalAnswered: userAnswers.size,
+                  penalty: penaltyValue,
+                  penaltyDeduction: penaltyDeduction,
+                  calculatedScore: finalScore,
+                  formula: `((${correctAnswers} - ${wrongAnswers}/${penaltyValue}) / ${examSettings.numQuestions}) × 10`
+              });
 
               const scoreData = {
                   score: parseFloat(finalScore),
                   correct: correctAnswers,
                   incorrect: wrongAnswers,
-                  numQuestions: examSettings.numQuestions,
+                  blank: blankAnswers,
+                  totalQuestions: examSettings.numQuestions,
+                  totalAnswered: userAnswers.size,
+                  penalty: penaltyValue,
+                  penaltyDeduction: penaltyDeduction,
                   date: new Date().toISOString()
               };
 

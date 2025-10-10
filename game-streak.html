@@ -255,11 +255,27 @@
                 (async () => {
                   // CRITICAL: Save score FIRST (independent operation)
                   try {
+                    const correctAnswers = userAnswers.filter(a => a.isCorrect).length;
+                    const totalQuestions = questions.length;
+                    const calculatedScore = totalQuestions > 0 ? ((correctAnswers / totalQuestions) * 10).toFixed(2) : 0;
+
+                    console.log('📊 Streak - Score calculation:', {
+                      correct: correctAnswers,
+                      totalQuestions: totalQuestions,
+                      totalAnswered: userAnswers.length,
+                      maxStreak: maxStreak,
+                      calculatedScore: calculatedScore,
+                      formula: `(${correctAnswers} / ${totalQuestions}) × 10`
+                    });
+
                     await apiDataService.saveStreakScore(game.id, {
+                      score: parseFloat(calculatedScore),
                       maxStreak: maxStreak,
                       finalStreak: currentStreak,
-                      totalQuestions: userAnswers.length,
-                      correctAnswers: userAnswers.filter(a => a.isCorrect).length,
+                      correct: correctAnswers,
+                      incorrect: userAnswers.length - correctAnswers,
+                      totalQuestions: totalQuestions,
+                      totalAnswered: userAnswers.length,
                       answers: answersForStats
                     });
                     console.log('✅ Streak score saved successfully');

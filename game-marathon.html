@@ -335,14 +335,27 @@
                 const correctAnswers = userAnswers.filter(a => a.isCorrect).length;
                 const wrongAnswers = userAnswers.filter(a => !a.isCorrect).length;
                 const blockId = Object.keys(game.config)[0];
+                const totalQuestions = questions.length;
+                const calculatedScore = totalQuestions > 0 ? ((correctAnswers / totalQuestions) * 10).toFixed(2) : 0;
+
+                console.log('📊 Marathon - Score calculation:', {
+                    correct: correctAnswers,
+                    totalQuestions: totalQuestions,
+                    totalAnswered: userAnswers.length,
+                    timeRemaining: timeLeft > 0 ? timeLeft : 0,
+                    calculatedScore: calculatedScore,
+                    formula: `(${correctAnswers} / ${totalQuestions}) × 10`
+                });
+
                 const scoreData = {
+                    score: parseFloat(calculatedScore),
+                    correct: correctAnswers,
+                    incorrect: wrongAnswers,
+                    totalQuestions: totalQuestions,
+                    totalAnswered: userAnswers.length,
                     blockId: blockId,
                     startTime: new Date(gameStartTime.current).toISOString(),
                     endTime: new Date().toISOString(),
-                    questionsTotal: questions.length,
-                    questionsAnswered: userAnswers.length,
-                    correctAnswers: correctAnswers,
-                    wrongAnswers: wrongAnswers,
                     finalTimeRemaining: timeLeft > 0 ? timeLeft : 0,
                     totalTimePlayedSec: Math.floor((Date.now() - gameStartTime.current) / 1000),
                     questionStats: userAnswers

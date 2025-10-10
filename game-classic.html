@@ -283,9 +283,25 @@
                   // CRITICAL: Save score FIRST (independent operation)
                   try {
                       const totalAnswered = userAnswers.filter(a => a.result !== 'BLANCO' && a.result !== 'BLANK').length;
+                      const correctAnswers = userAnswers.filter(a => a.result === 'ACIERTO').length;
+                      const totalQuestions = questions.length;
+                      const calculatedScore = totalQuestions > 0 ? ((correctAnswers / totalQuestions) * 10).toFixed(2) : 0;
+
+                      console.log('📊 Classic - Score calculation:', {
+                          correct: correctAnswers,
+                          totalQuestions: totalQuestions,
+                          totalAnswered: totalAnswered,
+                          timeElapsed: timeElapsed,
+                          calculatedScore: calculatedScore,
+                          formula: `(${correctAnswers} / ${totalQuestions}) × 10`
+                      });
+
                       const scoreData = {
-                          score: userAnswers.filter(a => a.result === 'ACIERTO').length,
-                          totalQuestions: userAnswers.length,
+                          score: parseFloat(calculatedScore),
+                          correct: correctAnswers,
+                          incorrect: userAnswers.filter(a => a.result === 'FALLO').length,
+                          blank: userAnswers.filter(a => a.result === 'BLANCO' || a.result === 'BLANK').length,
+                          totalQuestions: totalQuestions,
                           totalAnswered: totalAnswered,
                           timeElapsed: timeElapsed,
                           answers: userAnswers
