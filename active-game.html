@@ -78,6 +78,7 @@
         es: {
           header_title: 'Aplicación PLAYTEST', header_subtitle: 'La forma más divertida de estudiar', language: 'Idioma', english: 'Inglés', spanish: 'Español',
           game_page_ready: 'Partida Lista', game_page_mode: 'Modo:', game_page_delete: 'Eliminar Partida', game_page_config: 'Configuración de la Partida', game_page_total_questions: 'Total de preguntas en esta partida:', game_page_start: 'Empezar Partida',
+          game_option_random_questions: 'Preguntas aleatorias', game_option_shuffle_answers: 'Respuestas desordenadas', game_option_shuffle_note: '* En las respuestas no se puede hacer referencia a las opciones (A, B, C, D)',
           all_blocks_return: 'Volver',
           delete_game_confirm: '¿Estás seguro de que quieres eliminar esta partida? Esta acción no se puede deshacer.', delete_game_prompt_title: 'Borrar Partida',
           delete_question_prompt_confirm: 'SI', delete_question_prompt_cancel: 'NO',
@@ -111,6 +112,7 @@
         en: {
           header_title: 'PLAYTEST App', header_subtitle: 'The most fun way to study', language: 'Language', english: 'English', spanish: 'Spanish',
           game_page_ready: 'Game Ready', game_page_mode: 'Mode:', game_page_delete: 'Delete Game', game_page_config: 'Game Configuration', game_page_total_questions: 'Total questions in this game:', game_page_start: 'Start Game',
+          game_option_random_questions: 'Random questions', game_option_shuffle_answers: 'Shuffle answers', game_option_shuffle_note: '* Answers cannot reference options (A, B, C, D)',
           all_blocks_return: 'Return',
           delete_game_confirm: 'Are you sure you want to delete this game? This action cannot be undone.', delete_game_prompt_title: 'Delete Game',
           delete_question_prompt_confirm: 'YES', delete_question_prompt_cancel: 'NO',
@@ -602,6 +604,8 @@
         const { currentUser } = useUser();
         const [confirmingDelete, setConfirmingDelete] = useState(false);
         const [examConfig, setExamConfig] = useState({ numQuestions: 60, penalty: 3 });
+        const [randomQuestions, setRandomQuestions] = useState(false);
+        const [shuffleAnswers, setShuffleAnswers] = useState(false);
 
         const totalQuestions = useMemo(() => {
             if (!game || !game.config) return 0;
@@ -729,7 +733,12 @@
               localStorage.setItem('current_game_id', gameId);
               localStorage.setItem('current_game_mode', 'normal');
               localStorage.setItem('navigation_timestamp', Date.now().toString());
+
+              // Store game options for random questions and shuffle answers
+              localStorage.setItem('game_random_questions', randomQuestions.toString());
+              localStorage.setItem('game_shuffle_answers', shuffleAnswers.toString());
               console.log('💾 Stored gameId in localStorage as backup:', gameId);
+              console.log('🎲 Stored game options - randomQuestions:', randomQuestions, 'shuffleAnswers:', shuffleAnswers);
               
               console.log('🚀 [NAVIGATION] Initiating navigation to:', url);
               console.log('🚀 [NAVIGATION] Current location before navigation:', window.location.href);
@@ -1062,12 +1071,39 @@
                     <div className="flex flex-col items-center justify-center bg-brand-primary/50 p-6 rounded-lg text-center">
                       <h3 className="text-lg font-semibold text-brand-accent">{t('game_page_total_questions')}</h3>
                       <p className="text-6xl font-extrabold text-brand-light my-4">{totalQuestions}</p>
-                       <button 
-                        onClick={() => { 
+
+                      {/* Game Options Checkboxes */}
+                      <div className="w-full mb-4 space-y-3 text-left">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={randomQuestions}
+                            onChange={(e) => setRandomQuestions(e.target.checked)}
+                            className="w-4 h-4 text-brand-cta bg-brand-tertiary border-brand-accent rounded focus:ring-brand-cta"
+                          />
+                          <span className="text-brand-light text-sm">{t('game_option_random_questions')}</span>
+                        </label>
+
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={shuffleAnswers}
+                            onChange={(e) => setShuffleAnswers(e.target.checked)}
+                            className="w-4 h-4 text-brand-cta bg-brand-tertiary border-brand-accent rounded focus:ring-brand-cta"
+                          />
+                          <span className="text-brand-light text-sm">{t('game_option_shuffle_answers')}</span>
+                        </label>
+
+                        <p className="text-xs text-brand-accent italic mt-2">{t('game_option_shuffle_note')}</p>
+                      </div>
+
+                       <button
+                        onClick={() => {
                             console.log('🖱️ Default Button clicked! totalQuestions:', totalQuestions);
                             console.log('🖱️ Default Button disabled?', totalQuestions === 0);
+                            console.log('🎲 Game options - randomQuestions:', randomQuestions, 'shuffleAnswers:', shuffleAnswers);
                             handleStartGame();
-                        }} 
+                        }}
                         disabled={totalQuestions === 0}
                         className="w-full mt-4 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
                          {t('game_page_start')}
@@ -1330,7 +1366,7 @@
           const handleDeleteGame = async (gameId) => {
               try {
                   await dataService.deleteGame(gameId);
-                  window.location.href = 'index.html'; // Redirect after deletion
+                  window.location.href = 'jugadores-panel-gaming.html'; // Redirect to player panel after deletion
               } catch (err) {
                   setError("Failed to delete game.");
               }
