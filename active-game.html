@@ -1329,17 +1329,21 @@
                           setBlockName(blockNames);
                       }
 
-                      if (fetchedGame.mode === 'Maratón') {
+                      // Load rankings based on game type (using English values from database)
+                      const gameType = fetchedGame.game_type || fetchedGame.mode;
+                      console.log('🎯 Loading rankings for game type:', gameType);
+
+                      if (gameType === 'marathon') {
                           const scores = await dataService.fetchMarathonScores(gameId);
                           setMarathonScores(scores);
                       }
 
-                      if (fetchedGame.mode === 'Modo Contrarreloj') { setTimeTrialScores(await dataService.fetchTimeTrialScores(gameId)); }
-                      if (fetchedGame.mode === 'Modo Vidas') { setLivesScores(await dataService.fetchLivesScores(gameId)); }
-                      if (fetchedGame.mode === 'Racha de Aciertos') { setStreakScores(await dataService.fetchStreakScores(gameId)); }
-                      if (fetchedGame.mode === 'Examen Simulado') { setExamScores(await dataService.fetchExamScores(gameId)); }
-                      if (fetchedGame.mode === 'Duelo') { setDuelScores(await dataService.fetchDuelScores(gameId)); }
-                      if (fetchedGame.mode === 'Trivial') { setTrivialScores(await dataService.fetchTrivialScores(gameId)); }
+                      if (gameType === 'time-trial') { setTimeTrialScores(await dataService.fetchTimeTrialScores(gameId)); }
+                      if (gameType === 'lives') { setLivesScores(await dataService.fetchLivesScores(gameId)); }
+                      if (gameType === 'streak') { setStreakScores(await dataService.fetchStreakScores(gameId)); }
+                      if (gameType === 'exam') { setExamScores(await dataService.fetchExamScores(gameId)); }
+                      if (gameType === 'duel') { setDuelScores(await dataService.fetchDuelScores(gameId)); }
+                      if (gameType === 'trivial') { setTrivialScores(await dataService.fetchTrivialScores(gameId)); }
                       
                       setGame(fetchedGame);
                       setBlocks(fetchedBlocks);

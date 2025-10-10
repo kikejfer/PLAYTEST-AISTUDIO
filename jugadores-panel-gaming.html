@@ -2799,9 +2799,9 @@
                             React.createElement('td', { key: 'mode-info', className: "py-3 px-2 text-gray-400" },
                                 React.createElement('div', { key: 'game-mode', className: "font-medium text-white" }, game.mode || 'Clásico')
                             ),
-                            React.createElement('td', { key: 'correct-cell', className: "py-3 px-2 text-center text-green-400 font-semibold" }, game.correct || 0),
-                            React.createElement('td', { key: 'incorrect-cell', className: "py-3 px-2 text-center text-red-400 font-semibold" }, game.incorrect || 0),
-                            React.createElement('td', { key: 'blank-cell', className: "py-3 px-2 text-center text-gray-400 font-semibold" }, game.blank || 0),
+                            React.createElement('td', { key: 'correct-cell', className: "py-3 px-2 text-center text-green-400 font-semibold" }, Math.floor(game.correct || 0)),
+                            React.createElement('td', { key: 'incorrect-cell', className: "py-3 px-2 text-center text-red-400 font-semibold" }, Math.floor(game.incorrect || 0)),
+                            React.createElement('td', { key: 'blank-cell', className: "py-3 px-2 text-center text-gray-400 font-semibold" }, Math.floor(game.blank || 0)),
                             React.createElement('td', { key: 'score-cell', className: "py-3 px-2 text-center" }, React.createElement('span', {
                                 key: 'score-value',
                                 className: "font-bold px-2 py-1 rounded text-xs",
