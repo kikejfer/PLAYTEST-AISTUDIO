@@ -732,7 +732,7 @@
           if (fileName) {
               // Use the real gameId from backend (not simple/local mode)
               let url = `${fileName}?gameId=${gameId}`;
-              const gameType = game.game_type || game.mode;
+              const gameType = game.gameType || game.mode;
               if(gameType === 'exam') {
                   url += `&numQuestions=${examConfig.numQuestions}&penalty=${examConfig.penalty}`;
               }
@@ -771,8 +771,8 @@
             );
         }
 
-        // Use game_type from database (in English) for comparisons
-        const gameType = game.game_type || game.mode;
+        // Use gameType from API (in English) for comparisons
+        const gameType = game.gameType || game.mode;
         console.log('🎯 Active Game - Game type for rendering:', gameType);
 
         const isMarathon = gameType === 'marathon';
@@ -1393,8 +1393,8 @@
                           setBlockName(blockNames);
                       }
 
-                      // Load rankings based on game type (using English values from database)
-                      const gameType = fetchedGame.game_type || fetchedGame.mode;
+                      // Load rankings based on game type (using English values from API)
+                      const gameType = fetchedGame.gameType || fetchedGame.mode;
                       console.log('🎯 Loading rankings for game type:', gameType);
 
                       if (gameType === 'marathon') {
@@ -1485,7 +1485,7 @@
               if (isLoading) { return <div className="flex justify-center items-center h-64"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>; }
               
               // Mostrar componente Marathon integrado si el usuario hizo clic en jugar
-              const gameType = game.game_type || game.mode;
+              const gameType = game.gameType || game.mode;
               if (showGameplay && game && gameType === 'marathon') {
                   return <MarathonGameplay game={game} blocks={blocks} t={t} onBack={() => setShowGameplay(false)} />;
               }
