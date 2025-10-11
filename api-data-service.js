@@ -1355,28 +1355,63 @@ class APIDataService {
   }
 
   async fetchLivesScores(gameId) {
-    console.log('⚠️ fetchLivesScores: returning empty array (not implemented yet)');
-    return this.simulateDelay([]);
+    try {
+      console.log('📊 Fetching Lives scores for game:', gameId);
+      const ranking = await this.apiCall(`/games/${gameId}/ranking`);
+      console.log('✅ Lives scores loaded:', ranking.length, 'entries');
+      return this.simulateDelay(ranking);
+    } catch (error) {
+      console.error('❌ Failed to fetch Lives scores:', error);
+      return this.simulateDelay([]);
+    }
   }
 
   async fetchStreakScores(gameId) {
-    console.log('⚠️ fetchStreakScores: returning empty array (not implemented yet)');
-    return this.simulateDelay([]);
+    try {
+      console.log('📊 Fetching Streak scores for game:', gameId);
+      const ranking = await this.apiCall(`/games/${gameId}/ranking`);
+      console.log('✅ Streak scores loaded:', ranking.length, 'entries');
+      return this.simulateDelay(ranking);
+    } catch (error) {
+      console.error('❌ Failed to fetch Streak scores:', error);
+      return this.simulateDelay([]);
+    }
   }
 
   async fetchExamScores(gameId) {
-    console.log('⚠️ fetchExamScores: returning empty array (not implemented yet)');
-    return this.simulateDelay([]);
+    try {
+      console.log('📊 Fetching Exam scores for game:', gameId);
+      const ranking = await this.apiCall(`/games/${gameId}/ranking`);
+      console.log('✅ Exam scores loaded:', ranking.length, 'entries');
+      return this.simulateDelay(ranking);
+    } catch (error) {
+      console.error('❌ Failed to fetch Exam scores:', error);
+      return this.simulateDelay([]);
+    }
   }
 
   async fetchDuelScores(gameId) {
-    console.log('⚠️ fetchDuelScores: returning empty array (not implemented yet)');
-    return this.simulateDelay([]);
+    try {
+      console.log('📊 Fetching Duel scores for game:', gameId);
+      const ranking = await this.apiCall(`/games/${gameId}/ranking`);
+      console.log('✅ Duel scores loaded:', ranking.length, 'entries');
+      return this.simulateDelay(ranking);
+    } catch (error) {
+      console.error('❌ Failed to fetch Duel scores:', error);
+      return this.simulateDelay([]);
+    }
   }
 
   async fetchTrivialScores(gameId) {
-    console.log('⚠️ fetchTrivialScores: returning empty array (not implemented yet)');
-    return this.simulateDelay([]);
+    try {
+      console.log('📊 Fetching Trivial scores for game:', gameId);
+      const ranking = await this.apiCall(`/games/${gameId}/ranking`);
+      console.log('✅ Trivial scores loaded:', ranking.length, 'entries');
+      return this.simulateDelay(ranking);
+    } catch (error) {
+      console.error('❌ Failed to fetch Trivial scores:', error);
+      return this.simulateDelay([]);
+    }
   }
 
   // === FEATURE FLAGS ===
