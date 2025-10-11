@@ -725,7 +725,8 @@
           if (fileName) {
               // Use the real gameId from backend (not simple/local mode)
               let url = `${fileName}?gameId=${gameId}`;
-              if(game.mode === 'Examen Simulado') {
+              const gameType = game.game_type || game.mode;
+              if(gameType === 'exam') {
                   url += `&numQuestions=${examConfig.numQuestions}&penalty=${examConfig.penalty}`;
               }
               console.log('🔗 Final URL:', url);
@@ -751,12 +752,6 @@
           }
         };
         
-        const isDuel = game.mode === 'Duelo';
-        const opponent = useMemo(() => {
-            if (!isDuel || !game || !game.players || game.players.length < 2 || !currentUser) return null;
-            return game.players.find(p => p.userId !== currentUser.id);
-        }, [isDuel, game, currentUser]);
-
         if (!game) {
             return (
               <div className="text-center p-8">
@@ -768,13 +763,26 @@
               </div>
             );
         }
-        
-        const isMarathon = game.mode === 'Maratón';
-        const isTimeTrial = game.mode === 'Modo Contrarreloj';
-        const isLives = game.mode === 'Modo Vidas';
-        const isStreak = game.mode === 'Racha de Aciertos';
-        const isExam = game.mode === 'Examen Simulado';
-        const isTrivial = game.mode === 'Trivial';
+
+        // Use game_type from database (in English) for comparisons
+        const gameType = game.game_type || game.mode;
+        console.log('🎯 Active Game - Game type for rendering:', gameType);
+
+        const isMarathon = gameType === 'marathon';
+        const isTimeTrial = gameType === 'time-trial';
+        const isLives = gameType === 'lives';
+        const isStreak = gameType === 'streak';
+        const isExam = gameType === 'exam';
+        const isTrivial = gameType === 'trivial';
+        const isDuel = gameType === 'duel';
+        const isByLevels = gameType === 'by-levels';
+        const isClassic = gameType === 'classic';
+
+        const opponent = useMemo(() => {
+            if (!isDuel || !game || !game.players || !game.players.length < 2 || !currentUser) return null;
+            return game.players.find(p => p.userId !== currentUser.id);
+        }, [isDuel, game, currentUser]);
+
         const details = modeDetails[game.mode];
 
         const gameInfoColumn = (
@@ -1382,11 +1390,12 @@
               if (isLoading) { return <div className="flex justify-center items-center h-64"><svg className="animate-spin h-10 w-10 text-brand-cta" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>; }
               
               // Mostrar componente Marathon integrado si el usuario hizo clic en jugar
-              if (showGameplay && game && game.mode === 'Maratón') {
+              const gameType = game.game_type || game.mode;
+              if (showGameplay && game && gameType === 'marathon') {
                   return <MarathonGameplay game={game} blocks={blocks} t={t} onBack={() => setShowGameplay(false)} />;
               }
               
-              if (game && (game.mode === 'Duelo' || game.mode === 'Trivial') && (game.gameState || game.turnState || (game.round && game.round > 0))) {
+              if (game && (gameType === 'duel' || gameType === 'trivial') && (game.gameState || game.turnState || (game.round && game.round > 0))) {
                   return (
                       <div className="flex flex-col justify-center items-center h-64 text-center">
                           <svg className="animate-spin h-10 w-10 text-brand-cta mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
