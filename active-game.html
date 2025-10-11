@@ -785,6 +785,33 @@
 
         const details = modeDetails[game.mode];
 
+        // Game options checkboxes component (reusable)
+        const gameOptionsCheckboxes = (
+          <div className="w-full mb-4 space-y-3 text-left bg-brand-primary/30 p-4 rounded-lg">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={randomQuestions}
+                onChange={(e) => setRandomQuestions(e.target.checked)}
+                className="w-4 h-4 text-brand-cta bg-brand-tertiary border-brand-accent rounded focus:ring-brand-cta"
+              />
+              <span className="text-brand-light text-sm">{t('game_option_random_questions')}</span>
+            </label>
+
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={shuffleAnswers}
+                onChange={(e) => setShuffleAnswers(e.target.checked)}
+                className="w-4 h-4 text-brand-cta bg-brand-tertiary border-brand-accent rounded focus:ring-brand-cta"
+              />
+              <span className="text-brand-light text-sm">{t('game_option_shuffle_answers')}</span>
+            </label>
+
+            <p className="text-xs text-brand-accent italic mt-2">{t('game_option_shuffle_note')}</p>
+          </div>
+        );
+
         const gameInfoColumn = (
           <div>
             <div className="text-center mb-6">
@@ -881,6 +908,7 @@
                             <MarathonRankingPreview scores={marathonScores} t={t} />
                         </div>
                     </div>
+                    {gameOptionsCheckboxes}
                     <button onClick={() => {
                         console.log('🖱️ Marathon button clicked! Navigating to game-marathon.html');
                         console.log('🖱️ Button disabled?', totalQuestions === 0);
@@ -899,6 +927,7 @@
                             <DuelRankingPreview scores={duelScores} t={t} />
                         </div>
                     </div>
+                    {gameOptionsCheckboxes}
                     <button onClick={() => { 
                         console.log('🖱️ Button clicked! totalQuestions:', totalQuestions);
                         console.log('🖱️ Button disabled?', totalQuestions === 0);
@@ -917,7 +946,8 @@
                             <TrivialRankingPreview scores={trivialScores} t={t} />
                         </div>
                     </div>
-                    <button onClick={() => { 
+                    {gameOptionsCheckboxes}
+                    <button onClick={() => {
                         console.log('🖱️ Button clicked! totalQuestions:', totalQuestions);
                         console.log('🖱️ Button disabled?', totalQuestions === 0);
                         handleStartGame();
@@ -935,7 +965,8 @@
                         <TimeTrialRankingPreview scores={timeTrialScores} t={t} />
                       </div>
                     </div>
-                    <button onClick={() => { 
+                    {gameOptionsCheckboxes}
+                    <button onClick={() => {
                         console.log('🖱️ Button clicked! totalQuestions:', totalQuestions);
                         console.log('🖱️ Button disabled?', totalQuestions === 0);
                         handleStartGame();
@@ -953,7 +984,8 @@
                         <LivesRankingPreview scores={livesScores} t={t} />
                       </div>
                     </div>
-                    <button onClick={() => { 
+                    {gameOptionsCheckboxes}
+                    <button onClick={() => {
                         console.log('🖱️ Button clicked! totalQuestions:', totalQuestions);
                         console.log('🖱️ Button disabled?', totalQuestions === 0);
                         handleStartGame();
@@ -970,7 +1002,8 @@
                             <StreakRankingPreview scores={streakScores} t={t} />
                         </div>
                     </div>
-                    <button onClick={() => { 
+                    {gameOptionsCheckboxes}
+                    <button onClick={() => {
                         console.log('🖱️ Button clicked! totalQuestions:', totalQuestions);
                         console.log('🖱️ Button disabled?', totalQuestions === 0);
                         handleStartGame();
@@ -1013,7 +1046,8 @@
                           <ExamRankingPreview scores={examScores} t={t} />
                         </div>
                     </div>
-                    <button onClick={() => { 
+                    {gameOptionsCheckboxes}
+                    <button onClick={() => {
                         console.log('🖱️ Exam Button clicked! totalQuestions:', totalQuestions);
                         console.log('🖱️ Exam Button disabled?', totalQuestions < examConfig.numQuestions);
                         handleStartGame();
@@ -1082,30 +1116,7 @@
                       <h3 className="text-lg font-semibold text-brand-accent">{t('game_page_total_questions')}</h3>
                       <p className="text-6xl font-extrabold text-brand-light my-4">{totalQuestions}</p>
 
-                      {/* Game Options Checkboxes */}
-                      <div className="w-full mb-4 space-y-3 text-left">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={randomQuestions}
-                            onChange={(e) => setRandomQuestions(e.target.checked)}
-                            className="w-4 h-4 text-brand-cta bg-brand-tertiary border-brand-accent rounded focus:ring-brand-cta"
-                          />
-                          <span className="text-brand-light text-sm">{t('game_option_random_questions')}</span>
-                        </label>
-
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={shuffleAnswers}
-                            onChange={(e) => setShuffleAnswers(e.target.checked)}
-                            className="w-4 h-4 text-brand-cta bg-brand-tertiary border-brand-accent rounded focus:ring-brand-cta"
-                          />
-                          <span className="text-brand-light text-sm">{t('game_option_shuffle_answers')}</span>
-                        </label>
-
-                        <p className="text-xs text-brand-accent italic mt-2">{t('game_option_shuffle_note')}</p>
-                      </div>
+                      {gameOptionsCheckboxes}
 
                        <button
                         onClick={() => {
