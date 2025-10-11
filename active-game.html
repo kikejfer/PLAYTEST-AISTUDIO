@@ -295,8 +295,12 @@
       };
 
       const TimeTrialRankingPreview = ({ scores, t }) => {
+        console.log('🏆 TimeTrialRankingPreview rendering with scores:', scores);
+
         const sortedScores = useMemo(() => {
-            return [...scores].sort((a, b) => b.correct - a.correct || a.incorrect - b.incorrect);
+            const sorted = [...scores].sort((a, b) => b.correct - a.correct || a.incorrect - b.incorrect);
+            console.log('🏆 Sorted scores:', sorted);
+            return sorted;
         }, [scores]);
 
         const formatDate = (dateString) => {
@@ -307,8 +311,11 @@
         };
 
         if (sortedScores.length === 0) {
+            console.log('⚠️ TimeTrialRankingPreview: No scores to display');
             return <p className="text-center py-8 text-brand-accent">{t('ranking_no_scores')}</p>;
         }
+
+        console.log('✅ TimeTrialRankingPreview: Rendering', sortedScores.length, 'scores');
 
         return (
             <div className="max-h-full overflow-y-auto pr-2">
@@ -1391,20 +1398,54 @@
                       console.log('🎯 Loading rankings for game type:', gameType);
 
                       if (gameType === 'marathon') {
+                          console.log('📊 Fetching Marathon scores for game:', gameId);
                           const scores = await dataService.fetchMarathonScores(gameId);
+                          console.log('📊 Marathon scores received:', scores.length, 'entries', scores);
                           setMarathonScores(scores);
                       }
 
-                      if (gameType === 'time-trial') { setTimeTrialScores(await dataService.fetchTimeTrialScores(gameId)); }
-                      if (gameType === 'lives') { setLivesScores(await dataService.fetchLivesScores(gameId)); }
-                      if (gameType === 'streak') { setStreakScores(await dataService.fetchStreakScores(gameId)); }
-                      if (gameType === 'exam') { setExamScores(await dataService.fetchExamScores(gameId)); }
-                      if (gameType === 'duel') { setDuelScores(await dataService.fetchDuelScores(gameId)); }
-                      if (gameType === 'trivial') { setTrivialScores(await dataService.fetchTrivialScores(gameId)); }
+                      if (gameType === 'time-trial') {
+                          console.log('📊 Fetching Time-Trial scores for game:', gameId);
+                          const scores = await dataService.fetchTimeTrialScores(gameId);
+                          console.log('📊 Time-Trial scores received:', scores.length, 'entries', scores);
+                          setTimeTrialScores(scores);
+                      }
+                      if (gameType === 'lives') {
+                          console.log('📊 Fetching Lives scores for game:', gameId);
+                          const scores = await dataService.fetchLivesScores(gameId);
+                          console.log('📊 Lives scores received:', scores.length, 'entries', scores);
+                          setLivesScores(scores);
+                      }
+                      if (gameType === 'streak') {
+                          console.log('📊 Fetching Streak scores for game:', gameId);
+                          const scores = await dataService.fetchStreakScores(gameId);
+                          console.log('📊 Streak scores received:', scores.length, 'entries', scores);
+                          setStreakScores(scores);
+                      }
+                      if (gameType === 'exam') {
+                          console.log('📊 Fetching Exam scores for game:', gameId);
+                          const scores = await dataService.fetchExamScores(gameId);
+                          console.log('📊 Exam scores received:', scores.length, 'entries', scores);
+                          setExamScores(scores);
+                      }
+                      if (gameType === 'duel') {
+                          console.log('📊 Fetching Duel scores for game:', gameId);
+                          const scores = await dataService.fetchDuelScores(gameId);
+                          console.log('📊 Duel scores received:', scores.length, 'entries', scores);
+                          setDuelScores(scores);
+                      }
+                      if (gameType === 'trivial') {
+                          console.log('📊 Fetching Trivial scores for game:', gameId);
+                          const scores = await dataService.fetchTrivialScores(gameId);
+                          console.log('📊 Trivial scores received:', scores.length, 'entries', scores);
+                          setTrivialScores(scores);
+                      }
                       // Classic and By-Levels use the same ranking endpoint
                       if (gameType === 'classic' || gameType === 'by-levels') {
-                          console.log(`📊 Loading scores for ${gameType} using fetchTimeTrialScores`);
-                          setTimeTrialScores(await dataService.fetchTimeTrialScores(gameId));
+                          console.log(`📊 Fetching ${gameType} scores using fetchTimeTrialScores for game:`, gameId);
+                          const scores = await dataService.fetchTimeTrialScores(gameId);
+                          console.log(`📊 ${gameType} scores received:`, scores.length, 'entries', scores);
+                          setTimeTrialScores(scores);
                       }
                       
                       setGame(fetchedGame);
