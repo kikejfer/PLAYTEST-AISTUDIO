@@ -1056,6 +1056,44 @@
                     </button>
                     <p className="text-center text-xs text-brand-accent mt-4">{t('game_motivational_tip')}</p>
                 </div>
+            ) : isClassic ? (
+                 <div className="bg-brand-secondary p-6 rounded-xl shadow-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {gameInfoColumn}
+                      <div className="bg-brand-primary/50 p-6 rounded-lg flex flex-col">
+                        <h4 className="text-xl font-semibold text-brand-light text-center mb-4">{t('ranking_title_classic') || 'Ranking - Clásico'}</h4>
+                        <TimeTrialRankingPreview scores={timeTrialScores} t={t} />
+                      </div>
+                    </div>
+                    {gameOptionsCheckboxes}
+                    <button onClick={() => {
+                        console.log('🖱️ Button clicked! totalQuestions:', totalQuestions);
+                        console.log('🖱️ Button disabled?', totalQuestions === 0);
+                        handleStartGame();
+                    }} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                         {t('game_page_start')} ({t('game_page_total_questions')} {totalQuestions})
+                    </button>
+                    <p className="text-center text-xs text-brand-accent mt-4">{t('game_motivational_tip')}</p>
+                </div>
+            ) : isByLevels ? (
+                 <div className="bg-brand-secondary p-6 rounded-xl shadow-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {gameInfoColumn}
+                      <div className="bg-brand-primary/50 p-6 rounded-lg flex flex-col">
+                        <h4 className="text-xl font-semibold text-brand-light text-center mb-4">{t('ranking_title_bylevels') || 'Ranking - Por Niveles'}</h4>
+                        <TimeTrialRankingPreview scores={timeTrialScores} t={t} />
+                      </div>
+                    </div>
+                    {gameOptionsCheckboxes}
+                    <button onClick={() => {
+                        console.log('🖱️ Button clicked! totalQuestions:', totalQuestions);
+                        console.log('🖱️ Button disabled?', totalQuestions === 0);
+                        handleStartGame();
+                    }} disabled={totalQuestions === 0} className="w-full mt-6 bg-brand-success text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 disabled:bg-brand-tertiary disabled:cursor-not-allowed disabled:transform-none">
+                         {t('game_page_start')} ({t('game_page_total_questions')} {totalQuestions})
+                    </button>
+                    <p className="text-center text-xs text-brand-accent mt-4">{t('game_motivational_tip')}</p>
+                </div>
             ) : (
                 <div className="bg-brand-secondary p-6 rounded-xl shadow-lg">
                   <div className="text-center mb-8">
@@ -1063,7 +1101,7 @@
                     <h2 className="text-4xl font-bold text-brand-light mb-2">{game.mode}</h2>
                     {details?.descKey && <p className="text-brand-light max-w-xl mx-auto" dangerouslySetInnerHTML={{ __html: t(details.descKey) }} />}
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="bg-brand-primary/50 p-6 rounded-lg">
                       <h3 className="text-xl font-semibold text-brand-light mb-4">{t('game_page_config')}</h3>
@@ -1363,6 +1401,11 @@
                       if (gameType === 'exam') { setExamScores(await dataService.fetchExamScores(gameId)); }
                       if (gameType === 'duel') { setDuelScores(await dataService.fetchDuelScores(gameId)); }
                       if (gameType === 'trivial') { setTrivialScores(await dataService.fetchTrivialScores(gameId)); }
+                      // Classic and By-Levels use the same ranking endpoint
+                      if (gameType === 'classic' || gameType === 'by-levels') {
+                          console.log(`📊 Loading scores for ${gameType} using fetchTimeTrialScores`);
+                          setTimeTrialScores(await dataService.fetchTimeTrialScores(gameId));
+                      }
                       
                       setGame(fetchedGame);
                       setBlocks(fetchedBlocks);
