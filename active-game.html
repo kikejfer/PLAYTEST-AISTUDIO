@@ -252,7 +252,7 @@
 
       const MarathonRankingPreview = ({ scores, t }) => {
           const sortedScores = useMemo(() => {
-              return [...scores].sort((a, b) => b.correctAnswers - a.correctAnswers || a.wrongAnswers - b.wrongAnswers);
+              return [...scores].sort((a, b) => b.correct - a.correct || a.incorrect - b.incorrect);
           }, [scores]);
 
           const formatDate = (dateString) => {
@@ -280,12 +280,12 @@
                       </thead>
                       <tbody>
                           {sortedScores.map((score, index) => (
-                              <tr key={score.id} className="bg-brand-secondary border-b border-brand-tertiary">
+                              <tr key={index} className="bg-brand-secondary border-b border-brand-tertiary">
                                   <td className="px-6 py-4 font-medium text-brand-light text-center">{index + 1}</td>
-                                  <td className="px-6 py-4 font-semibold text-brand-light">{score.userNickname}</td>
-                                  <td className="px-6 py-4 text-brand-success font-bold text-center">{score.correctAnswers}</td>
-                                  <td className="px-6 py-4 text-brand-danger font-bold text-center">{score.wrongAnswers}</td>
-                                  <td className="px-6 py-4">{formatDate(score.endTime)}</td>
+                                  <td className="px-6 py-4 font-semibold text-brand-light">{score.nickname}</td>
+                                  <td className="px-6 py-4 text-brand-success font-bold text-center">{score.correct}</td>
+                                  <td className="px-6 py-4 text-brand-danger font-bold text-center">{score.incorrect}</td>
+                                  <td className="px-6 py-4">{formatDate(score.date)}</td>
                               </tr>
                           ))}
                       </tbody>
