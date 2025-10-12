@@ -2777,22 +2777,23 @@
             }, [
                 tabGameHistory && tabGameHistory.length > 0 ? React.createElement('div', {
                     key: 'history-table-container',
-                    className: "overflow-x-auto flex-grow"
+                    className: "overflow-x-auto overflow-y-auto flex-grow",
+                    style: { maxHeight: '600px' }
                 }, React.createElement('table', {
                     key: 'history-table',
                     className: "w-full text-sm"
                 }, [
-                    React.createElement('thead', { key: 'thead' }, React.createElement('tr', {
+                    React.createElement('thead', { key: 'thead', className: "sticky top-0 bg-slate-800 z-10" }, React.createElement('tr', {
                         key: 'header-row',
                         className: "border-b border-slate-600"
                     }, [
-                        React.createElement('th', { key: 'block-header', className: "py-2 px-2 text-left text-gray-300 font-semibold truncate" }, 'Bloque'),
-                        React.createElement('th', { key: 'mode-header', className: "py-2 px-2 text-left text-gray-300 font-semibold" }, 'Modo'),
-                        React.createElement('th', { key: 'correct-header', className: "py-2 px-2 text-center text-gray-300 font-semibold" }, 'Aciertos'),
-                        React.createElement('th', { key: 'incorrect-header', className: "py-2 px-2 text-center text-gray-300 font-semibold" }, 'Fallos'),
-                        React.createElement('th', { key: 'blank-header', className: "py-2 px-2 text-center text-gray-300 font-semibold" }, 'Blancos'),
-                        React.createElement('th', { key: 'score-header', className: "py-2 px-2 text-center text-gray-300 font-semibold" }, 'Punt.'),
-                        React.createElement('th', { key: 'date-header', className: "py-2 px-2 text-left text-gray-300 font-semibold" }, 'Fecha')
+                        React.createElement('th', { key: 'block-header', className: "py-2 px-2 text-left text-gray-300 font-semibold truncate bg-slate-800" }, 'Bloque'),
+                        React.createElement('th', { key: 'mode-header', className: "py-2 px-2 text-left text-gray-300 font-semibold bg-slate-800" }, 'Modo'),
+                        React.createElement('th', { key: 'correct-header', className: "py-2 px-2 text-center text-gray-300 font-semibold bg-slate-800" }, 'Aciertos'),
+                        React.createElement('th', { key: 'incorrect-header', className: "py-2 px-2 text-center text-gray-300 font-semibold bg-slate-800" }, 'Fallos'),
+                        React.createElement('th', { key: 'blank-header', className: "py-2 px-2 text-center text-gray-300 font-semibold bg-slate-800" }, 'Blancos'),
+                        React.createElement('th', { key: 'score-header', className: "py-2 px-2 text-center text-gray-300 font-semibold bg-slate-800" }, 'Punt.'),
+                        React.createElement('th', { key: 'date-header', className: "py-2 px-2 text-left text-gray-300 font-semibold bg-slate-800" }, 'Fecha')
                     ])),
                     React.createElement('tbody', { key: 'tbody' }, tabGameHistory.map((game, index) =>
                         React.createElement('tr', {
