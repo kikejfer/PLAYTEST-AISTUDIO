@@ -252,7 +252,7 @@
 
       const MarathonRankingPreview = ({ scores, t }) => {
           const sortedScores = useMemo(() => {
-              return [...scores].sort((a, b) => b.correct - a.correct || a.incorrect - b.incorrect);
+              return [...scores].sort((a, b) => b.score - a.score || b.correct - a.correct);
           }, [scores]);
 
           const formatDate = (dateString) => {
@@ -273,6 +273,7 @@
                           <tr>
                               <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_rank')}</th>
                               <th scope="col" className="px-6 py-3">{t('ranking_header_player')}</th>
+                              <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_score')}</th>
                               <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_correct')}</th>
                               <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_incorrect')}</th>
                               <th scope="col" className="px-6 py-3">{t('ranking_header_date')}</th>
@@ -283,6 +284,7 @@
                               <tr key={index} className="bg-brand-secondary border-b border-brand-tertiary">
                                   <td className="px-6 py-4 font-medium text-brand-light text-center">{index + 1}</td>
                                   <td className="px-6 py-4 font-semibold text-brand-light">{score.nickname}</td>
+                                  <td className="px-6 py-4 text-amber-400 font-bold text-center">{score.score.toFixed(2)}</td>
                                   <td className="px-6 py-4 text-brand-success font-bold text-center">{score.correct}</td>
                                   <td className="px-6 py-4 text-brand-danger font-bold text-center">{score.incorrect}</td>
                                   <td className="px-6 py-4">{formatDate(score.date)}</td>
@@ -298,7 +300,7 @@
         console.log('🏆 TimeTrialRankingPreview rendering with scores:', scores);
 
         const sortedScores = useMemo(() => {
-            const sorted = [...scores].sort((a, b) => b.correct - a.correct || a.incorrect - b.incorrect);
+            const sorted = [...scores].sort((a, b) => b.score - a.score || b.correct - a.correct);
             console.log('🏆 Sorted scores:', sorted);
             return sorted;
         }, [scores]);
@@ -324,6 +326,7 @@
                         <tr>
                             <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_rank')}</th>
                             <th scope="col" className="px-6 py-3">{t('ranking_header_player')}</th>
+                            <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_score')}</th>
                             <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_correct')}</th>
                             <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_incorrect')}</th>
                             <th scope="col" className="px-6 py-3">{t('ranking_header_date')}</th>
@@ -334,6 +337,7 @@
                             <tr key={index} className="bg-brand-secondary border-b border-brand-tertiary">
                                 <td className="px-6 py-4 font-medium text-brand-light text-center">{index + 1}</td>
                                 <td className="px-6 py-4 font-semibold text-brand-light">{score.nickname}</td>
+                                <td className="px-6 py-4 text-amber-400 font-bold text-center">{score.score.toFixed(2)}</td>
                                 <td className="px-6 py-4 text-brand-success font-bold text-center">{score.correct}</td>
                                 <td className="px-6 py-4 text-brand-danger font-bold text-center">{score.incorrect}</td>
                                 <td className="px-6 py-4">{formatDate(score.date)}</td>
@@ -347,7 +351,7 @@
 
       const LivesRankingPreview = ({ scores, t }) => {
         const sortedScores = useMemo(() => {
-            return [...scores].sort((a, b) => b.correct - a.correct);
+            return [...scores].sort((a, b) => b.score - a.score || b.correct - a.correct);
         }, [scores]);
 
         const formatDate = (dateString) => {
@@ -368,6 +372,7 @@
                         <tr>
                             <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_rank')}</th>
                             <th scope="col" className="px-6 py-3">{t('ranking_header_player')}</th>
+                            <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_score')}</th>
                             <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_correct')}</th>
                             <th scope="col" className="px-6 py-3">{t('ranking_header_date')}</th>
                         </tr>
@@ -377,6 +382,7 @@
                             <tr key={index} className="bg-brand-secondary border-b border-brand-tertiary">
                                 <td className="px-6 py-4 font-medium text-brand-light text-center">{index + 1}</td>
                                 <td className="px-6 py-4 font-semibold text-brand-light">{score.nickname}</td>
+                                <td className="px-6 py-4 text-amber-400 font-bold text-center">{score.score.toFixed(2)}</td>
                                 <td className="px-6 py-4 text-brand-success font-bold text-center">{score.correct}</td>
                                 <td className="px-6 py-4">{formatDate(score.date)}</td>
                             </tr>
@@ -389,7 +395,7 @@
 
       const StreakRankingPreview = ({ scores, t }) => {
         const sortedScores = useMemo(() => {
-            return [...scores].sort((a, b) => b.correct - a.correct);
+            return [...scores].sort((a, b) => b.score - a.score || b.correct - a.correct);
         }, [scores]);
 
         const formatDate = (dateString) => {
@@ -409,6 +415,7 @@
                     <thead className="text-xs text-brand-light uppercase bg-brand-primary/50 sticky top-0">
                         <tr>
                             <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_rank')}</th>
+                            <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_score')}</th>
                             <th scope="col" className="px-6 py-3 text-center">{t('ranking_header_streak')}</th>
                             <th scope="col" className="px-6 py-3">{t('ranking_header_date')}</th>
                         </tr>
@@ -417,7 +424,8 @@
                         {sortedScores.map((score, index) => (
                             <tr key={index} className="bg-brand-secondary border-b border-brand-tertiary">
                                 <td className="px-6 py-4 font-medium text-brand-light text-center">{index + 1}</td>
-                                <td className="px-6 py-4 text-amber-400 font-bold text-center">{score.correct}</td>
+                                <td className="px-6 py-4 text-amber-400 font-bold text-center">{score.score.toFixed(2)}</td>
+                                <td className="px-6 py-4 text-brand-success font-bold text-center">{score.correct}</td>
                                 <td className="px-6 py-4">{formatDate(score.date)}</td>
                             </tr>
                         ))}
