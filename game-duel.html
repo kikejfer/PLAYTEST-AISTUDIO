@@ -878,10 +878,13 @@
 
                 console.log(`📊 [DUEL] Total preguntas recopiladas: ${allQuestions.length}`);
 
-                if (game.shuffledQuestionIds) {
-                    console.log('🔀 [DUEL] Usando shuffledQuestionIds existente:', game.shuffledQuestionIds.length, 'IDs');
+                // Check if shuffledQuestionIds exists in config
+                const shuffledIds = game.config?.shuffledQuestionIds || game.shuffledQuestionIds;
+
+                if (shuffledIds) {
+                    console.log('🔀 [DUEL] Usando shuffledQuestionIds existente:', shuffledIds.length, 'IDs');
                     const questionMap = new Map(allQuestions.map(q => [q.id, q]));
-                    const orderedQuestions = game.shuffledQuestionIds.map(id => questionMap.get(id)).filter(Boolean);
+                    const orderedQuestions = shuffledIds.map(id => questionMap.get(id)).filter(Boolean);
                     console.log(`✅ [DUEL] ${orderedQuestions.length} preguntas ordenadas según shuffledQuestionIds`);
                     setGameQuestions(orderedQuestions);
                 } else {
@@ -890,8 +893,14 @@
                     const shuffledIds = shuffled.map(q => q.id);
                     console.log(`✅ [DUEL] ${shuffled.length} preguntas mezcladas`);
                     setGameQuestions(shuffled);
-                    await apiDataService.updateGame(game.id, { shuffledQuestionIds: shuffledIds });
-                    console.log('💾 [DUEL] Orden de preguntas guardado en el juego');
+                    // Save shuffledQuestionIds in config (backend accepts: status, gameState, config)
+                    await apiDataService.updateGame(game.id, {
+                        config: {
+                            ...game.config,
+                            shuffledQuestionIds: shuffledIds
+                        }
+                    });
+                    console.log('💾 [DUEL] Orden de preguntas guardado en config del juego');
                 }
             };
             prepareQuestions();
