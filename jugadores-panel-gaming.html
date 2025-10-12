@@ -240,6 +240,14 @@
                 </div>
             </div>
 
+            <!-- Sección Rankings Globales -->
+            <div class="section">
+                <h2 class="section-title">🏆 Rankings Globales</h2>
+                <div class="section-content">
+                    <div id="global-rankings-content"></div>
+                </div>
+            </div>
+
             <!-- Sección Estadísticas -->
             <div class="section">
                 <h2 class="section-title">📊 Estadísticas</h2>
@@ -2820,6 +2828,198 @@
             ]);
         };
 
+        // Componente de Rankings Globales
+        const GlobalRankingsComponent = () => {
+            const [userBlocks, setUserBlocks] = useState([]);
+            const [selectedBlock, setSelectedBlock] = useState(null);
+            const [leaderboard, setLeaderboard] = useState([]);
+            const [isLoadingBlocks, setIsLoadingBlocks] = useState(true);
+            const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
+            const [viewMode, setViewMode] = useState('block'); // 'block' o 'topic'
+
+            useEffect(() => {
+                const loadUserBlocks = async () => {
+                    try {
+                        setIsLoadingBlocks(true);
+
+                        if (!window.apiDataService) {
+                            setTimeout(loadUserBlocks, 1000);
+                            return;
+                        }
+
+                        const blocks = await window.apiDataService.fetchUserBlocks();
+                        setUserBlocks(blocks || []);
+
+                        // Seleccionar el primer bloque por defecto
+                        if (blocks && blocks.length > 0) {
+                            setSelectedBlock(blocks[0]);
+                        }
+                    } catch (error) {
+                        console.error('Error loading user blocks:', error);
+                    } finally {
+                        setIsLoadingBlocks(false);
+                    }
+                };
+                loadUserBlocks();
+            }, []);
+
+            useEffect(() => {
+                const loadLeaderboard = async () => {
+                    if (!selectedBlock || !window.apiDataService) return;
+
+                    try {
+                        setIsLoadingLeaderboard(true);
+                        const data = await window.apiDataService.fetchBlockLeaderboard(selectedBlock.id);
+                        setLeaderboard(data || []);
+                    } catch (error) {
+                        console.error('Error loading leaderboard:', error);
+                        setLeaderboard([]);
+                    } finally {
+                        setIsLoadingLeaderboard(false);
+                    }
+                };
+                loadLeaderboard();
+            }, [selectedBlock]);
+
+            const handleBlockChange = (e) => {
+                const blockId = parseInt(e.target.value);
+                const block = userBlocks.find(b => b.id === blockId);
+                setSelectedBlock(block);
+            };
+
+            const formatDate = (dateString) => {
+                if (!dateString) return 'N/A';
+                const date = new Date(dateString);
+                return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+            };
+
+            if (isLoadingBlocks) {
+                return React.createElement('div', {
+                    className: "bg-slate-800 p-6 rounded-xl shadow-lg text-center"
+                }, [
+                    React.createElement('div', {
+                        key: 'spinner',
+                        className: "animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"
+                    }),
+                    React.createElement('p', {
+                        key: 'loading-text',
+                        className: "text-gray-400"
+                    }, 'Cargando bloques...')
+                ]);
+            }
+
+            if (!userBlocks || userBlocks.length === 0) {
+                return React.createElement('div', {
+                    className: "bg-slate-800 p-6 rounded-xl shadow-lg text-center text-gray-400"
+                }, 'No has jugado ningún bloque todavía. Completa algunas partidas para ver los rankings globales.');
+            }
+
+            return React.createElement('div', {
+                className: "bg-slate-800 p-6 rounded-xl shadow-lg"
+            }, [
+                // Selector de bloque
+                React.createElement('div', {
+                    key: 'block-selector',
+                    className: "mb-6"
+                }, [
+                    React.createElement('label', {
+                        key: 'label',
+                        className: "block text-gray-300 font-semibold mb-2"
+                    }, 'Selecciona un bloque:'),
+                    React.createElement('select', {
+                        key: 'select',
+                        className: "w-full bg-slate-700 text-white px-4 py-2 rounded-lg border border-slate-600 focus:outline-none focus:border-blue-500",
+                        value: selectedBlock ? selectedBlock.id : '',
+                        onChange: handleBlockChange
+                    }, userBlocks.map(block =>
+                        React.createElement('option', {
+                            key: block.id,
+                            value: block.id
+                        }, `${block.name} (${block.game_count} partidas)`)
+                    ))
+                ]),
+
+                // Título del ranking
+                selectedBlock && React.createElement('h3', {
+                    key: 'ranking-title',
+                    className: "text-xl font-bold text-white mb-4"
+                }, `🏆 Top 10 - ${selectedBlock.name}`),
+
+                // Tabla de ranking
+                isLoadingLeaderboard ? React.createElement('div', {
+                    key: 'loading',
+                    className: "text-center py-8"
+                }, [
+                    React.createElement('div', {
+                        key: 'spinner',
+                        className: "animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"
+                    }),
+                    React.createElement('p', {
+                        key: 'loading-text',
+                        className: "text-gray-400"
+                    }, 'Cargando ranking...')
+                ]) : leaderboard && leaderboard.length > 0 ? React.createElement('div', {
+                    key: 'leaderboard-container',
+                    className: "overflow-x-auto"
+                }, React.createElement('table', {
+                    className: "w-full text-sm"
+                }, [
+                    React.createElement('thead', { key: 'thead' }, React.createElement('tr', {
+                        className: "border-b border-slate-600"
+                    }, [
+                        React.createElement('th', { key: 'rank', className: "py-2 px-2 text-center text-gray-300 font-semibold" }, 'Pos.'),
+                        React.createElement('th', { key: 'user', className: "py-2 px-3 text-left text-gray-300 font-semibold" }, 'Usuario'),
+                        React.createElement('th', { key: 'score', className: "py-2 px-2 text-center text-gray-300 font-semibold" }, 'Punt.'),
+                        React.createElement('th', { key: 'correct', className: "py-2 px-2 text-center text-gray-300 font-semibold" }, 'Aciertos'),
+                        React.createElement('th', { key: 'incorrect', className: "py-2 px-2 text-center text-gray-300 font-semibold" }, 'Fallos'),
+                        React.createElement('th', { key: 'mode', className: "py-2 px-3 text-left text-gray-300 font-semibold" }, 'Modo'),
+                        React.createElement('th', { key: 'date', className: "py-2 px-2 text-left text-gray-300 font-semibold" }, 'Fecha')
+                    ])),
+                    React.createElement('tbody', { key: 'tbody' }, leaderboard.map((entry, index) =>
+                        React.createElement('tr', {
+                            key: `entry-${index}-${entry.nickname}`,
+                            className: "border-b border-slate-600"
+                        }, [
+                            React.createElement('td', {
+                                key: 'rank-cell',
+                                className: "py-3 px-2 text-center font-bold text-white"
+                            }, index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}`),
+                            React.createElement('td', {
+                                key: 'user-cell',
+                                className: "py-3 px-3 font-medium text-white"
+                            }, entry.nickname),
+                            React.createElement('td', {
+                                key: 'score-cell',
+                                className: "py-3 px-2 text-center"
+                            }, React.createElement('span', {
+                                className: "font-bold px-2 py-1 rounded text-xs",
+                                style: { color: entry.score >= 5 ? '#10B981' : '#EF4444' }
+                            }, entry.score ? entry.score.toFixed(1) : '0.0')),
+                            React.createElement('td', {
+                                key: 'correct-cell',
+                                className: "py-3 px-2 text-center text-green-400 font-semibold"
+                            }, entry.correct || 0),
+                            React.createElement('td', {
+                                key: 'incorrect-cell',
+                                className: "py-3 px-2 text-center text-red-400 font-semibold"
+                            }, entry.incorrect || 0),
+                            React.createElement('td', {
+                                key: 'mode-cell',
+                                className: "py-3 px-3 text-gray-400"
+                            }, entry.gameMode || entry.gameType || 'Clásico'),
+                            React.createElement('td', {
+                                key: 'date-cell',
+                                className: "py-3 px-2 text-gray-400 text-xs"
+                            }, formatDate(entry.date))
+                        ])
+                    ))
+                ])) : React.createElement('div', {
+                    key: 'no-data',
+                    className: "text-center text-gray-400 py-8"
+                }, 'No hay datos de ranking disponibles para este bloque.')
+            ]);
+        };
+
         // Datos globales para los bloques disponibles
         let availableBlocksData = [];
         let availableBlocksMetadata = null;
@@ -3229,9 +3429,22 @@
             if (gameHistoryContainer) {
                 const gameHistoryRoot = ReactDOM.createRoot(gameHistoryContainer);
                 gameHistoryRoot.render(
-                    React.createElement(LanguageProvider, {}, 
+                    React.createElement(LanguageProvider, {},
                         React.createElement(UserContext.Provider, { value: { currentUser: JSON.parse(localStorage.getItem('playtest_session') || '{}') } },
                             React.createElement(TabHistoryComponent)
+                        )
+                    )
+                );
+            }
+
+            // Renderizar Rankings Globales en su pestaña
+            const globalRankingsContainer = document.getElementById('global-rankings-content');
+            if (globalRankingsContainer) {
+                const globalRankingsRoot = ReactDOM.createRoot(globalRankingsContainer);
+                globalRankingsRoot.render(
+                    React.createElement(LanguageProvider, {},
+                        React.createElement(UserContext.Provider, { value: { currentUser: JSON.parse(localStorage.getItem('playtest_session') || '{}') } },
+                            React.createElement(GlobalRankingsComponent)
                         )
                     )
                 );

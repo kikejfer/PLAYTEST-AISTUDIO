@@ -1501,6 +1501,43 @@ class APIDataService {
       return this.simulateDelay({ message: `Feature group ${groupKey} updated to ${enabled}` });
     }
   }
+
+  // === GLOBAL LEADERBOARDS ===
+  async fetchBlockLeaderboard(blockId) {
+    try {
+      console.log('🏆 Fetching global leaderboard for block:', blockId);
+      const leaderboard = await this.apiCall(`/games/leaderboards/block/${blockId}`);
+      console.log('✅ Block leaderboard loaded:', leaderboard.length, 'entries');
+      return this.simulateDelay(leaderboard);
+    } catch (error) {
+      console.error('❌ Failed to fetch block leaderboard:', error);
+      return this.simulateDelay([]);
+    }
+  }
+
+  async fetchTopicLeaderboard(topicId) {
+    try {
+      console.log('🏆 Fetching global leaderboard for topic:', topicId);
+      const leaderboard = await this.apiCall(`/games/leaderboards/topic/${topicId}`);
+      console.log('✅ Topic leaderboard loaded:', leaderboard.length, 'entries');
+      return this.simulateDelay(leaderboard);
+    } catch (error) {
+      console.error('❌ Failed to fetch topic leaderboard:', error);
+      return this.simulateDelay([]);
+    }
+  }
+
+  async fetchUserBlocks() {
+    try {
+      console.log('📚 Fetching user blocks for leaderboards');
+      const blocks = await this.apiCall('/games/leaderboards/user-blocks');
+      console.log('✅ User blocks loaded:', blocks.length, 'blocks');
+      return this.simulateDelay(blocks);
+    } catch (error) {
+      console.error('❌ Failed to fetch user blocks:', error);
+      return this.simulateDelay([]);
+    }
+  }
 }
 
 // Configuración de la URL base según el entorno
