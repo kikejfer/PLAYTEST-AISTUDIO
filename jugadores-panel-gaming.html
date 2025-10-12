@@ -2801,11 +2801,11 @@
                         }, [
                             React.createElement('td', {
                                 key: 'block-name',
-                                className: "py-3 px-2 font-medium text-white truncate max-w-32",
+                                className: "py-3 px-2 text-white truncate max-w-32",
                                 title: game.blockName
                             }, game.blockName),
                             React.createElement('td', { key: 'mode-info', className: "py-3 px-2 text-gray-400" },
-                                React.createElement('div', { key: 'game-mode', className: "font-medium text-white" }, game.mode || 'Clásico')
+                                React.createElement('div', { key: 'game-mode', className: "text-white" }, game.mode || 'Clásico')
                             ),
                             React.createElement('td', { key: 'correct-cell', className: "py-3 px-2 text-center text-green-400 font-semibold" }, Math.floor(game.correct || 0)),
                             React.createElement('td', { key: 'incorrect-cell', className: "py-3 px-2 text-center text-red-400 font-semibold" }, Math.floor(game.incorrect || 0)),
@@ -2817,7 +2817,7 @@
                             }, game.score ? game.score.toFixed(1) : '0.0')),
                             React.createElement('td', { key: 'date-cell', className: "py-3 px-2 text-gray-400 text-xs" }, (() => {
                                 const date = new Date(game.date || Date.now());
-                                return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                                return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
                             })())
                         ])
                     ))
