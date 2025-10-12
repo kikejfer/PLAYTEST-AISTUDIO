@@ -903,8 +903,18 @@
                 }
             };
 
-            const activeGames = games.filter(g => g.status === 'active' || g.status === 'waiting');
-            const completedGames = games.filter(g => g.status === 'completed');
+            // Filtrar juegos activos: solo Duelo y Trivial que no han finalizado
+            const activeCompetitionGames = games.filter(g =>
+                (g.status === 'active' || g.status === 'waiting') &&
+                (g.mode === 'Duelo' || g.mode === 'Trivial')
+            );
+
+            // Resto de partidas: juegos completados o de otros modos
+            const availableGames = games.filter(g =>
+                g.status === 'completed' ||
+                ((g.status === 'active' || g.status === 'waiting') && g.mode !== 'Duelo' && g.mode !== 'Trivial')
+            );
+
             // Separate incoming challenges (where current user is challenged) from outgoing (where current user is challenger)
             // Status can be 'waiting' (pending challenge) or 'pending' (legacy)
             const incomingChallenges = challenges.filter(c =>
@@ -919,14 +929,14 @@
                 try {
                     if (window.apiDataService) {
                         console.log('🎮 Accepting challenge and starting game:', { challengeId, challenge });
-                        
+
                         // Accept the challenge (this changes status from 'pending' to 'active')
                         await window.apiDataService.acceptChallenge(currentUser.id, challengeId);
-                        
+
                         // Store game info in localStorage for navigation
                         localStorage.setItem('current_game_id', challengeId);
                         localStorage.setItem('current_game_mode', challenge.mode || 'Partida');
-                        
+
                         // Navigate directly to the game with the challenge's game ID
                         console.log('🚀 Redirecting to game:', challengeId);
                         if (onNavigateToGame) {
@@ -946,14 +956,14 @@
                 const reason = prompt(
                     `¿Por qué declinas el reto de ${challengerNickname}?\n\n(Opcional: Puedes dejar este campo vacío o escribir una razón que será enviada al retador)`
                 );
-                
+
                 // Allow cancellation
                 if (reason === null) return;
-                
+
                 try {
                     if (window.apiDataService) {
                         console.log('❌ Declining challenge with reason:', { challengeId, reason });
-                        
+
                         // Send decline with reason to backend
                         await window.apiDataService.declineChallengeWithReason(currentUser.id, challengeId, reason || '');
                     }
@@ -961,12 +971,6 @@
                     console.error('❌ Error declining challenge with reason:', err);
                 }
             };
-            
-            // Show completed games as available to replay
-            const gamesToShow = activeGames.length > 0 ? activeGames : completedGames;
-            const sectionTitle = activeGames.length > 0 ? 'Partidas Activas' : 'Partidas Disponibles';
-            const statusBadge = activeGames.length > 0 ? 'Activa' : 'Completada';
-            const buttonText = activeGames.length > 0 ? '▶️ Continuar Partida' : '🔄 Jugar de Nuevo';
 
 
             // Enhanced helper for challenge configuration with more detail
@@ -1022,14 +1026,14 @@
                     ])
                 ])),
 
-                gamesToShow.length > 0 && React.createElement('div', {
+                (activeCompetitionGames.length > 0 || availableGames.length > 0) && React.createElement('div', {
                     key: 'header',
                     className: "flex justify-end mb-4 flex-shrink-0"
                 }, React.createElement('a', {
                     key: 'view-all',
                     href: "/all-games.html",
                     className: "text-sm font-semibold bg-slate-600 hover:bg-slate-500 text-white py-1 px-3 rounded-md transition-colors"
-                }, `Ver todos (${gamesToShow.length})`)),
+                }, `Ver todos (${activeCompetitionGames.length + availableGames.length})`)),
                 
                 React.createElement('div', {
                     key: 'content',
@@ -1138,23 +1142,28 @@
                         }))
                     ]),
 
-                    gamesToShow.length > 0 && React.createElement('div', { key: 'active-games-section' }, [
+                    // Sección Juegos Activos (Duelo y Trivial)
+                    activeCompetitionGames.length > 0 && React.createElement('div', { key: 'competition-games-section' }, [
                         React.createElement('h4', {
-                            key: 'active-games-title',
-                            className: "font-semibold text-blue-400 mb-2"
-                        }, sectionTitle),
-                        React.createElement('ul', {
-                            key: 'active-games-list',
-                            className: "space-y-3 mb-4"
-                        }, gamesToShow.map(game => React.createElement('li', {
+                            key: 'competition-title',
+                            className: "font-semibold text-green-400 mb-2"
+                        }, 'Juegos Activos'),
+                        React.createElement('div', {
+                            key: 'competition-container',
+                            className: "overflow-y-auto mb-4",
+                            style: { maxHeight: '400px' }
+                        }, React.createElement('ul', {
+                            key: 'competition-list',
+                            className: "space-y-3"
+                        }, activeCompetitionGames.map(game => React.createElement('li', {
                             key: game.id,
-                            className: "p-3 rounded-md bg-blue-900/20 border border-blue-500/30"
+                            className: "p-3 rounded-md bg-green-900/20 border border-green-500/30"
                         }, [
                             React.createElement('div', { key: 'game-header', className: "flex items-center justify-between mb-2" }, [
                                 React.createElement('div', { key: 'game-info', className: "flex items-center gap-2" }, [
                                     React.createElement('div', {
                                         key: 'game-icon',
-                                        className: "h-6 w-6 text-blue-400 flex-shrink-0"
+                                        className: "h-6 w-6 text-green-400 flex-shrink-0"
                                     }, '🎮'),
                                     React.createElement('span', {
                                         key: 'game-mode',
@@ -1162,8 +1171,8 @@
                                     }, game.mode || 'Modo Clásico'),
                                     React.createElement('span', {
                                         key: 'game-status',
-                                        className: `text-xs px-2 py-0.5 rounded text-white ${activeGames.length > 0 ? 'bg-green-600' : 'bg-gray-600'}`
-                                    }, statusBadge)
+                                        className: "text-xs px-2 py-0.5 rounded text-white bg-green-600"
+                                    }, 'Activa')
                                 ]),
                                 React.createElement('button', {
                                     key: 'delete-game',
@@ -1189,12 +1198,76 @@
                             React.createElement('button', {
                                 key: 'continue-game',
                                 onClick: () => onNavigateToGame(game),
-                                className: "w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
-                            }, buttonText)
-                        ])))
+                                className: "w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+                            }, '▶️ Continuar Partida')
+                        ]))))
                     ]),
 
-                    gamesToShow.length === 0 && React.createElement('div', {
+                    // Sección Partidas Disponibles (resto de configuraciones)
+                    availableGames.length > 0 && React.createElement('div', { key: 'available-games-section' }, [
+                        React.createElement('h4', {
+                            key: 'available-title',
+                            className: "font-semibold text-blue-400 mb-2"
+                        }, 'Partidas Disponibles'),
+                        React.createElement('div', {
+                            key: 'available-container',
+                            className: "overflow-y-auto mb-4",
+                            style: { maxHeight: '400px' }
+                        }, React.createElement('ul', {
+                            key: 'available-list',
+                            className: "space-y-3"
+                        }, availableGames.map(game => {
+                            const isCompleted = game.status === 'completed';
+                            return React.createElement('li', {
+                                key: game.id,
+                                className: "p-3 rounded-md bg-blue-900/20 border border-blue-500/30"
+                            }, [
+                                React.createElement('div', { key: 'game-header', className: "flex items-center justify-between mb-2" }, [
+                                    React.createElement('div', { key: 'game-info', className: "flex items-center gap-2" }, [
+                                        React.createElement('div', {
+                                            key: 'game-icon',
+                                            className: "h-6 w-6 text-blue-400 flex-shrink-0"
+                                        }, '🎮'),
+                                        React.createElement('span', {
+                                            key: 'game-mode',
+                                            className: "font-semibold text-white"
+                                        }, game.mode || 'Modo Clásico'),
+                                        React.createElement('span', {
+                                            key: 'game-status',
+                                            className: `text-xs px-2 py-0.5 rounded text-white ${isCompleted ? 'bg-gray-600' : 'bg-blue-600'}`
+                                        }, isCompleted ? 'Completada' : 'Activa')
+                                    ]),
+                                    React.createElement('button', {
+                                        key: 'delete-game',
+                                        onClick: () => handleDeleteClick(game.id),
+                                        className: "text-red-400 hover:text-red-300 text-sm",
+                                        title: "Eliminar juego"
+                                    }, '🗑️')
+                                ]),
+                                React.createElement('div', { key: 'game-config', className: "mb-3" }, [
+                                    React.createElement('p', {
+                                        key: 'config-details',
+                                        className: "text-xs text-gray-300"
+                                    }, getGameConfigDetails(game.config, game.configurationMetadata)),
+                                    (() => {
+                                        const turnInfo = getTurnInfo(game);
+                                        if (!turnInfo) return null;
+                                        return React.createElement('p', {
+                                            key: 'turn-info',
+                                            className: `text-xs font-semibold mt-1 ${turnInfo.isMyTurn ? 'text-green-400' : 'text-amber-400'}`
+                                        }, turnInfo.isMyTurn ? '🎯 Tu turno' : `⏳ Turno de ${turnInfo.playerNickname}`);
+                                    })()
+                                ]),
+                                React.createElement('button', {
+                                    key: 'continue-game',
+                                    onClick: () => onNavigateToGame(game),
+                                    className: "w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+                                }, isCompleted ? '🔄 Jugar de Nuevo' : '▶️ Continuar Partida')
+                            ]);
+                        })))
+                    ]),
+
+                    (activeCompetitionGames.length === 0 && availableGames.length === 0) && React.createElement('div', {
                         key: 'no-games',
                         className: "text-center py-6 flex-grow flex items-center justify-center"
                     }, React.createElement('div', { key: 'no-games-content' }, [
