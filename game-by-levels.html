@@ -267,7 +267,7 @@
                     // CRITICAL: Save score FIRST (independent operation)
                     try {
                         const correctAnswers = allUserAnswers.filter(a => a.isCorrect).length;
-                        const totalQuestions = allQuestions.length;
+                        const totalQuestions = questions.length;
                         const calculatedScore = totalQuestions > 0 ? ((correctAnswers / totalQuestions) * 10).toFixed(2) : 0;
 
                         console.log('📊 By-Levels - Score calculation:', {
