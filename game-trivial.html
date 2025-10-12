@@ -466,7 +466,7 @@
           const currentPlayerIndex = game.turn;
           const currentPlayer = game.players[currentPlayerIndex];
           const isMyTurn = currentPlayer.userId === currentUser.id;
-          
+
           // Debug info - remove in production
           console.log('Debug Trivial:', {
               currentPlayerIndex,
@@ -477,17 +477,76 @@
               gameState: game.gameState
           });
 
+          // Poll for game state updates when it's not my turn
+          useEffect(() => {
+              if (isMyTurn || game.gameState === 'finished') return;
+
+              console.log('📡 [TRIVIAL] Starting polling - waiting for opponent');
+              const pollInterval = setInterval(async () => {
+                  try {
+                      const updatedGame = await apiDataService.fetchGame(game.id);
+                      console.log('🔄 [TRIVIAL] Polled game state:', {
+                          gameState: updatedGame.gameState,
+                          turn: updatedGame.turn,
+                          round: updatedGame.round,
+                          playerWedges: updatedGame.playerWedges
+                      });
+
+                      // Update state if changed
+                      if (updatedGame.gameState && updatedGame.gameState !== game.gameState) {
+                          console.log('✨ [TRIVIAL] Game state changed!', game.gameState, '->', updatedGame.gameState);
+                          setGame(prev => ({ ...prev, gameState: updatedGame.gameState }));
+                      }
+                      if (updatedGame.turn !== undefined && updatedGame.turn !== game.turn) {
+                          console.log('✨ [TRIVIAL] Turn changed!', game.turn, '->', updatedGame.turn);
+                          setGame(prev => ({ ...prev, turn: updatedGame.turn }));
+                      }
+                      if (updatedGame.round !== undefined && updatedGame.round !== game.round) {
+                          console.log('✨ [TRIVIAL] Round changed!', game.round, '->', updatedGame.round);
+                          setGame(prev => ({ ...prev, round: updatedGame.round }));
+                      }
+                      if (updatedGame.playerWedges) {
+                          setGame(prev => ({ ...prev, playerWedges: updatedGame.playerWedges }));
+                      }
+                      if (updatedGame.askedQuestionIds) {
+                          setGame(prev => ({ ...prev, askedQuestionIds: updatedGame.askedQuestionIds }));
+                      }
+                      if (updatedGame.history) {
+                          setGame(prev => ({ ...prev, history: updatedGame.history }));
+                      }
+                  } catch (error) {
+                      console.error('❌ [TRIVIAL] Polling error:', error);
+                  }
+              }, 2000); // Poll every 2 seconds
+
+              return () => {
+                  console.log('🛑 [TRIVIAL] Stopping polling');
+                  clearInterval(pollInterval);
+              };
+          }, [isMyTurn, game.gameState, game.id, game.turn, game.round]);
+
           const updateSharedGameState = useCallback((data) => {
               const updatedGame = { ...game, ...data };
               setGame(updatedGame);
 
-              // Only send fields that are valid for update (gameState, status, config)
-              const updateData = {};
-              if (data.gameState !== undefined) updateData.gameState = data.gameState;
-              if (data.status !== undefined) updateData.status = data.status;
-              if (data.config !== undefined) updateData.config = data.config;
+              // Wrap ALL game state fields in gameState object for backend sync
+              const wrappedData = {
+                  gameState: {
+                      gameState: data.gameState !== undefined ? data.gameState : game.gameState,
+                      turn: data.turn !== undefined ? data.turn : game.turn,
+                      round: data.round !== undefined ? data.round : game.round,
+                      totalTurns: data.totalTurns !== undefined ? data.totalTurns : game.totalTurns,
+                      playerWedges: data.playerWedges !== undefined ? data.playerWedges : game.playerWedges,
+                      askedQuestionIds: data.askedQuestionIds !== undefined ? data.askedQuestionIds : game.askedQuestionIds,
+                      history: data.history !== undefined ? data.history : game.history
+                  }
+              };
 
-              apiDataService.updateGame(game.id, updateData);
+              if (data.status !== undefined) wrappedData.status = data.status;
+              if (data.config !== undefined) wrappedData.config = data.config;
+
+              console.log('💾 [TRIVIAL] Updating game state:', wrappedData);
+              apiDataService.updateGame(game.id, wrappedData);
           }, [game]);
           
           const onSpinEnd = useCallback((resultTopic) => {

@@ -839,42 +839,69 @@
                 }).join(' | ');
             };
 
-            // Helper to get turn information for duel games
+            // Helper to get turn and round information for multiplayer games
             const getTurnInfo = (game) => {
                 console.log('🎯 getTurnInfo called for game:', game.id, {
                     mode: game.mode,
                     turnState: game.turnState,
+                    turn: game.turn,
+                    round: game.round,
                     players: game.players,
                     playersLength: game.players?.length,
                     gameState: game.gameState
                 });
 
-                if (game.mode !== 'Duelo') {
-                    console.log('⏭️ Not a Duelo game, returning null');
+                if (game.mode !== 'Duelo' && game.mode !== 'Trivial') {
+                    console.log('⏭️ Not a multiplayer game, returning null');
                     return null;
                 }
 
-                if (!game.turnState || !game.players || game.players.length < 2) {
-                    console.log('❌ Missing required data:', {
-                        hasTurnState: !!game.turnState,
-                        hasPlayers: !!game.players,
-                        playersCount: game.players?.length
-                    });
+                if (!game.players || game.players.length < 2) {
+                    console.log('❌ Missing players data');
                     return null;
                 }
 
-                const turnState = game.turnState;
                 let currentPlayerIndex = -1;
+                let roundInfo = null;
 
-                if (turnState.startsWith('p1')) {
-                    currentPlayerIndex = 0;
-                } else if (turnState.startsWith('p2')) {
-                    currentPlayerIndex = 1;
+                // Handle Duel mode
+                if (game.mode === 'Duelo') {
+                    if (!game.turnState) {
+                        console.log('❌ Missing turnState for Duel game');
+                        return null;
+                    }
+
+                    const turnState = game.turnState;
+                    if (turnState.startsWith('p1')) {
+                        currentPlayerIndex = 0;
+                    } else if (turnState.startsWith('p2')) {
+                        currentPlayerIndex = 1;
+                    }
+
+                    // Get round info from game state
+                    if (game.round !== undefined) {
+                        roundInfo = `Ronda ${game.round + 1}/10`;
+                    }
                 }
 
-                console.log('👤 Current player index:', currentPlayerIndex, 'for turnState:', turnState);
+                // Handle Trivial mode
+                if (game.mode === 'Trivial') {
+                    if (game.turn !== undefined) {
+                        currentPlayerIndex = game.turn;
+                    } else {
+                        console.log('❌ Missing turn for Trivial game');
+                        return null;
+                    }
 
-                if (currentPlayerIndex === -1) return null;
+                    // Get round info for Trivial
+                    if (game.round !== undefined) {
+                        roundInfo = `Ronda ${game.round}`;
+                    }
+                }
+
+                console.log('👤 Current player index:', currentPlayerIndex);
+
+                if (currentPlayerIndex === -1 || !game.players[currentPlayerIndex]) return null;
 
                 const currentPlayer = game.players[currentPlayerIndex];
                 const isMyTurn = currentPlayer.userId === currentUser.id;
@@ -882,13 +909,15 @@
                 console.log('✅ Turn info:', {
                     playerNickname: currentPlayer.nickname,
                     isMyTurn,
+                    roundInfo,
                     currentUserId: currentUser.id,
                     currentPlayerUserId: currentPlayer.userId
                 });
 
                 return {
                     playerNickname: currentPlayer.nickname,
-                    isMyTurn
+                    isMyTurn,
+                    roundInfo
                 };
             };
 
@@ -1189,10 +1218,12 @@
                                 (() => {
                                     const turnInfo = getTurnInfo(game);
                                     if (!turnInfo) return null;
+                                    const turnText = turnInfo.isMyTurn ? '🎯 Tu turno' : `⏳ Turno de ${turnInfo.playerNickname}`;
+                                    const fullText = turnInfo.roundInfo ? `${turnText} • ${turnInfo.roundInfo}` : turnText;
                                     return React.createElement('p', {
                                         key: 'turn-info',
                                         className: `text-xs font-semibold mt-1 ${turnInfo.isMyTurn ? 'text-green-400' : 'text-amber-400'}`
-                                    }, turnInfo.isMyTurn ? '🎯 Tu turno' : `⏳ Turno de ${turnInfo.playerNickname}`);
+                                    }, fullText);
                                 })()
                             ]),
                             React.createElement('button', {
@@ -1252,10 +1283,12 @@
                                     (() => {
                                         const turnInfo = getTurnInfo(game);
                                         if (!turnInfo) return null;
+                                        const turnText = turnInfo.isMyTurn ? '🎯 Tu turno' : `⏳ Turno de ${turnInfo.playerNickname}`;
+                                        const fullText = turnInfo.roundInfo ? `${turnText} • ${turnInfo.roundInfo}` : turnText;
                                         return React.createElement('p', {
                                             key: 'turn-info',
                                             className: `text-xs font-semibold mt-1 ${turnInfo.isMyTurn ? 'text-green-400' : 'text-amber-400'}`
-                                        }, turnInfo.isMyTurn ? '🎯 Tu turno' : `⏳ Turno de ${turnInfo.playerNickname}`);
+                                        }, fullText);
                                     })()
                                 ]),
                                 React.createElement('button', {

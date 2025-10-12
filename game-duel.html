@@ -235,6 +235,8 @@
         const [timeLeft, setTimeLeft] = useState(30);
         const turnStartTime = useRef(null);
         const timerRef = useRef(null);
+        // Track complete answer history for both players across all rounds (synced in game state)
+        const [allRoundsHistory, setAllRoundsHistory] = useState(savedState?.allRoundsHistory || game.allRoundsHistory || []);
         
         const currentQuestion = duelQuestions[currentRound];
         const isMyTurn = (turnState.startsWith('p1') && currentUser.id === game.players[0].userId) || (turnState.startsWith('p2') && currentUser.id === game.players[1].userId);
@@ -246,12 +248,13 @@
                     gameState: data.gameState || gameState,
                     turnState: data.turnState || turnState,
                     round: data.round !== undefined ? data.round : currentRound,
-                    roundAnswers: data.roundAnswers || roundAnswers
+                    roundAnswers: data.roundAnswers || roundAnswers,
+                    allRoundsHistory: data.allRoundsHistory || allRoundsHistory
                 }
             };
             console.log('💾 [DUEL] Updating game state:', wrappedData);
             apiDataService.updateGame(game.id, wrappedData);
-        }, [game.id, gameState, turnState, currentRound, roundAnswers]);
+        }, [game.id, gameState, turnState, currentRound, roundAnswers, allRoundsHistory]);
 
         const startTurn = useCallback(() => {
             const newTurnState = turnState === 'p1_ready' ? 'p1_answering' : 'p2_answering';
@@ -315,6 +318,9 @@
                     if (updatedGame.roundAnswers) {
                         setRoundAnswers(updatedGame.roundAnswers);
                     }
+                    if (updatedGame.allRoundsHistory) {
+                        setAllRoundsHistory(updatedGame.allRoundsHistory);
+                    }
                 } catch (error) {
                     console.error('❌ [DUEL] Polling error:', error);
                 }
@@ -337,12 +343,13 @@
                     playerScores,
                     roundAnswers,
                     myAnswersHistory,
+                    allRoundsHistory,
                     timestamp: Date.now()
                 };
                 localStorage.setItem(`duel_game_${game.id}`, JSON.stringify(gameStateToSave));
                 console.log('💾 [DUEL] Game state persisted to localStorage');
             }
-        }, [game.id, gameState, turnState, currentRound, playerScores, roundAnswers, myAnswersHistory]);
+        }, [game.id, gameState, turnState, currentRound, playerScores, roundAnswers, myAnswersHistory, allRoundsHistory]);
 
         useEffect(() => {
             if (gameState === 'finished' && currentUser) {
@@ -365,19 +372,30 @@
                         };
                         
                         await apiDataService.saveDuelScore(game.id, duelScoreData);
-                        
-                        // Update user stats for both players
+
+                        // Update user stats for both players using shared answer history
+                        console.log('📊 [DUEL] Processing stats for both players from allRoundsHistory:', allRoundsHistory);
+
                         for (const [playerIndex, player] of game.players.entries()) {
-                            const playerAnswers = myAnswersHistory.filter((_, i) => 
-                                (i % 2 === 0 && playerIndex === 0) || (i % 2 === 1 && playerIndex === 1)
-                            );
-                            
+                            // Extract this player's answers from complete history
+                            const playerKey = playerIndex === 0 ? 'p1Answer' : 'p2Answer';
+                            const playerAnswers = allRoundsHistory.map(roundEntry => ({
+                                questionId: roundEntry.questionId,
+                                result: roundEntry[playerKey].result,
+                                blockId: roundEntry.blockId,
+                                topicName: roundEntry.topicName,
+                                responseTime: roundEntry[playerKey].responseTime
+                            }));
+
+                            console.log(`📝 [DUEL] Player ${playerIndex + 1} (${player.nickname}) answers:`, playerAnswers);
+
                             if (playerAnswers.length > 0) {
                                 const opponent = game.players.find(p => p.userId !== player.userId);
-                                const gameResults = { 
-                                    answers: playerAnswers, 
-                                    opponent: opponent?.nickname 
+                                const gameResults = {
+                                    answers: playerAnswers,
+                                    opponent: opponent?.nickname
                                 };
+                                console.log(`💾 [DUEL] Updating stats for ${player.nickname}:`, gameResults);
                                 await apiDataService.updateUserStats(player.userId, game.id, gameResults, game.mode);
                             }
                         }
@@ -390,7 +408,7 @@
                 };
                 finishGame();
             }
-        }, [gameState, currentUser, myAnswersHistory, game]);
+        }, [gameState, currentUser, allRoundsHistory, game, playerScores, currentRound]);
 
         useEffect(() => {
           if (roundAnswers[0] !== null && roundAnswers[1] !== null) {
@@ -401,11 +419,36 @@
               if (roundAnswers[0].time < roundAnswers[1].time) p1Points++;
               else if (roundAnswers[1].time < roundAnswers[0].time) p2Points++;
             }
-            
+
             const newScores = { 0: playerScores[0] + p1Points, 1: playerScores[1] + p2Points };
             setPlayerScores(newScores);
+
+            // Save this round's answers to complete history
+            const roundHistoryEntry = {
+              round: currentRound,
+              questionId: currentQuestion.id,
+              blockId: currentQuestion.blockId,
+              topicName: currentQuestion.tema,
+              p1Answer: {
+                result: roundAnswers[0].isCorrect ? 'ACIERTO' : (roundAnswers[0].answerIndex === null ? 'BLANCO' : 'FALLO'),
+                responseTime: roundAnswers[0].time
+              },
+              p2Answer: {
+                result: roundAnswers[1].isCorrect ? 'ACIERTO' : (roundAnswers[1].answerIndex === null ? 'BLANCO' : 'FALLO'),
+                responseTime: roundAnswers[1].time
+              }
+            };
+
+            const updatedHistory = [...allRoundsHistory, roundHistoryEntry];
+            setAllRoundsHistory(updatedHistory);
+
             setGameState('round_summary');
-            updateSharedGameState({ gameState: 'round_summary', players: [{...game.players[0], score: newScores[0]}, {...game.players[1], score: newScores[1]}], roundAnswers });
+            updateSharedGameState({
+              gameState: 'round_summary',
+              players: [{...game.players[0], score: newScores[0]}, {...game.players[1], score: newScores[1]}],
+              roundAnswers,
+              allRoundsHistory: updatedHistory
+            });
           }
         }, [roundAnswers]);
 
@@ -440,10 +483,16 @@
             setRoundAnswers({ 0: null, 1: null });
             setGameState('playing');
             setTurnState('p1_ready');
-            updateSharedGameState({ round: nextRound, roundAnswers: { 0: null, 1: null }, gameState: 'playing', turnState: 'p1_ready' });
+            updateSharedGameState({
+              round: nextRound,
+              roundAnswers: { 0: null, 1: null },
+              gameState: 'playing',
+              turnState: 'p1_ready',
+              allRoundsHistory
+            });
           } else {
             setGameState('finished');
-            updateSharedGameState({ gameState: 'finished' });
+            updateSharedGameState({ gameState: 'finished', allRoundsHistory });
           }
         };
 
