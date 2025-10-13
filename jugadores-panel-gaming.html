@@ -512,6 +512,7 @@
             const [blockToConfigure, setBlockToConfigure] = useState(null);
             const [challengedUserId, setChallengedUserId] = useState('');
             const [challengeStatus, setChallengeStatus] = useState('');
+            const [duelQuestionCount, setDuelQuestionCount] = useState(20);
 
             const isCompetitionMode = useMemo(() => category === 'Competición' && (mode === 'Duelo' || mode === 'Trivial'), [category, mode]);
 
@@ -579,23 +580,29 @@
 
             const handleGameAction = () => {
                 if (Object.keys(configuredBlocks).length === 0) return;
-                const gameConfig = { mode, config: configuredBlocks };
-                
+
+                // Add duelQuestionCount to config if mode is Duelo
+                const enhancedConfig = mode === 'Duelo'
+                    ? { mode, config: configuredBlocks, duelQuestionCount }
+                    : { mode, config: configuredBlocks };
+
                 // DEBUG: Log game configuration before sending
                 console.log('🎮 GAME DEBUG - handleGameAction:', {
                     mode: mode,
                     configuredBlocks: configuredBlocks,
+                    duelQuestionCount: duelQuestionCount,
                     configuredBlocksKeys: Object.keys(configuredBlocks),
                     configuredBlocksLength: Object.keys(configuredBlocks).length,
-                    gameConfig: gameConfig
+                    gameConfig: enhancedConfig
                 });
-                
+
                 if (isCompetitionMode) {
                     console.log('🎯 COMPETITION DEBUG - Challenge details:', {
                         isCompetitionMode: isCompetitionMode,
                         challengedUserId: challengedUserId,
                         challengeableUsersCount: challengeableUsers.length,
-                        challengeableUsers: challengeableUsers
+                        challengeableUsers: challengeableUsers,
+                        duelQuestionCount: duelQuestionCount
                     });
                     const challengedUser = challengeableUsers.find(u => u.id.toString() === challengedUserId.toString());
                     console.log('👤 Found challengedUser:', challengedUser);
@@ -604,22 +611,27 @@
                         return;
                     }
                     console.log('📞 About to call onSendChallenge...');
-                    onSendChallenge(challengedUser, gameConfig);
+                    onSendChallenge(challengedUser, enhancedConfig);
                     setChallengeStatus(t('challenge_sent'));
                     setTimeout(() => setChallengeStatus(''), 3000);
                 } else {
-                    onCreateGame(gameConfig);
+                    onCreateGame(enhancedConfig);
                 }
 
-                setConfiguredBlocks({}); 
+                setConfiguredBlocks({});
                 setChallengedUserId('');
             };
 
             const handleRandomChallenge = () => {
                 if (challengeableUsers.length === 0) return;
                 const randomUser = challengeableUsers[Math.floor(Math.random() * challengeableUsers.length)];
-                const gameConfig = { mode, config: configuredBlocks };
-                onSendChallenge(randomUser, gameConfig);
+
+                // Add duelQuestionCount to config if mode is Duelo
+                const enhancedConfig = mode === 'Duelo'
+                    ? { mode, config: configuredBlocks, duelQuestionCount }
+                    : { mode, config: configuredBlocks };
+
+                onSendChallenge(randomUser, enhancedConfig);
                 setChallengeStatus(t('challenge_sent'));
                 setTimeout(() => setChallengeStatus(''), 3000);
                 setConfiguredBlocks({});
@@ -720,13 +732,35 @@
                                 disabled: Object.keys(configuredBlocks).length === 0
                             }, [
                                 React.createElement('option', { key: 'default', value: "" }, t('game_setup_select_opponent')),
-                                ...(challengeableUsers.length > 0 ? 
+                                ...(challengeableUsers.length > 0 ?
                                     challengeableUsers.map(user =>
                                         React.createElement('option', { key: user.id, value: user.id }, user.nickname)
-                                    ) : 
+                                    ) :
                                     [React.createElement('option', { key: 'no-users', disabled: true }, t('challenge_no_users'))]
                                 )
                             ])
+                        ]),
+                        // Duel question count selector (only for Duelo mode)
+                        mode === 'Duelo' && React.createElement('div', { key: 'question-count' }, [
+                            React.createElement('label', {
+                                key: 'label',
+                                className: "block text-sm font-medium text-gray-400 mb-1"
+                            }, 'Número de preguntas'),
+                            React.createElement('select', {
+                                key: 'select',
+                                value: duelQuestionCount,
+                                onChange: (e) => setDuelQuestionCount(parseInt(e.target.value)),
+                                className: "w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                            }, [
+                                React.createElement('option', { key: '20', value: 20 }, '20 preguntas'),
+                                React.createElement('option', { key: '30', value: 30 }, '30 preguntas'),
+                                React.createElement('option', { key: '40', value: 40 }, '40 preguntas'),
+                                React.createElement('option', { key: '50', value: 50 }, '50 preguntas')
+                            ]),
+                            React.createElement('p', {
+                                key: 'helper',
+                                className: "text-xs text-gray-400 mt-1"
+                            }, `Cada jugador responderá ${duelQuestionCount / 2} preguntas (${duelQuestionCount / 2} rondas)`)
                         ]),
                         React.createElement('div', {
                             key: 'divider',
@@ -1993,19 +2027,66 @@
                     challengedUser: challengedUser,
                     gameConfig: gameConfig
                 });
-                
+
                 try {
                     if (window.apiDataService) {
+                        // CRITICAL FIX: Prepare shuffled questions BEFORE creating challenge
+                        console.log('🎲 [CHALLENGE] Preparing shuffled questions for duel...');
+                        const allBlocks = await window.apiDataService.fetchAllBlocks();
+                        let allQuestions = [];
+
+                        // Collect questions based on config
+                        for (const [blockId, blockConfig] of Object.entries(gameConfig.config)) {
+                            const block = allBlocks.find(b => b.id === parseInt(blockId));
+                            if (!block || !block.questions) {
+                                console.warn(`⚠️ [CHALLENGE] Block ${blockId} not found or has no questions`);
+                                continue;
+                            }
+
+                            const questionsWithMeta = block.questions.map(q => ({...q, blockId: block.id}));
+
+                            if (blockConfig.topics === 'all') {
+                                allQuestions.push(...questionsWithMeta);
+                            } else if (Array.isArray(blockConfig.topics)) {
+                                const filtered = questionsWithMeta.filter(q => blockConfig.topics.includes(q.tema));
+                                allQuestions.push(...filtered);
+                            }
+                        }
+
+                        console.log(`📊 [CHALLENGE] Total questions collected: ${allQuestions.length}`);
+
+                        // Get the question count from gameConfig (default to 20 if not specified)
+                        const questionCount = gameConfig.duelQuestionCount || 20;
+                        console.log(`🎯 [CHALLENGE] Configured question count: ${questionCount}`);
+
+                        // Shuffle questions and take only the configured amount
+                        const shuffled = allQuestions.sort(() => Math.random() - 0.5).slice(0, questionCount);
+                        const shuffledQuestionIds = shuffled.map(q => q.id);
+
+                        console.log(`🔀 [CHALLENGE] Questions shuffled: ${shuffledQuestionIds.length} IDs (limited to ${questionCount})`);
+
+                        // Add shuffledQuestionIds to config
+                        const enhancedConfig = {
+                            ...gameConfig,
+                            config: {
+                                ...gameConfig.config,
+                                shuffledQuestionIds: shuffledQuestionIds
+                            }
+                        };
+
+                        console.log('✅ [CHALLENGE] Enhanced config with shuffledQuestionIds:', enhancedConfig);
+
+                        // Create challenge with enhanced config
                         await window.apiDataService.createChallenge(
                             currentUser,
                             challengedUser,
-                            gameConfig
+                            enhancedConfig
                         );
-                        
+
                         // Refresh data to show new challenge
                         await loadPlayerData();
                         console.log('✅ Challenge sent successfully to:', challengedUser.nickname);
-                        
+
                         // Show success message
                         setMessage(`¡Reto enviado exitosamente a ${challengedUser.nickname}!`);
                         setTimeout(() => setMessage(''), 3000);

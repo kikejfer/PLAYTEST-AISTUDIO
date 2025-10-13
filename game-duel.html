@@ -198,9 +198,13 @@
       const DuelGamePage = ({ game, questions }) => {
         const { t } = useLanguage();
         const { currentUser } = useUser();
-        
-        const DUEL_ROUNDS = Math.min(10, Math.floor(questions.length / 2) * 2);
+
+        // CRITICAL: questions already limited by shuffledQuestionIds, use all of them
+        // The number is already determined when the challenge was created (default 20, or configured)
+        const DUEL_ROUNDS = Math.floor(questions.length / 2) * 2; // Ensure even number for equal turns
         const duelQuestions = useMemo(() => questions.slice(0, DUEL_ROUNDS), [questions]);
+
+        console.log(`🎯 [DUEL] Using ${DUEL_ROUNDS} rounds (${DUEL_ROUNDS/2} questions per player) from ${questions.length} total questions`);
 
         // Try to restore saved state from localStorage
         const getSavedState = () => {
@@ -797,10 +801,27 @@
                 return;
             }
 
+            // CRITICAL FIX: Only run once per game using a flag
+            if (gameQuestions.length > 0) {
+                console.log('✅ [DUEL] Questions already prepared, skipping...');
+                return;
+            }
+
             const prepareQuestions = async () => {
                 console.log('🎯 [DUEL] Preparando preguntas del duelo...');
                 console.log('⚙️ [DUEL] Configuración del juego:', game.config);
                 console.log('📊 [DUEL] Metadata de configuración:', game.configurationMetadata);
+
+                // CRITICAL FIX: shuffledQuestionIds MUST exist (created when challenge is sent)
+                const shuffledIds = game.config?.shuffledQuestionIds;
+
+                if (!shuffledIds || !Array.isArray(shuffledIds) || shuffledIds.length === 0) {
+                    console.error('❌ [DUEL] CRITICAL ERROR: No shuffledQuestionIds found in game config!');
+                    console.error('📋 [DUEL] Game config:', game.config);
+                    throw new Error('No shuffledQuestionIds in config - game data corrupted');
+                }
+
+                console.log(`✅ [DUEL] Found shuffledQuestionIds with ${shuffledIds.length} question IDs`);
 
                 let allQuestions = [];
 
@@ -846,6 +867,9 @@
 
                     // Fallback to original method
                     for (const [blockId, blockConfig] of Object.entries(game.config)) {
+                        // Skip shuffledQuestionIds key
+                        if (blockId === 'shuffledQuestionIds') continue;
+
                         console.log(`🔍 [DUEL] Procesando bloque ${blockId} (fallback)...`);
 
                         const block = blocks.find(b => b.id === parseInt(blockId) || b.id === blockId);
@@ -878,33 +902,30 @@
 
                 console.log(`📊 [DUEL] Total preguntas recopiladas: ${allQuestions.length}`);
 
-                // Check if shuffledQuestionIds exists in config
-                const shuffledIds = game.config?.shuffledQuestionIds || game.shuffledQuestionIds;
+                // Use shuffledQuestionIds to order questions
+                console.log('🔀 [DUEL] Ordenando preguntas según shuffledQuestionIds...');
+                const questionMap = new Map(allQuestions.map(q => [q.id, q]));
+                const orderedQuestions = shuffledIds.map(id => questionMap.get(id)).filter(Boolean);
 
-                if (shuffledIds) {
-                    console.log('🔀 [DUEL] Usando shuffledQuestionIds existente:', shuffledIds.length, 'IDs');
-                    const questionMap = new Map(allQuestions.map(q => [q.id, q]));
-                    const orderedQuestions = shuffledIds.map(id => questionMap.get(id)).filter(Boolean);
-                    console.log(`✅ [DUEL] ${orderedQuestions.length} preguntas ordenadas según shuffledQuestionIds`);
-                    setGameQuestions(orderedQuestions);
-                } else {
-                    console.log('🔀 [DUEL] Mezclando preguntas y guardando orden...');
-                    const shuffled = allQuestions.sort(() => Math.random() - 0.5);
-                    const shuffledIds = shuffled.map(q => q.id);
-                    console.log(`✅ [DUEL] ${shuffled.length} preguntas mezcladas`);
-                    setGameQuestions(shuffled);
-                    // Save shuffledQuestionIds in config (backend accepts: status, gameState, config)
-                    await apiDataService.updateGame(game.id, {
-                        config: {
-                            ...game.config,
-                            shuffledQuestionIds: shuffledIds
-                        }
-                    });
-                    console.log('💾 [DUEL] Orden de preguntas guardado en config del juego');
+                if (orderedQuestions.length !== shuffledIds.length) {
+                    console.warn(`⚠️ [DUEL] Warning: Expected ${shuffledIds.length} questions but found ${orderedQuestions.length}`);
                 }
+
+                console.log(`✅ [DUEL] ${orderedQuestions.length} preguntas ordenadas correctamente`);
+
+                // VALIDATION: Log question order for debugging
+                console.log('🔍 [DUEL] ==================== VALIDACIÓN DE ORDEN ====================');
+                console.log('🆔 [DUEL] Primeros 10 IDs de shuffledQuestionIds:', shuffledIds.slice(0, 10));
+                console.log('🆔 [DUEL] Primeros 10 IDs de preguntas ordenadas:', orderedQuestions.slice(0, 10).map(q => q.id));
+                console.log('📋 [DUEL] Primera pregunta texto:', orderedQuestions[0]?.textoPregunta);
+                console.log('📋 [DUEL] Quinta pregunta texto:', orderedQuestions[4]?.textoPregunta);
+                console.log('📋 [DUEL] Décima pregunta texto:', orderedQuestions[9]?.textoPregunta);
+                console.log('🔍 [DUEL] ==================== FIN VALIDACIÓN ====================');
+
+                setGameQuestions(orderedQuestions);
             };
             prepareQuestions();
-          }, [game, blocks]);
+          }, [game, blocks, gameQuestions.length]);
 
           const renderContent = () => {
               console.log('🎨 [DUEL] renderContent llamado');
