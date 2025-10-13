@@ -396,7 +396,7 @@ Testing exhaustivo de persistencia en las 9 modalidades.
 7. ⏳ **Marathon Mode** (`game-marathon.html`)
 
 **MODALIDADES DE COMPETICIÓN MULTIPLAYER:**
-8. ⏳ **Duel Mode** (`game-duel.html`) - Requiere 2 usuarios
+8. ✅ **Duel Mode** (`game-duel.html`) - Requiere 2 usuarios [FUNCIONAL - 2025-01-13]
 9. ⏳ **Trivial Mode** (`game-trivial.html`) - Requiere 2+ usuarios
 
 ### Protocolo de testing por modalidad
@@ -475,7 +475,7 @@ Para que una modalidad se considere **✅ FUNCIONAL**, debe cumplir:
 | Lives | ❓ | - | - |
 | Time Trial | ❓ | - | - |
 | Marathon | ❓ | - | - |
-| Duel | ❓ | - | - |
+| Duel | ✅ | Sistema de puntuación implementado y documentado | - |
 | Trivial | ❓ | - | - |
 
 ### Partes críticas
@@ -952,7 +952,7 @@ Basándonos en ETAPA 2.1, crear lista:
 - [ ] Lives Mode
 - [ ] Time Trial Mode
 - [ ] Marathon Mode
-- [ ] Duel Mode
+- [x] Duel Mode ✅ [FUNCIONAL - 2025-01-13]
 - [ ] Trivial Mode
 
 **Por cada modalidad que NO actualice:**
@@ -1014,6 +1014,8 @@ WHERE user_id = [USER_ID];
 
 **Duel/Trivial Mode:**
 - Stats se actualizan para AMBOS jugadores
+- ✅ **Duel Mode:** Sistema de puntuación implementado (+1 acierto, +1 bonus velocidad) [2025-01-13]
+- ⏳ **Trivial Mode:** Pendiente de implementación
 
 **Exam Mode:**
 - Preguntas en blanco NO cuentan como intento
