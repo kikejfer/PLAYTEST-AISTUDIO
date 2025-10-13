@@ -97,6 +97,9 @@
           game_winner_announcement: '¡{nickname} Gana el Duelo!', game_draw_announcement: '¡El Duelo ha terminado en Empate!',
           game_final_score: 'Puntuación Final', game_total_correct: 'Aciertos Totales', game_avg_response_time: 'Tiempo de Resp. Medio',
           game_seconds: 's', game_duel_stats: 'Estadísticas del Duelo',
+          game_scoring_title: 'Sistema de Puntuación',
+          game_scoring_rule1: '+1 punto por respuesta correcta',
+          game_scoring_rule2: '+1 punto extra al más rápido (si ambos aciertan)',
         },
         en: {
           header_title: 'PLAYTEST App', header_subtitle: 'The most fun way to study',
@@ -114,6 +117,9 @@
           game_winner_announcement: '{nickname} Wins the Duel!', game_draw_announcement: 'The Duel is a Draw!',
           game_final_score: 'Final Score', game_total_correct: 'Total Correct', game_avg_response_time: 'Avg. Response Time',
           game_seconds: 's', game_duel_stats: 'Duel Statistics',
+          game_scoring_title: 'Scoring System',
+          game_scoring_rule1: '+1 point for correct answer',
+          game_scoring_rule2: '+1 bonus point to the fastest (if both answer correctly)',
         }
       };
       const LanguageContext = createContext();
@@ -416,79 +422,22 @@
 
         useEffect(() => {
           if (roundAnswers[0] !== null && roundAnswers[1] !== null) {
-            // 🎯 LOG: Inicio del cálculo de puntos
-            console.log('\n');
-            console.log('═══════════════════════════════════════════');
-            console.log('🏆 [DUEL SCORING] CÁLCULO DE PUNTOS - RONDA ' + (currentRound + 1));
-            console.log('═══════════════════════════════════════════');
-            console.log(`❓ Pregunta ID: ${currentQuestion.id}`);
-            console.log(`📋 Texto: "${currentQuestion.textoPregunta.substring(0, 60)}..."`);
-            console.log('\n📊 PUNTUACIONES ACTUALES (antes de esta ronda):');
-            console.log(`   ${game.players[0].nickname} (P1): ${playerScores[0]} puntos`);
-            console.log(`   ${game.players[1].nickname} (P2): ${playerScores[1]} puntos`);
+            // SCORING SYSTEM:
+            // 1. Each player gets +1 point for a correct answer
+            // 2. If both answer correctly, the faster player gets +1 bonus point
+            let p1Points = 0;
+            let p2Points = 0;
 
-            console.log('\n📝 RESPUESTAS DE LA RONDA:');
-            console.log(`   P1 (${game.players[0].nickname}):`);
-            console.log(`      - Respondió: ${roundAnswers[0].answerIndex === null ? 'NO (timeout)' : `Sí (opción ${roundAnswers[0].answerIndex + 1})`}`);
-            console.log(`      - Correcta: ${roundAnswers[0].isCorrect ? '✅ SÍ' : '❌ NO'}`);
-            console.log(`      - Tiempo: ⏱️ ${roundAnswers[0].time.toFixed(2)}s`);
+            if(roundAnswers[0].isCorrect) p1Points++;
+            if(roundAnswers[1].isCorrect) p2Points++;
 
-            console.log(`   P2 (${game.players[1].nickname}):`);
-            console.log(`      - Respondió: ${roundAnswers[1].answerIndex === null ? 'NO (timeout)' : `Sí (opción ${roundAnswers[1].answerIndex + 1})`}`);
-            console.log(`      - Correcta: ${roundAnswers[1].isCorrect ? '✅ SÍ' : '❌ NO'}`);
-            console.log(`      - Tiempo: ⏱️ ${roundAnswers[1].time.toFixed(2)}s`);
-
-            let p1Points = 0; let p2Points = 0;
-
-            console.log('\n💰 CÁLCULO DE PUNTOS POR ACIERTO:');
-            if(roundAnswers[0].isCorrect) {
-              p1Points++;
-              console.log(`   ✅ P1 (${game.players[0].nickname}): +1 punto por acierto`);
-            } else {
-              console.log(`   ❌ P1 (${game.players[0].nickname}): 0 puntos (respuesta incorrecta o sin respuesta)`);
-            }
-
-            if(roundAnswers[1].isCorrect) {
-              p2Points++;
-              console.log(`   ✅ P2 (${game.players[1].nickname}): +1 punto por acierto`);
-            } else {
-              console.log(`   ❌ P2 (${game.players[1].nickname}): 0 puntos (respuesta incorrecta o sin respuesta)`);
-            }
-
-            console.log('\n⚡ CÁLCULO DE BONUS POR VELOCIDAD:');
             if(roundAnswers[0].isCorrect && roundAnswers[1].isCorrect) {
-              console.log('   🎯 Ambos jugadores acertaron - comparando velocidad:');
-              console.log(`      P1: ${roundAnswers[0].time.toFixed(2)}s`);
-              console.log(`      P2: ${roundAnswers[1].time.toFixed(2)}s`);
-
-              if (roundAnswers[0].time < roundAnswers[1].time) {
-                p1Points++;
-                const timeDiff = (roundAnswers[1].time - roundAnswers[0].time).toFixed(2);
-                console.log(`   🏆 P1 (${game.players[0].nickname}) fue MÁS RÁPIDO: +1 punto bonus`);
-                console.log(`      Diferencia: ${timeDiff}s más rápido`);
-              } else if (roundAnswers[1].time < roundAnswers[0].time) {
-                p2Points++;
-                const timeDiff = (roundAnswers[0].time - roundAnswers[1].time).toFixed(2);
-                console.log(`   🏆 P2 (${game.players[1].nickname}) fue MÁS RÁPIDO: +1 punto bonus`);
-                console.log(`      Diferencia: ${timeDiff}s más rápido`);
-              } else {
-                console.log('   ⚖️ Mismo tiempo exacto - sin bonus de velocidad');
-              }
-            } else {
-              console.log('   ℹ️ No aplica (uno o ambos fallaron)');
+              if (roundAnswers[0].time < roundAnswers[1].time) p1Points++;
+              else if (roundAnswers[1].time < roundAnswers[0].time) p2Points++;
             }
-
-            console.log('\n📈 RESUMEN DE PUNTOS GANADOS EN ESTA RONDA:');
-            console.log(`   P1 (${game.players[0].nickname}): +${p1Points} puntos`);
-            console.log(`   P2 (${game.players[1].nickname}): +${p2Points} puntos`);
 
             const newScores = { 0: playerScores[0] + p1Points, 1: playerScores[1] + p2Points };
             setPlayerScores(newScores);
-
-            console.log('\n🎯 PUNTUACIONES ACTUALIZADAS (después de esta ronda):');
-            console.log(`   ${game.players[0].nickname} (P1): ${playerScores[0]} → ${newScores[0]} puntos`);
-            console.log(`   ${game.players[1].nickname} (P2): ${playerScores[1]} → ${newScores[1]} puntos`);
-            console.log('═══════════════════════════════════════════\n');
 
             // Save this round's answers to complete history
             const roundHistoryEntry = {
@@ -524,35 +473,6 @@
             const responseTime = answerIndex === null ? 30 : (Date.now() - turnStartTime.current) / 1000;
             const currentPlayerIdx = turnState === 'p1_answering' ? 0 : 1;
             const isCorrect = answerIndex !== null && currentQuestion.respuestas[answerIndex].esCorrecta;
-            const playerNickname = game.players[currentPlayerIdx].nickname;
-
-            // 🎯 LOG: Respuesta del jugador
-            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            console.log('📝 [DUEL SCORING] RESPUESTA DEL JUGADOR');
-            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            console.log(`👤 Jugador: ${playerNickname} (P${currentPlayerIdx + 1})`);
-            console.log(`❓ Pregunta ID: ${currentQuestion.id}`);
-            console.log(`📋 Texto pregunta: "${currentQuestion.textoPregunta.substring(0, 60)}..."`);
-            console.log(`✅ Respuesta seleccionada: ${answerIndex === null ? 'NO RESPONDIÓ (TIMEOUT)' : `Opción ${answerIndex + 1}`}`);
-            console.log(`⏱️ Tiempo de respuesta: ${responseTime.toFixed(2)}s`);
-
-            if (answerIndex === null) {
-                console.log('⚠️ RESULTADO: BLANCO (sin respuesta)');
-                console.log('💰 Puntos ganados: 0');
-            } else {
-                const selectedAnswer = currentQuestion.respuestas[answerIndex];
-                console.log(`📄 Texto respuesta seleccionada: "${selectedAnswer.textoRespuesta.substring(0, 50)}..."`);
-                console.log(`✔️ ¿Es correcta?: ${selectedAnswer.esCorrecta ? 'SÍ' : 'NO'}`);
-
-                if (isCorrect) {
-                    console.log('✅ RESULTADO: ACIERTO');
-                    console.log('💰 Puntos base ganados: +1 (puede recibir +1 más por velocidad)');
-                } else {
-                    console.log('❌ RESULTADO: FALLO');
-                    console.log('💰 Puntos ganados: 0');
-                }
-            }
-            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
             if (currentUser.id === game.players[currentPlayerIdx].userId) {
                 setMyAnswersHistory(prev => [...prev, {
@@ -702,9 +622,23 @@
                     <button onClick={() => setIsConfirmingFinish(true)} className="flex items-center gap-2 text-sm bg-brand-danger/80 hover:bg-brand-danger text-white font-semibold py-2 px-4 rounded-lg transition-colors"> <FlagIcon className="h-5 w-5" /> {t('game_button_finish')} </button>
                 </div>
                 <div className="bg-brand-secondary p-6 rounded-xl shadow-2xl">
-                    <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
                         <PlayerScorecard playerNum={0}/>
                         <PlayerScorecard playerNum={1}/>
+                    </div>
+
+                    <div className="mb-6 bg-brand-primary/50 border border-brand-tertiary rounded-lg p-3">
+                        <p className="text-xs font-semibold text-brand-accent mb-1">{t('game_scoring_title')}:</p>
+                        <div className="text-xs text-brand-light space-y-0.5">
+                            <div className="flex items-center gap-2">
+                                <span className="text-brand-success">✓</span>
+                                <span>{t('game_scoring_rule1')}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-brand-cta">⚡</span>
+                                <span>{t('game_scoring_rule2')}</span>
+                            </div>
+                        </div>
                     </div>
 
                     {gameState === 'playing' && (
