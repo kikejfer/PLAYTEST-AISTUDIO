@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Grupos | LumiQuiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0D1B2A;
+            min-height: 100vh;
+            color: #E0E1DD;
+            padding-top: 60px;
+        }
+
+        /* User Header */
+        .user-header {
+            background: #415A77;
+            color: #E0E1DD;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #3B82F6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .user-details h4 {
+            margin: 0;
+            font-size: 14px;
+            color: #E0E1DD;
+        }
+
+        .user-details p {
+            margin: 0;
+            font-size: 12px;
+            color: #778DA9;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .back-btn, .logout-btn {
+            background: #EF4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .back-btn {
+            background: #6B7280;
+        }
+
+        .back-btn:hover {
+            background: #4B5563;
+        }
+
+        .logout-btn:hover {
+            background: #DC2626;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header h1 {
+            color: #E0E1DD;
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .page-header p {
+            color: #E0E1DD;
+            opacity: 0.9;
+        }
+
+        .create-group-btn {
+            background: #10B981;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .create-group-btn:hover {
+            background: #059669;
+        }
+
+        /* Groups Grid */
+        .groups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .group-card {
+            background: #1B263B;
+            border: 1px solid #415A77;
+            border-radius: 10px;
+            padding: 20px;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .group-card:hover {
+            transform: translateY(-2px);
+            border-color: #10B981;
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .group-name {
+            color: #10B981;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .group-code {
+            background: #374151;
+            color: #10B981;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        .group-description {
+            color: #778DA9;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .group-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            background: #0D1B2A;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-value {
+            color: #10B981;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            color: #778DA9;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        .group-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .group-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-view {
+            background: #3B82F6;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: #2563EB;
+        }
+
+        .btn-assign {
+            background: #10B981;
+            color: white;
+        }
+
+        .btn-assign:hover {
+            background: #059669;
+        }
+
+        .btn-delete {
+            background: #EF4444;
+            color: white;
+            flex: 0.5;
+        }
+
+        .btn-delete:hover {
+            background: #DC2626;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #1B263B;
+            border: 2px dashed #415A77;
+            border-radius: 10px;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            color: #E0E1DD;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .empty-state p {
+            color: #778DA9;
+            margin-bottom: 20px;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 3px solid #415A77;
+            border-top: 3px solid #10B981;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1B263B;
+            border: 1px solid #415A77;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            color: #E0E1DD;
+            font-size: 1.5rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: #778DA9;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-modal:hover {
+            color: #E0E1DD;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: #E0E1DD;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 10px;
+            background: #0D1B2A;
+            border: 1px solid #415A77;
+            border-radius: 6px;
+            color: #E0E1DD;
+            font-size: 14px;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #10B981;
+        }
+
+        .form-help {
+            color: #778DA9;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .btn-cancel {
+            background: #6B7280;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-cancel:hover {
+            background: #4B5563;
+        }
+
+        .btn-submit {
+            background: #10B981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-submit:hover {
+            background: #059669;
+        }
+
+        .btn-submit:disabled {
+            background: #415A77;
+            cursor: not-allowed;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .groups-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .group-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- User Header -->
+    <div class="user-header">
+        <div class="user-info">
+            <div class="user-avatar">P</div>
+            <div class="user-details">
+                <h4 id="user-name">Profesor</h4>
+                <p>Gestión de Grupos</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="back-btn" onclick="goBack()">← Volver</button>
+            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1>👥 Gestión de Grupos</h1>
+                <p>Crea y administra grupos de estudiantes</p>
+            </div>
+            <button class="create-group-btn" onclick="openCreateGroupModal()">
+                <span>+</span> Crear Grupo
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p style="color: #778DA9;">Cargando grupos...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">📚</div>
+            <h3>No tienes grupos creados</h3>
+            <p>Crea tu primer grupo para comenzar a gestionar estudiantes</p>
+            <button class="create-group-btn" onclick="openCreateGroupModal()">
+                <span>+</span> Crear Primer Grupo
+            </button>
+        </div>
+
+        <!-- Groups Grid -->
+        <div id="groups-grid" class="groups-grid"></div>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div id="create-group-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Crear Nuevo Grupo</h2>
+                <button class="close-modal" onclick="closeCreateGroupModal()">×</button>
+            </div>
+            <form id="create-group-form" onsubmit="handleCreateGroup(event)">
+                <div class="form-group">
+                    <label class="form-label">Nombre del Grupo *</label>
+                    <input
+                        type="text"
+                        id="group-name"
+                        class="form-input"
+                        placeholder="Ej: Matemáticas 3º ESO"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea
+                        id="group-description"
+                        class="form-textarea"
+                        placeholder="Describe el propósito del grupo..."
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Código de Acceso (opcional)</label>
+                    <input
+                        type="text"
+                        id="group-code"
+                        class="form-input"
+                        placeholder="Dejar vacío para generar automáticamente"
+                        maxlength="10"
+                    >
+                    <p class="form-help">Los estudiantes usarán este código para unirse al grupo</p>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeCreateGroupModal()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-submit" id="submit-btn">
+                        Crear Grupo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let userSession = null;
+        let groups = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserSession();
+            loadGroups();
+        });
+
+        // Load user session
+        function loadUserSession() {
+            try {
+                const session = localStorage.getItem('gameSession') || localStorage.getItem('playtest_session');
+                if (!session) {
+                    alert('No hay sesión activa. Redirigiendo al login...');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                userSession = JSON.parse(session);
+                document.getElementById('user-name').textContent = userSession.nickname || 'Profesor';
+
+                const avatar = document.querySelector('.user-avatar');
+                avatar.textContent = (userSession.nickname || 'P').charAt(0).toUpperCase();
+            } catch (error) {
+                console.error('Error loading user session:', error);
+                alert('Error al cargar la sesión');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Load groups
+        async function loadGroups() {
+            const loadingState = document.getElementById('loading-state');
+            const emptyState = document.getElementById('empty-state');
+            const groupsGrid = document.getElementById('groups-grid');
+
+            try {
+                loadingState.style.display = 'block';
+                emptyState.style.display = 'none';
+                groupsGrid.style.display = 'none';
+
+                const response = await fetch(`${API_URL}/groups`, {
+                    headers: {
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar grupos');
+                }
+
+                groups = await response.json();
+
+                loadingState.style.display = 'none';
+
+                if (groups.length === 0) {
+                    emptyState.style.display = 'block';
+                } else {
+                    groupsGrid.style.display = 'grid';
+                    renderGroups();
+                }
+            } catch (error) {
+                console.error('Error loading groups:', error);
+                loadingState.style.display = 'none';
+                alert('Error al cargar los grupos: ' + error.message);
+            }
+        }
+
+        // Render groups
+        function renderGroups() {
+            const groupsGrid = document.getElementById('groups-grid');
+            groupsGrid.innerHTML = groups.map(group => `
+                <div class="group-card">
+                    <div class="group-header">
+                        <div>
+                            <h3 class="group-name">${escapeHtml(group.name)}</h3>
+                            ${group.description ? `<p class="group-description">${escapeHtml(group.description)}</p>` : ''}
+                        </div>
+                        <div class="group-code">${group.access_code || 'N/A'}</div>
+                    </div>
+
+                    <div class="group-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">${group.member_count || 0}</div>
+                            <div class="stat-label">Estudiantes</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${group.assigned_blocks_count || 0}</div>
+                            <div class="stat-label">Bloques</div>
+                        </div>
+                    </div>
+
+                    <div class="group-actions">
+                        <button class="group-btn btn-view" onclick="viewGroup(${group.id})">
+                            👁️ Ver
+                        </button>
+                        <button class="group-btn btn-assign" onclick="assignBlock(${group.id})">
+                            📚 Asignar
+                        </button>
+                        <button class="group-btn btn-delete" onclick="deleteGroup(${group.id}, '${escapeHtml(group.name)}')">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Modal functions
+        function openCreateGroupModal() {
+            document.getElementById('create-group-modal').classList.add('active');
+            document.getElementById('create-group-form').reset();
+        }
+
+        function closeCreateGroupModal() {
+            document.getElementById('create-group-modal').classList.remove('active');
+        }
+
+        // Handle create group
+        async function handleCreateGroup(event) {
+            event.preventDefault();
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creando...';
+
+            const name = document.getElementById('group-name').value.trim();
+            const description = document.getElementById('group-description').value.trim();
+            const access_code = document.getElementById('group-code').value.trim();
+
+            try {
+                const response = await fetch(`${API_URL}/groups`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        description: description || null,
+                        access_code: access_code || null
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error al crear grupo');
+                }
+
+                const result = await response.json();
+
+                alert('✅ Grupo creado exitosamente\nCódigo de acceso: ' + result.group.access_code);
+                closeCreateGroupModal();
+                loadGroups();
+            } catch (error) {
+                console.error('Error creating group:', error);
+                alert('Error al crear el grupo: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Crear Grupo';
+            }
+        }
+
+        // View group details
+        function viewGroup(groupId) {
+            window.location.href = `teachers-panel-group-detail.html?id=${groupId}`;
+        }
+
+        // Assign block to group
+        function assignBlock(groupId) {
+            window.location.href = `teachers-panel-assign-block.html?groupId=${groupId}`;
+        }
+
+        // Delete group
+        async function deleteGroup(groupId, groupName) {
+            if (!confirm(`¿Estás seguro de que deseas eliminar el grupo "${groupName}"?\n\nEsto eliminará también todas las asignaciones asociadas.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/groups/${groupId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al eliminar grupo');
+                }
+
+                alert('✅ Grupo eliminado exitosamente');
+                loadGroups();
+            } catch (error) {
+                console.error('Error deleting group:', error);
+                alert('Error al eliminar el grupo: ' + error.message);
+            }
+        }
+
+        // Navigation
+        function goBack() {
+            window.location.href = 'profesores-panel-funcionalidades.html';
+        }
+
+        function logout() {
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                localStorage.removeItem('gameSession');
+                localStorage.removeItem('playtest_session');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Utility function
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        console.log('✅ Teachers Panel - Groups loaded successfully');
+    </script>
+</body>
+</html>

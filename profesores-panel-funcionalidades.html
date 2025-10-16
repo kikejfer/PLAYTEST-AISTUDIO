@@ -206,6 +206,12 @@
             </div>
 
             <div class="panel-card">
+                <h3>👥 Gestión de Grupos</h3>
+                <p>Crea grupos de estudiantes y asigna bloques de contenido.</p>
+                <button class="panel-btn" onclick="goToGroups()">Gestionar Grupos</button>
+            </div>
+
+            <div class="panel-card">
                 <h3>📚 Bloques de Contenido</h3>
                 <p>Asigna y supervisa bloques de contenido educativo.</p>
                 <button class="panel-btn" onclick="goToBlocks()">Gestionar Bloques</button>
@@ -215,12 +221,6 @@
                 <h3>📊 Reportes y Analytics</h3>
                 <p>Analiza el rendimiento y progreso de tus estudiantes.</p>
                 <button class="panel-btn" onclick="goToReports()" disabled>Próximamente</button>
-            </div>
-
-            <div class="panel-card">
-                <h3>🎯 Asignaciones</h3>
-                <p>Crea y gestiona tareas y evaluaciones.</p>
-                <button class="panel-btn" onclick="goToAssignments()" disabled>Próximamente</button>
             </div>
 
             <div class="panel-card">
@@ -263,6 +263,10 @@
             window.location.href = 'teachers-panel-students.html';
         }
 
+        function goToGroups() {
+            window.location.href = 'teachers-panel-groups.html';
+        }
+
         function goToBlocks() {
             // Redirigir al panel de jugadores para gestionar bloques
             window.location.href = 'jugadores-panel-gaming.html';
@@ -270,10 +274,6 @@
 
         function goToReports() {
             alert('Funcionalidad de reportes próximamente disponible');
-        }
-
-        function goToAssignments() {
-            alert('Funcionalidad de asignaciones próximamente disponible');
         }
 
         function goToGamification() {
