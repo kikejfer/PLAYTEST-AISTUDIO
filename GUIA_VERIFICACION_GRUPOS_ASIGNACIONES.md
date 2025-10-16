@@ -554,3 +554,29 @@ Si encuentras algún problema durante la verificación:
 **Fecha de última actualización:** 2025-10-16
 **Versión de la guía:** 1.0
 **Estado del sistema:** ✅ Backend completo | 🟡 Frontend profesor completo | ⏳ Frontend alumno pendiente
+
+
+## ACTUALIZACIÓN - Integración con Panel Principal
+
+**Fecha:** 2025-10-16
+
+### Acceso a Gestión de Grupos
+
+Ahora puedes acceder a la Gestión de Grupos de **2 formas**:
+
+#### Forma 1: Desde Panel Principal de Profesores (RECOMENDADO)
+1. Login como profesor
+2. Ir al Panel de Profesores (PPF) → `teachers-panel-schedules.html`
+3. Click en tab **"👥 Gestión de Grupos"** (entre "Gestión de Alumnos" y "Torneos")
+
+#### Forma 2: Desde Panel de Funcionalidades
+1. Login como profesor
+2. Ir a `profesores-panel-funcionalidades.html`
+3. Click en tarjeta "👥 Gestión de Grupos" → "Gestionar Grupos"
+
+### Navegación Rápida
+
+El sistema también incluye la opción de Grupos en el menú de navegación rápida del servicio de navegación (`navigation-service.js`), permitiendo acceso desde cualquier página del panel de profesor.
+
+---
+
