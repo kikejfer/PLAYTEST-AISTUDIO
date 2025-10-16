@@ -120,6 +120,7 @@ class NavigationService {
             ],
             'PPF': [
                 { text: 'Estudiantes', url: '/teachers-panel-students.html' },
+                { text: 'Grupos', url: '/teachers-panel-groups.html' },
                 { text: 'Horarios', url: '/teachers-panel-schedules.html' },
                 { text: 'Funcionalidades', url: '/profesores-panel-funcionalidades.html' }
             ],
