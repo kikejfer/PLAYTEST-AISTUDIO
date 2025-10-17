@@ -20,18 +20,11 @@
         }
 
         body {
-            font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
-            background: #0D1B2A;
-            min-height: 100vh;
-            color: #E0E1DD;
-            padding-top: 100px;
-        }
-
-        /* User header styles - fixed position */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #0D1B2A;
             min-height: 100vh;
             color: #E0E1DD;
+            padding-top: 100px;
         }
 
         /* User header styles - fixed position */
@@ -217,6 +210,42 @@
             color: #E0E1DD;
             background: #1B263B;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .tab-button:hover:not(.active) {
+            color: #E0E1DD;
+            background: rgba(27, 38, 59, 0.5);
+        }
+
+        /* Sub-tabs navigation */
+        .sub-tabs-nav {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        .sub-tab-button {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            border-radius: 6px;
+        }
+
+        .sub-tab-button.active {
+            color: #667eea;
+            background: white;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.1);
+        }
+
+        .sub-tab-button:hover:not(.active) {
+            color: #667eea;
+            background: rgba(255, 255, 255, 0.5);
         }
 
         .tab-content {
@@ -677,18 +706,25 @@
     <div id="header-container"></div>
     <div class="container">
         <div class="header">
+            <h1>👨‍🏫 Panel de Profesores</h1>
             <p>Panel diseñado para facilitar la gestión académica, planificación de contenidos y seguimiento del progreso estudiantil</p>
         </div>
 
+        <!-- Navegación Principal del Panel -->
         <div class="tabs-container">
             <div class="tabs-nav">
-                <button class="tab-button active" onclick="showTab('recursos-tab')">📚 Recursos</button>
-                <button class="tab-button" onclick="showTab('add-questions-tab')">➕ Añadir Preguntas</button>
+                <button class="tab-button active" onclick="window.location.href='teachers-panel-schedules.html'">📚 Recursos</button>
                 <button class="tab-button" onclick="window.location.href='teachers-panel-students.html'">👥 Gestión de Alumnos</button>
                 <button class="tab-button" onclick="window.location.href='teachers-panel-groups.html'">👥 Gestión de Grupos</button>
-                <button class="tab-button" onclick="window.location.href='teachers-panel-tournaments.html'">🏆 Torneos</button>
-                <button class="tab-button" onclick="window.location.href='teachers-panel-analytics.html'">📊 Analytics</button>
-                <button class="tab-button" onclick="window.location.href='teachers-panel-interventions.html'">🎯 Intervenciones</button>
+                <button class="tab-button" onclick="alert('Funcionalidad de Torneos próximamente disponible')">🏆 Torneos</button>
+                <button class="tab-button" onclick="alert('Funcionalidad de Analytics próximamente disponible')">📊 Analytics</button>
+                <button class="tab-button" onclick="alert('Funcionalidad de Intervenciones próximamente disponible')">🎯 Intervenciones</button>
+            </div>
+
+            <!-- Sub-navegación para Recursos -->
+            <div class="sub-tabs-nav" style="background: #f8f9fa; border-bottom: 1px solid #e9ecef; padding: 10px 20px;">
+                <button class="sub-tab-button active" onclick="showTab('recursos-tab')">📚 Mis Bloques</button>
+                <button class="sub-tab-button" onclick="showTab('add-questions-tab')">➕ Añadir Preguntas</button>
             </div>
 
             <div class="tab-content">

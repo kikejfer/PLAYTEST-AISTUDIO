@@ -101,6 +101,46 @@
             padding: 20px;
         }
 
+        /* Tabs Navigation */
+        .tabs-container {
+            background: #1B263B;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .tabs-nav {
+            display: flex;
+            background: #0D1B2A;
+            border-bottom: 1px solid #415A77;
+            overflow-x: auto;
+        }
+
+        .tab-button {
+            flex: none;
+            padding: 15px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #778DA9;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: fit-content;
+        }
+
+        .tab-button.active {
+            color: #E0E1DD;
+            background: #1B263B;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .tab-button:hover:not(.active) {
+            color: #E0E1DD;
+            background: rgba(27, 38, 59, 0.5);
+        }
+
         /* Header */
         .page-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -483,6 +523,18 @@
 
     <!-- Main Container -->
     <div class="container">
+        <!-- Navegación Principal del Panel -->
+        <div class="tabs-container">
+            <div class="tabs-nav">
+                <button class="tab-button" onclick="window.location.href='teachers-panel-schedules.html'">📚 Recursos</button>
+                <button class="tab-button" onclick="window.location.href='teachers-panel-students.html'">👥 Gestión de Alumnos</button>
+                <button class="tab-button active" onclick="window.location.href='teachers-panel-groups.html'">👥 Gestión de Grupos</button>
+                <button class="tab-button" onclick="alert('Funcionalidad de Torneos próximamente disponible')">🏆 Torneos</button>
+                <button class="tab-button" onclick="alert('Funcionalidad de Analytics próximamente disponible')">📊 Analytics</button>
+                <button class="tab-button" onclick="alert('Funcionalidad de Intervenciones próximamente disponible')">🎯 Intervenciones</button>
+            </div>
+        </div>
+
         <!-- Page Header -->
         <div class="page-header">
             <div>
@@ -567,7 +619,7 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:3000/api';
+        const API_URL = 'http://localhost:3001/api';
         let userSession = null;
         let groups = [];
 
