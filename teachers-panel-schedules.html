@@ -1073,7 +1073,9 @@
 
     <script>
         // Global variables
-        const API_URL = 'http://localhost:3001/api';
+        const API_URL = window.location.hostname.includes('onrender.com')
+            ? 'https://playtest-backend.onrender.com/api'
+            : 'http://localhost:3001/api';
         let userSession = null;
         let classes = [];
         let groups = [];
