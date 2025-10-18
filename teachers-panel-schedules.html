@@ -159,8 +159,8 @@
             display: flex;
             gap: 10px;
             overflow-x: auto;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
+            background: #415A77;
+            border-bottom: 1px solid #778DA9;
             padding: 10px 20px;
         }
 
@@ -171,21 +171,21 @@
             cursor: pointer;
             font-size: 13px;
             font-weight: 600;
-            color: #6c757d;
+            color: #778DA9;
             transition: all 0.3s ease;
             white-space: nowrap;
             border-radius: 6px;
         }
 
         .sub-tab-button.active {
-            color: #667eea;
-            background: white;
-            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.1);
+            color: #E0E1DD;
+            background: #1B263B;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
         .sub-tab-button:hover:not(.active) {
-            color: #667eea;
-            background: rgba(255, 255, 255, 0.5);
+            color: #E0E1DD;
+            background: rgba(27, 38, 59, 0.5);
         }
 
         .tab-content {
@@ -778,8 +778,8 @@
             <div id="recursos-main-content" class="main-tab-content active">
                 <!-- Sub-navegación para Recursos -->
                 <div class="sub-tabs-nav">
-                    <button class="sub-tab-button active" onclick="showSubTab('recursos', 'recursos-tab')">📚 Mis Bloques</button>
-                    <button class="sub-tab-button" onclick="showSubTab('recursos', 'add-questions-tab')">➕ Añadir Preguntas</button>
+                    <button class="sub-tab-button active" onclick="showSubTab('recursos', 'recursos-tab', event)">📚 Mis Bloques</button>
+                    <button class="sub-tab-button" onclick="showSubTab('recursos', 'add-questions-tab', event)">➕ Añadir Preguntas</button>
                 </div>
 
                 <div class="tab-content">
@@ -801,10 +801,10 @@
             <div id="alumnos-main-content" class="main-tab-content">
                 <!-- Sub-navegación para Gestión de Alumnos -->
                 <div class="sub-tabs-nav">
-                    <button class="sub-tab-button active" onclick="showSubTab('alumnos', 'classes-subtab')">🏫 Mis Clases</button>
-                    <button class="sub-tab-button" onclick="showSubTab('alumnos', 'students-subtab')">👥 Gestión de Estudiantes</button>
-                    <button class="sub-tab-button" onclick="showSubTab('alumnos', 'attendance-subtab')">📝 Registro de Asistencia</button>
-                    <button class="sub-tab-button" onclick="showSubTab('alumnos', 'performance-subtab')">📊 Rendimiento Académico</button>
+                    <button class="sub-tab-button active" onclick="showSubTab('alumnos', 'classes-subtab', event)">🏫 Mis Clases</button>
+                    <button class="sub-tab-button" onclick="showSubTab('alumnos', 'students-subtab', event)">👥 Gestión de Estudiantes</button>
+                    <button class="sub-tab-button" onclick="showSubTab('alumnos', 'attendance-subtab', event)">📝 Registro de Asistencia</button>
+                    <button class="sub-tab-button" onclick="showSubTab('alumnos', 'performance-subtab', event)">📊 Rendimiento Académico</button>
                 </div>
 
                 <div class="tab-content">
@@ -1164,10 +1164,13 @@
         }
 
         // Sub-tab switching function
-        function showSubTab(mainTab, subTabId) {
+        function showSubTab(mainTab, subTabId, event) {
             // Get the parent tab content
             const parentTab = document.getElementById(mainTab + '-main-content');
-            if (!parentTab) return;
+            if (!parentTab) {
+                console.error('Parent tab not found:', mainTab + '-main-content');
+                return;
+            }
 
             // Update sub-tab buttons
             const subTabButtons = parentTab.querySelectorAll('.sub-tab-button');
@@ -1175,12 +1178,10 @@
                 btn.classList.remove('active');
             });
 
-            // Find and activate the clicked button
-            subTabButtons.forEach(btn => {
-                if (btn.onclick && btn.onclick.toString().includes(subTabId)) {
-                    btn.classList.add('active');
-                }
-            });
+            // Activate clicked button
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
 
             // Update sub-tab content
             const subTabContents = parentTab.querySelectorAll('.sub-tab-content, .content-section');
@@ -1191,6 +1192,8 @@
             const targetContent = document.getElementById(subTabId);
             if (targetContent) {
                 targetContent.classList.add('active');
+            } else {
+                console.error('Target content not found:', subTabId);
             }
 
             // Initialize students component when switching to students tab
@@ -1215,14 +1218,16 @@
 
         async function loadClasses() {
             try {
-                const token = localStorage.getItem('authToken');
-                if (!token) {
-                    showError('classes-container', 'No autenticado');
+                if (!userSession || !userSession.token) {
+                    showError('classes-container', 'No autenticado. Por favor inicia sesión.');
                     return;
                 }
 
-                const response = await fetch('/api/teachers-panel/classes', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                const response = await fetch(`${API_URL}/teachers-panel/classes`, {
+                    headers: {
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF'
+                    }
                 });
 
                 if (!response.ok) {
@@ -1235,7 +1240,7 @@
 
             } catch (error) {
                 console.error('Error cargando clases:', error);
-                showError('classes-container', 'Error cargando clases');
+                showError('classes-container', 'Error cargando clases: ' + error.message);
             }
         }
 
@@ -1305,6 +1310,11 @@
             event.preventDefault();
 
             try {
+                if (!userSession || !userSession.token) {
+                    alert('No autenticado. Por favor inicia sesión.');
+                    return;
+                }
+
                 const formData = new FormData(event.target);
 
                 const classData = {
@@ -1319,25 +1329,26 @@
                     end_date: formData.get('end_date')
                 };
 
-                const token = localStorage.getItem('authToken');
-                const response = await fetch('/api/teachers-panel/classes', {
+                const response = await fetch(`${API_URL}/teachers-panel/classes`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF',
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(classData)
                 });
 
                 if (!response.ok) {
-                    throw new Error('Error creando clase');
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error creando clase');
                 }
 
                 const result = await response.json();
 
                 closeClassModal();
                 await loadClasses();
-                alert(`Clase creada exitosamente. Código de acceso: ${result.class.class_code}`);
+                alert(`✅ Clase creada exitosamente\nCódigo de acceso: ${result.class.class_code}`);
 
             } catch (error) {
                 console.error('Error creando clase:', error);
