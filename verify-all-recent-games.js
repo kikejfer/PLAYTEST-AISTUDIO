@@ -17,10 +17,10 @@ require('dotenv').config();
 const { Pool } = require('pg');
 
 const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
+  host: process.env.DB_HOST || 'lumiquiz-db-enferlo-lumiquiz.d.aivencloud.com',
+  port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 24407,
+  database: process.env.DB_NAME || 'defaultdb',
+  user: process.env.DB_USER || 'avnadmin',
   password: process.env.DB_PASSWORD,
   ssl: {
     rejectUnauthorized: false
