@@ -2685,52 +2685,70 @@ const AddQuestionsApp = () => {
                 authToken: !!localStorage.getItem('authToken'),
                 playtest_session: !!localStorage.getItem('playtest_session')
             });
-            
+
             // Check authentication with multiple possible formats
             const isAuthenticated = currentUser && (
-                currentUser.isAuthenticated === true || 
+                currentUser.isAuthenticated === true ||
                 currentUser._hasAuthToken === true ||
                 (currentUser.userId && (localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken')))
             );
-            
+
             if (!isAuthenticated) {
                 console.error('🔐 Authentication failed:', { currentUser, hasToken: !!localStorage.getItem('playtest_auth_token') });
                 throw new Error('🔐 Debes estar autenticado para crear bloques. Por favor, inicia sesión.');
             }
 
             if (typeof apiDataService !== 'undefined') {
-                const blockData = {
-                    name: blockName,
-                    description: `${blockName} - Custom block created with questions`,
-                    observaciones: observaciones,
-                    isPublic: isPublic,
-                    tipo_id: tipoId,
-                    nivel_id: nivelId,
-                    estado_id: estadoId
-                };
-                
-                let block;
                 let blockId;
+                let block;
 
-                try {
-                    block = await apiDataService.createBlock(blockData);
-                    blockId = block.block?.id || block.id;
-                    console.log('✅ New block created successfully:', blockId);
-                } catch (createError) {
-                    // Check if it's a duplicate block error (409 Conflict)
-                    if (createError.status === 409 || createError.message.includes('409') || createError.message.includes('already exists')) {
-                        console.log('📝 Block already exists - merging questions into existing block');
+                // FIRST: Check if block already exists with same (Name, User, Role)
+                // The blocks array should contain blocks created by the current user
+                const existingBlock = blocks.find(b =>
+                    b.nombreCorto && b.nombreCorto.toLowerCase().trim() === blockName.toLowerCase().trim()
+                );
 
-                        // Extract the existing block ID from error response
-                        const errorData = createError.data || {};
-                        if (errorData.existingBlockId) {
-                            blockId = errorData.existingBlockId;
-                            console.log('📝 Using existing block ID:', blockId);
+                if (existingBlock) {
+                    // Block already exists - use existing blockId
+                    blockId = existingBlock.id;
+                    console.log('✅ Found existing block with same name:', {
+                        blockName: blockName,
+                        existingBlockId: blockId,
+                        existingBlockName: existingBlock.nombreCorto
+                    });
+                    console.log('📝 Will add questions/topics to existing block instead of creating new one');
+                } else {
+                    // Block doesn't exist - create new one
+                    const blockData = {
+                        name: blockName,
+                        description: `${blockName} - Custom block created with questions`,
+                        observaciones: observaciones,
+                        isPublic: isPublic,
+                        tipo_id: tipoId,
+                        nivel_id: nivelId,
+                        estado_id: estadoId
+                    };
+
+                    try {
+                        block = await apiDataService.createBlock(blockData);
+                        blockId = block.block?.id || block.id;
+                        console.log('✅ New block created successfully:', blockId);
+                    } catch (createError) {
+                        // Check if it's a duplicate block error (409 Conflict)
+                        if (createError.status === 409 || createError.message.includes('409') || createError.message.includes('already exists')) {
+                            console.log('📝 Block already exists (from API) - merging questions into existing block');
+
+                            // Extract the existing block ID from error response
+                            const errorData = createError.data || {};
+                            if (errorData.existingBlockId) {
+                                blockId = errorData.existingBlockId;
+                                console.log('📝 Using existing block ID from API:', blockId);
+                            } else {
+                                throw createError; // Re-throw if we can't get the existing block ID
+                            }
                         } else {
-                            throw createError; // Re-throw if we can't get the existing block ID
+                            throw createError; // Re-throw non-conflict errors
                         }
-                    } else {
-                        throw createError; // Re-throw non-conflict errors
                     }
                 }
 

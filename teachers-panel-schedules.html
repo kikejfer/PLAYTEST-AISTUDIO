@@ -1420,14 +1420,21 @@
             }
 
             // Initialize students component when switching to students tab
-            if (subTabId === 'students-subtab' && !window.studentsComponentInitialized) {
-                if (window.StudentsManagementComponent && window.StudentsManagementComponent.init) {
+            if (subTabId === 'students-subtab') {
+                if (window.studentsComponentInitialized && window.StudentsManagementComponent) {
+                    // Already initialized, just ensure it's visible
+                    console.log('Students component already initialized');
+                } else if (window.StudentsManagementComponent && window.StudentsManagementComponent.init) {
+                    console.log('Initializing Students Management Component...');
                     window.StudentsManagementComponent.init({
                         role: 'profesor',
                         containerId: 'students-management-container',
                         user: getCurrentUser()
                     });
                     window.studentsComponentInitialized = true;
+                    console.log('✅ Students Management Component initialized');
+                } else {
+                    console.error('❌ StudentsManagementComponent not available');
                 }
             }
         }
