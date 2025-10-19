@@ -1071,6 +1071,194 @@
         </div>
     </div>
 
+    <!-- Modal Ver Detalles del Grupo -->
+    <div id="group-detail-modal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="group-detail-title">Detalles del Grupo</h2>
+                <button class="close-modal" onclick="closeGroupDetailModal()">×</button>
+            </div>
+
+            <!-- Group Header Info -->
+            <div id="group-detail-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                <!-- Will be populated dynamically -->
+            </div>
+
+            <!-- Sub-tabs for Members and Assignments -->
+            <div style="display: flex; gap: 10px; border-bottom: 2px solid #415A77; margin-bottom: 20px;">
+                <button class="sub-tab-button active" onclick="showGroupDetailTab('members')">
+                    👥 Miembros
+                </button>
+                <button class="sub-tab-button" onclick="showGroupDetailTab('assignments')">
+                    📚 Asignaciones
+                </button>
+            </div>
+
+            <!-- Members Tab -->
+            <div id="group-members-tab" class="sub-tab-content active">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <input
+                        type="text"
+                        class="form-input"
+                        placeholder="🔍 Buscar miembro..."
+                        onkeyup="filterGroupMembers(this.value)"
+                        style="max-width: 300px;"
+                    >
+                    <button class="btn btn-primary btn-sm" onclick="openAddMembersToGroupModal()">
+                        + Añadir Miembros
+                    </button>
+                </div>
+
+                <div id="group-members-loading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p style="color: #778DA9;">Cargando miembros...</p>
+                </div>
+
+                <div id="group-members-empty" class="empty-state" style="display: none;">
+                    <div class="empty-state-icon">👤</div>
+                    <h3>No hay miembros en este grupo</h3>
+                    <p>Añade estudiantes para comenzar</p>
+                </div>
+
+                <div id="group-members-list" style="display: grid; gap: 10px; max-height: 400px; overflow-y: auto;">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Assignments Tab -->
+            <div id="group-assignments-tab" class="sub-tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <p style="color: #778DA9;">Asignaciones de bloques a este grupo</p>
+                    <button class="btn btn-secondary btn-sm" onclick="openAssignBlockModalForGroup()">
+                        📚 Asignar Bloque
+                    </button>
+                </div>
+
+                <div id="group-assignments-loading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p style="color: #778DA9;">Cargando asignaciones...</p>
+                </div>
+
+                <div id="group-assignments-list">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Asignar Bloque -->
+    <div id="assign-block-modal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title">📚 Asignar Bloque</h2>
+                <button class="close-modal" onclick="closeAssignBlockModal()">×</button>
+            </div>
+
+            <!-- Steps Indicator -->
+            <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; padding: 15px; background: #0D1B2A; border-radius: 8px;">
+                <div id="assign-step1-indicator" style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 35px; height: 35px; border-radius: 50%; background: #10B981; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;">1</div>
+                    <div style="color: #E0E1DD; font-weight: 600;">Seleccionar Bloque</div>
+                </div>
+                <div id="assign-step2-indicator" style="display: flex; align-items: center; gap: 10px; opacity: 0.5;">
+                    <div style="width: 35px; height: 35px; border-radius: 50%; background: #415A77; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #E0E1DD;">2</div>
+                    <div style="color: #E0E1DD; font-weight: 600;">Configurar</div>
+                </div>
+            </div>
+
+            <!-- Step 1: Select Block -->
+            <div id="assign-block-step1" class="sub-tab-content active">
+                <div class="form-group">
+                    <input
+                        type="text"
+                        class="form-input"
+                        placeholder="🔍 Buscar bloque por nombre..."
+                        onkeyup="filterAssignBlocks(this.value)"
+                    >
+                </div>
+
+                <div id="assign-blocks-loading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p style="color: #778DA9;">Cargando bloques...</p>
+                </div>
+
+                <div id="assign-blocks-empty" class="empty-state" style="display: none;">
+                    <div class="empty-state-icon">📚</div>
+                    <h3>No hay bloques disponibles</h3>
+                    <p>Crea bloques primero para poder asignarlos</p>
+                </div>
+
+                <div id="assign-blocks-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
+                    <!-- Will be populated dynamically -->
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeAssignBlockModal()">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn-submit" id="assign-next-btn" onclick="goToAssignStep2()" disabled>
+                        Siguiente →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Configure Assignment -->
+            <div id="assign-block-step2" class="sub-tab-content">
+                <div style="background: #0D1B2A; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                    <h4 style="color: #10B981; margin-bottom: 5px;">📚 Bloque Seleccionado</h4>
+                    <p id="assign-selected-block-name" style="color: #778DA9;">-</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Asignar A:</label>
+                    <select id="assign-assignment-type" class="form-control" onchange="handleAssignmentTypeChange()">
+                        <option value="group">Grupo Completo</option>
+                        <option value="individual">Estudiante Individual</option>
+                    </select>
+                </div>
+
+                <div id="assign-group-selection" class="form-group">
+                    <label class="form-label">Grupo:</label>
+                    <select id="assign-group-select" class="form-control">
+                        <option value="">Selecciona un grupo...</option>
+                    </select>
+                </div>
+
+                <div id="assign-student-selection" class="form-group" style="display: none;">
+                    <label class="form-label">Estudiante:</label>
+                    <select id="assign-student-select" class="form-control">
+                        <option value="">Selecciona un estudiante...</option>
+                    </select>
+                    <p class="form-help">Próximamente: lista de estudiantes disponible</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Fecha Límite (opcional):</label>
+                    <input type="datetime-local" id="assign-due-date" class="form-control">
+                    <p class="form-help">Deja vacío si no hay fecha límite</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notas (opcional):</label>
+                    <textarea
+                        id="assign-notes"
+                        class="form-textarea"
+                        placeholder="Instrucciones adicionales para los estudiantes..."
+                    ></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="goToAssignStep1()">
+                        ← Atrás
+                    </button>
+                    <button type="button" class="btn-submit" onclick="submitBlockAssignment()" id="assign-submit-btn">
+                        ✅ Asignar Bloque
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Global variables
         const API_URL = window.location.hostname.includes('onrender.com')
@@ -1512,12 +1700,460 @@
             }
         }
 
-        function viewGroup(groupId) {
-            window.location.href = `teachers-panel-group-detail.html?id=${groupId}`;
+        // ==================== GROUP DETAIL MODAL FUNCTIONS ====================
+
+        let currentGroupId = null;
+        let currentGroupData = null;
+        let groupMembers = [];
+        let groupAssignments = [];
+
+        async function viewGroup(groupId) {
+            currentGroupId = groupId;
+            document.getElementById('group-detail-modal').classList.add('active');
+            await loadGroupDetail(groupId);
+            await loadGroupMembers(groupId);
+            // Reset to members tab
+            showGroupDetailTab('members');
         }
 
-        function assignBlock(groupId) {
-            window.location.href = `teachers-panel-assign-block.html?groupId=${groupId}`;
+        function closeGroupDetailModal() {
+            document.getElementById('group-detail-modal').classList.remove('active');
+            currentGroupId = null;
+            currentGroupData = null;
+        }
+
+        async function loadGroupDetail(groupId) {
+            try {
+                const response = await fetch(`${API_URL}/groups/${groupId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Error al cargar grupo');
+
+                currentGroupData = await response.json();
+                renderGroupDetailHeader();
+            } catch (error) {
+                console.error('Error loading group detail:', error);
+                alert('Error al cargar el grupo');
+                closeGroupDetailModal();
+            }
+        }
+
+        function renderGroupDetailHeader() {
+            const group = currentGroupData.group;
+            document.getElementById('group-detail-title').textContent = group.name;
+            document.getElementById('group-detail-header').innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 15px;">
+                    <div style="flex: 1;">
+                        <h3 style="color: #E0E1DD; font-size: 1.5rem; margin-bottom: 10px;">${escapeHtml(group.name)}</h3>
+                        ${group.description ? `<p style="color: #E0E1DD; opacity: 0.9;">${escapeHtml(group.description)}</p>` : ''}
+                    </div>
+                    <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="color: #E0E1DD; font-size: 0.85rem; margin-bottom: 5px; opacity: 0.8;">Código de Acceso</div>
+                        <div style="color: #10B981; font-size: 1.3rem; font-weight: 700; font-family: 'Courier New', monospace;">${group.access_code || 'N/A'}</div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-top: 20px;">
+                    <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="color: #10B981; font-size: 1.5rem; font-weight: 700;">${currentGroupData.members?.length || 0}</div>
+                        <div style="color: #E0E1DD; font-size: 0.9rem; opacity: 0.8; margin-top: 5px;">Miembros</div>
+                    </div>
+                    <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="color: #10B981; font-size: 1.5rem; font-weight: 700;">${currentGroupData.assigned_blocks_count || 0}</div>
+                        <div style="color: #E0E1DD; font-size: 0.9rem; opacity: 0.8; margin-top: 5px;">Bloques</div>
+                    </div>
+                    <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="color: #10B981; font-size: 1rem; font-weight: 700;">${new Date(group.created_at).toLocaleDateString()}</div>
+                        <div style="color: #E0E1DD; font-size: 0.9rem; opacity: 0.8; margin-top: 5px;">Creado</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showGroupDetailTab(tabName) {
+            // Update buttons
+            const modal = document.getElementById('group-detail-modal');
+            modal.querySelectorAll('.sub-tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update content
+            document.getElementById('group-members-tab').classList.remove('active');
+            document.getElementById('group-assignments-tab').classList.remove('active');
+
+            if (tabName === 'members') {
+                document.getElementById('group-members-tab').classList.add('active');
+            } else if (tabName === 'assignments') {
+                document.getElementById('group-assignments-tab').classList.add('active');
+                loadGroupAssignments(currentGroupId);
+            }
+        }
+
+        async function loadGroupMembers(groupId) {
+            const loading = document.getElementById('group-members-loading');
+            const empty = document.getElementById('group-members-empty');
+            const list = document.getElementById('group-members-list');
+
+            try {
+                loading.style.display = 'block';
+                empty.style.display = 'none';
+                list.innerHTML = '';
+
+                const response = await fetch(`${API_URL}/groups/${groupId}/members`, {
+                    headers: {
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Error al cargar miembros');
+
+                groupMembers = await response.json();
+                loading.style.display = 'none';
+
+                if (groupMembers.length === 0) {
+                    empty.style.display = 'block';
+                } else {
+                    renderGroupMembers();
+                }
+            } catch (error) {
+                console.error('Error loading members:', error);
+                loading.style.display = 'none';
+                alert('Error al cargar miembros');
+            }
+        }
+
+        function renderGroupMembers(filteredMembers = null) {
+            const list = document.getElementById('group-members-list');
+            const displayMembers = filteredMembers || groupMembers;
+
+            list.innerHTML = displayMembers.map(member => `
+                <div style="background: #1B263B; border: 1px solid #415A77; border-radius: 8px; padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 45px; height: 45px; border-radius: 50%; background: #3B82F6; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 1.1rem;">
+                            ${member.nickname.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <h4 style="color: #E0E1DD; margin-bottom: 3px;">${escapeHtml(member.nickname)}</h4>
+                            <p style="color: #778DA9; font-size: 0.9rem;">${escapeHtml(member.email || 'Sin email')}</p>
+                        </div>
+                    </div>
+                    <button
+                        class="btn btn-danger btn-sm"
+                        onclick="removeGroupMember(${member.user_id}, '${escapeHtml(member.nickname)}')"
+                        title="Eliminar miembro"
+                    >
+                        🗑️ Eliminar
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function filterGroupMembers(search) {
+            if (!search.trim()) {
+                renderGroupMembers();
+                return;
+            }
+
+            const filtered = groupMembers.filter(m =>
+                m.nickname.toLowerCase().includes(search.toLowerCase()) ||
+                (m.email && m.email.toLowerCase().includes(search.toLowerCase()))
+            );
+
+            renderGroupMembers(filtered);
+        }
+
+        async function removeGroupMember(userId, nickname) {
+            if (!confirm(`¿Eliminar a ${nickname} del grupo?`)) return;
+
+            try {
+                const response = await fetch(`${API_URL}/groups/${currentGroupId}/members/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Error al eliminar miembro');
+
+                alert('✅ Miembro eliminado exitosamente');
+                loadGroupMembers(currentGroupId);
+                loadGroupDetail(currentGroupId);
+                loadGroups(); // Refresh main groups list
+            } catch (error) {
+                console.error('Error removing member:', error);
+                alert('Error al eliminar el miembro');
+            }
+        }
+
+        function openAddMembersToGroupModal() {
+            alert('Funcionalidad de añadir miembros próximamente.\n\nPor ahora, los estudiantes pueden unirse al grupo usando el código de acceso.');
+        }
+
+        async function loadGroupAssignments(groupId) {
+            const loading = document.getElementById('group-assignments-loading');
+            const list = document.getElementById('group-assignments-list');
+
+            try {
+                loading.style.display = 'block';
+                list.innerHTML = '';
+
+                // This endpoint might need to be created
+                // For now, show a placeholder
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    list.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📚</div>
+                            <h3>Funcionalidad en desarrollo</h3>
+                            <p>Próximamente podrás ver todas las asignaciones del grupo aquí</p>
+                        </div>
+                    `;
+                }, 500);
+            } catch (error) {
+                console.error('Error loading assignments:', error);
+                loading.style.display = 'none';
+            }
+        }
+
+        function openAssignBlockModalForGroup() {
+            closeGroupDetailModal();
+            assignBlock(currentGroupId);
+        }
+
+        // ==================== ASSIGN BLOCK MODAL FUNCTIONS ====================
+
+        let assignBlocks = [];
+        let assignSelectedBlockId = null;
+        let assignTargetGroupId = null;
+
+        async function assignBlock(groupId = null) {
+            assignTargetGroupId = groupId;
+            document.getElementById('assign-block-modal').classList.add('active');
+
+            // Reset to step 1
+            goToAssignStep1();
+            assignSelectedBlockId = null;
+            document.getElementById('assign-next-btn').disabled = true;
+
+            // Load blocks and groups
+            await loadAssignBlocks();
+            await loadAssignGroups();
+
+            // If groupId provided, pre-select it in step 2
+            if (groupId) {
+                document.getElementById('assign-group-select').value = groupId;
+            }
+        }
+
+        function closeAssignBlockModal() {
+            document.getElementById('assign-block-modal').classList.remove('active');
+            assignTargetGroupId = null;
+            assignSelectedBlockId = null;
+        }
+
+        async function loadAssignBlocks() {
+            const loading = document.getElementById('assign-blocks-loading');
+            const empty = document.getElementById('assign-blocks-empty');
+            const grid = document.getElementById('assign-blocks-grid');
+
+            try {
+                loading.style.display = 'block';
+                empty.style.display = 'none';
+                grid.innerHTML = '';
+
+                const response = await fetch(`${API_URL}/blocks/created`, {
+                    headers: {
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Error al cargar bloques');
+
+                assignBlocks = await response.json();
+                loading.style.display = 'none';
+
+                if (assignBlocks.length === 0) {
+                    empty.style.display = 'block';
+                } else {
+                    renderAssignBlocks();
+                }
+            } catch (error) {
+                console.error('Error loading blocks:', error);
+                loading.style.display = 'none';
+                alert('Error al cargar los bloques');
+            }
+        }
+
+        function renderAssignBlocks(filteredBlocks = null) {
+            const grid = document.getElementById('assign-blocks-grid');
+            const displayBlocks = filteredBlocks || assignBlocks;
+
+            grid.innerHTML = displayBlocks.map(block => `
+                <div
+                    style="background: ${assignSelectedBlockId === block.id ? 'rgba(16, 185, 129, 0.1)' : '#1B263B'};
+                           border: 2px solid ${assignSelectedBlockId === block.id ? '#10B981' : '#415A77'};
+                           border-radius: 8px; padding: 15px; cursor: pointer; transition: all 0.3s ease;"
+                    onclick="selectAssignBlock(${block.id})"
+                    onmouseover="this.style.borderColor='#10B981'"
+                    onmouseout="this.style.borderColor='${assignSelectedBlockId === block.id ? '#10B981' : '#415A77'}'"
+                >
+                    <h3 style="color: #10B981; font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">${escapeHtml(block.name)}</h3>
+                    ${block.description ? `<p style="color: #778DA9; font-size: 0.85rem; margin-bottom: 10px; line-height: 1.4;">${escapeHtml(block.description)}</p>` : ''}
+                    <div style="display: flex; gap: 10px; font-size: 0.8rem; color: #778DA9;">
+                        <span>📝 ${block.questionCount || 0} preguntas</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectAssignBlock(blockId) {
+            assignSelectedBlockId = blockId;
+            document.getElementById('assign-next-btn').disabled = false;
+            renderAssignBlocks();
+        }
+
+        function filterAssignBlocks(search) {
+            if (!search.trim()) {
+                renderAssignBlocks();
+                return;
+            }
+
+            const filtered = assignBlocks.filter(b =>
+                b.name.toLowerCase().includes(search.toLowerCase()) ||
+                (b.description && b.description.toLowerCase().includes(search.toLowerCase()))
+            );
+
+            renderAssignBlocks(filtered);
+        }
+
+        async function loadAssignGroups() {
+            try {
+                // Groups should already be loaded, but let's make sure
+                if (groups.length === 0) {
+                    const response = await fetch(`${API_URL}/groups`, {
+                        headers: {
+                            'Authorization': `Bearer ${userSession.token}`,
+                            'X-Current-Role': 'PPF'
+                        }
+                    });
+
+                    if (response.ok) {
+                        groups = await response.json();
+                    }
+                }
+
+                const groupSelect = document.getElementById('assign-group-select');
+                groupSelect.innerHTML = groups.map(g =>
+                    `<option value="${g.id}" ${assignTargetGroupId == g.id ? 'selected' : ''}>${escapeHtml(g.name)}</option>`
+                ).join('');
+            } catch (error) {
+                console.error('Error loading groups for assignment:', error);
+            }
+        }
+
+        function goToAssignStep1() {
+            document.getElementById('assign-block-step1').classList.add('active');
+            document.getElementById('assign-block-step2').classList.remove('active');
+            document.getElementById('assign-step1-indicator').style.opacity = '1';
+            document.getElementById('assign-step2-indicator').style.opacity = '0.5';
+            document.getElementById('assign-step1-indicator').querySelector('div').style.background = '#10B981';
+            document.getElementById('assign-step2-indicator').querySelector('div').style.background = '#415A77';
+        }
+
+        function goToAssignStep2() {
+            if (!assignSelectedBlockId) return;
+
+            document.getElementById('assign-block-step1').classList.remove('active');
+            document.getElementById('assign-block-step2').classList.add('active');
+            document.getElementById('assign-step1-indicator').style.opacity = '0.5';
+            document.getElementById('assign-step2-indicator').style.opacity = '1';
+            document.getElementById('assign-step1-indicator').querySelector('div').style.background = '#415A77';
+            document.getElementById('assign-step2-indicator').querySelector('div').style.background = '#10B981';
+
+            // Update selected block info
+            const block = assignBlocks.find(b => b.id === assignSelectedBlockId);
+            document.getElementById('assign-selected-block-name').textContent = block.name;
+        }
+
+        function handleAssignmentTypeChange() {
+            const type = document.getElementById('assign-assignment-type').value;
+            const groupSelection = document.getElementById('assign-group-selection');
+            const studentSelection = document.getElementById('assign-student-selection');
+
+            if (type === 'group') {
+                groupSelection.style.display = 'block';
+                studentSelection.style.display = 'none';
+            } else {
+                groupSelection.style.display = 'none';
+                studentSelection.style.display = 'block';
+            }
+        }
+
+        async function submitBlockAssignment() {
+            const submitBtn = document.getElementById('assign-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Asignando...';
+
+            const type = document.getElementById('assign-assignment-type').value;
+            const dueDate = document.getElementById('assign-due-date').value;
+            const notes = document.getElementById('assign-notes').value.trim();
+
+            const payload = {
+                block_id: assignSelectedBlockId,
+                due_date: dueDate || null,
+                notes: notes || null
+            };
+
+            if (type === 'group') {
+                payload.group_id = parseInt(document.getElementById('assign-group-select').value);
+            } else {
+                const studentId = document.getElementById('assign-student-select').value;
+                if (!studentId) {
+                    alert('Selecciona un estudiante');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '✅ Asignar Bloque';
+                    return;
+                }
+                payload.user_id = parseInt(studentId);
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/groups/assign-block`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error al asignar bloque');
+                }
+
+                alert('✅ Bloque asignado exitosamente');
+                closeAssignBlockModal();
+
+                // Refresh groups if we're on that tab
+                if (currentMainTab === 'grupos') {
+                    loadGroups();
+                }
+            } catch (error) {
+                console.error('Error assigning block:', error);
+                alert('Error al asignar el bloque: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '✅ Asignar Bloque';
+            }
         }
 
         async function deleteGroup(groupId, groupName) {
@@ -1565,12 +2201,20 @@
         window.onclick = function(event) {
             const classModal = document.getElementById('classModal');
             const groupModal = document.getElementById('create-group-modal');
+            const groupDetailModal = document.getElementById('group-detail-modal');
+            const assignBlockModal = document.getElementById('assign-block-modal');
 
             if (event.target === classModal) {
                 closeClassModal();
             }
             if (event.target === groupModal) {
                 closeCreateGroupModal();
+            }
+            if (event.target === groupDetailModal) {
+                closeGroupDetailModal();
+            }
+            if (event.target === assignBlockModal) {
+                closeAssignBlockModal();
             }
         }
 
