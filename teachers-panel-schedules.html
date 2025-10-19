@@ -1283,14 +1283,15 @@
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', async () => {
             await loadUserSession();
-            // Recursos tab is active by default, so load it
-            if (window.BloqueCreadosComponent && window.BloqueCreadosComponent.init) {
-                window.BloqueCreadosComponent.init({
-                    role: 'PPF',
-                    containerId: 'recursos-bloques-creados-container',
-                    user: getCurrentUser()
-                });
-            }
+            // Recursos tab is active by default, so load bloques creados
+            setTimeout(() => {
+                if (typeof renderBloquesCreados === 'function') {
+                    window.teacherBloquesCreados = renderBloquesCreados('recursos-bloques-creados-container', 'alumnos');
+                    console.log('✅ [PPF] BloquesCreados component initialized');
+                } else {
+                    console.error('❌ [PPF] renderBloquesCreados function not available');
+                }
+            }, 100);
         });
 
         // Load user session
@@ -1396,6 +1397,15 @@
             const targetContent = document.getElementById(subTabId);
             if (targetContent) {
                 targetContent.classList.add('active');
+            }
+
+            // Refresh/Initialize Bloques Creados when switching to recursos-tab
+            if (subTabId === 'recursos-tab') {
+                if (window.teacherBloquesCreados && typeof window.teacherBloquesCreados.refresh === 'function') {
+                    window.teacherBloquesCreados.refresh();
+                } else if (typeof renderBloquesCreados === 'function') {
+                    window.teacherBloquesCreados = renderBloquesCreados('recursos-bloques-creados-container', 'alumnos');
+                }
             }
 
             // Initialize Add Questions module when switching to add-questions tab
