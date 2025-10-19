@@ -778,8 +778,8 @@
             <div id="recursos-main-content" class="main-tab-content active">
                 <!-- Sub-navegación para Recursos -->
                 <div class="sub-tabs-nav">
-                    <button class="sub-tab-button active" onclick="showSubTab('recursos', 'recursos-tab', event)">📚 Mis Bloques</button>
-                    <button class="sub-tab-button" onclick="showSubTab('recursos', 'add-questions-tab', event)">➕ Añadir Preguntas</button>
+                    <button class="sub-tab-button active" onclick="event.preventDefault(); showSubTab('recursos', 'recursos-tab', event)">📚 Mis Bloques</button>
+                    <button class="sub-tab-button" onclick="event.preventDefault(); showSubTab('recursos', 'add-questions-tab', event)">➕ Añadir Preguntas</button>
                 </div>
 
                 <div class="tab-content">
@@ -801,10 +801,10 @@
             <div id="alumnos-main-content" class="main-tab-content">
                 <!-- Sub-navegación para Gestión de Alumnos -->
                 <div class="sub-tabs-nav">
-                    <button class="sub-tab-button active" onclick="showSubTab('alumnos', 'classes-subtab', event)">🏫 Mis Clases</button>
-                    <button class="sub-tab-button" onclick="showSubTab('alumnos', 'students-subtab', event)">👥 Gestión de Estudiantes</button>
-                    <button class="sub-tab-button" onclick="showSubTab('alumnos', 'attendance-subtab', event)">📝 Registro de Asistencia</button>
-                    <button class="sub-tab-button" onclick="showSubTab('alumnos', 'performance-subtab', event)">📊 Rendimiento Académico</button>
+                    <button class="sub-tab-button active" onclick="event.preventDefault(); showSubTab('alumnos', 'classes-subtab', event)">🏫 Mis Clases</button>
+                    <button class="sub-tab-button" onclick="event.preventDefault(); showSubTab('alumnos', 'students-subtab', event)">👥 Gestión de Estudiantes</button>
+                    <button class="sub-tab-button" onclick="event.preventDefault(); showSubTab('alumnos', 'attendance-subtab', event)">📝 Registro de Asistencia</button>
+                    <button class="sub-tab-button" onclick="event.preventDefault(); showSubTab('alumnos', 'performance-subtab', event)">📊 Rendimiento Académico</button>
                 </div>
 
                 <div class="tab-content">
@@ -1086,10 +1086,10 @@
 
             <!-- Sub-tabs for Members and Assignments -->
             <div style="display: flex; gap: 10px; border-bottom: 2px solid #415A77; margin-bottom: 20px;">
-                <button class="sub-tab-button active" onclick="showGroupDetailTab('members')">
+                <button class="sub-tab-button active" onclick="showGroupDetailTab('members', event)">
                     👥 Miembros
                 </button>
-                <button class="sub-tab-button" onclick="showGroupDetailTab('assignments')">
+                <button class="sub-tab-button" onclick="showGroupDetailTab('assignments', event)">
                     📚 Asignaciones
                 </button>
             </div>
@@ -1344,17 +1344,28 @@
             currentMainTab = tabName;
 
             // Lazy load content
-            if (tabName === 'alumnos' && !window.alumnosLoaded) {
-                loadClasses();
-                window.alumnosLoaded = true;
+            if (tabName === 'alumnos') {
+                if (!window.alumnosLoaded) {
+                    console.log('Loading classes for first time...');
+                    loadClasses();
+                    window.alumnosLoaded = true;
+                }
+                // Reset to first sub-tab
+                console.log('Activating first sub-tab of alumnos');
+                showSubTab('alumnos', 'classes-subtab');
             } else if (tabName === 'grupos' && !window.gruposLoaded) {
                 loadGroups();
                 window.gruposLoaded = true;
+            } else if (tabName === 'recursos') {
+                // Reset to first sub-tab
+                showSubTab('recursos', 'recursos-tab');
             }
         }
 
         // Sub-tab switching function
-        function showSubTab(mainTab, subTabId, event) {
+        function showSubTab(mainTab, subTabId, evt) {
+            console.log('showSubTab called:', { mainTab, subTabId, hasEvent: !!evt });
+
             // Get the parent tab content
             const parentTab = document.getElementById(mainTab + '-main-content');
             if (!parentTab) {
@@ -1362,15 +1373,20 @@
                 return;
             }
 
-            // Update sub-tab buttons
+            // Update sub-tab buttons - find which button to activate
             const subTabButtons = parentTab.querySelectorAll('.sub-tab-button');
             subTabButtons.forEach(btn => {
                 btn.classList.remove('active');
+                // Check if this button's onclick matches our subTabId
+                const onclickAttr = btn.getAttribute('onclick');
+                if (onclickAttr && onclickAttr.includes(`'${subTabId}'`)) {
+                    btn.classList.add('active');
+                }
             });
 
-            // Activate clicked button
-            if (event && event.target) {
-                event.target.classList.add('active');
+            // If event is provided, also activate the clicked button
+            if (evt && evt.target) {
+                evt.target.classList.add('active');
             }
 
             // Update sub-tab content
@@ -1382,12 +1398,14 @@
             const targetContent = document.getElementById(subTabId);
             if (targetContent) {
                 targetContent.classList.add('active');
+                console.log('Activated tab content:', subTabId);
             } else {
                 console.error('Target content not found:', subTabId);
             }
 
             // Initialize students component when switching to students tab
             if (subTabId === 'students-subtab' && !window.studentsComponentInitialized) {
+                console.log('Initializing students component...');
                 if (window.StudentsManagementComponent && window.StudentsManagementComponent.init) {
                     window.StudentsManagementComponent.init({
                         role: 'profesor',
@@ -1395,6 +1413,9 @@
                         user: getCurrentUser()
                     });
                     window.studentsComponentInitialized = true;
+                    console.log('Students component initialized');
+                } else {
+                    console.error('StudentsManagementComponent not available');
                 }
             }
         }
@@ -1773,13 +1794,22 @@
             `;
         }
 
-        function showGroupDetailTab(tabName) {
+        function showGroupDetailTab(tabName, evt) {
             // Update buttons
             const modal = document.getElementById('group-detail-modal');
             modal.querySelectorAll('.sub-tab-button').forEach(btn => {
                 btn.classList.remove('active');
+                // Check if this button's onclick matches our tabName
+                const onclickAttr = btn.getAttribute('onclick');
+                if (onclickAttr && onclickAttr.includes(`'${tabName}'`)) {
+                    btn.classList.add('active');
+                }
             });
-            event.target.classList.add('active');
+
+            // If event provided, also activate clicked button
+            if (evt && evt.target) {
+                evt.target.classList.add('active');
+            }
 
             // Update content
             document.getElementById('group-members-tab').classList.remove('active');
