@@ -13,6 +13,12 @@
     <script src="navigation-service.js"></script>
     <script src="bloques-creados-component.js"></script>
     <script src="students-management-component.js"></script>
+
+    <!-- React CDN for Add Questions Module -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="add-questions-module.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -1390,6 +1396,17 @@
             const targetContent = document.getElementById(subTabId);
             if (targetContent) {
                 targetContent.classList.add('active');
+            }
+
+            // Initialize Add Questions module when switching to add-questions tab
+            if (subTabId === 'add-questions-tab') {
+                const contentDiv = document.getElementById('add-questions-content');
+                if (contentDiv && !contentDiv.hasChildNodes() && window.mountAddQuestionsApp) {
+                    window.mountAddQuestionsApp('add-questions-content');
+                } else if (!window.mountAddQuestionsApp) {
+                    console.warn('⚠️ mountAddQuestionsApp not available yet, will try again...');
+                    setTimeout(() => showSubTab(mainTab, subTabId, evt), 500);
+                }
             }
 
             // Initialize students component when switching to students tab
