@@ -1321,6 +1321,9 @@
             }
         }
 
+        // Expose getCurrentUser globally for React modules
+        window.getCurrentUser = getCurrentUser;
+
         // Main tab switching function
         function showMainTab(tabName, event) {
             if (event) {
