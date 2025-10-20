@@ -1313,8 +1313,25 @@
         // Get current user
         function getCurrentUser() {
             try {
-                const session = localStorage.getItem('gameSession');
-                return session ? JSON.parse(session) : null;
+                // Try playtest_session first (for teachers/professors), then gameSession (fallback)
+                const playtestSession = localStorage.getItem('playtest_session');
+                if (playtestSession) {
+                    const user = JSON.parse(playtestSession);
+                    // Add authentication flags for compatibility
+                    user.isAuthenticated = true;
+                    user._hasAuthToken = !!localStorage.getItem('playtest_auth_token');
+                    return user;
+                }
+
+                const gameSession = localStorage.getItem('gameSession');
+                if (gameSession) {
+                    const user = JSON.parse(gameSession);
+                    user.isAuthenticated = true;
+                    user._hasAuthToken = !!localStorage.getItem('authToken');
+                    return user;
+                }
+
+                return null;
             } catch (error) {
                 console.error('Error obteniendo usuario:', error);
                 return null;
