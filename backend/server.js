@@ -26,12 +26,12 @@ app.use(helmet({
 
 // CORS configurado
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://playtest.com', 'https://www.playtest.com']
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://playtest-frontend.onrender.com', 'https://playtest.com', 'https://www.playtest.com']
     : ['http://localhost:3000', 'http://localhost:3001'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Current-Role']
 }));
 
 // Rate limiting
@@ -65,6 +65,8 @@ if (process.env.NODE_ENV !== 'test') {
 // ============ IMPORTAR RUTAS ============
 
 const adminPrincipalRoutes = require('./routes/adminPrincipal');
+const studentsRoutes = require('./routes/students');
+const blocksRoutes = require('./routes/blocks');
 // const servicioTecnicoRoutes = require('./routes/servicio-tecnico');
 // const financieroRoutes = require('./routes/financiero');
 // const searchRoutes = require('./routes/search');
@@ -79,6 +81,8 @@ const adminPrincipalRoutes = require('./routes/adminPrincipal');
 
 // Rutas principales del sistema
 app.use('/api/admin', adminPrincipalRoutes);
+app.use('/api/students', studentsRoutes);
+app.use('/api/blocks', blocksRoutes);
 // app.use('/api/servicio-tecnico', servicioTecnicoRoutes);
 // app.use('/api/financiero', financieroRoutes);
 // app.use('/api/search', searchRoutes);
