@@ -67,6 +67,7 @@ if (process.env.NODE_ENV !== 'test') {
 const adminPrincipalRoutes = require('./routes/adminPrincipal');
 const studentsRoutes = require('./routes/students');
 const blocksRoutes = require('./routes/blocks');
+const teachersRoutes = require('./routes/teachers');
 // const servicioTecnicoRoutes = require('./routes/servicio-tecnico');
 // const financieroRoutes = require('./routes/financiero');
 // const searchRoutes = require('./routes/search');
@@ -83,6 +84,8 @@ const blocksRoutes = require('./routes/blocks');
 app.use('/api/admin', adminPrincipalRoutes);
 app.use('/api/students', studentsRoutes);
 app.use('/api/blocks', blocksRoutes);
+app.use('/api/teachers', teachersRoutes);
+app.use('/teachers-panel', teachersRoutes); // Alias para compatibilidad con frontend
 // app.use('/api/servicio-tecnico', servicioTecnicoRoutes);
 // app.use('/api/financiero', financieroRoutes);
 // app.use('/api/search', searchRoutes);
