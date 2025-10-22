@@ -2,8 +2,8 @@
 ## Versión 1.0 - Implementación Incremental y Controlada
 
 **Fecha de inicio:** 7 de Octubre de 2025
-**Última actualización:** 7 de Octubre de 2025 - 15:30
-**Estado general:** 🟡 INICIADO - Fase 1 en curso
+**Última actualización:** 22 de Octubre de 2025 - 10:00
+**Estado general:** 🟢 EN PROGRESO - Múltiples fases activas
 
 ---
 
@@ -13,23 +13,23 @@
 FASE 1: Infraestructura y Persistencia    [██████░░░░] 60% - EN CURSO
 FASE 2: Estadísticas y Consolidación      [░░░░░░░░░░]  0% - PENDIENTE
 FASE 3: Soporte Técnico y Comunicación    [░░░░░░░░░░]  0% - PENDIENTE
-FASE 4: Funcionalidades de Creadores      [░░░░░░░░░░]  0% - PENDIENTE
-FASE 5: Funcionalidades de Profesores     [░░░░░░░░░░]  0% - PENDIENTE
+FASE 4: Funcionalidades de Creadores      [███░░░░░░░] 30% - EN CURSO ⬅️ NUEVO
+FASE 5: Funcionalidades de Profesores     [█████░░░░░] 50% - EN CURSO ⬅️ NUEVO
 FASE 6: Sistema de Luminarias             [░░░░░░░░░░]  0% - PENDIENTE
 FASE 7: Sistema de Torneos                [░░░░░░░░░░]  0% - PENDIENTE
 ```
 
-**Progreso total:** 18% completado (actualizado 15:30 - BD verificada)
+**Progreso total:** 20% completado (actualizado 22 Oct - Sistema de clases implementado)
 
 ---
 
 ## 🎯 ÍNDICE DE FASES
 
-- [FASE 1: INFRAESTRUCTURA Y PERSISTENCIA DE JUEGOS](#fase-1-infraestructura-y-persistencia-de-juegos) ⬅️ **ESTAMOS AQUÍ**
+- [FASE 1: INFRAESTRUCTURA Y PERSISTENCIA DE JUEGOS](#fase-1-infraestructura-y-persistencia-de-juegos)
 - [FASE 2: ESTADÍSTICAS Y CONSOLIDACIÓN DE CONOCIMIENTO](#fase-2-estadísticas-y-consolidación-de-conocimiento)
 - [FASE 3: SOPORTE TÉCNICO Y COMUNICACIÓN](#fase-3-soporte-técnico-y-comunicación)
-- [FASE 4: FUNCIONALIDADES DE CREADORES DE CONTENIDO](#fase-4-funcionalidades-de-creadores-de-contenido)
-- [FASE 5: FUNCIONALIDADES DE PROFESORES](#fase-5-funcionalidades-de-profesores)
+- [FASE 4: FUNCIONALIDADES DE CREADORES DE CONTENIDO](#fase-4-funcionalidades-de-creadores-de-contenido) ⬅️ **30% COMPLETADO**
+- [FASE 5: FUNCIONALIDADES DE PROFESORES](#fase-5-funcionalidades-de-profesores) ⬅️ **50% COMPLETADO**
 - [FASE 6: SISTEMA DE LUMINARIAS](#fase-6-sistema-de-luminarias)
 - [FASE 7: SISTEMA DE TORNEOS](#fase-7-sistema-de-torneos)
 
@@ -2768,16 +2768,155 @@ Esta etapa se detallará completamente cuando estemos cerca de implementarla.
 Las siguientes fases serán detalladas completamente cuando estemos cerca de implementarlas:
 
 ## FASE 4: FUNCIONALIDADES DE CREADORES DE CONTENIDO
-- Gestión avanzada de bloques y preguntas
-- Panel de analytics para creadores
-- Sistema de valoraciones de contenido
-- Marketplace de bloques (conexión con Luminarias)
+
+**Objetivo:** Desarrollar herramientas específicas para creadores de contenido (PCC - Profesores Creadores de Contenido)
+
+**Progreso:** [███░░░░░░░] 30% completado
+**Estado:** 🟡 EN CURSO
+
+### Completado ✅
+
+#### ETAPA 4.1: Diferenciación de Roles y Contextos (COMPLETADA)
+**Fecha de finalización:** 22 Oct 2025
+- ✅ **Terminología estandarizada** para creadores:
+  - Panel identificado como "Panel de Creadores"
+  - Usuarios finales llamados "Jugadores" (no alumnos)
+  - Contexto: Marketplace / Monetización
+  - Archivo: `creators-panel-content.html`
+
+- ✅ **Componente de bloques creados** diferenciado:
+  - Etiquetas específicas: "Jugadores"
+  - Descripciones contextuales: "Contexto marketplace - Jugadores que cargan tu contenido"
+  - Archivo: `bloques-creados-component.js:47-62`
+
+- ✅ **Componente de gestión de usuarios** adaptado:
+  - Configuración PCC con título "Gestión de Jugadores"
+  - Subtítulo: "Administra jugadores que han cargado tu contenido del marketplace"
+  - Icono: 🎮, Color: #10B981 (verde)
+  - Archivo: `students-management-component.js:37-51`
+
+- ✅ **Documentación completa:**
+  - Archivo: `DIFERENCIACION-ROLES-PPF-PCC.md` (315 líneas)
+  - Filosofía de roles, terminología, implementación técnica
+
+### Pendiente ⏳
+- ⏳ Gestión avanzada de bloques y preguntas (IA, validaciones)
+- ⏳ Panel de analytics para creadores (métricas de engagement)
+- ⏳ Sistema de valoraciones de contenido (ratings, reviews)
+- ⏳ Marketplace de bloques (compra/venta, conexión con Luminarias)
+
+---
 
 ## FASE 5: FUNCIONALIDADES DE PROFESORES
-- Gestión de alumnos/grupos
-- Asignación de bloques/tareas
-- Seguimiento de progreso de alumnos
-- Reportes y estadísticas de clase
+
+**Objetivo:** Desarrollar herramientas académicas para profesores (PPF - Profesores Facilitadores)
+
+**Progreso:** [█████░░░░░] 50% completado
+**Estado:** 🟡 EN CURSO
+
+### Completado ✅
+
+#### ETAPA 5.1: Diferenciación de Roles y Contextos (COMPLETADA)
+**Fecha de finalización:** 22 Oct 2025
+- ✅ **Terminología estandarizada** para profesores:
+  - Panel identificado como "Panel de Profesores"
+  - Usuarios finales llamados "Alumnos" (no jugadores)
+  - Contexto: Académico / Educativo
+  - Archivo: `teachers-panel-schedules.html:34-36`
+
+- ✅ **Componente de bloques creados** diferenciado:
+  - Etiquetas específicas: "Alumnos", "Estudiantes"
+  - Descripciones contextuales: "Contexto académico - Gestión de clases y alumnos"
+  - Archivo: `bloques-creados-component.js:47-62`
+
+- ✅ **Componente de gestión de alumnos** adaptado:
+  - Configuración PPF con título "Gestión de Alumnos"
+  - Subtítulo: "Administra y supervisa el progreso académico de tus alumnos"
+  - Icono: 🎓, Color: #3B82F6 (azul)
+  - Archivo: `students-management-component.js:25-39`
+
+#### ETAPA 5.2: Sistema de Inscripción en Clases (COMPLETADA)
+**Fecha de finalización:** 22 Oct 2025
+
+**Frontend:**
+- ✅ **Tab "Mis Clases" en panel de jugadores** (condicional):
+  - Mostrado solo cuando el jugador tiene inscripciones activas
+  - Archivo: `jugadores-panel-gaming.html:169-296`
+
+- ✅ **Formulario de inscripción** mediante código:
+  - Input para código de clase (ej: MATH2024-A)
+  - Validación y mensajes de error/éxito
+  - Función: `enrollInClass()` en `jugadores-panel-gaming.html:388-423`
+
+- ✅ **Visualización de clases inscritas:**
+  - Cards con información de cada clase (nombre, profesor, código, materia)
+  - Función: `loadMyClasses()` en `jugadores-panel-gaming.html:425-493`
+
+- ✅ **Visualización de bloques asignados:**
+  - Lista de bloques asignados por profesores
+  - Botón "Cargar Bloque" para cada bloque
+  - Estado de carga (loaded/not loaded)
+  - Función: `loadAssignedBlocks()` en `jugadores-panel-gaming.html:495-577`
+
+- ✅ **Función de carga de bloques:**
+  - Permite cargar bloques asignados al perfil
+  - Integración con sistema de bloques cargados
+  - Función: `loadBlock()` en `jugadores-panel-gaming.html:579-612`
+
+**Backend:**
+- ✅ **Controller de estudiantes:**
+  - `getMyClasses()` - Obtiene clases inscritas
+  - `enrollInClass()` - Inscripción con validaciones (código válido, capacidad, duplicados)
+  - `getAssignedBlocks()` - Bloques asignados por profesores
+  - `loadBlock()` - Carga bloque al perfil
+  - `getStudentProgress()` - Progreso académico
+  - Archivo: `backend/controllers/studentsController.js`
+
+- ✅ **Rutas de estudiantes:**
+  - `GET /api/students/my-classes` - Clases inscritas
+  - `POST /api/students/enroll` - Inscripción
+  - `GET /api/students/assigned-blocks` - Bloques asignados
+  - `GET /api/students/progress` - Progreso
+  - Archivo: `backend/routes/students.js`
+
+- ✅ **Rutas de bloques:**
+  - `POST /api/blocks/:blockId/load` - Cargar bloque
+  - Archivo: `backend/routes/blocks.js`
+
+- ✅ **Configuración del servidor:**
+  - Rutas registradas en server.js
+  - CORS actualizado (header X-Current-Role)
+  - Frontend Render agregado a orígenes permitidos
+  - Archivo: `backend/server.js:67-85`
+
+**Database Integration:**
+- ✅ Uso de tablas existentes:
+  - `teacher_classes` - Clases creadas por profesores
+  - `class_enrollments` - Inscripciones de alumnos
+  - `content_assignments` - Bloques asignados a clases
+  - `user_loaded_blocks` - Bloques cargados por usuarios
+  - `student_academic_profiles` - Perfiles académicos
+  - `academic_progress` - Progreso y calificaciones
+
+**Documentación:**
+- ✅ `DIFERENCIACION-ROLES-PPF-PCC.md` (315 líneas)
+- ✅ `FASE-2-FLUJO-CLASES-IMPLEMENTACION.md` (629 líneas)
+
+### Pendiente ⏳
+- ⏳ **UI de gestión de clases para profesores:**
+  - Crear/editar clases
+  - Generar códigos de inscripción
+  - Asignar bloques a clases
+
+- ⏳ **Seguimiento de progreso de alumnos:**
+  - Dashboard de progreso por alumno
+  - Vista de resultados por bloque
+  - Gráficas de rendimiento
+
+- ⏳ **Reportes y estadísticas de clase:**
+  - Reportes exportables (PDF, Excel)
+  - Estadísticas agregadas de clase
+  - Comparativas entre alumnos
 
 ## FASE 6: SISTEMA DE LUMINARIAS
 - Configuración de valores y reglas
@@ -2915,6 +3054,64 @@ Las siguientes fases serán detalladas completamente cuando estemos cerca de imp
   - Referencias de foreign keys entre tablas
   - Notas sobre uso de cada tabla principal
 - **Próximo paso:** Usuario ejecuta testing con información correcta de columnas
+
+## 2025-10-22 10:00 - Sistema de diferenciación de roles y clases implementado
+- **Autor:** Usuario + Claude
+- **Cambios:**
+  - 🎉 **FASE 4 iniciada:** Funcionalidades de Creadores (30% completado)
+  - 🎉 **FASE 5 iniciada:** Funcionalidades de Profesores (50% completado)
+  - Progreso total: 18% → 20%
+  - Estado general: "INICIADO" → "EN PROGRESO - Múltiples fases activas"
+
+- **FASE 4 - ETAPA 4.1 COMPLETADA:** Diferenciación de Roles (PCC - Creadores)
+  - ✅ Terminología estandarizada: "Jugadores" en contexto marketplace
+  - ✅ Panel de Creadores con descripción específica
+  - ✅ Componentes adaptados: bloques-creados-component.js, students-management-component.js
+  - ✅ Archivo: `creators-panel-content.html` actualizado
+  - ✅ Documentación: `DIFERENCIACION-ROLES-PPF-PCC.md` (315 líneas)
+
+- **FASE 5 - ETAPA 5.1 COMPLETADA:** Diferenciación de Roles (PPF - Profesores)
+  - ✅ Terminología estandarizada: "Alumnos" en contexto académico
+  - ✅ Panel de Profesores con descripción específica
+  - ✅ Componentes adaptados para contexto educativo
+  - ✅ Archivo: `teachers-panel-schedules.html` actualizado
+  - ✅ Documentación: `DIFERENCIACION-ROLES-PPF-PCC.md`
+
+- **FASE 5 - ETAPA 5.2 COMPLETADA:** Sistema de Inscripción en Clases
+
+  **Frontend implementado:**
+  - ✅ Tab "Mis Clases" condicional en panel de jugadores
+  - ✅ Formulario de inscripción con código de clase
+  - ✅ Visualización de clases inscritas (cards con info completa)
+  - ✅ Visualización de bloques asignados por profesores
+  - ✅ Función de carga de bloques asignados
+  - ✅ Archivo: `jugadores-panel-gaming.html` (funciones enrollInClass, loadMyClasses, loadAssignedBlocks, loadBlock)
+
+  **Backend implementado:**
+  - ✅ Controller: `backend/controllers/studentsController.js` con 5 funciones
+    - getMyClasses() - Clases inscritas
+    - enrollInClass() - Inscripción con validaciones
+    - getAssignedBlocks() - Bloques asignados
+    - loadBlock() - Cargar bloque
+    - getStudentProgress() - Progreso académico
+  - ✅ Rutas: `backend/routes/students.js` (4 endpoints)
+  - ✅ Rutas: `backend/routes/blocks.js` (1 endpoint)
+  - ✅ Server actualizado: CORS, registro de rutas
+
+  **Integración con BD:**
+  - ✅ Tablas utilizadas: teacher_classes, class_enrollments, content_assignments, user_loaded_blocks, student_academic_profiles, academic_progress
+  - ✅ Transacciones seguras con validaciones
+  - ✅ Documentación: `FASE-2-FLUJO-CLASES-IMPLEMENTACION.md` (629 líneas)
+
+- **Commits creados:**
+  - `feat: Implement Phase 1 role differentiation for PPF and PCC`
+  - `feat: Implement Phase 2 class enrollment flow (frontend)`
+  - `feat: Implement Phase 2 backend - Student enrollment system`
+
+- **Branch:** `claude/check-lumiquiz-access-011CUMmN6UtenZYw7zne88yx`
+- **Próximo paso:**
+  - Merge a main vía Pull Request para despliegue en Render
+  - Implementar UI de gestión de clases en panel de profesores (FASE 5 - siguiente etapa)
 
 ---
 
