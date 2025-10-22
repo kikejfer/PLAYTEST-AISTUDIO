@@ -17,6 +17,13 @@ class BloquesCreados {
             'jugadores': 'Jugadores',
             'estudiantes': 'Estudiantes'
         };
+
+        // Context descriptions for differentiation
+        this.contextDescriptions = {
+            'alumnos': 'Contexto académico - Gestión de clases y alumnos',
+            'jugadores': 'Contexto marketplace - Jugadores que cargan tu contenido',
+            'estudiantes': 'Contexto académico - Gestión de estudiantes'
+        };
     }
 
     async initialize() {
@@ -878,7 +885,7 @@ class BloquesCreados {
         const userLabel = this.labels[this.userType] || 'Usuarios';
         
         // Diferentes acciones según el tipo de usuario
-        const isTeacher = this.userType === 'alumnos'; // PPF (profesores)
+        const isTeacher = this.userType === 'alumnos' || this.userType === 'estudiantes'; // PPF (profesores)
         const isCreator = this.userType === 'jugadores'; // PCC (creadores)
         const isStudent = this.userType === 'estudiantes'; // PJG (estudiantes)
         const canEditQuestions = (isTeacher || isCreator) && this.displayMode === 'created'; // Only for created blocks
