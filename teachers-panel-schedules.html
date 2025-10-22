@@ -1304,7 +1304,14 @@
                 }
 
                 userSession = JSON.parse(session);
-                console.log('User session loaded:', userSession.nickname);
+
+                // Load token from separate storage
+                const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+                if (token) {
+                    userSession.token = token;
+                }
+
+                console.log('User session loaded:', userSession.nickname, 'Token present:', !!userSession.token);
             } catch (error) {
                 console.error('Error loading user session:', error);
             }
