@@ -30,10 +30,12 @@ const StudentsManagementComponent = (() => {
     // Configuraciones por rol
     const roleConfig = {
         profesor: {
-            title: 'Gestión de Estudiantes',
-            subtitle: 'Administra y supervisa el progreso de tus estudiantes',
+            title: 'Gestión de Alumnos',
+            subtitle: 'Administra y supervisa el progreso académico de tus alumnos inscritos en tus clases',
             icon: '🎓',
             primaryColor: '#3B82F6',
+            context: 'académico',
+            userLabel: 'Alumnos',
             endpoints: {
                 list: '/api/users/students',
                 progress: '/api/analytics/student-progress',
@@ -44,9 +46,11 @@ const StudentsManagementComponent = (() => {
         },
         creador: {
             title: 'Gestión de Jugadores',
-            subtitle: 'Administra usuarios que interactúan con tu contenido',
+            subtitle: 'Administra jugadores que han cargado tu contenido del marketplace y analiza su engagement',
             icon: '🎮',
             primaryColor: '#10B981',
+            context: 'marketplace',
+            userLabel: 'Jugadores',
             endpoints: {
                 list: '/api/users/players',
                 progress: '/api/analytics/player-progress',
