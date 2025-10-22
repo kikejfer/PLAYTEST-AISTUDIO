@@ -192,7 +192,8 @@
         <div class="tabs-container">
             <div class="tabs-nav">
                 <button class="tab-button active" onclick="switchTab('partidas')">🎮 Partidas</button>
-                <button class="tab-button" onclick="switchTab('bloques')">📚 Carga de Bloques</button>
+                <button class="tab-button" onclick="switchTab('bloques')">📚 Marketplace</button>
+                <button class="tab-button" id="mis-clases-tab-button" onclick="switchTab('mis-clases')" style="display: none;">🎓 Mis Clases</button>
                 <button class="tab-button" onclick="switchTab('historico')">📊 Histórico</button>
             </div>
         </div>
@@ -253,6 +254,55 @@
                 <h2 class="section-title">📊 Estadísticas</h2>
                 <div class="section-content">
                     <div id="statistics-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña Mis Clases -->
+        <div id="mis-clases-tab" class="tab-content">
+            <!-- Sección Inscripción a Clase -->
+            <div class="section" id="enrollment-section">
+                <h2 class="section-title">🎓 Únete a una Clase</h2>
+                <div class="section-content">
+                    <p style="color: #778DA9; margin-bottom: 20px;">
+                        Si tu profesor te ha dado un código de clase, ingrésalo aquí para acceder a los bloques asignados.
+                    </p>
+                    <div style="display: flex; gap: 10px; max-width: 500px;">
+                        <input
+                            type="text"
+                            id="class-code-input"
+                            placeholder="Ingresa el código de clase (ej: MATH2024-A)"
+                            class="search-input"
+                            style="flex: 1;"
+                        >
+                        <button class="btn btn-primary" onclick="enrollInClass()" style="background: #10B981;">
+                            Inscribirme
+                        </button>
+                    </div>
+                    <p id="enrollment-message" style="margin-top: 15px; color: #10B981; display: none;"></p>
+                </div>
+            </div>
+
+            <!-- Sección Mis Clases -->
+            <div class="section">
+                <h2 class="section-title">📚 Mis Clases</h2>
+                <div class="section-content">
+                    <div id="my-classes-container">
+                        <div class="loading">Cargando tus clases...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección Bloques Asignados -->
+            <div class="section">
+                <h2 class="section-title">📝 Bloques Asignados por Profesores</h2>
+                <div class="section-content">
+                    <p style="color: #778DA9; margin-bottom: 15px;">
+                        Aquí aparecerán los bloques que tus profesores te asignen en cada clase.
+                    </p>
+                    <div id="assigned-blocks-container">
+                        <div class="loading">Cargando bloques asignados...</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3679,7 +3729,290 @@
             if (selectedButton) {
                 selectedButton.classList.add('active');
             }
+
+            // Si se abre el tab de Mis Clases, cargar datos
+            if (tabName === 'mis-clases') {
+                loadMyClasses();
+                loadAssignedBlocks();
+            }
         };
+
+        // ==================== MIS CLASES FUNCTIONS ====================
+
+        // Verificar si el usuario tiene clases y mostrar/ocultar el tab
+        async function checkUserEnrollments() {
+            try {
+                const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+                if (!session.token || !session.userId) return;
+
+                const API_URL = window.location.hostname.includes('onrender.com')
+                    ? 'https://playtest-backend.onrender.com/api'
+                    : 'http://localhost:3001/api';
+
+                const response = await fetch(`${API_URL}/students/my-classes`, {
+                    headers: {
+                        'Authorization': `Bearer ${session.token}`,
+                        'X-Current-Role': 'PJG'
+                    }
+                });
+
+                if (response.ok) {
+                    const classes = await response.json();
+                    const misClasesTabButton = document.getElementById('mis-clases-tab-button');
+
+                    // Mostrar el tab solo si hay clases
+                    if (classes && classes.length > 0) {
+                        misClasesTabButton.style.display = 'block';
+                    } else {
+                        misClasesTabButton.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking enrollments:', error);
+            }
+        }
+
+        // Inscribirse en una clase
+        async function enrollInClass() {
+            const codeInput = document.getElementById('class-code-input');
+            const messageEl = document.getElementById('enrollment-message');
+            const classCode = codeInput.value.trim().toUpperCase();
+
+            if (!classCode) {
+                messageEl.textContent = 'Por favor ingresa un código de clase';
+                messageEl.style.color = '#EF4444';
+                messageEl.style.display = 'block';
+                return;
+            }
+
+            try {
+                const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+                if (!session.token || !session.userId) {
+                    messageEl.textContent = 'No autenticado. Por favor inicia sesión.';
+                    messageEl.style.color = '#EF4444';
+                    messageEl.style.display = 'block';
+                    return;
+                }
+
+                const API_URL = window.location.hostname.includes('onrender.com')
+                    ? 'https://playtest-backend.onrender.com/api'
+                    : 'http://localhost:3001/api';
+
+                const response = await fetch(`${API_URL}/students/enroll`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session.token}`,
+                        'X-Current-Role': 'PJG',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ class_code: classCode })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    messageEl.textContent = `✅ ¡Te has inscrito exitosamente en ${result.class_name || 'la clase'}!`;
+                    messageEl.style.color = '#10B981';
+                    messageEl.style.display = 'block';
+                    codeInput.value = '';
+
+                    // Recargar las clases y mostrar el tab
+                    await checkUserEnrollments();
+                    await loadMyClasses();
+                    await loadAssignedBlocks();
+                } else {
+                    messageEl.textContent = result.error || 'Error al inscribirse en la clase';
+                    messageEl.style.color = '#EF4444';
+                    messageEl.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error enrolling in class:', error);
+                messageEl.textContent = 'Error al conectar con el servidor';
+                messageEl.style.color = '#EF4444';
+                messageEl.style.display = 'block';
+            }
+        }
+
+        // Cargar las clases del usuario
+        async function loadMyClasses() {
+            const container = document.getElementById('my-classes-container');
+
+            try {
+                const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+                if (!session.token || !session.userId) return;
+
+                const API_URL = window.location.hostname.includes('onrender.com')
+                    ? 'https://playtest-backend.onrender.com/api'
+                    : 'http://localhost:3001/api';
+
+                container.innerHTML = '<div class="loading">Cargando tus clases...</div>';
+
+                const response = await fetch(`${API_URL}/students/my-classes`, {
+                    headers: {
+                        'Authorization': `Bearer ${session.token}`,
+                        'X-Current-Role': 'PJG'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Error al cargar clases');
+
+                const classes = await response.json();
+
+                if (!classes || classes.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🏫</div>
+                            <h3>No estás inscrito en ninguna clase</h3>
+                            <p>Ingresa un código de clase arriba para empezar</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = classes.map(classItem => `
+                    <div class="class-card" style="background: #1B263B; border: 1px solid #415A77; border-radius: 10px; padding: 20px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h3 style="color: #10B981; font-size: 1.3rem; margin-bottom: 5px;">${classItem.class_name}</h3>
+                                <p style="color: #778DA9; margin: 0;">${classItem.subject || 'Sin asignatura'}</p>
+                                <p style="color: #778DA9; font-size: 0.9rem; margin: 5px 0 0 0;">
+                                    Profesor: ${classItem.teacher_name || 'Desconocido'}
+                                </p>
+                            </div>
+                            <span style="background: #374151; color: #10B981; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; font-family: monospace;">
+                                ${classItem.class_code}
+                            </span>
+                        </div>
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #415A77; display: flex; gap: 20px; font-size: 0.9rem; color: #778DA9;">
+                            <span>📚 Nivel: ${classItem.grade_level || 'N/A'}</span>
+                            <span>📅 ${classItem.academic_year || 'N/A'}</span>
+                            <span>📊 ${classItem.semester || 'N/A'}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading classes:', error);
+                container.innerHTML = `
+                    <div class="error">
+                        <p>Error al cargar las clases: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Cargar bloques asignados
+        async function loadAssignedBlocks() {
+            const container = document.getElementById('assigned-blocks-container');
+
+            try {
+                const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+                if (!session.token || !session.userId) return;
+
+                const API_URL = window.location.hostname.includes('onrender.com')
+                    ? 'https://playtest-backend.onrender.com/api'
+                    : 'http://localhost:3001/api';
+
+                container.innerHTML = '<div class="loading">Cargando bloques asignados...</div>';
+
+                const response = await fetch(`${API_URL}/students/assigned-blocks`, {
+                    headers: {
+                        'Authorization': `Bearer ${session.token}`,
+                        'X-Current-Role': 'PJG'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Error al cargar bloques');
+
+                const blocks = await response.json();
+
+                if (!blocks || blocks.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📝</div>
+                            <h3>No tienes bloques asignados</h3>
+                            <p>Tus profesores aún no han asignado bloques a tus clases</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = blocks.map(block => `
+                    <div class="block-card" style="background: #1B263B; border: 1px solid #415A77; border-radius: 10px; padding: 20px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <h3 style="color: #3B82F6; font-size: 1.2rem; margin-bottom: 5px;">${block.block_name}</h3>
+                                <p style="color: #778DA9; margin: 0 0 10px 0;">${block.block_description || 'Sin descripción'}</p>
+                                <div style="display: flex; gap: 15px; font-size: 0.9rem; color: #778DA9;">
+                                    <span>📚 Clase: ${block.class_name}</span>
+                                    <span>❓ ${block.questions_count || 0} preguntas</span>
+                                    <span>👨‍🏫 ${block.teacher_name}</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="loadBlock(${block.block_id})" style="background: #10B981;">
+                                Cargar Bloque
+                            </button>
+                        </div>
+                        ${block.due_date ? `
+                            <div style="margin-top: 10px; padding: 8px; background: #374151; border-radius: 6px; font-size: 0.85rem; color: #E0E1DD;">
+                                📅 Fecha límite: ${new Date(block.due_date).toLocaleDateString()}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading assigned blocks:', error);
+                container.innerHTML = `
+                    <div class="error">
+                        <p>Error al cargar bloques asignados: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Función para cargar un bloque asignado
+        async function loadBlock(blockId) {
+            try {
+                const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+                if (!session.token || !session.userId) {
+                    alert('No autenticado. Por favor inicia sesión.');
+                    return;
+                }
+
+                const API_URL = window.location.hostname.includes('onrender.com')
+                    ? 'https://playtest-backend.onrender.com/api'
+                    : 'http://localhost:3001/api';
+
+                const response = await fetch(`${API_URL}/blocks/${blockId}/load`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session.token}`,
+                        'X-Current-Role': 'PJG',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('✅ Bloque cargado exitosamente');
+                    // Recargar la lista de bloques cargados si existe
+                    if (window.bloquesCreados_loaded_blocks_pjg_container && typeof window.bloquesCreados_loaded_blocks_pjg_container.refresh === 'function') {
+                        window.bloquesCreados_loaded_blocks_pjg_container.refresh();
+                    }
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + (error.error || 'No se pudo cargar el bloque'));
+                }
+            } catch (error) {
+                console.error('Error loading block:', error);
+                alert('Error al cargar el bloque: ' + error.message);
+            }
+        }
+
+        // Inicializar verificación de clases al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            checkUserEnrollments();
+        });
     </script>
 
     <!-- Los modales se cargan dinámicamente con el header-component (SIN modales de Explicación del Juego) -->
