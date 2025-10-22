@@ -65,9 +65,33 @@ if (process.env.NODE_ENV !== 'test') {
 // ============ IMPORTAR RUTAS ============
 
 const adminPrincipalRoutes = require('./routes/adminPrincipal');
-const studentsRoutes = require('./routes/students');
-const blocksRoutes = require('./routes/blocks');
-const teachersRoutes = require('./routes/teachers');
+
+// Import routes with error handling (pg-dependent routes may fail if pg not installed)
+let studentsRoutes = null;
+let blocksRoutes = null;
+let teachersRoutes = null;
+
+try {
+  studentsRoutes = require('./routes/students');
+  console.log('✅ Students routes loaded successfully');
+} catch (error) {
+  console.error('❌ Failed to load students routes:', error.message);
+}
+
+try {
+  blocksRoutes = require('./routes/blocks');
+  console.log('✅ Blocks routes loaded successfully');
+} catch (error) {
+  console.error('❌ Failed to load blocks routes:', error.message);
+}
+
+try {
+  teachersRoutes = require('./routes/teachers');
+  console.log('✅ Teachers routes loaded successfully');
+} catch (error) {
+  console.error('❌ Failed to load teachers routes:', error.message);
+}
+
 // const servicioTecnicoRoutes = require('./routes/servicio-tecnico');
 // const financieroRoutes = require('./routes/financiero');
 // const searchRoutes = require('./routes/search');
@@ -82,10 +106,30 @@ const teachersRoutes = require('./routes/teachers');
 
 // Rutas principales del sistema
 app.use('/api/admin', adminPrincipalRoutes);
-app.use('/api/students', studentsRoutes);
-app.use('/api/blocks', blocksRoutes);
-app.use('/api/teachers', teachersRoutes);
-app.use('/api/teachers-panel', teachersRoutes); // Alias para compatibilidad con frontend
+
+// Register routes only if they loaded successfully
+if (studentsRoutes) {
+  app.use('/api/students', studentsRoutes);
+  console.log('✅ Registered /api/students routes');
+} else {
+  console.warn('⚠️  Students routes not available');
+}
+
+if (blocksRoutes) {
+  app.use('/api/blocks', blocksRoutes);
+  console.log('✅ Registered /api/blocks routes');
+} else {
+  console.warn('⚠️  Blocks routes not available');
+}
+
+if (teachersRoutes) {
+  app.use('/api/teachers', teachersRoutes);
+  app.use('/api/teachers-panel', teachersRoutes); // Alias para compatibilidad con frontend
+  console.log('✅ Registered /api/teachers and /api/teachers-panel routes');
+} else {
+  console.warn('⚠️  Teachers routes not available - likely missing pg dependency');
+}
+
 // app.use('/api/servicio-tecnico', servicioTecnicoRoutes);
 // app.use('/api/financiero', financieroRoutes);
 // app.use('/api/search', searchRoutes);
