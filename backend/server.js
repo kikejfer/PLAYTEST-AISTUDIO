@@ -85,7 +85,7 @@ app.use('/api/admin', adminPrincipalRoutes);
 app.use('/api/students', studentsRoutes);
 app.use('/api/blocks', blocksRoutes);
 app.use('/api/teachers', teachersRoutes);
-app.use('/teachers-panel', teachersRoutes); // Alias para compatibilidad con frontend
+app.use('/api/teachers-panel', teachersRoutes); // Alias para compatibilidad con frontend
 // app.use('/api/servicio-tecnico', servicioTecnicoRoutes);
 // app.use('/api/financiero', financieroRoutes);
 // app.use('/api/search', searchRoutes);
