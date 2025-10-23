@@ -119,7 +119,7 @@ class NavigationService {
                 { text: 'Jugadores', url: '/creators-panel-players.html' }
             ],
             'PPF': [
-                { text: 'Estudiantes', url: '/teachers-panel-students.html' },
+                // 'Estudiantes' navigation removed - now integrated as subtab in teachers-panel-schedules.html
                 { text: 'Grupos', url: '/teachers-panel-groups.html' },
                 { text: 'Horarios', url: '/teachers-panel-schedules.html' },
                 { text: 'Funcionalidades', url: '/profesores-panel-funcionalidades.html' }
