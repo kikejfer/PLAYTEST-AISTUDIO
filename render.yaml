@@ -20,6 +20,7 @@ services:
   - type: web
     name: playtest-frontend
     env: node
+    rootDir: .
     buildCommand: npm install
     startCommand: npm start
     envVars:
