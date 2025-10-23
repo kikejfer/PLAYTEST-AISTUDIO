@@ -117,19 +117,48 @@ class AutoSetup {
         try {
             // Verificar si la columna image_url existe en blocks
             const columnCheck = await pool.query(`
-                SELECT column_name 
-                FROM information_schema.columns 
+                SELECT column_name
+                FROM information_schema.columns
                 WHERE table_name = 'blocks' AND column_name = 'image_url'
             `);
-            
+
             if (columnCheck.rows.length === 0) {
                 console.log('🔧 Agregando columna image_url a tabla blocks...');
                 await pool.query('ALTER TABLE blocks ADD COLUMN IF NOT EXISTS image_url TEXT');
                 console.log('✅ Columna image_url agregada');
             }
-            
+
         } catch (error) {
             console.warn('⚠️ Error agregando columna image_url (no crítico):', error.message);
+        }
+    }
+
+    async ensureTeachersSchemaExists() {
+        try {
+            // Verificar si teacher_classes existe
+            const tableCheck = await pool.query(`
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables
+                    WHERE table_schema = 'public'
+                    AND table_name = 'teacher_classes'
+                );
+            `);
+
+            if (!tableCheck.rows[0].exists) {
+                console.log('🎓 Esquema de Panel de Profesores no existe. Ejecutando migración...');
+
+                // Ejecutar script de migración
+                const updateTeachersSchema = require('./update-teachers-schema');
+                await updateTeachersSchema();
+
+                console.log('✅ Esquema de Panel de Profesores creado exitosamente');
+            } else {
+                console.log('✅ Esquema de Panel de Profesores ya existe');
+            }
+
+        } catch (error) {
+            console.error('❌ Error configurando esquema de profesores:', error.message);
+            // No fallar el inicio del servidor
         }
     }
 
@@ -140,14 +169,15 @@ class AutoSetup {
 
         try {
             console.log('🚀 Ejecutando configuración automática...');
-            
+
             // Verificar que la base de datos esté disponible
             await pool.query('SELECT 1');
-            
+
             // Ejecutar configuraciones necesarias
             await this.ensureAdminPrincipalExists();
             await this.ensureBlockImageColumnExists();
-            
+            await this.ensureTeachersSchemaExists();
+
             this.setupCompleted = true;
             console.log('✅ Configuración automática completada');
             
