@@ -1,4 +1,22 @@
 services:
+  # Backend API
+  - type: web
+    name: playtest-backend
+    env: node
+    rootDir: playtest-backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false  # Configurar manualmente en Render
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://playtest-frontend.onrender.com
+
+  # Frontend
   - type: web
     name: playtest-frontend
     env: node
@@ -7,3 +25,5 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: BACKEND_URL
+        value: https://playtest-backend.onrender.com

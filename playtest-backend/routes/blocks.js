@@ -2152,4 +2152,70 @@ router.get('/:blockId/topics', authenticateToken, async (req, res) => {
   }
 });
 
+// ============ CARGAR BLOQUES (Phase 1) ============
+
+/**
+ * POST /api/blocks/:blockId/load
+ * Cargar un bloque al perfil del usuario
+ * Permite a estudiantes cargar bloques asignados
+ */
+router.post('/:blockId/load', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const blockId = parseInt(req.params.blockId);
+
+    if (!blockId || isNaN(blockId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID de bloque inválido'
+      });
+    }
+
+    // 1. Verificar que el bloque existe
+    const blockCheck = await pool.query(
+      'SELECT id, name FROM blocks WHERE id = $1',
+      [blockId]
+    );
+
+    if (blockCheck.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Bloque no encontrado'
+      });
+    }
+
+    const blockName = blockCheck.rows[0].name;
+
+    // 2. Insertar en user_loaded_blocks (o actualizar si ya existe)
+    const loadQuery = `
+      INSERT INTO user_loaded_blocks (user_id, block_id, loaded_at)
+      VALUES ($1, $2, NOW())
+      ON CONFLICT (user_id, block_id) DO UPDATE
+      SET loaded_at = NOW()
+      RETURNING id, loaded_at
+    `;
+
+    const loadResult = await pool.query(loadQuery, [userId, blockId]);
+
+    console.log(`✅ User ${userId} loaded block ${blockId} (${blockName})`);
+
+    res.json({
+      success: true,
+      message: `Bloque "${blockName}" cargado exitosamente`,
+      data: {
+        block_id: blockId,
+        block_name: blockName,
+        loaded_at: loadResult.rows[0].loaded_at
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error cargando bloque:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al cargar el bloque',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
