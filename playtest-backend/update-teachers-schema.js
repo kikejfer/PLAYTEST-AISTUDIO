@@ -9,13 +9,16 @@ const path = require('path');
 async function updateTeachersSchema() {
     try {
         console.log('🎓 Actualizando esquema del Panel de Profesores...');
-        
-        // Leer el archivo SQL del esquema
-        const schemaPath = path.join(__dirname, '..', 'database-schema-teachers-panel.sql');
-        
+
+        // Leer el archivo SQL del esquema (desde el mismo directorio que este script)
+        const schemaPath = path.join(__dirname, 'database-schema-teachers-panel.sql');
+
         if (!fs.existsSync(schemaPath)) {
+            console.error(`❌ Archivo de esquema no encontrado en: ${schemaPath}`);
             throw new Error(`Archivo de esquema no encontrado: ${schemaPath}`);
         }
+
+        console.log(`📂 Leyendo esquema desde: ${schemaPath}`);
         
         const schemaSql = fs.readFileSync(schemaPath, 'utf8');
         
