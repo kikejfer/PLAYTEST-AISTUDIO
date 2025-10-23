@@ -95,6 +95,8 @@ const gameStatesRoutes = require('./routes/game-states');
 const creatorsPanelRoutes = require('./routes/creators-panel');
 const testMetadataRoutes = require('./routes/test-metadata');
 const groupsRoutes = require('./routes/groups');
+const studentsRoutes = require('./routes/students');
+const teachersRoutes = require('./routes/teachers');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -115,6 +117,8 @@ app.use('/api/game-states', gameStatesRoutes);
 app.use('/api/creators-panel', creatorsPanelRoutes);
 app.use('/api/test-metadata', testMetadataRoutes);
 app.use('/api/groups', groupsRoutes);
+app.use('/api/students', studentsRoutes);
+app.use('/api/teachers', teachersRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
