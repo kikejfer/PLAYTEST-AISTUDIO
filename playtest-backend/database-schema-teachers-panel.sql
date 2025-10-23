@@ -479,73 +479,73 @@ CREATE TABLE IF NOT EXISTS tournament_progress (
     UNIQUE(tournament_id, participant_id, phase)
 );
 
--- TABLA: Reseñas de recursos educativos
-CREATE TABLE IF NOT EXISTS resource_reviews (
-    id SERIAL PRIMARY KEY,
-    resource_id INTEGER REFERENCES educational_resources(id) ON DELETE CASCADE,
-    teacher_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    
-    -- Información de la reseña
-    rating INTEGER CHECK (rating >= 1 AND rating <= 5),
-    review_text TEXT,
-    usage_context JSONB, -- Contexto de uso del recurso
-    
-    -- Efectividad reportada
-    effectiveness_score DECIMAL(3,2), -- 0-1 score
-    student_engagement_impact INTEGER CHECK (student_engagement_impact >= 1 AND student_engagement_impact <= 5),
-    learning_outcome_impact INTEGER CHECK (learning_outcome_impact >= 1 AND learning_outcome_impact <= 5),
-    
-    -- Recomendaciones
-    would_recommend BOOLEAN DEFAULT true,
-    improvement_suggestions TEXT,
-    alternative_uses JSONB,
-    
-    created_at TIMESTAMP DEFAULT NOW()
-);
-
--- TABLA: Recursos educativos
+-- TABLA: Recursos educativos (MOVIDA ANTES DE resource_reviews para resolver dependencia FK)
 CREATE TABLE IF NOT EXISTS educational_resources (
     id SERIAL PRIMARY KEY,
     teacher_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    
+
     -- Información del recurso
     resource_name VARCHAR(200) NOT NULL,
     resource_type VARCHAR(50), -- 'assessment', 'multimedia', 'interactive', 'virtual_trip', 'simulation'
     subject_area VARCHAR(100),
     grade_level VARCHAR(50),
-    
+
     -- Clasificación académica
     standards_alignment JSONB, -- Alineación con estándares
     bloom_taxonomy_level JSONB, -- Nivel de taxonomía de Bloom
     learning_objectives JSONB, -- Objetivos de aprendizaje
-    
+
     -- Contenido del recurso
     resource_content JSONB, -- Contenido estructurado
     multimedia_elements JSONB, -- Elementos multimedia
     interactive_components JSONB, -- Componentes interactivos
-    
+
     -- Metadatos educativos
     difficulty_level INTEGER CHECK (difficulty_level >= 1 AND difficulty_level <= 10),
     estimated_duration INTEGER, -- minutos
     prerequisites JSONB, -- Prerrequisitos necesarios
-    
+
     -- Diferenciación y accesibilidad
     differentiation_options JSONB, -- Opciones de diferenciación
     accessibility_features JSONB, -- Características de accesibilidad
     language_options JSONB, -- Opciones de idioma
-    
+
     -- Uso y efectividad
     usage_count INTEGER DEFAULT 0,
     effectiveness_rating DECIMAL(3,2), -- Rating de efectividad
     teacher_reviews JSONB, -- Reseñas de profesores
-    
+
     -- Estado y disponibilidad
     is_published BOOLEAN DEFAULT false,
     is_public BOOLEAN DEFAULT false,
     tags JSONB, -- Tags para búsqueda
-    
+
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- TABLA: Reseñas de recursos educativos
+CREATE TABLE IF NOT EXISTS resource_reviews (
+    id SERIAL PRIMARY KEY,
+    resource_id INTEGER REFERENCES educational_resources(id) ON DELETE CASCADE,
+    teacher_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+
+    -- Información de la reseña
+    rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+    review_text TEXT,
+    usage_context JSONB, -- Contexto de uso del recurso
+
+    -- Efectividad reportada
+    effectiveness_score DECIMAL(3,2), -- 0-1 score
+    student_engagement_impact INTEGER CHECK (student_engagement_impact >= 1 AND student_engagement_impact <= 5),
+    learning_outcome_impact INTEGER CHECK (learning_outcome_impact >= 1 AND learning_outcome_impact <= 5),
+
+    -- Recomendaciones
+    would_recommend BOOLEAN DEFAULT true,
+    improvement_suggestions TEXT,
+    alternative_uses JSONB,
+
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
 -- TABLA: Comunicación educativa
