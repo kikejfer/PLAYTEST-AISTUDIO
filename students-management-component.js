@@ -37,7 +37,7 @@ const StudentsManagementComponent = (() => {
             context: 'académico',
             userLabel: 'Alumnos',
             endpoints: {
-                list: '/api/users/students',
+                list: '/api/teachers-panel/students',
                 progress: '/api/analytics/student-progress',
                 assign: '/api/assignments/create',
                 export: '/api/reports/students'
