@@ -29,7 +29,7 @@ Esta guía explica cómo desplegar la aplicación PLAYTEST en Render con Postgre
    - **Environment**: `Node`
    - **Region**: Oregon (US West) - recomendado
    - **Branch**: `main`
-   - **Root Directory**: `backend` ⬅️ **IMPORTANTE: Usa este directorio**
+   - **Root Directory**: `playtest-backend` ⬅️ **IMPORTANTE: Usa este directorio**
 
 2. **Build Command**:
    ```bash
