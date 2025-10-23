@@ -193,7 +193,7 @@
             <div class="tabs-nav">
                 <button class="tab-button active" onclick="switchTab('partidas')">🎮 Partidas</button>
                 <button class="tab-button" onclick="switchTab('bloques')">📚 Marketplace</button>
-                <button class="tab-button" id="mis-clases-tab-button" onclick="switchTab('mis-clases')" style="display: none;">🎓 Mis Clases</button>
+                <button class="tab-button" id="mis-clases-tab-button" onclick="switchTab('mis-clases')">🎓 Mis Clases</button>
                 <button class="tab-button" onclick="switchTab('historico')">📊 Histórico</button>
             </div>
         </div>
@@ -3758,14 +3758,8 @@
 
                 if (response.ok) {
                     const classes = await response.json();
-                    const misClasesTabButton = document.getElementById('mis-clases-tab-button');
-
-                    // Mostrar el tab solo si hay clases
-                    if (classes && classes.length > 0) {
-                        misClasesTabButton.style.display = 'block';
-                    } else {
-                        misClasesTabButton.style.display = 'none';
-                    }
+                    // La pestaña "Mis Clases" ahora siempre está visible
+                    // para permitir que los estudiantes se inscriban por primera vez
                 }
             } catch (error) {
                 console.error('Error checking enrollments:', error);
