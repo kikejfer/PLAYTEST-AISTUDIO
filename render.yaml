@@ -3,7 +3,7 @@ services:
   - type: web
     name: playtest-backend
     env: node
-    rootDir: playtest-backend
+    rootDir: .
     buildCommand: npm install
     startCommand: npm start
     envVars:
