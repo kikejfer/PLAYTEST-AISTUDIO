@@ -97,6 +97,7 @@ const testMetadataRoutes = require('./routes/test-metadata');
 const groupsRoutes = require('./routes/groups');
 const studentsRoutes = require('./routes/students');
 const teachersRoutes = require('./routes/teachers');
+const teachersPanelRoutes = require('./routes/teachers-panel');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -119,6 +120,7 @@ app.use('/api/test-metadata', testMetadataRoutes);
 app.use('/api/groups', groupsRoutes);
 app.use('/api/students', studentsRoutes);
 app.use('/api/teachers', teachersRoutes);
+app.use('/api/teachers-panel', teachersPanelRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
