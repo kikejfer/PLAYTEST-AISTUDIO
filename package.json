@@ -1,0 +1,15 @@
+{
+  "name": "playtest-frontend",
+  "version": "1.0.0",
+  "description": "PLAYTEST Frontend - Static HTML files",
+  "main": "frontend-server.js",
+  "scripts": {
+    "start": "node frontend-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
