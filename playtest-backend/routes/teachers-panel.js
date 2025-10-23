@@ -185,6 +185,47 @@ router.post('/classes/:classCode/enroll', authenticateToken, async (req, res) =>
     }
 });
 
+// Obtener TODOS los estudiantes del profesor (todas sus clases)
+router.get('/students', authenticateToken, requireTeacherRole, async (req, res) => {
+    try {
+        const teacherId = req.user.id;
+
+        const students = await pool.query(`
+            SELECT DISTINCT
+                u.id,
+                u.nickname as name,
+                u.email,
+                COALESCE(up.first_name || ' ' || up.last_name, u.nickname) as full_name,
+                tc.class_name as course,
+                tc.subject as institution,
+                ce.enrollment_date as joinDate,
+                ce.last_activity as lastActivity,
+                CASE
+                    WHEN ce.last_activity > NOW() - INTERVAL '7 days' THEN 'active'
+                    ELSE 'inactive'
+                END as status,
+                COALESCE(ce.attendance_rate, 0) as progress,
+                0 as completedActivities,
+                0 as totalActivities,
+                CONCAT('https://api.dicebear.com/7.x/avataaars/svg?seed=', u.id) as avatar
+            FROM class_enrollments ce
+            JOIN teacher_classes tc ON ce.class_id = tc.id
+            JOIN users u ON ce.student_id = u.id
+            LEFT JOIN user_profiles up ON u.id = up.user_id
+            WHERE tc.teacher_id = $1
+            AND ce.enrollment_status = 'active'
+            AND tc.is_active = true
+            ORDER BY ce.enrollment_date DESC
+        `, [teacherId]);
+
+        res.json({ students: students.rows });
+
+    } catch (error) {
+        console.error('Error obteniendo estudiantes del profesor:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
 // Obtener estudiantes de una clase
 router.get('/classes/:classId/students', authenticateToken, requireTeacherRole, async (req, res) => {
     try {
