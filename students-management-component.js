@@ -681,55 +681,33 @@ const StudentsManagementComponent = (() => {
     const loadStudentsData = async () => {
         try {
             console.log('📊 Cargando datos de estudiantes...');
-            
+
             const config = roleConfig[currentRole];
             const endpoint = config.endpoints.list;
-            
-            // Simular llamada a API (reemplazar con llamada real)
+
+            // Realizar llamada real al API
             const response = await apiCall(endpoint);
-            studentsData = response.data || generateMockData();
-            
+            studentsData = response.data || [];
+
             // Aplicar filtros iniciales
             applyFilters();
-            
+
             // Actualizar estadísticas
             updateStatistics();
-            
+
             // Renderizar lista
             renderStudentsList();
-            
+
         } catch (error) {
             console.error('❌ Error cargando estudiantes:', error);
-            showErrorState();
+            studentsData = [];
+            applyFilters();
+            updateStatistics();
+            renderStudentsList();
         }
     };
 
-    // Generar datos de prueba (temporal)
-    const generateMockData = () => {
-        const mockStudents = [];
-        const names = ['Ana García', 'Carlos López', 'María Rodríguez', 'Juan Martínez', 'Laura Sánchez', 'Pedro González', 'Sara Fernández', 'Miguel Torres', 'Elena Ruiz', 'David Morales'];
-        const institutions = ['Universidad Central', 'Instituto Técnico', 'Colegio San José', 'Universidad Nacional', 'Academia Digital'];
-        const courses = ['Matemáticas Básicas', 'Historia Moderna', 'Ciencias Naturales', 'Literatura Española', 'Física Aplicada'];
-        
-        for (let i = 0; i < 50; i++) {
-            mockStudents.push({
-                id: i + 1,
-                name: names[Math.floor(Math.random() * names.length)],
-                email: `estudiante${i + 1}@email.com`,
-                institution: institutions[Math.floor(Math.random() * institutions.length)],
-                course: courses[Math.floor(Math.random() * courses.length)],
-                progress: Math.floor(Math.random() * 100),
-                completedActivities: Math.floor(Math.random() * 50),
-                totalActivities: Math.floor(Math.random() * 20) + 50,
-                lastActivity: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
-                joinDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
-                status: Math.random() > 0.7 ? 'inactive' : 'active',
-                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`
-            });
-        }
-        
-        return mockStudents;
-    };
+    // generateMockData removed - using real API data only
 
     // Aplicar filtros
     const applyFilters = () => {
@@ -1191,11 +1169,39 @@ const StudentsManagementComponent = (() => {
 
     // API Mock (reemplazar con implementación real)
     const apiCall = async (endpoint) => {
-        return new Promise(resolve => {
-            setTimeout(() => {
-                resolve({ data: null });
-            }, 1000);
-        });
+        // Get backend URL from environment or use default
+        const API_URL = window.API_URL || 'https://playtest-backend.onrender.com';
+
+        // Get user session
+        const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+
+        if (!session.token) {
+            console.warn('⚠️ No authentication token found');
+            return { data: [] };
+        }
+
+        try {
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.token}`,
+                    'X-Current-Role': 'PPF'
+                }
+            });
+
+            if (!response.ok) {
+                console.error(`API error: ${response.status} ${response.statusText}`);
+                return { data: [] };
+            }
+
+            const data = await response.json();
+            return { data: data.students || data.players || data.data || [] };
+
+        } catch (error) {
+            console.error('❌ Error calling API:', error);
+            return { data: [] };
+        }
     };
 
     // Métodos públicos
