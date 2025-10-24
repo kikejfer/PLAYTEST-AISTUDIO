@@ -113,17 +113,25 @@ async function enrollInClass(studentId, classCode) {
 
         const enrollResult = await client.query(enrollQuery, [classData.id, studentId]);
 
-        // 5. Crear perfil académico del estudiante
-        const profileQuery = `
-            INSERT INTO student_academic_profiles (
-                student_id,
-                class_id
-            )
-            VALUES ($1, $2)
-            ON CONFLICT (student_id, class_id) DO NOTHING;
+        // 5. Crear perfil académico del estudiante (opcional, se puede crear después)
+        // La tabla no tiene restricción UNIQUE, así que verificamos si ya existe
+        const checkProfileQuery = `
+            SELECT id FROM student_academic_profiles
+            WHERE student_id = $1 AND class_id = $2;
         `;
 
-        await client.query(profileQuery, [studentId, classData.id]);
+        const existingProfile = await client.query(checkProfileQuery, [studentId, classData.id]);
+
+        if (existingProfile.rows.length === 0) {
+            const profileQuery = `
+                INSERT INTO student_academic_profiles (
+                    student_id,
+                    class_id
+                )
+                VALUES ($1, $2);
+            `;
+            await client.query(profileQuery, [studentId, classData.id]);
+        }
 
         await client.query('COMMIT');
 
@@ -158,9 +166,9 @@ async function getAssignedBlocks(studentId) {
                 tc.class_code,
                 u.nickname as teacher_name,
                 ca.due_date,
-                ca.assigned_at,
-                ca.content_type,
-                ca.instructions,
+                ca.created_at as assigned_at,
+                ca.assignment_type as content_type,
+                ca.assignment_name as instructions,
                 (SELECT COUNT(*) FROM questions WHERE block_id = b.id) as questions_count,
                 -- Verificar si ya está cargado
                 CASE
@@ -170,12 +178,12 @@ async function getAssignedBlocks(studentId) {
                 ulb.loaded_at
             FROM content_assignments ca
             JOIN teacher_classes tc ON ca.class_id = tc.id
-            JOIN blocks b ON ca.block_id = b.id
             JOIN users u ON tc.teacher_id = u.id
-            JOIN class_enrollments ce ON ce.class_id = tc.id
+            JOIN class_enrollments ce ON ce.class_id = tc.id AND ce.student_id = $1
+            CROSS JOIN LATERAL unnest(ca.block_ids) as block_id
+            JOIN blocks b ON b.id = block_id
             LEFT JOIN user_loaded_blocks ulb ON ulb.user_id = $1 AND ulb.block_id = b.id
-            WHERE ce.student_id = $1
-              AND ce.enrollment_status = 'active'
+            WHERE ce.enrollment_status = 'active'
               AND ca.is_active = true
             ORDER BY
                 CASE
@@ -183,7 +191,7 @@ async function getAssignedBlocks(studentId) {
                     ELSE 0
                 END,
                 ca.due_date ASC,
-                ca.assigned_at DESC;
+                ca.created_at DESC;
         `;
 
         const result = await pool.query(query, [studentId]);
