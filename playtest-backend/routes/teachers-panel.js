@@ -262,7 +262,7 @@ router.get('/students', authenticateToken, requireTeacherRole, async (req, res) 
         const { class_id } = req.query; // Optional filter by class
 
         let query = `
-            SELECT DISTINCT ON (u.id, tc.id)
+            SELECT
                 u.id,
                 u.nickname as name,
                 u.email,
@@ -281,20 +281,7 @@ router.get('/students', authenticateToken, requireTeacherRole, async (req, res) 
                 COALESCE(ce.attendance_rate, 0) as progress,
                 0 as completedActivities,
                 0 as totalActivities,
-                CONCAT('https://api.dicebear.com/7.x/avataaars/svg?seed=', u.id) as avatar,
-                -- Get groups for this student (created by this teacher)
-                COALESCE(
-                    (SELECT json_agg(json_build_object(
-                        'id', g.id,
-                        'name', g.name,
-                        'joined_at', gm.joined_at
-                    ))
-                    FROM group_members gm
-                    JOIN groups g ON gm.group_id = g.id
-                    WHERE gm.user_id = u.id
-                    AND g.created_by = $1
-                    ), '[]'::json
-                ) as groups
+                CONCAT('https://api.dicebear.com/7.x/avataaars/svg?seed=', u.id) as avatar
             FROM class_enrollments ce
             JOIN teacher_classes tc ON ce.class_id = tc.id
             JOIN users u ON ce.student_id = u.id
@@ -303,11 +290,24 @@ router.get('/students', authenticateToken, requireTeacherRole, async (req, res) 
             AND ce.enrollment_status = 'active'
             AND tc.is_active = true
             ${class_id ? 'AND tc.id = $2' : ''}
-            ORDER BY u.id, tc.id, ce.enrollment_date DESC
+            ORDER BY ce.enrollment_date DESC
         `;
 
         const params = class_id ? [teacherId, class_id] : [teacherId];
-        const students = await pool.query(query, params);
+        const studentsResult = await pool.query(query, params);
+
+        // Get groups for each student
+        for (let student of studentsResult.rows) {
+            const groupsQuery = await pool.query(`
+                SELECT g.id, g.name, gm.joined_at
+                FROM group_members gm
+                JOIN groups g ON gm.group_id = g.id
+                WHERE gm.user_id = $1 AND g.created_by = $2
+                ORDER BY gm.joined_at DESC
+            `, [student.id, teacherId]);
+
+            student.groups = groupsQuery.rows;
+        }
 
         // Also return available classes for filter
         const classes = await pool.query(`
@@ -318,13 +318,13 @@ router.get('/students', authenticateToken, requireTeacherRole, async (req, res) 
         `, [teacherId]);
 
         res.json({
-            data: students.rows,
+            data: studentsResult.rows,
             classes: classes.rows
         });
 
     } catch (error) {
         console.error('Error obteniendo estudiantes del profesor:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
+        res.status(500).json({ error: 'Error interno del servidor', details: error.message });
     }
 });
 
@@ -344,67 +344,27 @@ router.get('/classes/:classId/students', authenticateToken, requireTeacherRole, 
         }
 
         const students = await pool.query(`
-            SELECT 
+            SELECT
                 u.id,
                 u.nickname,
+                u.email,
                 up.first_name,
                 up.last_name,
                 ce.enrollment_date,
                 ce.enrollment_status,
-                ce.learning_style,
-                ce.attendance_rate,
-                ce.engagement_score,
-                ce.last_activity,
-                sap.dominant_learning_style,
-                sap.strengths_mapping,
-                sap.weaknesses_mapping,
-                
-                -- Métricas recientes de rendimiento
-                COALESCE(recent_progress.avg_score, 0) as recent_avg_score,
-                COALESCE(recent_progress.completion_rate, 0) as recent_completion_rate,
-                
-                -- Asistencia reciente
-                COALESCE(recent_attendance.attendance_rate, 0) as recent_attendance_rate,
-                COALESCE(recent_attendance.avg_engagement, 0) as avg_engagement_score
-                
+                ce.last_activity
             FROM class_enrollments ce
             JOIN users u ON ce.student_id = u.id
             LEFT JOIN user_profiles up ON u.id = up.user_id
-            LEFT JOIN student_academic_profiles sap ON u.id = sap.student_id AND sap.class_id = ce.class_id
-            
-            -- Progreso académico reciente (últimos 30 días)
-            LEFT JOIN (
-                SELECT 
-                    student_id,
-                    AVG(percentage) as avg_score,
-                    (COUNT(CASE WHEN date_completed IS NOT NULL THEN 1 END)::DECIMAL / 
-                     NULLIF(COUNT(*), 0)) * 100 as completion_rate
-                FROM academic_progress
-                WHERE class_id = $1 AND date_started >= CURRENT_DATE - INTERVAL '30 days'
-                GROUP BY student_id
-            ) recent_progress ON u.id = recent_progress.student_id
-            
-            -- Asistencia reciente (últimos 30 días)
-            LEFT JOIN (
-                SELECT 
-                    student_id,
-                    (COUNT(CASE WHEN status = 'present' THEN 1 END)::DECIMAL / 
-                     NULLIF(COUNT(*), 0)) * 100 as attendance_rate,
-                    AVG(engagement_score) as avg_engagement
-                FROM attendance_tracking
-                WHERE class_id = $1 AND attendance_date >= CURRENT_DATE - INTERVAL '30 days'
-                GROUP BY student_id
-            ) recent_attendance ON u.id = recent_attendance.student_id
-            
             WHERE ce.class_id = $1 AND ce.enrollment_status = 'active'
-            ORDER BY u.nickname
+            ORDER BY up.first_name, up.last_name, u.nickname
         `, [classId]);
 
         res.json({ students: students.rows });
 
     } catch (error) {
         console.error('Error obteniendo estudiantes:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
+        res.status(500).json({ error: 'Error interno del servidor', details: error.message });
     }
 });
 
