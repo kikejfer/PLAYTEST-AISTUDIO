@@ -90,7 +90,7 @@ router.post('/register', async (req, res) => {
         roles: userRoles
       },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '30d' }
     );
 
     // Verificar si necesita cambiar contraseña (AdminPrincipal)
@@ -187,7 +187,7 @@ router.post('/login', async (req, res) => {
         roles: userRoles
       },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '30d' }
     );
 
     res.json({
