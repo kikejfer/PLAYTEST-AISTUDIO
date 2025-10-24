@@ -3874,7 +3874,8 @@
 
                 if (!response.ok) throw new Error('Error al cargar clases');
 
-                const classes = await response.json();
+                const data = await response.json();
+                const classes = data.classes || [];
 
                 if (!classes || classes.length === 0) {
                     container.innerHTML = `
