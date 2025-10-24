@@ -18,8 +18,10 @@ const StudentsManagementComponent = (() => {
     let studentsData = [];
     let filteredStudents = [];
     let selectedStudents = [];
+    let availableClasses = []; // Available classes for filtering
     let currentFilters = {
         searchTerm: '',
+        classId: '', // Filter by specific class
         institution: '',
         course: '',
         progressLevel: '',
@@ -150,14 +152,22 @@ const StudentsManagementComponent = (() => {
                     <div class="filters-grid">
                         <div class="filter-group">
                             <label for="search-input">🔍 Buscar</label>
-                            <input 
-                                type="text" 
-                                id="search-input" 
+                            <input
+                                type="text"
+                                id="search-input"
                                 placeholder="Nombre, email o institución..."
                                 oninput="StudentsManagementComponent.updateFilter('searchTerm', this.value)"
                             >
                         </div>
-                        
+
+                        <div class="filter-group">
+                            <label for="class-filter">📚 Clase</label>
+                            <select id="class-filter" onchange="StudentsManagementComponent.updateFilter('classId', this.value)">
+                                <option value="">Todas las clases</option>
+                                <!-- Opciones cargadas dinámicamente -->
+                            </select>
+                        </div>
+
                         <div class="filter-group">
                             <label for="institution-filter">🏫 Institución</label>
                             <select id="institution-filter" onchange="StudentsManagementComponent.updateFilter('institution', this.value)">
@@ -685,9 +695,16 @@ const StudentsManagementComponent = (() => {
             const config = roleConfig[currentRole];
             const endpoint = config.endpoints.list;
 
+            // Add class filter to endpoint if selected
+            const classFilter = currentFilters.classId ? `?class_id=${currentFilters.classId}` : '';
+
             // Realizar llamada real al API
-            const response = await apiCall(endpoint);
+            const response = await apiCall(endpoint + classFilter);
             studentsData = response.data || [];
+            availableClasses = response.classes || [];
+
+            // Populate class filter dropdown
+            populateClassFilter();
 
             // Aplicar filtros iniciales
             applyFilters();
@@ -701,9 +718,34 @@ const StudentsManagementComponent = (() => {
         } catch (error) {
             console.error('❌ Error cargando estudiantes:', error);
             studentsData = [];
+            availableClasses = [];
             applyFilters();
             updateStatistics();
             renderStudentsList();
+        }
+    };
+
+    // Populate class filter dropdown with available classes
+    const populateClassFilter = () => {
+        const classFilter = document.getElementById('class-filter');
+        if (!classFilter) return;
+
+        // Keep the current selection
+        const currentSelection = classFilter.value;
+
+        // Clear and rebuild options
+        classFilter.innerHTML = '<option value="">Todas las clases</option>';
+
+        availableClasses.forEach(cls => {
+            const option = document.createElement('option');
+            option.value = cls.id;
+            option.textContent = `${cls.class_name} - ${cls.subject}`;
+            classFilter.appendChild(option);
+        });
+
+        // Restore selection
+        if (currentSelection) {
+            classFilter.value = currentSelection;
         }
     };
 
@@ -856,15 +898,15 @@ const StudentsManagementComponent = (() => {
                                 <span class="info-value">${student.course}</span>
                             </div>
                             <div class="info-item">
-                                <span class="info-label">✅ Completadas:</span>
-                                <span class="info-value">${student.completedActivities}/${student.totalActivities}</span>
+                                <span class="info-label">👥 Grupos:</span>
+                                <span class="info-value">${getGroupsBadges(student.groups)}</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">📅 Última actividad:</span>
                                 <span class="info-value">${formatDate(student.lastActivity)}</span>
                             </div>
                         </div>
-                        
+
                         <div class="progress-section">
                             <div class="progress-header">
                                 <span class="progress-label">Progreso General</span>
@@ -880,8 +922,8 @@ const StudentsManagementComponent = (() => {
                         <button class="btn-student-details" onclick="StudentsManagementComponent.showStudentDetails(${student.id})">
                             👁️ Ver Detalles
                         </button>
-                        <button class="btn-send-message" onclick="StudentsManagementComponent.sendMessage(${student.id})">
-                            💬 Enviar Mensaje
+                        <button class="btn-assign-group" onclick="StudentsManagementComponent.assignToGroup(${student.id}, '${student.name.replace(/'/g, "\\'")}')">
+                            👥 Asignar a Grupo
                         </button>
                         <button class="btn-assign-content" onclick="StudentsManagementComponent.assignContent(${student.id})">
                             📝 Asignar Contenido
@@ -1167,6 +1209,16 @@ const StudentsManagementComponent = (() => {
         }).format(date);
     };
 
+    const getGroupsBadges = (groups) => {
+        if (!groups || groups.length === 0) {
+            return '<span style="color: #778DA9; font-style: italic;">Sin grupo</span>';
+        }
+
+        return groups.map(group =>
+            `<span style="background: #1B263B; color: #10B981; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; margin-right: 4px;">${group.name}</span>`
+        ).join('');
+    };
+
     // API Mock (reemplazar con implementación real)
     const apiCall = async (endpoint) => {
         // Get backend URL from environment or use default
@@ -1211,6 +1263,13 @@ const StudentsManagementComponent = (() => {
         // Métodos de filtrado
         updateFilter: (filterName, value) => {
             currentFilters[filterName] = value;
+
+            // If class filter changed, reload data from server
+            if (filterName === 'classId') {
+                loadStudentsData();
+                return;
+            }
+
             applyFilters();
             updateStatistics();
             renderStudentsList();
@@ -1219,6 +1278,7 @@ const StudentsManagementComponent = (() => {
         clearFilters: () => {
             currentFilters = {
                 searchTerm: '',
+                classId: '',
                 institution: '',
                 course: '',
                 progressLevel: '',
@@ -1235,10 +1295,9 @@ const StudentsManagementComponent = (() => {
                     input.selectedIndex = 0;
                 }
             });
-            
-            applyFilters();
-            updateStatistics();
-            renderStudentsList();
+
+            // Reload data since classId filter was cleared
+            loadStudentsData();
         },
 
         // Métodos de selección
@@ -1298,6 +1357,104 @@ const StudentsManagementComponent = (() => {
         assignContent: (studentId) => {
             console.log(`📝 Asignando contenido al estudiante ${studentId}`);
             // Implementar funcionalidad de asignación
+        },
+
+        assignToGroup: async (studentId, studentName) => {
+            console.log(`👥 Asignando estudiante ${studentId} a grupo`);
+
+            // Get available groups
+            const API_URL = window.API_URL || 'https://playtest-backend.onrender.com';
+            const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+
+            try {
+                // Fetch available groups
+                const groupsResponse = await fetch(`${API_URL}/groups`, {
+                    headers: {
+                        'Authorization': `Bearer ${session.token}`,
+                        'X-Current-Role': 'PPF'
+                    }
+                });
+
+                if (!groupsResponse.ok) {
+                    throw new Error('Error al cargar grupos');
+                }
+
+                const groups = await groupsResponse.json();
+
+                if (groups.length === 0) {
+                    alert('No tienes grupos creados. Por favor crea un grupo primero en la pestaña "Gestión de Grupos".');
+                    return;
+                }
+
+                // Create modal to select group
+                const groupOptions = groups.map(g =>
+                    `<option value="${g.id}">${g.name} (${g.member_count} miembros)</option>`
+                ).join('');
+
+                const modalHTML = `
+                    <div id="assign-group-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+                        <div style="background: #1B263B; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%;">
+                            <h3 style="color: #E0E1DD; margin-bottom: 20px;">👥 Asignar a Grupo</h3>
+                            <p style="color: #778DA9; margin-bottom: 20px;">Selecciona el grupo para ${studentName}:</p>
+                            <select id="group-select" style="width: 100%; padding: 10px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; margin-bottom: 20px;">
+                                <option value="">Seleccionar grupo...</option>
+                                ${groupOptions}
+                            </select>
+                            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                                <button onclick="document.getElementById('assign-group-modal').remove()" style="padding: 10px 20px; background: #6B7280; color: white; border: none; border-radius: 6px; cursor: pointer;">Cancelar</button>
+                                <button onclick="StudentsManagementComponent.confirmGroupAssignment(${studentId})" style="padding: 10px 20px; background: #10B981; color: white; border: none; border-radius: 6px; cursor: pointer;">Asignar</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            } catch (error) {
+                console.error('Error al cargar grupos:', error);
+                alert('Error al cargar los grupos disponibles');
+            }
+        },
+
+        confirmGroupAssignment: async (studentId) => {
+            const groupSelect = document.getElementById('group-select');
+            const groupId = groupSelect.value;
+
+            if (!groupId) {
+                alert('Por favor selecciona un grupo');
+                return;
+            }
+
+            const API_URL = window.API_URL || 'https://playtest-backend.onrender.com';
+            const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+
+            try {
+                const response = await fetch(`${API_URL}/groups/${groupId}/members`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session.token}`,
+                        'X-Current-Role': 'PPF',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_ids: [studentId]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al asignar estudiante al grupo');
+                }
+
+                alert('✅ Estudiante asignado al grupo correctamente');
+                document.getElementById('assign-group-modal').remove();
+
+                // Reload students data to show updated group info
+                loadStudentsData();
+
+            } catch (error) {
+                console.error('Error al asignar a grupo:', error);
+                alert('❌ Error al asignar estudiante al grupo');
+            }
         },
 
         exportData: () => {
