@@ -382,9 +382,9 @@ async function getClassStudents(classId, teacherId) {
             u.id as student_id,
             u.nickname,
             u.email,
-            ce.enrolled_at,
+            ce.enrollment_date,
             ce.enrollment_status,
-            sap.enrollment_date,
+            sap.enrollment_date as academic_profile_date,
             COUNT(DISTINCT ulb.block_id) as blocks_loaded_count,
             COUNT(DISTINCT ap.id) as assignments_completed
         FROM class_enrollments ce
@@ -393,8 +393,8 @@ async function getClassStudents(classId, teacherId) {
         LEFT JOIN user_loaded_blocks ulb ON ulb.user_id = u.id
         LEFT JOIN academic_progress ap ON ap.student_id = u.id AND ap.class_id = ce.class_id
         WHERE ce.class_id = $1 AND ce.enrollment_status = 'active'
-        GROUP BY u.id, ce.enrolled_at, ce.enrollment_status, sap.enrollment_date
-        ORDER BY ce.enrolled_at DESC;
+        GROUP BY u.id, ce.enrollment_date, ce.enrollment_status, sap.enrollment_date
+        ORDER BY ce.enrollment_date DESC;
     `;
 
     const result = await pool.query(query, [classId]);
