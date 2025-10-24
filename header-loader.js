@@ -3,6 +3,10 @@
  * Carga el header-component.html y reemplaza los placeholders
  */
 
+console.log('🚀 header-loader.js LOADED - Script is executing');
+console.log('🔍 Current URL:', window.location.href);
+console.log('🔍 Document readyState at load:', document.readyState);
+
 // Configuración de los paneles (solo declarar si no existe)
 if (!window.PANEL_CONFIGS) {
     window.PANEL_CONFIGS = {
@@ -283,6 +287,9 @@ function createFallbackHeader(panelType, containerId) {
  * Inicializa el header automáticamente basado en metadatos de la página
  */
 async function initializeHeader() {
+    console.log('🔧 initializeHeader() called');
+    console.log('🔍 Document readyState:', document.readyState);
+
     // Verificar si hay un sistema de header existente activo
     if (document.querySelector('.user-header') && !document.getElementById('header-container')) {
         console.info('🔄 Sistema de header existente detectado, header-loader.js en modo compatibilidad');
@@ -290,28 +297,42 @@ async function initializeHeader() {
         await enhanceExistingHeader();
         return;
     }
-    
+
     // Buscar metadatos del panel en el HTML
     const panelMeta = document.querySelector('meta[name="panel-type"]');
     const containerMeta = document.querySelector('meta[name="header-container"]');
-    
+
+    console.log('🔍 Panel meta found:', !!panelMeta, panelMeta?.getAttribute('content'));
+    console.log('🔍 Container meta found:', !!containerMeta, containerMeta?.getAttribute('content'));
+
     if (panelMeta) {
         const panelType = panelMeta.getAttribute('content');
         const containerId = containerMeta ? containerMeta.getAttribute('content') : 'header-container';
-        
+
         // Verificar que el contenedor existe
         const container = document.getElementById(containerId);
+        console.log('🔍 Container element found:', !!container, containerId);
+
         if (!container) {
             console.warn(`📦 Contenedor ${containerId} no encontrado, header-loader.js en espera`);
             return;
         }
-        
+
         console.info('🚀 Inicializando header-loader.js para panel:', panelType);
-        
-        // Obtener datos del usuario de forma asíncrona
-        const userData = await getUserData();
-        
-        loadHeader(panelType, containerId, userData);
+
+        try {
+            // Obtener datos del usuario de forma asíncrona
+            console.log('📡 Getting user data...');
+            const userData = await getUserData();
+            console.log('✅ User data obtained:', userData);
+
+            console.log('📦 Loading header...');
+            await loadHeader(panelType, containerId, userData);
+            console.log('✅ Header loaded successfully');
+        } catch (error) {
+            console.error('❌ Error initializing header:', error);
+            console.error('Stack trace:', error.stack);
+        }
     } else {
         console.warn('No se encontró metadato panel-type. El header debe cargarse manualmente.');
     }
@@ -683,9 +704,15 @@ function getCurrentPanelType() {
 }
 
 // Auto-inicializar cuando el DOM esté listo
+console.log('🎬 AUTO-INITIALIZATION: readyState =', document.readyState);
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeHeader);
+    console.log('📌 Attaching DOMContentLoaded listener');
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('🔔 DOMContentLoaded fired, calling initializeHeader()');
+        initializeHeader();
+    });
 } else {
+    console.log('📌 DOM already ready, calling initializeHeader() immediately');
     initializeHeader();
 }
 

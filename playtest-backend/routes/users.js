@@ -650,7 +650,7 @@ router.put('/me/roles', authenticateToken, async (req, res) => {
           roles: roles 
         },
         process.env.JWT_SECRET,
-        { expiresIn: '7d' }
+        { expiresIn: '30d' }
       );
       
       console.log('✅ Generated new token with roles:', roles);

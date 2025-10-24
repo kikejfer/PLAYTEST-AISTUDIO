@@ -8,10 +8,10 @@
     <title>Panel Jugador - PLAYTEST</title>
     
     <!-- Estilos del header unificado -->
-    <link rel="stylesheet" href="header-styles.css?v=20250914-2">
-    <script src="header-loader.js?v=20250914-2"></script>
-    <script src="api-data-service.js?v=20250914-2"></script>
-    <script src="bloques-creados-component.js?v=20250914-2"></script>
+    <link rel="stylesheet" href="header-styles.css?v=20251024">
+    <script src="header-loader.js?v=20251024"></script>
+    <script src="api-data-service.js?v=20251024"></script>
+    <script src="bloques-creados-component.js?v=20251024"></script>
     
     <!-- CDN de React y Babel para compatibilidad con el código de index.html -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -3772,6 +3772,8 @@
             const messageEl = document.getElementById('enrollment-message');
             const classCode = codeInput.value.trim().toUpperCase();
 
+            console.log('🎓 enrollInClass called with code:', classCode);
+
             if (!classCode) {
                 messageEl.textContent = 'Por favor ingresa un código de clase';
                 messageEl.style.color = '#EF4444';
@@ -3780,12 +3782,32 @@
             }
 
             try {
-                const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+                // Debug: verificar estado de localStorage
+                const rawSession = localStorage.getItem('playtest_session');
+                const authToken = localStorage.getItem('playtest_auth_token');
+                console.log('🔍 Raw session from localStorage:', rawSession);
+                console.log('🔍 Auth token from localStorage:', authToken ? 'EXISTS' : 'MISSING');
+
+                const session = JSON.parse(rawSession || '{}');
+                console.log('🔍 Parsed session:', session);
+                console.log('🔍 session.token:', session.token ? 'EXISTS' : 'MISSING');
+                console.log('🔍 session.userId:', session.userId);
+
                 if (!session.token || !session.userId) {
-                    messageEl.textContent = 'No autenticado. Por favor inicia sesión.';
-                    messageEl.style.color = '#EF4444';
-                    messageEl.style.display = 'block';
-                    return;
+                    console.error('❌ Missing token or userId. Session:', session);
+
+                    // Si hay token en playtest_auth_token pero no en session, intentar usarlo
+                    if (authToken && session.userId) {
+                        console.log('⚠️ Token found in separate storage, migrating...');
+                        session.token = authToken;
+                        localStorage.setItem('playtest_session', JSON.stringify(session));
+                        console.log('✅ Session migrated successfully');
+                    } else {
+                        messageEl.textContent = 'No autenticado. Por favor inicia sesión.';
+                        messageEl.style.color = '#EF4444';
+                        messageEl.style.display = 'block';
+                        return;
+                    }
                 }
 
                 const API_URL = window.location.hostname.includes('onrender.com')

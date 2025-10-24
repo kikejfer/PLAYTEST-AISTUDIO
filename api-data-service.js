@@ -210,11 +210,12 @@ class APIDataService {
         this.token = response.token;
         localStorage.setItem('playtest_auth_token', this.token);
         localStorage.setItem('authToken', this.token);
-        
+
         // Para compatibilidad con sistema existente
         localStorage.setItem('playtest_session', JSON.stringify({
           userId: response.user.id,
-          nickname: response.user.nickname
+          nickname: response.user.nickname,
+          token: this.token
         }));
       }
 
@@ -242,10 +243,11 @@ class APIDataService {
         this.token = response.token;
         localStorage.setItem('playtest_auth_token', this.token);
         localStorage.setItem('authToken', this.token);
-        
+
         localStorage.setItem('playtest_session', JSON.stringify({
           userId: response.user.id,
-          nickname: response.user.nickname
+          nickname: response.user.nickname,
+          token: this.token
         }));
       }
 

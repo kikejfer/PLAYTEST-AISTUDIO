@@ -4134,9 +4134,10 @@
           console.log('handleLogin called with:', user, 'token:', token ? 'exists' : 'missing', 'remember:', remember, 'isNewUser:', isNewUser);
           
           // Save both session data AND auth token
-          const sessionData = { 
-            userId: user.id, 
-            nickname: user.nickname
+          const sessionData = {
+            userId: user.id,
+            nickname: user.nickname,
+            token: token
           };
           localStorage.setItem('playtest_session', JSON.stringify(sessionData));
           localStorage.setItem('playtest_auth_token', token);
@@ -4150,7 +4151,8 @@
           if (remember) {
             localStorage.setItem('playtest_session', JSON.stringify({
               userId: user.id,
-              nickname: user.nickname
+              nickname: user.nickname,
+              token: token
             }));
           }
           
