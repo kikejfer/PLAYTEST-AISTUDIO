@@ -3825,9 +3825,10 @@
                 });
 
                 const result = await response.json();
+                console.log('📡 Enrollment response:', response.status, result);
 
                 if (response.ok) {
-                    messageEl.textContent = `✅ ¡Te has inscrito exitosamente en ${result.class_name || 'la clase'}!`;
+                    messageEl.textContent = `✅ ${result.message || 'Te has inscrito exitosamente en la clase'}`;
                     messageEl.style.color = '#10B981';
                     messageEl.style.display = 'block';
                     codeInput.value = '';
@@ -3837,7 +3838,8 @@
                     await loadMyClasses();
                     await loadAssignedBlocks();
                 } else {
-                    messageEl.textContent = result.error || 'Error al inscribirse en la clase';
+                    console.error('❌ Enrollment error:', result);
+                    messageEl.textContent = result.message || result.error || 'Error al inscribirse en la clase';
                     messageEl.style.color = '#EF4444';
                     messageEl.style.display = 'block';
                 }
