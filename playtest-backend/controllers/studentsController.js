@@ -117,10 +117,9 @@ async function enrollInClass(studentId, classCode) {
         const profileQuery = `
             INSERT INTO student_academic_profiles (
                 student_id,
-                class_id,
-                enrollment_date
+                class_id
             )
-            VALUES ($1, $2, NOW())
+            VALUES ($1, $2)
             ON CONFLICT (student_id, class_id) DO NOTHING;
         `;
 
