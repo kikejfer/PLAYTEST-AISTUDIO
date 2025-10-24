@@ -170,12 +170,15 @@ async function getAssignedBlocks(studentId) {
                 ca.assignment_type as content_type,
                 ca.assignment_name as instructions,
                 (SELECT COUNT(*) FROM questions WHERE block_id = b.id) as questions_count,
-                -- Verificar si ya está cargado
                 CASE
                     WHEN ulb.id IS NOT NULL THEN true
                     ELSE false
                 END as is_loaded,
-                ulb.loaded_at
+                ulb.loaded_at,
+                CASE
+                    WHEN ca.due_date IS NULL THEN 1
+                    ELSE 0
+                END as due_date_sort
             FROM content_assignments ca
             JOIN teacher_classes tc ON ca.class_id = tc.id
             JOIN users u ON tc.teacher_id = u.id
@@ -186,12 +189,9 @@ async function getAssignedBlocks(studentId) {
             WHERE ce.enrollment_status = 'active'
               AND ca.is_active = true
             ORDER BY
-                CASE
-                    WHEN ca.due_date IS NULL THEN 1
-                    ELSE 0
-                END,
-                ca.due_date ASC,
-                ca.created_at DESC;
+                due_date_sort,
+                due_date ASC,
+                assigned_at DESC;
         `;
 
         const result = await pool.query(query, [studentId]);
