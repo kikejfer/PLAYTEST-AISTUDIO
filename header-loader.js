@@ -3,6 +3,10 @@
  * Carga el header-component.html y reemplaza los placeholders
  */
 
+console.log('🚀 header-loader.js LOADED - Script is executing');
+console.log('🔍 Current URL:', window.location.href);
+console.log('🔍 Document readyState at load:', document.readyState);
+
 // Configuración de los paneles (solo declarar si no existe)
 if (!window.PANEL_CONFIGS) {
     window.PANEL_CONFIGS = {
@@ -700,9 +704,15 @@ function getCurrentPanelType() {
 }
 
 // Auto-inicializar cuando el DOM esté listo
+console.log('🎬 AUTO-INITIALIZATION: readyState =', document.readyState);
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeHeader);
+    console.log('📌 Attaching DOMContentLoaded listener');
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('🔔 DOMContentLoaded fired, calling initializeHeader()');
+        initializeHeader();
+    });
 } else {
+    console.log('📌 DOM already ready, calling initializeHeader() immediately');
     initializeHeader();
 }
 
