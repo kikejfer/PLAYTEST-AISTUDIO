@@ -594,6 +594,10 @@
             display: flex;
         }
 
+        .hidden {
+            display: none !important;
+        }
+
         .modal-content {
             background: #1B263B;
             border: 1px solid #415A77;
@@ -2323,7 +2327,7 @@
         }
 
         function renderGroupDetailHeader() {
-            const group = currentGroupData.group;
+            const group = currentGroupData;
             document.getElementById('group-detail-title').textContent = group.name;
             document.getElementById('group-detail-header').innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 15px;">
