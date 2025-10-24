@@ -120,6 +120,76 @@ router.get('/classes', authenticateToken, requireTeacherRole, async (req, res) =
     }
 });
 
+// Actualizar clase
+router.put('/classes/:classId', authenticateToken, requireTeacherRole, async (req, res) => {
+    try {
+        const { classId } = req.params;
+        const teacherId = req.user.id;
+        const {
+            class_name,
+            subject,
+            grade_level,
+            academic_year,
+            semester,
+            max_students,
+            class_room,
+            start_date,
+            end_date,
+            is_active
+        } = req.body;
+
+        // Verificar que la clase pertenece al profesor
+        const classCheck = await pool.query(`
+            SELECT id FROM teacher_classes WHERE id = $1 AND teacher_id = $2
+        `, [classId, teacherId]);
+
+        if (classCheck.rows.length === 0) {
+            return res.status(403).json({ error: 'Acceso denegado a esta clase' });
+        }
+
+        // Actualizar clase
+        const result = await pool.query(`
+            UPDATE teacher_classes
+            SET class_name = $1,
+                subject = $2,
+                grade_level = $3,
+                academic_year = $4,
+                semester = $5,
+                max_students = $6,
+                class_room = $7,
+                start_date = $8,
+                end_date = $9,
+                is_active = $10,
+                updated_at = NOW()
+            WHERE id = $11 AND teacher_id = $12
+            RETURNING *
+        `, [
+            class_name,
+            subject,
+            grade_level,
+            academic_year,
+            semester,
+            max_students,
+            class_room,
+            start_date,
+            end_date,
+            is_active,
+            classId,
+            teacherId
+        ]);
+
+        res.json({
+            success: true,
+            message: 'Clase actualizada correctamente',
+            class: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('Error actualizando clase:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
 // Inscribir estudiante en clase (por código)
 router.post('/classes/:classCode/enroll', authenticateToken, async (req, res) => {
     try {

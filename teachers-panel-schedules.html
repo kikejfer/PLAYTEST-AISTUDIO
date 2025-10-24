@@ -1270,6 +1270,113 @@
         </div>
     </div>
 
+    <!-- Modal Ver Estudiantes de Clase -->
+    <div id="viewStudentsModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="viewStudentsModalTitle">👥 Estudiantes de la Clase</h3>
+                <button class="close" onclick="closeViewStudentsModal()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <div id="students-list-loading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Cargando estudiantes...</p>
+                </div>
+
+                <div id="students-list-container"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeViewStudentsModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Clase -->
+    <div id="editClassModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">✏️ Editar Clase</h3>
+                <button class="close" onclick="closeEditClassModal()">&times;</button>
+            </div>
+
+            <form id="editClassForm" onsubmit="updateClass(event)">
+                <input type="hidden" id="edit-class-id" name="id">
+
+                <div class="form-group">
+                    <label class="form-label">Nombre de la Clase</label>
+                    <input type="text" class="form-control" id="edit-class-name" name="class_name" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Materia</label>
+                        <input type="text" class="form-control" id="edit-subject" name="subject" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Nivel/Grado</label>
+                        <input type="text" class="form-control" id="edit-grade-level" name="grade_level" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Año Académico</label>
+                        <input type="text" class="form-control" id="edit-academic-year" name="academic_year" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Semestre</label>
+                        <select class="form-control" id="edit-semester" name="semester" required>
+                            <option value="">Seleccionar semestre</option>
+                            <option value="1">Primer Semestre</option>
+                            <option value="2">Segundo Semestre</option>
+                            <option value="anual">Anual</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Máximo de Estudiantes</label>
+                        <input type="number" class="form-control" id="edit-max-students" name="max_students" min="1" max="50">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Aula</label>
+                        <input type="text" class="form-control" id="edit-class-room" name="class_room">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Fecha de Inicio</label>
+                        <input type="date" class="form-control" id="edit-start-date" name="start_date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Fecha de Fin</label>
+                        <input type="date" class="form-control" id="edit-end-date" name="end_date" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="edit-is-active" name="is_active">
+                        Clase Activa
+                    </label>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditClassModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal Crear Grupo -->
     <div id="create-group-modal" class="modal hidden">
         <div class="modal-content">
@@ -1872,12 +1979,173 @@
             alert(`Código copiado: ${code}`);
         }
 
-        function viewStudents(classId, className) {
-            alert('Ver estudiantes de: ' + className);
+        // Ver estudiantes de una clase
+        async function viewStudents(classId, className) {
+            const modal = document.getElementById('viewStudentsModal');
+            const title = document.getElementById('viewStudentsModalTitle');
+            const loading = document.getElementById('students-list-loading');
+            const container = document.getElementById('students-list-container');
+
+            // Actualizar título
+            title.textContent = `👥 Estudiantes de ${className}`;
+
+            // Mostrar modal
+            modal.classList.remove('hidden');
+
+            // Mostrar loading
+            loading.style.display = 'block';
+            container.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_URL}/teachers-panel/classes/${classId}/students`, {
+                    headers: {
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar estudiantes');
+                }
+
+                const data = await response.json();
+                const students = data.students || [];
+
+                loading.style.display = 'none';
+
+                if (students.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state" style="padding: 40px; text-align: center;">
+                            <div class="empty-state-icon">👥</div>
+                            <h3>No hay estudiantes inscritos</h3>
+                            <p>Comparte el código de clase para que los estudiantes se inscriban</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div style="margin-bottom: 20px; padding: 15px; background: #1B263B; border-radius: 8px;">
+                            <strong>${students.length}</strong> estudiante${students.length !== 1 ? 's' : ''} inscrito${students.length !== 1 ? 's' : ''}
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #1B263B; border-bottom: 2px solid #415A77;">
+                                    <th style="padding: 12px; text-align: left;">Nombre</th>
+                                    <th style="padding: 12px; text-align: left;">Email</th>
+                                    <th style="padding: 12px; text-align: center;">Fecha Inscripción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${students.map(student => `
+                                    <tr style="border-bottom: 1px solid #415A77;">
+                                        <td style="padding: 12px;">
+                                            <div style="font-weight: 500;">${student.first_name || ''} ${student.last_name || ''}</div>
+                                            <div style="font-size: 0.85rem; color: #778DA9;">@${student.nickname}</div>
+                                        </td>
+                                        <td style="padding: 12px; color: #778DA9;">${student.email || 'N/A'}</td>
+                                        <td style="padding: 12px; text-align: center; color: #778DA9;">
+                                            ${student.enrollment_date ? new Date(student.enrollment_date).toLocaleDateString() : 'N/A'}
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading students:', error);
+                loading.style.display = 'none';
+                container.innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: #EF4444;">
+                        Error al cargar estudiantes: ${error.message}
+                    </div>
+                `;
+            }
         }
 
-        function editClass(classId) {
-            alert('Editar clase ID: ' + classId);
+        function closeViewStudentsModal() {
+            document.getElementById('viewStudentsModal').classList.add('hidden');
+        }
+
+        // Editar clase
+        async function editClass(classId) {
+            const modal = document.getElementById('editClassModal');
+
+            // Buscar la clase en el array local
+            const classData = classes.find(c => c.id === classId);
+
+            if (!classData) {
+                alert('Error: No se encontró la clase');
+                return;
+            }
+
+            // Llenar el formulario con los datos actuales
+            document.getElementById('edit-class-id').value = classData.id;
+            document.getElementById('edit-class-name').value = classData.class_name;
+            document.getElementById('edit-subject').value = classData.subject;
+            document.getElementById('edit-grade-level').value = classData.grade_level;
+            document.getElementById('edit-academic-year').value = classData.academic_year;
+            document.getElementById('edit-semester').value = classData.semester;
+            document.getElementById('edit-max-students').value = classData.max_students;
+            document.getElementById('edit-class-room').value = classData.class_room || '';
+            document.getElementById('edit-start-date').value = classData.start_date ? classData.start_date.split('T')[0] : '';
+            document.getElementById('edit-end-date').value = classData.end_date ? classData.end_date.split('T')[0] : '';
+            document.getElementById('edit-is-active').checked = classData.is_active;
+
+            // Mostrar modal
+            modal.classList.remove('hidden');
+        }
+
+        function closeEditClassModal() {
+            document.getElementById('editClassModal').classList.add('hidden');
+        }
+
+        async function updateClass(event) {
+            event.preventDefault();
+
+            try {
+                if (!userSession || !userSession.token) {
+                    alert('No autenticado. Por favor inicia sesión.');
+                    return;
+                }
+
+                const formData = new FormData(event.target);
+                const classId = formData.get('id');
+
+                const updateData = {
+                    class_name: formData.get('class_name'),
+                    subject: formData.get('subject'),
+                    grade_level: formData.get('grade_level'),
+                    academic_year: formData.get('academic_year'),
+                    semester: formData.get('semester'),
+                    max_students: parseInt(formData.get('max_students')),
+                    class_room: formData.get('class_room'),
+                    start_date: formData.get('start_date'),
+                    end_date: formData.get('end_date'),
+                    is_active: document.getElementById('edit-is-active').checked
+                };
+
+                const response = await fetch(`${API_URL}/teachers-panel/classes/${classId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al actualizar la clase');
+                }
+
+                alert('✅ Clase actualizada correctamente');
+                closeEditClassModal();
+                loadClasses(); // Recargar lista de clases
+
+            } catch (error) {
+                console.error('Error updating class:', error);
+                alert('❌ Error al actualizar la clase: ' + error.message);
+            }
         }
 
         // ==================== GROUPS FUNCTIONS ====================
