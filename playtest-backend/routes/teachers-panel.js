@@ -120,6 +120,76 @@ router.get('/classes', authenticateToken, requireTeacherRole, async (req, res) =
     }
 });
 
+// Actualizar clase
+router.put('/classes/:classId', authenticateToken, requireTeacherRole, async (req, res) => {
+    try {
+        const { classId } = req.params;
+        const teacherId = req.user.id;
+        const {
+            class_name,
+            subject,
+            grade_level,
+            academic_year,
+            semester,
+            max_students,
+            class_room,
+            start_date,
+            end_date,
+            is_active
+        } = req.body;
+
+        // Verificar que la clase pertenece al profesor
+        const classCheck = await pool.query(`
+            SELECT id FROM teacher_classes WHERE id = $1 AND teacher_id = $2
+        `, [classId, teacherId]);
+
+        if (classCheck.rows.length === 0) {
+            return res.status(403).json({ error: 'Acceso denegado a esta clase' });
+        }
+
+        // Actualizar clase
+        const result = await pool.query(`
+            UPDATE teacher_classes
+            SET class_name = $1,
+                subject = $2,
+                grade_level = $3,
+                academic_year = $4,
+                semester = $5,
+                max_students = $6,
+                class_room = $7,
+                start_date = $8,
+                end_date = $9,
+                is_active = $10,
+                updated_at = NOW()
+            WHERE id = $11 AND teacher_id = $12
+            RETURNING *
+        `, [
+            class_name,
+            subject,
+            grade_level,
+            academic_year,
+            semester,
+            max_students,
+            class_room,
+            start_date,
+            end_date,
+            is_active,
+            classId,
+            teacherId
+        ]);
+
+        res.json({
+            success: true,
+            message: 'Clase actualizada correctamente',
+            class: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('Error actualizando clase:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
 // Inscribir estudiante en clase (por código)
 router.post('/classes/:classCode/enroll', authenticateToken, async (req, res) => {
     try {
@@ -189,13 +259,17 @@ router.post('/classes/:classCode/enroll', authenticateToken, async (req, res) =>
 router.get('/students', authenticateToken, requireTeacherRole, async (req, res) => {
     try {
         const teacherId = req.user.id;
+        const { class_id } = req.query; // Optional filter by class
 
-        const students = await pool.query(`
-            SELECT DISTINCT
+        let query = `
+            SELECT DISTINCT ON (u.id, tc.id)
                 u.id,
                 u.nickname as name,
                 u.email,
                 COALESCE(up.first_name || ' ' || up.last_name, u.nickname) as full_name,
+                up.first_name,
+                up.last_name,
+                tc.id as class_id,
                 tc.class_name as course,
                 tc.subject as institution,
                 ce.enrollment_date as joinDate,
@@ -207,7 +281,20 @@ router.get('/students', authenticateToken, requireTeacherRole, async (req, res) 
                 COALESCE(ce.attendance_rate, 0) as progress,
                 0 as completedActivities,
                 0 as totalActivities,
-                CONCAT('https://api.dicebear.com/7.x/avataaars/svg?seed=', u.id) as avatar
+                CONCAT('https://api.dicebear.com/7.x/avataaars/svg?seed=', u.id) as avatar,
+                -- Get groups for this student (created by this teacher)
+                COALESCE(
+                    (SELECT json_agg(json_build_object(
+                        'id', g.id,
+                        'name', g.name,
+                        'joined_at', gm.joined_at
+                    ))
+                    FROM group_members gm
+                    JOIN groups g ON gm.group_id = g.id
+                    WHERE gm.user_id = u.id
+                    AND g.created_by = $1
+                    ), '[]'::json
+                ) as groups
             FROM class_enrollments ce
             JOIN teacher_classes tc ON ce.class_id = tc.id
             JOIN users u ON ce.student_id = u.id
@@ -215,10 +302,25 @@ router.get('/students', authenticateToken, requireTeacherRole, async (req, res) 
             WHERE tc.teacher_id = $1
             AND ce.enrollment_status = 'active'
             AND tc.is_active = true
-            ORDER BY ce.enrollment_date DESC
+            ${class_id ? 'AND tc.id = $2' : ''}
+            ORDER BY u.id, tc.id, ce.enrollment_date DESC
+        `;
+
+        const params = class_id ? [teacherId, class_id] : [teacherId];
+        const students = await pool.query(query, params);
+
+        // Also return available classes for filter
+        const classes = await pool.query(`
+            SELECT id, class_name, subject, grade_level
+            FROM teacher_classes
+            WHERE teacher_id = $1 AND is_active = true
+            ORDER BY class_name ASC
         `, [teacherId]);
 
-        res.json({ students: students.rows });
+        res.json({
+            data: students.rows,
+            classes: classes.rows
+        });
 
     } catch (error) {
         console.error('Error obteniendo estudiantes del profesor:', error);
