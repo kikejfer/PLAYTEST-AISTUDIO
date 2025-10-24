@@ -29,7 +29,7 @@ async function getMyClasses(studentId) {
                 tc.semester,
                 tc.class_room,
                 u.nickname as teacher_name,
-                ce.enrolled_at,
+                ce.enrollment_date,
                 ce.enrollment_status
             FROM class_enrollments ce
             JOIN teacher_classes tc ON ce.class_id = tc.id
@@ -106,9 +106,9 @@ async function enrollInClass(studentId, classCode) {
 
         // 4. Crear inscripción
         const enrollQuery = `
-            INSERT INTO class_enrollments (class_id, student_id, enrollment_status, enrolled_at)
-            VALUES ($1, $2, 'active', NOW())
-            RETURNING id, enrolled_at;
+            INSERT INTO class_enrollments (class_id, student_id, enrollment_status, enrollment_date)
+            VALUES ($1, $2, 'active', CURRENT_DATE)
+            RETURNING id, enrollment_date;
         `;
 
         const enrollResult = await client.query(enrollQuery, [classData.id, studentId]);
@@ -132,7 +132,7 @@ async function enrollInClass(studentId, classCode) {
             success: true,
             class_name: classData.class_name,
             class_code: classCode.toUpperCase(),
-            enrolled_at: enrollResult.rows[0].enrolled_at
+            enrollment_date: enrollResult.rows[0].enrollment_date
         };
 
     } catch (error) {
