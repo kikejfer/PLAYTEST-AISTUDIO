@@ -2821,6 +2821,19 @@
             }
         }
 
+        // Expose functions to global scope for inline event handlers
+        window.viewStudents = viewStudents;
+        window.editClass = editClass;
+        window.viewGroup = viewGroup;
+        window.assignBlock = assignBlock;
+        window.deleteGroup = deleteGroup;
+        window.openClassModal = openClassModal;
+        window.closeClassModal = closeClassModal;
+        window.closeEditClassModal = closeEditClassModal;
+        window.copyClassCode = copyClassCode;
+        window.createClass = createClass;
+        window.updateClass = updateClass;
+
         console.log('✅ Unified Teachers Panel loaded successfully');
     </script>
 </body>

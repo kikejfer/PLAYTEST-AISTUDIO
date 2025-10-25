@@ -1368,7 +1368,7 @@ const StudentsManagementComponent = (() => {
 
             try {
                 // Fetch available groups
-                const groupsResponse = await fetch(`${API_URL}/groups`, {
+                const groupsResponse = await fetch(`${API_URL}/api/groups`, {
                     headers: {
                         'Authorization': `Bearer ${session.token}`,
                         'X-Current-Role': 'PPF'
@@ -1429,7 +1429,7 @@ const StudentsManagementComponent = (() => {
             const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
 
             try {
-                const response = await fetch(`${API_URL}/groups/${groupId}/members`, {
+                const response = await fetch(`${API_URL}/api/groups/${groupId}/members`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${session.token}`,
