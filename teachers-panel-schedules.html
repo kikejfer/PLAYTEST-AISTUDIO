@@ -1804,6 +1804,12 @@
 
             // Initialize students component when switching to students tab
             if (subTabId === 'students-subtab') {
+                // Close any open modals to prevent duplicates
+                const classModal = document.getElementById('classModal');
+                const viewStudentsModal = document.getElementById('viewStudentsModal');
+                if (classModal) classModal.classList.add('hidden');
+                if (viewStudentsModal) viewStudentsModal.classList.add('hidden');
+
                 if (window.studentsComponentInitialized && window.StudentsManagementComponent) {
                     // Already initialized, just ensure it's visible
                     console.log('Students component already initialized');
@@ -2327,6 +2333,10 @@
         }
 
         function renderGroupDetailHeader() {
+            if (!currentGroupData || !currentGroupData.name) {
+                console.error('❌ No group data available to render');
+                return;
+            }
             const group = currentGroupData;
             document.getElementById('group-detail-title').textContent = group.name;
             document.getElementById('group-detail-header').innerHTML = `
