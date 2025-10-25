@@ -266,9 +266,9 @@ router.get('/students', authenticateToken, requireTeacherRole, async (req, res) 
                 u.id,
                 u.nickname as name,
                 u.email,
-                COALESCE(up.first_name || ' ' || up.last_name, u.nickname) as full_name,
-                up.first_name,
-                up.last_name,
+                COALESCE(u.first_name || ' ' || u.last_name, u.nickname) as full_name,
+                u.first_name,
+                u.last_name,
                 tc.id as class_id,
                 tc.class_name as course,
                 tc.subject as institution,
@@ -285,7 +285,6 @@ router.get('/students', authenticateToken, requireTeacherRole, async (req, res) 
             FROM class_enrollments ce
             JOIN teacher_classes tc ON ce.class_id = tc.id
             JOIN users u ON ce.student_id = u.id
-            LEFT JOIN user_profiles up ON u.id = up.user_id
             WHERE tc.teacher_id = $1
             AND ce.enrollment_status = 'active'
             AND tc.is_active = true
@@ -348,16 +347,15 @@ router.get('/classes/:classId/students', authenticateToken, requireTeacherRole, 
                 u.id,
                 u.nickname,
                 u.email,
-                up.first_name,
-                up.last_name,
+                u.first_name,
+                u.last_name,
                 ce.enrollment_date,
                 ce.enrollment_status,
                 ce.last_activity
             FROM class_enrollments ce
             JOIN users u ON ce.student_id = u.id
-            LEFT JOIN user_profiles up ON u.id = up.user_id
             WHERE ce.class_id = $1 AND ce.enrollment_status = 'active'
-            ORDER BY up.first_name, up.last_name, u.nickname
+            ORDER BY u.first_name, u.last_name, u.nickname
         `, [classId]);
 
         res.json({ students: students.rows });
