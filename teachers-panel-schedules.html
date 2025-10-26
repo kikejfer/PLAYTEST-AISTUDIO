@@ -6,13 +6,13 @@
     <meta name="panel-type" content="PPF">
     <meta name="header-container" content="header-container">
     <title>Panel de Profesores | PLAYTEST</title>
-    <link rel="stylesheet" href="header-styles.css?v=20251026d">
-    <script src="header-loader.js?v=20251026d"></script>
-    <script src="api-data-service.js?v=20251026d"></script>
+    <link rel="stylesheet" href="header-styles.css?v=20251026e">
+    <script src="header-loader.js?v=20251026e"></script>
+    <script src="api-data-service.js?v=20251026e"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="navigation-service.js?v=20251026d"></script>
-    <script src="bloques-creados-component.js?v=20251026d"></script>
-    <script src="students-management-component.js?v=20251026d"></script>
+    <script src="navigation-service.js?v=20251026e"></script>
+    <script src="bloques-creados-component.js?v=20251026e"></script>
+    <script src="students-management-component.js?v=20251026e"></script>
 
     <!-- React CDN for Add Questions Module -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -1746,9 +1746,7 @@
             modal.classList.remove('hidden');
         }
 
-        // Expose to global scope immediately
-        window.viewStudents = viewStudents;
-        window.editClass = editClass;
+        // NOTE: Functions will be exposed to window at the end of the script
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', async () => {
@@ -2787,11 +2785,6 @@
             }
         }
 
-        // Expose group functions to global scope
-        window.viewGroup = viewGroup;
-        window.assignBlock = assignBlock;
-        window.deleteGroup = deleteGroup;
-
         // ==================== UTILITY FUNCTIONS ====================
 
         function showError(containerId, message) {
@@ -2828,7 +2821,13 @@
             }
         }
 
-        // Expose remaining modal and form functions to global scope
+        // ==================== EXPOSE ALL FUNCTIONS TO GLOBAL SCOPE ====================
+        // These must be available globally for onclick handlers in dynamically rendered HTML
+        window.viewStudents = viewStudents;
+        window.editClass = editClass;
+        window.viewGroup = viewGroup;
+        window.assignBlock = assignBlock;
+        window.deleteGroup = deleteGroup;
         window.openClassModal = openClassModal;
         window.closeClassModal = closeClassModal;
         window.closeEditClassModal = closeEditClassModal;
@@ -2837,6 +2836,7 @@
         window.updateClass = updateClass;
 
         console.log('✅ Unified Teachers Panel loaded successfully');
+        console.log('✅ Global functions exposed:', Object.keys(window).filter(k => ['viewStudents', 'editClass', 'viewGroup', 'assignBlock', 'deleteGroup'].includes(k)));
     </script>
 </body>
 </html>
