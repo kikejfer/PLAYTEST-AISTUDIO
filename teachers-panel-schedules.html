@@ -6,13 +6,13 @@
     <meta name="panel-type" content="PPF">
     <meta name="header-container" content="header-container">
     <title>Panel de Profesores | PLAYTEST</title>
-    <link rel="stylesheet" href="header-styles.css?v=20251026e">
-    <script src="header-loader.js?v=20251026e"></script>
-    <script src="api-data-service.js?v=20251026e"></script>
+    <link rel="stylesheet" href="header-styles.css?v=20251026f">
+    <script src="header-loader.js?v=20251026f"></script>
+    <script src="api-data-service.js?v=20251026f"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="navigation-service.js?v=20251026e"></script>
-    <script src="bloques-creados-component.js?v=20251026e"></script>
-    <script src="students-management-component.js?v=20251026e"></script>
+    <script src="navigation-service.js?v=20251026f"></script>
+    <script src="bloques-creados-component.js?v=20251026f"></script>
+    <script src="students-management-component.js?v=20251026f"></script>
 
     <!-- React CDN for Add Questions Module -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -2237,12 +2237,16 @@
         }
 
         function openCreateGroupModal() {
-            document.getElementById('create-group-modal').classList.add('active');
+            const modal = document.getElementById('create-group-modal');
+            modal.classList.add('active');
+            modal.classList.remove('hidden'); // Remove hidden when showing modal
             document.getElementById('create-group-form').reset();
         }
 
         function closeCreateGroupModal() {
-            document.getElementById('create-group-modal').classList.remove('active');
+            const modal = document.getElementById('create-group-modal');
+            modal.classList.remove('active');
+            modal.classList.add('hidden'); // Add hidden when closing modal
         }
 
         async function handleCreateGroup(event) {
@@ -2299,7 +2303,9 @@
 
         async function viewGroup(groupId) {
             currentGroupId = groupId;
-            document.getElementById('group-detail-modal').classList.add('active');
+            const modal = document.getElementById('group-detail-modal');
+            modal.classList.add('active');
+            modal.classList.remove('hidden'); // Remove hidden when showing modal
             await loadGroupDetail(groupId);
             await loadGroupMembers(groupId);
             // Reset to members tab
@@ -2307,7 +2313,9 @@
         }
 
         function closeGroupDetailModal() {
-            document.getElementById('group-detail-modal').classList.remove('active');
+            const modal = document.getElementById('group-detail-modal');
+            modal.classList.remove('active');
+            modal.classList.add('hidden'); // Add hidden when closing modal
             currentGroupId = null;
             currentGroupData = null;
         }
@@ -2537,7 +2545,9 @@
 
         async function assignBlock(groupId = null) {
             assignTargetGroupId = groupId;
-            document.getElementById('assign-block-modal').classList.add('active');
+            const modal = document.getElementById('assign-block-modal');
+            modal.classList.add('active');
+            modal.classList.remove('hidden'); // Remove hidden when showing modal
 
             // Reset to step 1
             goToAssignStep1();
@@ -2555,7 +2565,9 @@
         }
 
         function closeAssignBlockModal() {
-            document.getElementById('assign-block-modal').classList.remove('active');
+            const modal = document.getElementById('assign-block-modal');
+            modal.classList.remove('active');
+            modal.classList.add('hidden'); // Add hidden when closing modal
             assignTargetGroupId = null;
             assignSelectedBlockId = null;
         }
