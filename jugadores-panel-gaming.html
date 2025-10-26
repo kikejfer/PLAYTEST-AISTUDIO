@@ -8,10 +8,10 @@
     <title>Panel Jugador - PLAYTEST</title>
     
     <!-- Estilos del header unificado -->
-    <link rel="stylesheet" href="header-styles.css?v=20251024">
-    <script src="header-loader.js?v=20251024"></script>
-    <script src="api-data-service.js?v=20251024"></script>
-    <script src="bloques-creados-component.js?v=20251024"></script>
+    <link rel="stylesheet" href="header-styles.css?v=20251026g">
+    <script src="header-loader.js?v=20251026g"></script>
+    <script src="api-data-service.js?v=20251026g"></script>
+    <script src="bloques-creados-component.js?v=20251026g"></script>
     
     <!-- CDN de React y Babel para compatibilidad con el código de index.html -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -3943,7 +3943,8 @@
 
                 if (!response.ok) throw new Error('Error al cargar bloques');
 
-                const blocks = await response.json();
+                const data = await response.json();
+                const blocks = data.blocks || [];
 
                 if (!blocks || blocks.length === 0) {
                     container.innerHTML = `
