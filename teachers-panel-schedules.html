@@ -6,13 +6,13 @@
     <meta name="panel-type" content="PPF">
     <meta name="header-container" content="header-container">
     <title>Panel de Profesores | PLAYTEST</title>
-    <link rel="stylesheet" href="header-styles.css?v=20251026c">
-    <script src="header-loader.js?v=20251026c"></script>
-    <script src="api-data-service.js?v=20251026c"></script>
+    <link rel="stylesheet" href="header-styles.css?v=20251026d">
+    <script src="header-loader.js?v=20251026d"></script>
+    <script src="api-data-service.js?v=20251026d"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="navigation-service.js?v=20251026c"></script>
-    <script src="bloques-creados-component.js?v=20251026c"></script>
-    <script src="students-management-component.js?v=20251026c"></script>
+    <script src="navigation-service.js?v=20251026d"></script>
+    <script src="bloques-creados-component.js?v=20251026d"></script>
+    <script src="students-management-component.js?v=20251026d"></script>
 
     <!-- React CDN for Add Questions Module -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -1636,6 +1636,120 @@
         window.gruposLoaded = false;
         window.studentsComponentInitialized = false;
 
+        // ==================== DECLARE FUNCTIONS IN GLOBAL SCOPE FIRST ====================
+        // These functions MUST be available before any rendering happens
+
+        // Ver estudiantes de una clase
+        async function viewStudents(classId, className) {
+            const modal = document.getElementById('viewStudentsModal');
+            const title = document.getElementById('viewStudentsModalTitle');
+            const loading = document.getElementById('students-list-loading');
+            const container = document.getElementById('students-list-container');
+
+            // Actualizar título
+            title.textContent = `👥 Estudiantes de ${className}`;
+
+            // Mostrar modal
+            modal.classList.remove('hidden');
+
+            // Mostrar loading
+            loading.style.display = 'block';
+            container.innerHTML = '';
+
+            try {
+                if (!userSession || !userSession.token) {
+                    container.innerHTML = '<div class="error">No autenticado. Por favor inicia sesión.</div>';
+                    loading.style.display = 'none';
+                    return;
+                }
+
+                const response = await fetch(`${API_URL}/teachers-panel/classes/${classId}/students`, {
+                    headers: {
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error obteniendo estudiantes');
+                }
+
+                const data = await response.json();
+                const students = data.students || [];
+
+                loading.style.display = 'none';
+
+                if (students.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span class="empty-state-icon">👥</span>
+                            <h3>No hay estudiantes inscritos</h3>
+                            <p>Los estudiantes aparecerán aquí cuando se inscriban usando el código de la clase</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="students-list">
+                            ${students.map(student => `
+                                <div class="student-item">
+                                    <div class="student-avatar">${student.first_name.charAt(0)}${student.last_name.charAt(0)}</div>
+                                    <div class="student-info">
+                                        <div class="student-name">${student.first_name} ${student.last_name}</div>
+                                        <div class="student-email">${student.email || 'Sin email'}</div>
+                                    </div>
+                                    <div class="student-status ${student.is_active ? 'active' : 'inactive'}">
+                                        ${student.is_active ? '✓ Activo' : '✗ Inactivo'}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                container.innerHTML = `
+                    <div class="error">
+                        <span style="font-size: 2rem;">⚠️</span>
+                        <h3>Error cargando estudiantes</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Editar clase
+        async function editClass(classId) {
+            const modal = document.getElementById('editClassModal');
+
+            // Buscar la clase en el array local
+            const classData = classes.find(c => c.id === classId);
+
+            if (!classData) {
+                alert('Error: No se encontró la clase');
+                return;
+            }
+
+            // Llenar el formulario con los datos actuales
+            document.getElementById('edit-class-id').value = classData.id;
+            document.getElementById('edit-class-name').value = classData.class_name;
+            document.getElementById('edit-subject').value = classData.subject;
+            document.getElementById('edit-grade-level').value = classData.grade_level;
+            document.getElementById('edit-academic-year').value = classData.academic_year;
+            document.getElementById('edit-semester').value = classData.semester;
+            document.getElementById('edit-max-students').value = classData.max_students;
+            document.getElementById('edit-class-room').value = classData.class_room || '';
+            document.getElementById('edit-start-date').value = classData.start_date ? classData.start_date.split('T')[0] : '';
+            document.getElementById('edit-end-date').value = classData.end_date ? classData.end_date.split('T')[0] : '';
+            document.getElementById('edit-is-active').checked = classData.is_active;
+
+            // Mostrar modal
+            modal.classList.remove('hidden');
+        }
+
+        // Expose to global scope immediately
+        window.viewStudents = viewStudents;
+        window.editClass = editClass;
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', async () => {
             await loadUserSession();
@@ -1989,125 +2103,9 @@
             alert(`Código copiado: ${code}`);
         }
 
-        // Ver estudiantes de una clase
-        async function viewStudents(classId, className) {
-            const modal = document.getElementById('viewStudentsModal');
-            const title = document.getElementById('viewStudentsModalTitle');
-            const loading = document.getElementById('students-list-loading');
-            const container = document.getElementById('students-list-container');
-
-            // Actualizar título
-            title.textContent = `👥 Estudiantes de ${className}`;
-
-            // Mostrar modal
-            modal.classList.remove('hidden');
-
-            // Mostrar loading
-            loading.style.display = 'block';
-            container.innerHTML = '';
-
-            try {
-                const response = await fetch(`${API_URL}/teachers-panel/classes/${classId}/students`, {
-                    headers: {
-                        'Authorization': `Bearer ${userSession.token}`,
-                        'X-Current-Role': 'PPF'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error al cargar estudiantes');
-                }
-
-                const data = await response.json();
-                const students = data.students || [];
-
-                loading.style.display = 'none';
-
-                if (students.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state" style="padding: 40px; text-align: center;">
-                            <div class="empty-state-icon">👥</div>
-                            <h3>No hay estudiantes inscritos</h3>
-                            <p>Comparte el código de clase para que los estudiantes se inscriban</p>
-                        </div>
-                    `;
-                } else {
-                    container.innerHTML = `
-                        <div style="margin-bottom: 20px; padding: 15px; background: #1B263B; border-radius: 8px;">
-                            <strong>${students.length}</strong> estudiante${students.length !== 1 ? 's' : ''} inscrito${students.length !== 1 ? 's' : ''}
-                        </div>
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="background: #1B263B; border-bottom: 2px solid #415A77;">
-                                    <th style="padding: 12px; text-align: left;">Nombre</th>
-                                    <th style="padding: 12px; text-align: left;">Email</th>
-                                    <th style="padding: 12px; text-align: center;">Fecha Inscripción</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${students.map(student => `
-                                    <tr style="border-bottom: 1px solid #415A77;">
-                                        <td style="padding: 12px;">
-                                            <div style="font-weight: 500;">${student.first_name || ''} ${student.last_name || ''}</div>
-                                            <div style="font-size: 0.85rem; color: #778DA9;">@${student.nickname}</div>
-                                        </td>
-                                        <td style="padding: 12px; color: #778DA9;">${student.email || 'N/A'}</td>
-                                        <td style="padding: 12px; text-align: center; color: #778DA9;">
-                                            ${student.enrollment_date ? new Date(student.enrollment_date).toLocaleDateString() : 'N/A'}
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    `;
-                }
-            } catch (error) {
-                console.error('Error loading students:', error);
-                loading.style.display = 'none';
-                container.innerHTML = `
-                    <div style="padding: 20px; text-align: center; color: #EF4444;">
-                        Error al cargar estudiantes: ${error.message}
-                    </div>
-                `;
-            }
-        }
-
         function closeViewStudentsModal() {
             document.getElementById('viewStudentsModal').classList.add('hidden');
         }
-
-        // Editar clase
-        async function editClass(classId) {
-            const modal = document.getElementById('editClassModal');
-
-            // Buscar la clase en el array local
-            const classData = classes.find(c => c.id === classId);
-
-            if (!classData) {
-                alert('Error: No se encontró la clase');
-                return;
-            }
-
-            // Llenar el formulario con los datos actuales
-            document.getElementById('edit-class-id').value = classData.id;
-            document.getElementById('edit-class-name').value = classData.class_name;
-            document.getElementById('edit-subject').value = classData.subject;
-            document.getElementById('edit-grade-level').value = classData.grade_level;
-            document.getElementById('edit-academic-year').value = classData.academic_year;
-            document.getElementById('edit-semester').value = classData.semester;
-            document.getElementById('edit-max-students').value = classData.max_students;
-            document.getElementById('edit-class-room').value = classData.class_room || '';
-            document.getElementById('edit-start-date').value = classData.start_date ? classData.start_date.split('T')[0] : '';
-            document.getElementById('edit-end-date').value = classData.end_date ? classData.end_date.split('T')[0] : '';
-            document.getElementById('edit-is-active').checked = classData.is_active;
-
-            // Mostrar modal
-            modal.classList.remove('hidden');
-        }
-
-        // Expose viewStudents and editClass to global scope immediately
-        window.viewStudents = viewStudents;
-        window.editClass = editClass;
 
         function closeEditClassModal() {
             document.getElementById('editClassModal').classList.add('hidden');
@@ -2789,6 +2787,11 @@
             }
         }
 
+        // Expose group functions to global scope
+        window.viewGroup = viewGroup;
+        window.assignBlock = assignBlock;
+        window.deleteGroup = deleteGroup;
+
         // ==================== UTILITY FUNCTIONS ====================
 
         function showError(containerId, message) {
@@ -2825,12 +2828,7 @@
             }
         }
 
-        // Expose functions to global scope for inline event handlers
-        window.viewStudents = viewStudents;
-        window.editClass = editClass;
-        window.viewGroup = viewGroup;
-        window.assignBlock = assignBlock;
-        window.deleteGroup = deleteGroup;
+        // Expose remaining modal and form functions to global scope
         window.openClassModal = openClassModal;
         window.closeClassModal = closeClassModal;
         window.closeEditClassModal = closeEditClassModal;
