@@ -1601,15 +1601,16 @@ const StudentsManagementComponent = (() => {
             const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
 
             try {
-                // Asignar bloque al estudiante
-                const response = await fetch(`${API_URL}/api/users/${studentId}/blocks`, {
+                // Asignar bloque al estudiante usando el endpoint correcto
+                const response = await fetch(`${API_URL}/api/groups/assign-block`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${session.token}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        block_id: parseInt(blockId)
+                        block_id: parseInt(blockId),
+                        user_id: parseInt(studentId)
                     })
                 });
 
