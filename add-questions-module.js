@@ -21,6 +21,9 @@ const translations = {
         generator_powered_by: 'Hecho con Gemini',
         generator_api_key: 'API Key de Gemini',
         generator_api_key_placeholder: 'Introduce tu API Key aquí',
+        generator_api_key_help: 'Obtén tu API Key gratis en:',
+        generator_api_key_link: 'https://aistudio.google.com/app/apikey',
+        generator_api_key_link_text: 'Google AI Studio',
         generator_block: 'Bloque',
         generator_block_placeholder: 'Escribe un bloque nuevo o elige uno existente',
         generator_topic: 'Tema',
@@ -29,8 +32,9 @@ const translations = {
         generator_difficulty: 'Dificultad',
         generator_button_generate: 'Generar Preguntas',
         generator_button_generating: 'Generando...',
-        generator_error_no_api_key: 'Generador de preguntas con AI sin habilitar. Introducir una API Key.',
+        generator_error_no_api_key: '⚠️ Para usar el generador de IA necesitas una API Key de Google Gemini.\n\n1. Visita: https://aistudio.google.com/app/apikey\n2. Inicia sesión con tu cuenta de Google\n3. Haz clic en "Create API Key"\n4. Copia la clave y pégala en el campo de arriba\n\n¡Es completamente gratis!',
         generator_error_fields_missing: 'Por favor, introduce un nombre de bloque y de tema.',
+        generator_error_invalid_api_key: '❌ La API Key no es válida o ha expirado. Por favor, verifica que la copiaste correctamente desde Google AI Studio.',
         generator_generated_questions: 'Preguntas Generadas:',
         generator_explanation: 'Explicación:',
         generator_button_save: 'Guardar Preguntas',
@@ -331,13 +335,27 @@ const Combobox = ({ options, value, onChange, placeholder, disabled }) => {
 
 // AI Question Generation with full Gemini integration
 const generateQuestionsWithAI = async (blockName, topicName, questionCount, optionCount, difficulty, apiKey, errorMessage, syllabusContent = '', difficultyRange = new Set()) => {
-    if (!apiKey) throw new Error(errorMessage);
-    
+    // Validate API key first
+    if (!apiKey || apiKey.trim() === '') {
+        throw new Error(errorMessage);
+    }
+
     try {
         // Import GoogleGenAI dynamically
         const { GoogleGenAI } = await import("https://esm.sh/@google/genai");
-        const genAI = new GoogleGenAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        // Try to create the AI instance - this will fail if API key is invalid
+        let genAI, model;
+        try {
+            genAI = new GoogleGenAI(apiKey);
+            model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        } catch (apiError) {
+            // Handle specific API key errors
+            if (apiError.message.includes('API Key')) {
+                throw new Error('❌ La API Key no es válida. Por favor, verifica que:\n\n1. Copiaste la clave completa desde Google AI Studio\n2. La clave no ha expirado\n3. No tiene espacios al principio o al final\n\nVisita: https://aistudio.google.com/app/apikey');
+            }
+            throw apiError;
+        }
         
         const difficultyText = difficultyRange.size > 0 
             ? `Varía la dificultad entre los niveles: ${Array.from(difficultyRange).join(', ')}`
@@ -749,7 +767,7 @@ const QuestionGenerator = ({ currentUser, blocks, onSaveQuestions, onCreateBlock
         }, [
             // API Key field
             React.createElement('div', { key: 'api-key' }, [
-                React.createElement('label', { 
+                React.createElement('label', {
                     key: 'label',
                     style: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#778DA9', marginBottom: '4px' }
                 }, t('generator_api_key')),
@@ -769,7 +787,32 @@ const QuestionGenerator = ({ currentUser, blocks, onSaveQuestions, onCreateBlock
                     },
                     placeholder: t('generator_api_key_placeholder'),
                     disabled: isUIBlocked
-                })
+                }),
+                React.createElement('div', {
+                    key: 'help',
+                    style: {
+                        marginTop: '6px',
+                        padding: '8px 12px',
+                        background: 'rgba(59, 130, 246, 0.1)',
+                        border: '1px solid rgba(59, 130, 246, 0.3)',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        color: '#778DA9'
+                    }
+                }, [
+                    React.createElement('span', { key: 'help-text' }, t('generator_api_key_help') + ' '),
+                    React.createElement('a', {
+                        key: 'help-link',
+                        href: t('generator_api_key_link'),
+                        target: '_blank',
+                        rel: 'noopener noreferrer',
+                        style: {
+                            color: '#3B82F6',
+                            textDecoration: 'underline',
+                            fontWeight: '600'
+                        }
+                    }, t('generator_api_key_link_text'))
+                ])
             ]),
             
             // Syllabus upload
@@ -1049,9 +1092,19 @@ const QuestionGenerator = ({ currentUser, blocks, onSaveQuestions, onCreateBlock
             ] : t('generator_button_generate')),
             
             // Error message
-            error && React.createElement('p', {
+            error && React.createElement('div', {
                 key: 'error',
-                style: { fontSize: '14px', color: '#EF4444', textAlign: 'center' }
+                style: {
+                    marginTop: '16px',
+                    padding: '16px',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    color: '#EF4444',
+                    whiteSpace: 'pre-line',
+                    lineHeight: '1.6'
+                }
             }, error)
         ]),
         
