@@ -6,18 +6,18 @@
     <meta name="panel-type" content="PPF">
     <meta name="header-container" content="header-container">
     <title>Panel de Profesores | PLAYTEST</title>
-    <link rel="stylesheet" href="header-styles.css?v=20251026g">
-    <script src="header-loader.js?v=20251026g"></script>
-    <script src="api-data-service.js?v=20251026g"></script>
+    <link rel="stylesheet" href="header-styles.css?v=20251027b">
+    <script src="header-loader.js?v=20251027b"></script>
+    <script src="api-data-service.js?v=20251027b"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="navigation-service.js?v=20251026g"></script>
-    <script src="bloques-creados-component.js?v=20251026g"></script>
-    <script src="students-management-component.js?v=20251026g"></script>
+    <script src="navigation-service.js?v=20251027b"></script>
+    <script src="bloques-creados-component.js?v=20251027b"></script>
+    <script src="students-management-component.js?v=20251027b"></script>
 
     <!-- React CDN for Add Questions Module -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="add-questions-module.js"></script>
+    <script src="add-questions-module.js?v=20251026a"></script>
 
     <style>
         * {
@@ -1276,22 +1276,57 @@
 
     <!-- Modal Ver Estudiantes de Clase -->
     <div id="viewStudentsModal" class="modal hidden">
-        <div class="modal-content" style="max-width: 800px;">
-            <div class="modal-header">
-                <h3 class="modal-title" id="viewStudentsModalTitle">👥 Estudiantes de la Clase</h3>
-                <button class="close" onclick="closeViewStudentsModal()">&times;</button>
+        <div class="modal-content" style="max-width: 950px;">
+            <!-- Modern header with gradient -->
+            <div class="modal-header" style="background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%); margin: -30px -30px 0 -30px; padding: 25px 30px; border-radius: 10px 10px 0 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 class="modal-title" id="viewStudentsModalTitle" style="color: white; font-size: 1.5rem; margin: 0; font-weight: 700;">👥 Estudiantes de la Clase</h2>
+                        <p id="viewStudentsModalSubtitle" style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0; font-size: 0.9rem;"></p>
+                    </div>
+                    <button class="close-modal" onclick="closeViewStudentsModal()" style="background: rgba(255,255,255,0.2); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 24px; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">×</button>
+                </div>
             </div>
 
-            <div class="modal-body">
-                <div id="students-list-loading" class="loading" style="display: none;">
-                    <div class="spinner"></div>
-                    <p>Cargando estudiantes...</p>
+            <div class="modal-body" style="padding: 25px 30px;">
+                <!-- Search and filter bar -->
+                <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                    <input
+                        type="text"
+                        id="search-class-students-input"
+                        class="form-input"
+                        placeholder="🔍 Buscar estudiante..."
+                        onkeyup="filterClassStudents(this.value)"
+                        style="flex: 1;"
+                    >
+                    <select class="form-input" style="width: 200px;" onchange="filterClassStudentsByStatus(this.value)">
+                        <option value="all">Todos los estados</option>
+                        <option value="active">✓ Activos</option>
+                        <option value="inactive">✗ Inactivos</option>
+                    </select>
                 </div>
 
-                <div id="students-list-container"></div>
+                <!-- Stats summary -->
+                <div id="students-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                    <!-- Will be populated dynamically -->
+                </div>
+
+                <!-- Loading state -->
+                <div id="students-list-loading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p style="color: #778DA9;">Cargando estudiantes...</p>
+                </div>
+
+                <!-- Students container -->
+                <div id="students-list-container" style="max-height: 500px; overflow-y: auto;">
+                    <!-- Will be populated dynamically -->
+                </div>
             </div>
 
-            <div class="modal-footer">
+            <div class="modal-footer" style="background: #0D1B2A; margin: 0 -30px -30px -30px; padding: 20px 30px; border-radius: 0 0 10px 10px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="color: #778DA9; font-size: 0.9rem;">
+                    <span id="total-students-footer"></span>
+                </div>
                 <button type="button" class="btn btn-secondary" onclick="closeViewStudentsModal()">Cerrar</button>
             </div>
         </div>
@@ -1508,6 +1543,60 @@
         </div>
     </div>
 
+    <!-- Modal Añadir Miembros al Grupo -->
+    <div id="add-members-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 class="modal-title">👥 Añadir Miembros al Grupo</h2>
+                <button class="close-modal" onclick="closeAddMembersModal()">×</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Search bar -->
+                <div style="margin-bottom: 20px;">
+                    <input
+                        type="text"
+                        id="search-students-input"
+                        class="form-input"
+                        placeholder="🔍 Buscar estudiante por nombre o email..."
+                        onkeyup="filterAvailableStudents(this.value)"
+                        style="width: 100%;"
+                    >
+                </div>
+
+                <!-- Selected count -->
+                <div id="selected-count" style="margin-bottom: 15px; padding: 10px; background: rgba(16, 185, 129, 0.1); border-radius: 6px; display: none;">
+                    <span style="color: #10B981; font-weight: 600;" id="selected-count-text">0 estudiantes seleccionados</span>
+                </div>
+
+                <!-- Students loading -->
+                <div id="add-members-loading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p style="color: #778DA9;">Cargando estudiantes...</p>
+                </div>
+
+                <!-- Empty state -->
+                <div id="add-members-empty" class="empty-state" style="display: none;">
+                    <div class="empty-state-icon">👤</div>
+                    <h3>No hay estudiantes disponibles</h3>
+                    <p>Todos los estudiantes de tus clases ya están en este grupo</p>
+                </div>
+
+                <!-- Students list -->
+                <div id="available-students-list" style="max-height: 400px; overflow-y: auto; border: 1px solid #415A77; border-radius: 8px; padding: 10px;">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                <button type="button" class="btn btn-secondary" onclick="closeAddMembersModal()">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="add-members-btn" onclick="confirmAddMembers()" disabled>
+                    Añadir Seleccionados
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Asignar Bloque -->
     <div id="assign-block-modal" class="modal hidden">
         <div class="modal-content" style="max-width: 800px;">
@@ -1639,15 +1728,21 @@
         // ==================== DECLARE FUNCTIONS IN GLOBAL SCOPE FIRST ====================
         // These functions MUST be available before any rendering happens
 
-        // Ver estudiantes de una clase
+        // Store students data for filtering
+        let classStudentsData = [];
+
+        // Ver estudiantes de una clase (IMPROVED VERSION)
         async function viewStudents(classId, className) {
             const modal = document.getElementById('viewStudentsModal');
             const title = document.getElementById('viewStudentsModalTitle');
+            const subtitle = document.getElementById('viewStudentsModalSubtitle');
             const loading = document.getElementById('students-list-loading');
             const container = document.getElementById('students-list-container');
+            const statsContainer = document.getElementById('students-stats');
 
             // Actualizar título
-            title.textContent = `👥 Estudiantes de ${className}`;
+            title.textContent = `Estudiantes de ${className}`;
+            subtitle.textContent = 'Gestiona y visualiza todos los estudiantes inscritos';
 
             // Mostrar modal
             modal.classList.add('active');
@@ -1656,6 +1751,7 @@
             // Mostrar loading
             loading.style.display = 'block';
             container.innerHTML = '';
+            statsContainer.innerHTML = '';
 
             try {
                 if (!userSession || !userSession.token) {
@@ -1676,46 +1772,111 @@
                 }
 
                 const data = await response.json();
-                const students = data.students || [];
+                classStudentsData = data.students || [];
 
                 loading.style.display = 'none';
 
-                if (students.length === 0) {
+                if (classStudentsData.length === 0) {
                     container.innerHTML = `
-                        <div class="empty-state">
-                            <span class="empty-state-icon">👥</span>
-                            <h3>No hay estudiantes inscritos</h3>
-                            <p>Los estudiantes aparecerán aquí cuando se inscriban usando el código de la clase</p>
+                        <div class="empty-state" style="padding: 60px 20px;">
+                            <div class="empty-state-icon" style="font-size: 4rem;">👥</div>
+                            <h3 style="color: #E0E1DD; margin: 20px 0 10px;">No hay estudiantes inscritos</h3>
+                            <p style="color: #778DA9;">Los estudiantes aparecerán aquí cuando se inscriban usando el código de la clase</p>
                         </div>
                     `;
                 } else {
-                    container.innerHTML = `
-                        <div class="students-list">
-                            ${students.map(student => `
-                                <div class="student-item">
-                                    <div class="student-avatar">${student.first_name.charAt(0)}${student.last_name.charAt(0)}</div>
-                                    <div class="student-info">
-                                        <div class="student-name">${student.first_name} ${student.last_name}</div>
-                                        <div class="student-email">${student.email || 'Sin email'}</div>
-                                    </div>
-                                    <div class="student-status ${student.is_active ? 'active' : 'inactive'}">
-                                        ${student.is_active ? '✓ Activo' : '✗ Inactivo'}
-                                    </div>
-                                </div>
-                            `).join('')}
+                    // Calculate stats
+                    const activeCount = classStudentsData.filter(s => s.is_active).length;
+                    const inactiveCount = classStudentsData.length - activeCount;
+
+                    // Render stats
+                    statsContainer.innerHTML = `
+                        <div style="background: #1B263B; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #415A77;">
+                            <div style="font-size: 1.8rem; font-weight: 700; color: #10B981;">${classStudentsData.length}</div>
+                            <div style="color: #778DA9; font-size: 0.85rem; margin-top: 5px;">Total</div>
+                        </div>
+                        <div style="background: #1B263B; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #415A77;">
+                            <div style="font-size: 1.8rem; font-weight: 700; color: #3B82F6;">${activeCount}</div>
+                            <div style="color: #778DA9; font-size: 0.85rem; margin-top: 5px;">✓ Activos</div>
+                        </div>
+                        <div style="background: #1B263B; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #415A77;">
+                            <div style="font-size: 1.8rem; font-weight: 700; color: #EF4444;">${inactiveCount}</div>
+                            <div style="color: #778DA9; font-size: 0.85rem; margin-top: 5px;">✗ Inactivos</div>
                         </div>
                     `;
+
+                    // Render students with modern cards
+                    renderClassStudents(classStudentsData);
+
+                    // Update footer
+                    document.getElementById('total-students-footer').textContent =
+                        `${classStudentsData.length} estudiante${classStudentsData.length !== 1 ? 's' : ''} en total`;
                 }
             } catch (error) {
                 loading.style.display = 'none';
                 container.innerHTML = `
-                    <div class="error">
-                        <span style="font-size: 2rem;">⚠️</span>
-                        <h3>Error cargando estudiantes</h3>
-                        <p>${error.message}</p>
+                    <div class="error" style="padding: 40px; text-align: center;">
+                        <span style="font-size: 3rem;">⚠️</span>
+                        <h3 style="color: #EF4444; margin: 15px 0 10px;">Error cargando estudiantes</h3>
+                        <p style="color: #778DA9;">${error.message}</p>
                     </div>
                 `;
             }
+        }
+
+        function renderClassStudents(students) {
+            const container = document.getElementById('students-list-container');
+
+            container.innerHTML = `
+                <div style="display: grid; gap: 12px;">
+                    ${students.map(student => `
+                        <div style="background: #1B263B; border: 1px solid #415A77; border-radius: 10px; padding: 15px; display: flex; align-items: center; gap: 15px; transition: all 0.3s; cursor: pointer;"
+                             onmouseover="this.style.borderColor='#3B82F6'; this.style.transform='translateX(5px)'"
+                             onmouseout="this.style.borderColor='#415A77'; this.style.transform='translateX(0)'">
+                            <!-- Avatar -->
+                            <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; color: white; flex-shrink: 0;">
+                                ${student.first_name.charAt(0)}${student.last_name.charAt(0)}
+                            </div>
+
+                            <!-- Info -->
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="color: #E0E1DD; font-weight: 600; font-size: 1rem; margin-bottom: 3px;">
+                                    ${student.first_name} ${student.last_name}
+                                </div>
+                                <div style="color: #778DA9; font-size: 0.85rem; display: flex; align-items: center; gap: 15px;">
+                                    <span>📧 ${student.email || 'Sin email'}</span>
+                                    ${student.enrollment_date ? `<span>📅 ${new Date(student.enrollment_date).toLocaleDateString('es-ES')}</span>` : ''}
+                                </div>
+                            </div>
+
+                            <!-- Status badge -->
+                            <div style="padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; white-space: nowrap; ${student.is_active ? 'background: rgba(16, 185, 129, 0.2); color: #10B981;' : 'background: rgba(239, 68, 68, 0.2); color: #EF4444;'}">
+                                ${student.is_active ? '✓ Activo' : '✗ Inactivo'}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function filterClassStudents(search) {
+            const filtered = classStudentsData.filter(s => {
+                const searchLower = search.toLowerCase();
+                return s.first_name.toLowerCase().includes(searchLower) ||
+                       s.last_name.toLowerCase().includes(searchLower) ||
+                       (s.email && s.email.toLowerCase().includes(searchLower));
+            });
+            renderClassStudents(filtered);
+        }
+
+        function filterClassStudentsByStatus(status) {
+            let filtered = classStudentsData;
+            if (status === 'active') {
+                filtered = classStudentsData.filter(s => s.is_active);
+            } else if (status === 'inactive') {
+                filtered = classStudentsData.filter(s => !s.is_active);
+            }
+            renderClassStudents(filtered);
         }
 
         // Editar clase
@@ -2512,8 +2673,217 @@
             }
         }
 
-        function openAddMembersToGroupModal() {
-            alert('Funcionalidad de añadir miembros próximamente.\n\nPor ahora, los estudiantes pueden unirse al grupo usando el código de acceso.');
+        // ==================== ADD MEMBERS MODAL FUNCTIONS ====================
+
+        let availableStudentsData = [];
+        let selectedStudentIds = new Set();
+
+        async function openAddMembersToGroupModal() {
+            if (!currentGroupId) {
+                alert('Error: No se ha seleccionado ningún grupo');
+                return;
+            }
+
+            const modal = document.getElementById('add-members-modal');
+            modal.classList.add('active');
+            modal.classList.remove('hidden');
+
+            // Reset state
+            selectedStudentIds.clear();
+            updateSelectedCount();
+            document.getElementById('search-students-input').value = '';
+
+            // Load available students
+            await loadAvailableStudents();
+        }
+
+        function closeAddMembersModal() {
+            const modal = document.getElementById('add-members-modal');
+            modal.classList.remove('active');
+            modal.classList.add('hidden');
+            selectedStudentIds.clear();
+        }
+
+        async function loadAvailableStudents() {
+            const loading = document.getElementById('add-members-loading');
+            const empty = document.getElementById('add-members-empty');
+            const container = document.getElementById('available-students-list');
+
+            try {
+                loading.style.display = 'block';
+                empty.style.display = 'none';
+                container.innerHTML = '';
+
+                // Get all students from teacher's classes
+                const classesResponse = await fetch(`${API_URL}/teachers-panel/classes`, {
+                    headers: {
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF'
+                    }
+                });
+
+                if (!classesResponse.ok) throw new Error('Error cargando clases');
+
+                const classesData = await classesResponse.json();
+                const teacherClasses = classesData.classes || [];
+
+                // Get all students from all classes
+                const studentPromises = teacherClasses.map(async (cls) => {
+                    const response = await fetch(`${API_URL}/teachers-panel/classes/${cls.id}/students`, {
+                        headers: {
+                            'Authorization': `Bearer ${userSession.token}`,
+                            'X-Current-Role': 'PPF'
+                        }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        return data.students || [];
+                    }
+                    return [];
+                });
+
+                const studentsArrays = await Promise.all(studentPromises);
+                const allStudents = studentsArrays.flat();
+
+                // Remove duplicates by id
+                const uniqueStudents = Array.from(
+                    new Map(allStudents.map(s => [s.id, s])).values()
+                );
+
+                // Filter out students already in the group
+                const membersIds = new Set(groupMembers.map(m => m.user_id));
+                availableStudentsData = uniqueStudents.filter(s => !membersIds.has(s.id));
+
+                loading.style.display = 'none';
+
+                if (availableStudentsData.length === 0) {
+                    empty.style.display = 'block';
+                } else {
+                    renderAvailableStudents(availableStudentsData);
+                }
+            } catch (error) {
+                console.error('Error loading available students:', error);
+                loading.style.display = 'none';
+                container.innerHTML = `
+                    <div class="error" style="padding: 20px; text-align: center; color: #EF4444;">
+                        Error al cargar estudiantes: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function renderAvailableStudents(students) {
+            const container = document.getElementById('available-students-list');
+
+            container.innerHTML = students.map(student => `
+                <div style="background: ${selectedStudentIds.has(student.id) ? 'rgba(16, 185, 129, 0.1)' : '#0D1B2A'}; border: 2px solid ${selectedStudentIds.has(student.id) ? '#10B981' : '#415A77'}; border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.3s;"
+                     onclick="toggleStudentSelection(${student.id})"
+                     onmouseover="if (!${selectedStudentIds.has(student.id)}) this.style.borderColor='#3B82F6'"
+                     onmouseout="if (!${selectedStudentIds.has(student.id)}) this.style.borderColor='#415A77'">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <!-- Checkbox -->
+                        <div style="width: 24px; height: 24px; border-radius: 4px; border: 2px solid ${selectedStudentIds.has(student.id) ? '#10B981' : '#415A77'}; background: ${selectedStudentIds.has(student.id) ? '#10B981' : 'transparent'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            ${selectedStudentIds.has(student.id) ? '<span style="color: white; font-weight: 700;">✓</span>' : ''}
+                        </div>
+
+                        <!-- Avatar -->
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: white; flex-shrink: 0;">
+                            ${student.first_name.charAt(0)}${student.last_name.charAt(0)}
+                        </div>
+
+                        <!-- Info -->
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="color: #E0E1DD; font-weight: 600; font-size: 0.95rem;">
+                                ${student.first_name} ${student.last_name}
+                            </div>
+                            <div style="color: #778DA9; font-size: 0.8rem;">
+                                ${student.email || 'Sin email'}
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div style="padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; ${student.is_active ? 'background: rgba(16, 185, 129, 0.2); color: #10B981;' : 'background: rgba(239, 68, 68, 0.2); color: #EF4444;'}">
+                            ${student.is_active ? '✓' : '✗'}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleStudentSelection(studentId) {
+            if (selectedStudentIds.has(studentId)) {
+                selectedStudentIds.delete(studentId);
+            } else {
+                selectedStudentIds.add(studentId);
+            }
+
+            updateSelectedCount();
+            renderAvailableStudents(availableStudentsData);
+        }
+
+        function updateSelectedCount() {
+            const countDiv = document.getElementById('selected-count');
+            const countText = document.getElementById('selected-count-text');
+            const addButton = document.getElementById('add-members-btn');
+
+            if (selectedStudentIds.size > 0) {
+                countDiv.style.display = 'block';
+                countText.textContent = `${selectedStudentIds.size} estudiante${selectedStudentIds.size !== 1 ? 's' : ''} seleccionado${selectedStudentIds.size !== 1 ? 's' : ''}`;
+                addButton.disabled = false;
+            } else {
+                countDiv.style.display = 'none';
+                addButton.disabled = true;
+            }
+        }
+
+        function filterAvailableStudents(search) {
+            const filtered = availableStudentsData.filter(s => {
+                const searchLower = search.toLowerCase();
+                return s.first_name.toLowerCase().includes(searchLower) ||
+                       s.last_name.toLowerCase().includes(searchLower) ||
+                       (s.email && s.email.toLowerCase().includes(searchLower));
+            });
+            renderAvailableStudents(filtered);
+        }
+
+        async function confirmAddMembers() {
+            if (selectedStudentIds.size === 0) return;
+
+            const addButton = document.getElementById('add-members-btn');
+            addButton.disabled = true;
+            addButton.textContent = 'Añadiendo...';
+
+            try {
+                const response = await fetch(`${API_URL}/groups/${currentGroupId}/members`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'Content-Type': 'application/json',
+                        'X-Current-Role': 'PPF'
+                    },
+                    body: JSON.stringify({
+                        user_ids: Array.from(selectedStudentIds)
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error al añadir miembros');
+                }
+
+                alert(`✅ ${selectedStudentIds.size} miembro${selectedStudentIds.size !== 1 ? 's' : ''} añadido${selectedStudentIds.size !== 1 ? 's' : ''} al grupo exitosamente`);
+
+                closeAddMembersModal();
+
+                // Reload group members
+                await loadGroupMembers(currentGroupId);
+                renderGroupMembers();
+            } catch (error) {
+                console.error('Error adding members:', error);
+                alert('Error al añadir miembros: ' + error.message);
+                addButton.disabled = false;
+                addButton.textContent = 'Añadir Seleccionados';
+            }
         }
 
         async function loadGroupAssignments(groupId) {
@@ -2524,21 +2894,148 @@
                 loading.style.display = 'block';
                 list.innerHTML = '';
 
-                // This endpoint might need to be created
-                // For now, show a placeholder
-                setTimeout(() => {
-                    loading.style.display = 'none';
+                // Get all assignments from teacher
+                const response = await fetch(`${API_URL}/groups/assignments`, {
+                    headers: {
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Error cargando asignaciones');
+
+                const allAssignments = await response.json();
+
+                // Filter assignments for this specific group
+                const groupAssignments = allAssignments.filter(a => a.group_id === groupId);
+
+                loading.style.display = 'none';
+
+                if (groupAssignments.length === 0) {
                     list.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📚</div>
-                            <h3>Funcionalidad en desarrollo</h3>
-                            <p>Próximamente podrás ver todas las asignaciones del grupo aquí</p>
+                        <div class="empty-state" style="padding: 60px 20px;">
+                            <div class="empty-state-icon" style="font-size: 4rem;">📚</div>
+                            <h3 style="color: #E0E1DD; margin: 20px 0 10px;">No hay bloques asignados</h3>
+                            <p style="color: #778DA9;">Usa el botón "Asignar Bloque" para comenzar</p>
                         </div>
                     `;
-                }, 500);
+                } else {
+                    renderGroupAssignments(groupAssignments);
+                }
             } catch (error) {
                 console.error('Error loading assignments:', error);
                 loading.style.display = 'none';
+                list.innerHTML = `
+                    <div class="error" style="padding: 40px; text-align: center;">
+                        <span style="font-size: 3rem;">⚠️</span>
+                        <h3 style="color: #EF4444; margin: 15px 0 10px;">Error cargando asignaciones</h3>
+                        <p style="color: #778DA9;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderGroupAssignments(assignments) {
+            const list = document.getElementById('group-assignments-list');
+
+            list.innerHTML = `
+                <div style="display: grid; gap: 15px;">
+                    ${assignments.map(assignment => {
+                        const dueDate = assignment.due_date ? new Date(assignment.due_date) : null;
+                        const isOverdue = dueDate && dueDate < new Date();
+                        const assignedDate = new Date(assignment.assigned_at);
+
+                        return `
+                            <div style="background: #1B263B; border: 1px solid #415A77; border-radius: 12px; padding: 20px; transition: all 0.3s;"
+                                 onmouseover="this.style.borderColor='#3B82F6'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3)'"
+                                 onmouseout="this.style.borderColor='#415A77'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+
+                                <!-- Header -->
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                                    <div style="flex: 1;">
+                                        <h4 style="color: #3B82F6; font-size: 1.2rem; font-weight: 700; margin: 0 0 8px 0;">
+                                            📚 ${assignment.block_name || 'Bloque sin nombre'}
+                                        </h4>
+                                        <div style="color: #778DA9; font-size: 0.85rem; display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                                            <span style="display: flex; align-items: center; gap: 5px;">
+                                                <span style="font-size: 1rem;">📅</span>
+                                                Asignado: ${assignedDate.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                            </span>
+                                            ${dueDate ? `
+                                                <span style="display: flex; align-items: center; gap: 5px; ${isOverdue ? 'color: #EF4444; font-weight: 600;' : ''}">
+                                                    <span style="font-size: 1rem;">${isOverdue ? '⚠️' : '🎯'}</span>
+                                                    ${isOverdue ? 'Vencido:' : 'Vence:'} ${dueDate.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                </span>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+
+                                    <!-- Delete button -->
+                                    <button onclick="deleteAssignment(${assignment.id}, '${assignment.block_name}')"
+                                            style="background: rgba(239, 68, 68, 0.1); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.3s;"
+                                            onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'; this.style.borderColor='#EF4444'"
+                                            onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.borderColor='rgba(239, 68, 68, 0.3)'">
+                                        🗑️ Eliminar
+                                    </button>
+                                </div>
+
+                                <!-- Notes section -->
+                                ${assignment.notes ? `
+                                    <div style="background: #0D1B2A; padding: 12px 15px; border-radius: 8px; border-left: 3px solid #3B82F6; margin-top: 12px;">
+                                        <div style="color: #3B82F6; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px;">
+                                            📝 Notas
+                                        </div>
+                                        <div style="color: #E0E1DD; font-size: 0.9rem; line-height: 1.5;">
+                                            ${assignment.notes}
+                                        </div>
+                                    </div>
+                                ` : ''}
+
+                                <!-- Status badge -->
+                                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #415A77;">
+                                    <div style="display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; ${
+                                        isOverdue
+                                            ? 'background: rgba(239, 68, 68, 0.2); color: #EF4444;'
+                                            : dueDate
+                                                ? 'background: rgba(251, 191, 36, 0.2); color: #FBBF24;'
+                                                : 'background: rgba(16, 185, 129, 0.2); color: #10B981;'
+                                    }">
+                                        ${isOverdue ? '⚠️ Vencido' : dueDate ? '⏳ En progreso' : '✓ Sin fecha límite'}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        async function deleteAssignment(assignmentId, blockName) {
+            if (!confirm(`¿Estás seguro de que deseas eliminar la asignación del bloque "${blockName}"?\n\nEsto no afectará el progreso ya realizado por los estudiantes.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/groups/assignments/${assignmentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF'
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error al eliminar asignación');
+                }
+
+                alert('✅ Asignación eliminada exitosamente');
+
+                // Reload assignments
+                await loadGroupAssignments(currentGroupId);
+            } catch (error) {
+                console.error('Error deleting assignment:', error);
+                alert('Error al eliminar la asignación: ' + error.message);
             }
         }
 
@@ -2856,6 +3353,13 @@
         window.copyClassCode = copyClassCode;
         window.createClass = createClass;
         window.updateClass = updateClass;
+        window.filterClassStudents = filterClassStudents;
+        window.filterClassStudentsByStatus = filterClassStudentsByStatus;
+        window.closeAddMembersModal = closeAddMembersModal;
+        window.filterAvailableStudents = filterAvailableStudents;
+        window.confirmAddMembers = confirmAddMembers;
+        window.toggleStudentSelection = toggleStudentSelection;
+        window.deleteAssignment = deleteAssignment;
 
         console.log('✅ Unified Teachers Panel loaded successfully');
         console.log('✅ Global functions exposed:', Object.keys(window).filter(k => ['viewStudents', 'editClass', 'viewGroup', 'assignBlock', 'deleteGroup'].includes(k)));
