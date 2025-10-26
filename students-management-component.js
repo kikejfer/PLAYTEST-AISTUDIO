@@ -1346,7 +1346,83 @@ const StudentsManagementComponent = (() => {
         // Métodos de acciones
         showStudentDetails: (studentId) => {
             console.log(`📊 Mostrando detalles del estudiante ${studentId}`);
-            // Implementar modal de detalles
+
+            const student = studentsData.find(s => s.id === studentId);
+            if (!student) {
+                alert('Estudiante no encontrado');
+                return;
+            }
+
+            const modal = document.getElementById('student-details-modal');
+            if (!modal) return;
+
+            const detailsContent = document.getElementById('student-details-content');
+            detailsContent.innerHTML = `
+                <div style="display: grid; gap: 20px;">
+                    <div style="display: flex; align-items: center; gap: 15px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px;">
+                        <img src="${student.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.id}`}"
+                             style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid white;">
+                        <div>
+                            <h3 style="color: white; margin: 0;">${student.name}</h3>
+                            <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0;">${student.email || 'Sin email'}</p>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div style="background: #1B263B; padding: 15px; border-radius: 8px;">
+                            <div style="color: #778DA9; font-size: 0.9rem;">Institución</div>
+                            <div style="color: #E0E1DD; font-size: 1.1rem; margin-top: 5px;">${student.institution || 'N/A'}</div>
+                        </div>
+                        <div style="background: #1B263B; padding: 15px; border-radius: 8px;">
+                            <div style="color: #778DA9; font-size: 0.9rem;">Curso</div>
+                            <div style="color: #E0E1DD; font-size: 1.1rem; margin-top: 5px;">${student.course || 'N/A'}</div>
+                        </div>
+                        <div style="background: #1B263B; padding: 15px; border-radius: 8px;">
+                            <div style="color: #778DA9; font-size: 0.9rem;">Progreso</div>
+                            <div style="color: #10B981; font-size: 1.3rem; font-weight: 700; margin-top: 5px;">${student.progress}%</div>
+                        </div>
+                        <div style="background: #1B263B; padding: 15px; border-radius: 8px;">
+                            <div style="color: #778DA9; font-size: 0.9rem;">Estado</div>
+                            <div style="color: ${student.status === 'active' ? '#10B981' : '#EF4444'}; font-size: 1.1rem; margin-top: 5px;">
+                                ${student.status === 'active' ? '✅ Activo' : '❌ Inactivo'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: #1B263B; padding: 20px; border-radius: 8px;">
+                        <h4 style="color: #E0E1DD; margin-bottom: 15px;">📊 Estadísticas</h4>
+                        <div style="display: grid; gap: 10px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: #778DA9;">Actividades completadas:</span>
+                                <span style="color: #E0E1DD;">${student.completedActivities || 0} / ${student.totalActivities || 0}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: #778DA9;">Fecha de registro:</span>
+                                <span style="color: #E0E1DD;">${student.joinDate ? new Date(student.joinDate).toLocaleDateString() : 'N/A'}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: #778DA9;">Última actividad:</span>
+                                <span style="color: #E0E1DD;">${student.lastActivity ? new Date(student.lastActivity).toLocaleDateString() : 'N/A'}</span>
+                            </div>
+                            ${student.group ? `
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: #778DA9;">Grupo asignado:</span>
+                                    <span style="color: #E0E1DD;">${student.group}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button onclick="StudentsManagementComponent.closeModal('student-details-modal')"
+                                style="padding: 10px 20px; background: #6B7280; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
         },
 
         sendMessage: (studentId) => {
@@ -1354,9 +1430,64 @@ const StudentsManagementComponent = (() => {
             // Implementar funcionalidad de mensajería
         },
 
-        assignContent: (studentId) => {
+        assignContent: async (studentId) => {
             console.log(`📝 Asignando contenido al estudiante ${studentId}`);
-            // Implementar funcionalidad de asignación
+
+            const student = studentsData.find(s => s.id === studentId);
+            if (!student) {
+                alert('Estudiante no encontrado');
+                return;
+            }
+
+            // Get available blocks
+            const API_URL = window.API_URL || 'https://playtest-backend.onrender.com';
+            const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+
+            try {
+                const blocksResponse = await fetch(`${API_URL}/api/blocks`, {
+                    headers: {
+                        'Authorization': `Bearer ${session.token}`
+                    }
+                });
+
+                if (!blocksResponse.ok) {
+                    throw new Error('Error al cargar bloques');
+                }
+
+                const blocks = await blocksResponse.json();
+
+                if (blocks.length === 0) {
+                    alert('No hay bloques disponibles para asignar. Por favor crea bloques primero.');
+                    return;
+                }
+
+                const blockOptions = blocks.map(b =>
+                    `<option value="${b.id}">${b.name || b.title} - ${b.subject || 'Sin materia'}</option>`
+                ).join('');
+
+                const modalHTML = `
+                    <div id="assign-content-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+                        <div style="background: #1B263B; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%;">
+                            <h3 style="color: #E0E1DD; margin-bottom: 20px;">📝 Asignar Contenido</h3>
+                            <p style="color: #778DA9; margin-bottom: 20px;">Selecciona el bloque para ${student.name}:</p>
+                            <select id="block-select" style="width: 100%; padding: 10px; background: #0D1B2A; border: 1px solid #415A77; border-radius: 6px; color: #E0E1DD; margin-bottom: 20px;">
+                                <option value="">Seleccionar bloque...</option>
+                                ${blockOptions}
+                            </select>
+                            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                                <button onclick="document.getElementById('assign-content-modal').remove()" style="padding: 10px 20px; background: #6B7280; color: white; border: none; border-radius: 6px; cursor: pointer;">Cancelar</button>
+                                <button onclick="StudentsManagementComponent.confirmContentAssignment(${studentId})" style="padding: 10px 20px; background: #10B981; color: white; border: none; border-radius: 6px; cursor: pointer;">Asignar</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            } catch (error) {
+                console.error('Error al cargar bloques:', error);
+                alert('Error al cargar los bloques disponibles');
+            }
         },
 
         assignToGroup: async (studentId, studentName) => {
@@ -1457,14 +1588,173 @@ const StudentsManagementComponent = (() => {
             }
         },
 
+        confirmContentAssignment: async (studentId) => {
+            const blockSelect = document.getElementById('block-select');
+            const blockId = blockSelect.value;
+
+            if (!blockId) {
+                alert('Por favor selecciona un bloque');
+                return;
+            }
+
+            const API_URL = window.API_URL || 'https://playtest-backend.onrender.com';
+            const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+
+            try {
+                // Asignar bloque al estudiante
+                const response = await fetch(`${API_URL}/api/users/${studentId}/blocks`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        block_id: parseInt(blockId)
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al asignar bloque al estudiante');
+                }
+
+                alert('✅ Contenido asignado correctamente');
+                document.getElementById('assign-content-modal').remove();
+
+                // Reload students data
+                loadStudentsData();
+
+            } catch (error) {
+                console.error('Error al asignar contenido:', error);
+                alert('❌ Error al asignar contenido al estudiante');
+            }
+        },
+
         exportData: () => {
             console.log('📊 Exportando datos de estudiantes');
-            // Implementar exportación
+
+            if (filteredStudents.length === 0) {
+                alert('No hay estudiantes para exportar');
+                return;
+            }
+
+            // Crear CSV
+            const headers = ['ID', 'Nombre', 'Email', 'Institución', 'Curso', 'Progreso', 'Estado', 'Fecha Registro', 'Última Actividad'];
+            const csvContent = [
+                headers.join(','),
+                ...filteredStudents.map(s => [
+                    s.id,
+                    `"${s.name}"`,
+                    `"${s.email || ''}"`,
+                    `"${s.institution || ''}"`,
+                    `"${s.course || ''}"`,
+                    s.progress,
+                    s.status,
+                    s.joinDate ? new Date(s.joinDate).toLocaleDateString() : '',
+                    s.lastActivity ? new Date(s.lastActivity).toLocaleDateString() : ''
+                ].join(','))
+            ].join('\n');
+
+            // Descargar archivo
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `estudiantes_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            console.log('✅ Archivo CSV descargado');
         },
 
         showBulkActions: () => {
             console.log('⚙️ Mostrando acciones masivas');
-            // Implementar modal de acciones masivas
+
+            if (selectedStudents.length === 0) {
+                alert('Por favor selecciona al menos un estudiante');
+                return;
+            }
+
+            const modalHTML = `
+                <div id="bulk-actions-modal-custom" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+                    <div style="background: #1B263B; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%;">
+                        <h3 style="color: #E0E1DD; margin-bottom: 20px;">⚙️ Acciones Masivas</h3>
+                        <p style="color: #778DA9; margin-bottom: 20px;">${selectedStudents.length} estudiante(s) seleccionado(s)</p>
+
+                        <div style="display: grid; gap: 10px; margin-bottom: 20px;">
+                            <button onclick="StudentsManagementComponent.bulkAssignToGroup()"
+                                    style="padding: 15px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; text-align: left;">
+                                👥 Asignar a Grupo
+                            </button>
+                            <button onclick="StudentsManagementComponent.bulkAssignContent()"
+                                    style="padding: 15px; background: #764ba2; color: white; border: none; border-radius: 6px; cursor: pointer; text-align: left;">
+                                📝 Asignar Contenido
+                            </button>
+                            <button onclick="StudentsManagementComponent.bulkExport()"
+                                    style="padding: 15px; background: #10B981; color: white; border: none; border-radius: 6px; cursor: pointer; text-align: left;">
+                                📊 Exportar Seleccionados
+                            </button>
+                        </div>
+
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <button onclick="document.getElementById('bulk-actions-modal-custom').remove()"
+                                    style="padding: 10px 20px; background: #6B7280; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        },
+
+        bulkAssignToGroup: () => {
+            document.getElementById('bulk-actions-modal-custom')?.remove();
+            alert('Función de asignación masiva a grupo en desarrollo');
+        },
+
+        bulkAssignContent: () => {
+            document.getElementById('bulk-actions-modal-custom')?.remove();
+            alert('Función de asignación masiva de contenido en desarrollo');
+        },
+
+        bulkExport: () => {
+            document.getElementById('bulk-actions-modal-custom')?.remove();
+
+            if (selectedStudents.length === 0) {
+                alert('No hay estudiantes seleccionados');
+                return;
+            }
+
+            const studentsToExport = studentsData.filter(s => selectedStudents.includes(s.id));
+
+            // Crear CSV
+            const headers = ['ID', 'Nombre', 'Email', 'Institución', 'Curso', 'Progreso', 'Estado'];
+            const csvContent = [
+                headers.join(','),
+                ...studentsToExport.map(s => [
+                    s.id,
+                    `"${s.name}"`,
+                    `"${s.email || ''}"`,
+                    `"${s.institution || ''}"`,
+                    `"${s.course || ''}"`,
+                    s.progress,
+                    s.status
+                ].join(','))
+            ].join('\n');
+
+            // Descargar archivo
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `estudiantes_seleccionados_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         },
 
         closeModal: (modalId) => {
