@@ -169,6 +169,9 @@ const escalationScheduler = new EscalationScheduler();
 // Auto-setup system
 const autoSetup = require('./auto-setup');
 
+// Auto-migration system
+const { runMigrations } = require('./auto-migrate');
+
 // Levels system setup
 const LevelsSetup = require('./levels-setup');
 
@@ -205,7 +208,15 @@ server.listen(PORT, async () => {
   
   // Run auto-setup (only executes if needed)
   await autoSetup.runAutoSetup();
-  
+
+  // Run auto-migrations (ensures database schema is up to date)
+  try {
+    await runMigrations();
+  } catch (migrationError) {
+    console.error('❌ Error running migrations:', migrationError);
+    console.log('⚠️  Server will continue, but some features may not work');
+  }
+
   // Initialize levels system
   const levelsSetup = new LevelsSetup();
   try {
