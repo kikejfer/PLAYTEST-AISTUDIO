@@ -32,6 +32,43 @@ async function checkBlockAssignmentsTable() {
 }
 
 /**
+ * Check if communication tables exist
+ */
+async function checkCommunicationTables() {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables
+        WHERE table_schema = 'public'
+        AND table_name = 'tickets'
+      );
+    `);
+    return result.rows[0].exists;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Check if escalate_tickets function exists
+ */
+async function checkEscalateTicketsFunction() {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM pg_proc
+        WHERE proname = 'escalate_tickets'
+      );
+    `);
+    return result.rows[0].exists;
+  } finally {
+    client.release();
+  }
+}
+
+/**
  * Create block_assignments table if it doesn't exist
  */
 async function createBlockAssignmentsTable() {
@@ -81,6 +118,41 @@ async function createBlockAssignmentsTable() {
 }
 
 /**
+ * Apply communication schema
+ */
+async function applyCommunicationSchema() {
+  const client = await pool.connect();
+  try {
+    console.log('📝 Applying communication system schema...');
+
+    const schemaPath = path.join(__dirname, '..', 'database-schema-communication.sql');
+    const schema = fs.readFileSync(schemaPath, 'utf8');
+
+    await client.query('BEGIN');
+    await client.query(schema);
+    await client.query('COMMIT');
+
+    console.log('✅ Communication system schema applied successfully');
+    return true;
+  } catch (error) {
+    await client.query('ROLLBACK');
+
+    // Ignore "already exists" errors
+    if (error.message.includes('already exists') ||
+        error.message.includes('ya existe') ||
+        error.code === '42P07') {
+      console.log('⚠️  Some communication tables/functions already exist (OK)');
+      return true;
+    }
+
+    console.error('❌ Error applying communication schema:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
  * Run all pending migrations
  */
 async function runMigrations() {
@@ -95,6 +167,23 @@ async function runMigrations() {
       await createBlockAssignmentsTable();
     } else {
       console.log('✅ block_assignments table already exists');
+    }
+
+    // Check communication tables and function
+    const commTablesExist = await checkCommunicationTables();
+    const escalateFunctionExists = await checkEscalateTicketsFunction();
+
+    if (!commTablesExist || !escalateFunctionExists) {
+      console.log('⚠️  Communication system not fully configured');
+      if (!commTablesExist) {
+        console.log('   - tickets table not found');
+      }
+      if (!escalateFunctionExists) {
+        console.log('   - escalate_tickets() function not found');
+      }
+      await applyCommunicationSchema();
+    } else {
+      console.log('✅ Communication system already configured');
     }
 
     console.log('✨ Database schema is up to date');
