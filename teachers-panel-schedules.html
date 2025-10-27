@@ -2371,40 +2371,48 @@
 
         function renderGroups() {
             const groupsGrid = document.getElementById('groups-grid');
-            groupsGrid.innerHTML = groups.map(group => `
-                <div class="group-card">
-                    <div class="group-header">
-                        <div>
-                            <h3 class="group-name">${escapeHtml(group.name)}</h3>
-                            ${group.description ? `<p class="group-description">${escapeHtml(group.description)}</p>` : ''}
-                        </div>
-                        <div class="group-code">${group.access_code || 'N/A'}</div>
-                    </div>
+            groupsGrid.innerHTML = groups.map(group => {
+                // Validate that group has a valid ID
+                if (!group.id || typeof group.id !== 'number') {
+                    console.error('Invalid group object:', group);
+                    return ''; // Skip invalid groups
+                }
 
-                    <div class="group-stats">
-                        <div class="stat-item">
-                            <div class="stat-value">${group.member_count || 0}</div>
-                            <div class="stat-label">Estudiantes</div>
+                return `
+                    <div class="group-card">
+                        <div class="group-header">
+                            <div>
+                                <h3 class="group-name">${escapeHtml(group.name)}</h3>
+                                ${group.description ? `<p class="group-description">${escapeHtml(group.description)}</p>` : ''}
+                            </div>
+                            <div class="group-code">${group.access_code || 'N/A'}</div>
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-value">${group.assigned_blocks_count || 0}</div>
-                            <div class="stat-label">Bloques</div>
-                        </div>
-                    </div>
 
-                    <div class="group-actions">
-                        <button class="group-btn btn-view" onclick="viewGroup(${group.id})">
-                            👁️ Ver
-                        </button>
-                        <button class="group-btn btn-assign" onclick="assignBlock(${group.id})">
-                            📚 Asignar
-                        </button>
-                        <button class="group-btn btn-delete" onclick="deleteGroup(${group.id}, '${escapeHtml(group.name)}')">
-                            🗑️
-                        </button>
+                        <div class="group-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">${group.member_count || 0}</div>
+                                <div class="stat-label">Estudiantes</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${group.assigned_blocks_count || 0}</div>
+                                <div class="stat-label">Bloques</div>
+                            </div>
+                        </div>
+
+                        <div class="group-actions">
+                            <button class="group-btn btn-view" onclick="viewGroup(${group.id})">
+                                👁️ Ver
+                            </button>
+                            <button class="group-btn btn-assign" onclick="assignBlock(${group.id})">
+                                📚 Asignar
+                            </button>
+                            <button class="group-btn btn-delete" onclick="deleteGroup(${group.id}, '${escapeHtml(group.name)}')">
+                                🗑️
+                            </button>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).filter(html => html !== '').join('');
         }
 
         function openCreateGroupModal() {
@@ -2473,6 +2481,13 @@
         let groupAssignments = [];
 
         async function viewGroup(groupId) {
+            // Validate groupId
+            if (!groupId || typeof groupId !== 'number' || isNaN(groupId)) {
+                console.error('Invalid group ID:', groupId);
+                alert('❌ Error: ID de grupo inválido');
+                return;
+            }
+
             currentGroupId = groupId;
             const modal = document.getElementById('group-detail-modal');
             modal.classList.add('active');
