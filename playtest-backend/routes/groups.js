@@ -2,6 +2,49 @@ const express = require('express');
 const { pool } = require('../database/connection');
 const { authenticateToken } = require('../middleware/auth');
 
+/**
+ * Utility function to validate and parse integer IDs
+ * @param {string} value - The value to parse
+ * @param {string} paramName - The name of the parameter (for error messages)
+ * @returns {number} - The parsed integer
+ * @throws {Error} - If the value is not a valid integer
+ */
+function parseIntParam(value, paramName = 'id') {
+  const parsed = parseInt(value, 10);
+  if (isNaN(parsed) || parsed <= 0) {
+    throw new Error(`Invalid ${paramName}: must be a positive integer`);
+  }
+  return parsed;
+}
+
+/**
+ * Utility function to handle errors consistently
+ * @param {Error} error - The error object
+ * @param {Response} res - Express response object
+ * @param {string} context - Context for logging
+ */
+function handleError(error, res, context) {
+  console.error(`❌ Error ${context}:`, error);
+
+  // Handle validation errors (400)
+  if (error.message && error.message.includes('Invalid')) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  // Handle not found errors (404)
+  if (error.message && error.message.includes('not found')) {
+    return res.status(404).json({ error: error.message });
+  }
+
+  // Handle permission errors (403)
+  if (error.message && error.message.includes('denied')) {
+    return res.status(403).json({ error: error.message });
+  }
+
+  // Default to 500 for unknown errors
+  res.status(500).json({ error: 'Internal server error' });
+}
+
 const router = express.Router();
 
 // ============================================================
@@ -91,7 +134,7 @@ router.get('/', authenticateToken, async (req, res) => {
  */
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
-    const groupId = parseInt(req.params.id);
+    const groupId = parseIntParam(req.params.id, 'group ID');
 
     // Get group info
     const groupResult = await pool.query(`
@@ -135,8 +178,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
       members: membersResult.rows
     });
   } catch (error) {
-    console.error('❌ Error fetching group details:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    handleError(error, res, 'fetching group details');
   }
 });
 
@@ -146,7 +188,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
  */
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
-    const groupId = parseInt(req.params.id);
+    const groupId = parseIntParam(req.params.id, 'group ID');
     const { name, description, access_code } = req.body;
 
     // Check ownership
@@ -184,7 +226,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
  */
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    const groupId = parseInt(req.params.id);
+    const groupId = parseIntParam(req.params.id, 'group ID');
 
     // Check ownership
     const ownerCheck = await pool.query(`
@@ -214,7 +256,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
  */
 router.post('/:id/members', authenticateToken, async (req, res) => {
   try {
-    const groupId = parseInt(req.params.id);
+    const groupId = parseIntParam(req.params.id, 'group ID');
     const { user_ids } = req.body; // Array of user IDs
 
     if (!Array.isArray(user_ids) || user_ids.length === 0) {
@@ -254,8 +296,8 @@ router.post('/:id/members', authenticateToken, async (req, res) => {
  */
 router.delete('/:id/members/:userId', authenticateToken, async (req, res) => {
   try {
-    const groupId = parseInt(req.params.id);
-    const userId = parseInt(req.params.userId);
+    const groupId = parseIntParam(req.params.id, 'group ID');
+    const userId = parseIntParam(req.params.userId, 'user ID');
 
     // Check ownership
     const ownerCheck = await pool.query(`
@@ -284,7 +326,7 @@ router.delete('/:id/members/:userId', authenticateToken, async (req, res) => {
  */
 router.get('/:id/members', authenticateToken, async (req, res) => {
   try {
-    const groupId = parseInt(req.params.id);
+    const groupId = parseIntParam(req.params.id, 'group ID');
 
     // Check access (creator or member)
     const accessCheck = await pool.query(`
@@ -388,7 +430,7 @@ router.post('/assign-block', authenticateToken, async (req, res) => {
  */
 router.delete('/assignments/:id', authenticateToken, async (req, res) => {
   try {
-    const assignmentId = parseInt(req.params.id);
+    const assignmentId = parseIntParam(req.params.id, 'assignment ID');
 
     // Check if assignment was created by this teacher
     const ownerCheck = await pool.query(`
