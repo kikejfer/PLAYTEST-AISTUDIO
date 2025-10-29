@@ -48,7 +48,12 @@ function handleError(error, res, context) {
 const router = express.Router();
 
 // ============================================================
-// TEACHER ENDPOINTS - Group Management
+// IMPORTANT: SPECIFIC ROUTES MUST COME BEFORE PARAMETRIC ROUTES
+// This prevents routes like /assignments from being caught by /:id
+// ============================================================
+
+// ============================================================
+// TEACHER ENDPOINTS - Group Management (Non-parametric)
 // ============================================================
 
 /**
@@ -127,6 +132,252 @@ router.get('/', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// ============================================================
+// TEACHER ENDPOINTS - Block Assignments (Specific routes)
+// ============================================================
+
+/**
+ * POST /groups/assign-block
+ * Assign a block to a group or individual student (TEACHER only)
+ */
+router.post('/assign-block', authenticateToken, async (req, res) => {
+  try {
+    const { block_id, group_id, user_id, due_date, notes } = req.body;
+
+    if (!block_id) {
+      return res.status(400).json({ error: 'block_id is required' });
+    }
+
+    if (!group_id && !user_id) {
+      return res.status(400).json({ error: 'Either group_id or user_id is required' });
+    }
+
+    // Verify user is a teacher
+    const roleCheck = await pool.query(`
+      SELECT r.name as role_name
+      FROM user_roles ur
+      JOIN roles r ON ur.role_id = r.id
+      WHERE ur.user_id = $1 AND r.name = 'profesor'
+      LIMIT 1
+    `, [req.user.id]);
+
+    if (roleCheck.rows.length === 0) {
+      return res.status(403).json({ error: 'Only teachers can assign blocks' });
+    }
+
+    // Verify block ownership or is public
+    const blockCheck = await pool.query(`
+      SELECT * FROM blocks
+      WHERE id = $1 AND (owner_user_id = $2 OR is_public = true)
+    `, [block_id, req.user.id]);
+
+    if (blockCheck.rows.length === 0) {
+      return res.status(403).json({ error: 'You can only assign your own blocks or public blocks' });
+    }
+
+    // Create assignment
+    const result = await pool.query(`
+      INSERT INTO block_assignments (block_id, assigned_by, group_id, assigned_to_user, due_date, notes)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *
+    `, [block_id, req.user.id, group_id || null, user_id || null, due_date || null, notes || null]);
+
+    console.log('✅ Block assigned:', block_id, 'by teacher:', req.user.id);
+
+    res.status(201).json({
+      message: 'Block assigned successfully',
+      assignment: result.rows[0]
+    });
+  } catch (error) {
+    console.error('❌ Error assigning block:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+/**
+ * GET /groups/assignments
+ * Get all assignments made by this teacher
+ * IMPORTANT: Must be before /:id route to avoid matching "assignments" as an ID
+ */
+router.get('/assignments', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        ba.id,
+        ba.block_id,
+        b.name as block_name,
+        ba.group_id,
+        g.name as group_name,
+        ba.assigned_to_user,
+        u.nickname as assigned_to_nickname,
+        ba.due_date,
+        ba.notes,
+        ba.assigned_at
+      FROM block_assignments ba
+      LEFT JOIN blocks b ON ba.block_id = b.id
+      LEFT JOIN groups g ON ba.group_id = g.id
+      LEFT JOIN users u ON ba.assigned_to_user = u.id
+      WHERE ba.assigned_by = $1
+      ORDER BY ba.assigned_at DESC
+    `, [req.user.id]);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('❌ Error fetching assignments:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * DELETE /groups/assignments/:id
+ * Remove a block assignment (TEACHER only)
+ */
+router.delete('/assignments/:id', authenticateToken, async (req, res) => {
+  try {
+    const assignmentId = parseIntParam(req.params.id, 'assignment ID');
+
+    // Check if assignment was created by this teacher
+    const ownerCheck = await pool.query(`
+      SELECT * FROM block_assignments WHERE id = $1 AND assigned_by = $2
+    `, [assignmentId, req.user.id]);
+
+    if (ownerCheck.rows.length === 0) {
+      return res.status(403).json({ error: 'Only the assigner can remove this assignment' });
+    }
+
+    await pool.query('DELETE FROM block_assignments WHERE id = $1', [assignmentId]);
+
+    res.json({ message: 'Assignment removed successfully' });
+  } catch (error) {
+    console.error('❌ Error removing assignment:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ============================================================
+// STUDENT ENDPOINTS (Specific routes)
+// ============================================================
+
+/**
+ * POST /groups/join
+ * Join a group using access code (STUDENT)
+ */
+router.post('/join', authenticateToken, async (req, res) => {
+  try {
+    const { access_code } = req.body;
+
+    if (!access_code) {
+      return res.status(400).json({ error: 'access_code is required' });
+    }
+
+    // Find group by access code
+    const groupResult = await pool.query(`
+      SELECT * FROM groups WHERE access_code = $1
+    `, [access_code]);
+
+    if (groupResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Invalid access code' });
+    }
+
+    const group = groupResult.rows[0];
+
+    // Add user to group
+    await pool.query(`
+      INSERT INTO group_members (group_id, user_id, role_in_group)
+      VALUES ($1, $2, 'ALUMNO')
+      ON CONFLICT (group_id, user_id) DO NOTHING
+    `, [group.id, req.user.id]);
+
+    console.log('✅ Student joined group:', group.id, 'user:', req.user.id);
+
+    res.json({
+      message: 'Successfully joined group',
+      group: {
+        id: group.id,
+        name: group.name,
+        description: group.description
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error joining group:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * GET /groups/my-groups
+ * Get all groups the current user is a member of
+ */
+router.get('/my-groups', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        g.id,
+        g.name,
+        g.description,
+        g.access_code,
+        gm.role_in_group,
+        gm.joined_at,
+        u.nickname as teacher_nickname,
+        COUNT(DISTINCT gm2.user_id) as member_count
+      FROM group_members gm
+      JOIN groups g ON gm.group_id = g.id
+      LEFT JOIN users u ON g.created_by = u.id
+      LEFT JOIN group_members gm2 ON g.id = gm2.group_id
+      WHERE gm.user_id = $1
+      GROUP BY g.id, g.name, g.description, g.access_code, gm.role_in_group, gm.joined_at, u.nickname
+      ORDER BY gm.joined_at DESC
+    `, [req.user.id]);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('❌ Error fetching my groups:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * GET /groups/my-assigned-blocks
+ * Get all blocks assigned to the current user (via group or direct)
+ */
+router.get('/my-assigned-blocks', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT DISTINCT
+        b.id,
+        b.name,
+        b.description,
+        b.image_url,
+        ba.due_date,
+        ba.notes,
+        ba.assigned_at,
+        CASE
+          WHEN ba.group_id IS NOT NULL THEN 'GROUP'
+          ELSE 'INDIVIDUAL'
+        END as assignment_type,
+        g.name as group_name,
+        u.nickname as assigned_by_nickname
+      FROM block_assignments ba
+      JOIN blocks b ON ba.block_id = b.id
+      LEFT JOIN groups g ON ba.group_id = g.id
+      LEFT JOIN users u ON ba.assigned_by = u.id
+      WHERE
+        ba.assigned_to_user = $1
+        OR ba.group_id IN (SELECT group_id FROM group_members WHERE user_id = $1)
+      ORDER BY ba.assigned_at DESC
+    `, [req.user.id]);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('❌ Error fetching assigned blocks:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ============================================================
+// PARAMETRIC ROUTES - Must come AFTER specific routes
+// ============================================================
 
 /**
  * GET /groups/:id
@@ -247,7 +498,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 // ============================================================
-// TEACHER ENDPOINTS - Member Management
+// TEACHER ENDPOINTS - Member Management (Parametric)
 // ============================================================
 
 /**
@@ -358,247 +609,6 @@ router.get('/:id/members', authenticateToken, async (req, res) => {
     res.json(result.rows);
   } catch (error) {
     console.error('❌ Error fetching members:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// ============================================================
-// TEACHER ENDPOINTS - Block Assignments
-// ============================================================
-
-/**
- * POST /groups/assign-block
- * Assign a block to a group or individual student (TEACHER only)
- */
-router.post('/assign-block', authenticateToken, async (req, res) => {
-  try {
-    const { block_id, group_id, user_id, due_date, notes } = req.body;
-
-    if (!block_id) {
-      return res.status(400).json({ error: 'block_id is required' });
-    }
-
-    if (!group_id && !user_id) {
-      return res.status(400).json({ error: 'Either group_id or user_id is required' });
-    }
-
-    // Verify user is a teacher
-    const roleCheck = await pool.query(`
-      SELECT r.name as role_name
-      FROM user_roles ur
-      JOIN roles r ON ur.role_id = r.id
-      WHERE ur.user_id = $1 AND r.name = 'profesor'
-      LIMIT 1
-    `, [req.user.id]);
-
-    if (roleCheck.rows.length === 0) {
-      return res.status(403).json({ error: 'Only teachers can assign blocks' });
-    }
-
-    // Verify block ownership or is public
-    const blockCheck = await pool.query(`
-      SELECT * FROM blocks
-      WHERE id = $1 AND (owner_user_id = $2 OR is_public = true)
-    `, [block_id, req.user.id]);
-
-    if (blockCheck.rows.length === 0) {
-      return res.status(403).json({ error: 'You can only assign your own blocks or public blocks' });
-    }
-
-    // Create assignment
-    const result = await pool.query(`
-      INSERT INTO block_assignments (block_id, assigned_by, group_id, assigned_to_user, due_date, notes)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING *
-    `, [block_id, req.user.id, group_id || null, user_id || null, due_date || null, notes || null]);
-
-    console.log('✅ Block assigned:', block_id, 'by teacher:', req.user.id);
-
-    res.status(201).json({
-      message: 'Block assigned successfully',
-      assignment: result.rows[0]
-    });
-  } catch (error) {
-    console.error('❌ Error assigning block:', error);
-    res.status(500).json({ error: 'Internal server error', details: error.message });
-  }
-});
-
-/**
- * DELETE /groups/assignments/:id
- * Remove a block assignment (TEACHER only)
- */
-router.delete('/assignments/:id', authenticateToken, async (req, res) => {
-  try {
-    const assignmentId = parseIntParam(req.params.id, 'assignment ID');
-
-    // Check if assignment was created by this teacher
-    const ownerCheck = await pool.query(`
-      SELECT * FROM block_assignments WHERE id = $1 AND assigned_by = $2
-    `, [assignmentId, req.user.id]);
-
-    if (ownerCheck.rows.length === 0) {
-      return res.status(403).json({ error: 'Only the assigner can remove this assignment' });
-    }
-
-    await pool.query('DELETE FROM block_assignments WHERE id = $1', [assignmentId]);
-
-    res.json({ message: 'Assignment removed successfully' });
-  } catch (error) {
-    console.error('❌ Error removing assignment:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-/**
- * GET /groups/assignments
- * Get all assignments made by this teacher
- */
-router.get('/assignments', authenticateToken, async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT
-        ba.id,
-        ba.block_id,
-        b.name as block_name,
-        ba.group_id,
-        g.name as group_name,
-        ba.assigned_to_user,
-        u.nickname as assigned_to_nickname,
-        ba.due_date,
-        ba.notes,
-        ba.assigned_at
-      FROM block_assignments ba
-      LEFT JOIN blocks b ON ba.block_id = b.id
-      LEFT JOIN groups g ON ba.group_id = g.id
-      LEFT JOIN users u ON ba.assigned_to_user = u.id
-      WHERE ba.assigned_by = $1
-      ORDER BY ba.assigned_at DESC
-    `, [req.user.id]);
-
-    res.json(result.rows);
-  } catch (error) {
-    console.error('❌ Error fetching assignments:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// ============================================================
-// STUDENT ENDPOINTS
-// ============================================================
-
-/**
- * POST /groups/join
- * Join a group using access code (STUDENT)
- */
-router.post('/join', authenticateToken, async (req, res) => {
-  try {
-    const { access_code } = req.body;
-
-    if (!access_code) {
-      return res.status(400).json({ error: 'access_code is required' });
-    }
-
-    // Find group by access code
-    const groupResult = await pool.query(`
-      SELECT * FROM groups WHERE access_code = $1
-    `, [access_code]);
-
-    if (groupResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Invalid access code' });
-    }
-
-    const group = groupResult.rows[0];
-
-    // Add user to group
-    await pool.query(`
-      INSERT INTO group_members (group_id, user_id, role_in_group)
-      VALUES ($1, $2, 'ALUMNO')
-      ON CONFLICT (group_id, user_id) DO NOTHING
-    `, [group.id, req.user.id]);
-
-    console.log('✅ Student joined group:', group.id, 'user:', req.user.id);
-
-    res.json({
-      message: 'Successfully joined group',
-      group: {
-        id: group.id,
-        name: group.name,
-        description: group.description
-      }
-    });
-  } catch (error) {
-    console.error('❌ Error joining group:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-/**
- * GET /groups/my-groups
- * Get all groups the current user is a member of
- */
-router.get('/my-groups', authenticateToken, async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT
-        g.id,
-        g.name,
-        g.description,
-        g.access_code,
-        gm.role_in_group,
-        gm.joined_at,
-        u.nickname as teacher_nickname,
-        COUNT(DISTINCT gm2.user_id) as member_count
-      FROM group_members gm
-      JOIN groups g ON gm.group_id = g.id
-      LEFT JOIN users u ON g.created_by = u.id
-      LEFT JOIN group_members gm2 ON g.id = gm2.group_id
-      WHERE gm.user_id = $1
-      GROUP BY g.id, g.name, g.description, g.access_code, gm.role_in_group, gm.joined_at, u.nickname
-      ORDER BY gm.joined_at DESC
-    `, [req.user.id]);
-
-    res.json(result.rows);
-  } catch (error) {
-    console.error('❌ Error fetching my groups:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-/**
- * GET /groups/my-assigned-blocks
- * Get all blocks assigned to the current user (via group or direct)
- */
-router.get('/my-assigned-blocks', authenticateToken, async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT DISTINCT
-        b.id,
-        b.name,
-        b.description,
-        b.image_url,
-        ba.due_date,
-        ba.notes,
-        ba.assigned_at,
-        CASE
-          WHEN ba.group_id IS NOT NULL THEN 'GROUP'
-          ELSE 'INDIVIDUAL'
-        END as assignment_type,
-        g.name as group_name,
-        u.nickname as assigned_by_nickname
-      FROM block_assignments ba
-      JOIN blocks b ON ba.block_id = b.id
-      LEFT JOIN groups g ON ba.group_id = g.id
-      LEFT JOIN users u ON ba.assigned_by = u.id
-      WHERE
-        ba.assigned_to_user = $1
-        OR ba.group_id IN (SELECT group_id FROM group_members WHERE user_id = $1)
-      ORDER BY ba.assigned_at DESC
-    `, [req.user.id]);
-
-    res.json(result.rows);
-  } catch (error) {
-    console.error('❌ Error fetching assigned blocks:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
