@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { pool } = require('../database/connection');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 const {
   getMyClasses,
@@ -133,6 +134,54 @@ router.get('/progress', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al obtener tu progreso académico',
+      error: error.message
+    });
+  }
+});
+
+// ============ MIS GRUPOS ============
+
+/**
+ * GET /api/students/my-groups
+ * Obtener grupos en los que el estudiante es miembro
+ */
+router.get('/my-groups', async (req, res) => {
+  try {
+    const studentId = req.user.id;
+
+    // Get groups where the student is a member
+    const result = await pool.query(`
+      SELECT
+        g.id,
+        g.name,
+        g.description,
+        g.access_code,
+        g.created_at,
+        u.nickname as teacher_name,
+        u.email as teacher_email,
+        gm.joined_at,
+        gm.role_in_group,
+        COUNT(DISTINCT gm2.user_id) as member_count,
+        COUNT(DISTINCT ba.block_id) as assigned_blocks_count
+      FROM groups g
+      JOIN group_members gm ON g.id = gm.group_id
+      JOIN users u ON g.created_by = u.id
+      LEFT JOIN group_members gm2 ON g.id = gm2.group_id
+      LEFT JOIN block_assignments ba ON g.id = ba.group_id
+      WHERE gm.user_id = $1
+      GROUP BY g.id, g.name, g.description, g.access_code, g.created_at, u.nickname, u.email, gm.joined_at, gm.role_in_group
+      ORDER BY gm.joined_at DESC
+    `, [studentId]);
+
+    res.json({
+      success: true,
+      groups: result.rows
+    });
+  } catch (error) {
+    console.error('Error obteniendo grupos del estudiante:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener tus grupos',
       error: error.message
     });
   }
