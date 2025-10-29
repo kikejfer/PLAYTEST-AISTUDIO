@@ -8,10 +8,10 @@
     <title>Panel Jugador - PLAYTEST</title>
     
     <!-- Estilos del header unificado -->
-    <link rel="stylesheet" href="header-styles.css?v=20251026g">
-    <script src="header-loader.js?v=20251026g"></script>
-    <script src="api-data-service.js?v=20251026g"></script>
-    <script src="bloques-creados-component.js?v=20251026g"></script>
+    <link rel="stylesheet" href="header-styles.css?v=20251026h">
+    <script src="header-loader.js?v=20251026h"></script>
+    <script src="api-data-service.js?v=20251026h"></script>
+    <script src="bloques-creados-component.js?v=20251026h"></script>
     
     <!-- CDN de React y Babel para compatibilidad con el código de index.html -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -289,6 +289,19 @@
                 <div class="section-content">
                     <div id="my-classes-container">
                         <div class="loading">Cargando tus clases...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección Mis Grupos -->
+            <div class="section">
+                <h2 class="section-title">👥 Mis Grupos</h2>
+                <div class="section-content">
+                    <p style="color: #778DA9; margin-bottom: 15px;">
+                        Grupos de trabajo y estudio organizados por tus profesores.
+                    </p>
+                    <div id="my-groups-container">
+                        <div class="loading">Cargando tus grupos...</div>
                     </div>
                 </div>
             </div>
@@ -3733,6 +3746,7 @@
             // Si se abre el tab de Mis Clases, cargar datos
             if (tabName === 'mis-clases') {
                 loadMyClasses();
+                loadMyGroups();
                 loadAssignedBlocks();
             }
         };
@@ -3915,6 +3929,75 @@
                 container.innerHTML = `
                     <div class="error">
                         <p>Error al cargar las clases: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Cargar los grupos del usuario
+        async function loadMyGroups() {
+            const container = document.getElementById('my-groups-container');
+
+            try {
+                const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+                if (!session.token || !session.userId) return;
+
+                const API_URL = window.location.hostname.includes('onrender.com')
+                    ? 'https://playtest-backend.onrender.com/api'
+                    : 'http://localhost:3001/api';
+
+                container.innerHTML = '<div class="loading">Cargando tus grupos...</div>';
+
+                const response = await fetch(`${API_URL}/students/my-groups`, {
+                    headers: {
+                        'Authorization': `Bearer ${session.token}`,
+                        'X-Current-Role': 'PJG'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Error al cargar grupos');
+
+                const data = await response.json();
+                const groups = data.groups || [];
+
+                if (!groups || groups.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">👥</div>
+                            <h3>No perteneces a ningún grupo</h3>
+                            <p>Tu profesor te añadirá a grupos de trabajo cuando sea necesario</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = groups.map(group => `
+                    <div class="group-card" style="background: #1B263B; border: 1px solid #415A77; border-radius: 10px; padding: 20px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <h3 style="color: #3B82F6; font-size: 1.3rem; margin-bottom: 5px;">${group.name}</h3>
+                                ${group.description ? `<p style="color: #778DA9; margin: 5px 0;">${group.description}</p>` : ''}
+                                <p style="color: #778DA9; font-size: 0.9rem; margin: 5px 0 0 0;">
+                                    👨‍🏫 Profesor: ${group.teacher_name || 'Desconocido'}
+                                </p>
+                            </div>
+                            <span style="background: #374151; color: #3B82F6; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; font-family: monospace;">
+                                ${group.access_code || 'N/A'}
+                            </span>
+                        </div>
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #415A77; display: flex; gap: 20px; font-size: 0.9rem; color: #778DA9;">
+                            <span>👥 ${group.member_count || 0} miembros</span>
+                            <span>📚 ${group.assigned_blocks_count || 0} bloques asignados</span>
+                            <span>📅 Desde: ${new Date(group.joined_at).toLocaleDateString('es-ES')}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading groups:', error);
+                container.innerHTML = `
+                    <div class="error">
+                        <p>Error al cargar los grupos: ${error.message}</p>
                     </div>
                 `;
             }
