@@ -98,6 +98,25 @@ async function checkBlockMetadataColumns() {
 }
 
 /**
+ * Check if teacher_classes table exists
+ */
+async function checkTeacherClassesTable() {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables
+        WHERE table_schema = 'public'
+        AND table_name = 'teacher_classes'
+      );
+    `);
+    return result.rows[0].exists;
+  } finally {
+    client.release();
+  }
+}
+
+/**
  * Create block_assignments table if it doesn't exist
  */
 async function createBlockAssignmentsTable() {
@@ -218,6 +237,42 @@ async function addBlockMetadataColumns() {
 }
 
 /**
+ * Apply teachers panel schema
+ */
+async function applyTeachersPanelSchema() {
+  const client = await pool.connect();
+  try {
+    console.log('📝 Applying teachers panel schema...');
+
+    const schemaPath = path.join(__dirname, 'database-schema-teachers-panel.sql');
+    const schema = fs.readFileSync(schemaPath, 'utf8');
+
+    await client.query('BEGIN');
+    await client.query(schema);
+    await client.query('COMMIT');
+
+    console.log('✅ Teachers panel schema applied successfully');
+    return true;
+  } catch (error) {
+    await client.query('ROLLBACK');
+
+    // Ignore "already exists" errors
+    if (error.message.includes('already exists') ||
+        error.message.includes('ya existe') ||
+        error.code === '42P07' ||
+        error.code === '42710') {
+      console.log('⚠️  Some teachers panel tables/functions already exist (OK)');
+      return true;
+    }
+
+    console.error('❌ Error applying teachers panel schema:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
  * Run all pending migrations
  */
 async function runMigrations() {
@@ -260,6 +315,17 @@ async function runMigrations() {
       await addBlockMetadataColumns();
     } else {
       console.log('✅ Block metadata columns already exist');
+    }
+
+    // Check and create teachers panel tables if needed
+    const teacherTablesExist = await checkTeacherClassesTable();
+
+    if (!teacherTablesExist) {
+      console.log('⚠️  Teachers panel tables not found');
+      console.log('   - Creating teacher_classes, class_enrollments, content_assignments, etc.');
+      await applyTeachersPanelSchema();
+    } else {
+      console.log('✅ Teachers panel tables already exist');
     }
 
     console.log('✨ Database schema is up to date');
