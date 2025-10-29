@@ -16,6 +16,7 @@ router.get('/', authenticateToken, async (req, res) => {
     const blocksResult = await pool.query(`
       SELECT DISTINCT b.id, b.name, b.description, b.observaciones, b.user_role_id, b.is_public, b.created_at, b.image_url,
         b.block_scope,
+        b.tipo_id, b.nivel_id, b.estado_id,
         u.nickname as creator_nickname,
         u.id as creator_id,
         r.name as created_with_role,
@@ -1158,7 +1159,9 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const blockId = req.params.id;
-    const { name, description, observaciones, isPublic } = req.body;
+    const { name, description, observaciones, isPublic, tipo_id, nivel_id, estado_id } = req.body;
+
+    console.log('📝 Updating block:', blockId, 'with metadata:', { tipo_id, nivel_id, estado_id });
 
     // Check if user owns the block
     const ownerCheck = await pool.query(
@@ -1175,9 +1178,15 @@ router.put('/:id', authenticateToken, async (req, res) => {
     }
 
     const result = await pool.query(
-      'UPDATE blocks SET name = $1, description = $2, observaciones = $3, is_public = $4, updated_at = CURRENT_TIMESTAMP WHERE id = $5 RETURNING *',
-      [name, description, observaciones, isPublic, blockId]
+      `UPDATE blocks
+       SET name = $1, description = $2, observaciones = $3, is_public = $4,
+           tipo_id = $5, nivel_id = $6, estado_id = $7, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $8
+       RETURNING *`,
+      [name, description, observaciones, isPublic, tipo_id, nivel_id, estado_id, blockId]
     );
+
+    console.log('✅ Block updated successfully with metadata');
 
     res.json({
       message: 'Block updated successfully',
@@ -1993,8 +2002,9 @@ router.get('/:blockId/complete-data', authenticateToken, async (req, res) => {
 
     // Get block info
     const blockResult = await pool.query(`
-      SELECT 
+      SELECT
         b.id, b.name, b.description, b.observaciones, b.is_public, b.created_at,
+        b.tipo_id, b.nivel_id, b.estado_id,
         u.nickname as creator_nickname,
         u.id as creator_id,
         r.name as created_with_role

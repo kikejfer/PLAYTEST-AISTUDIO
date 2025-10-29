@@ -69,6 +69,35 @@ async function checkEscalateTicketsFunction() {
 }
 
 /**
+ * Check if blocks table has metadata columns
+ */
+async function checkBlockMetadataColumns() {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT
+        EXISTS (
+          SELECT FROM information_schema.columns
+          WHERE table_name = 'blocks' AND column_name = 'tipo_id'
+        ) as has_tipo_id,
+        EXISTS (
+          SELECT FROM information_schema.columns
+          WHERE table_name = 'blocks' AND column_name = 'nivel_id'
+        ) as has_nivel_id,
+        EXISTS (
+          SELECT FROM information_schema.columns
+          WHERE table_name = 'blocks' AND column_name = 'estado_id'
+        ) as has_estado_id
+    `);
+
+    const row = result.rows[0];
+    return row.has_tipo_id && row.has_nivel_id && row.has_estado_id;
+  } finally {
+    client.release();
+  }
+}
+
+/**
  * Create block_assignments table if it doesn't exist
  */
 async function createBlockAssignmentsTable() {
@@ -153,6 +182,42 @@ async function applyCommunicationSchema() {
 }
 
 /**
+ * Add metadata columns to blocks table
+ */
+async function addBlockMetadataColumns() {
+  const client = await pool.connect();
+  try {
+    console.log('📝 Adding metadata columns to blocks table...');
+
+    const migrationPath = path.join(__dirname, 'migrations', 'add-block-metadata-columns.sql');
+    const migration = fs.readFileSync(migrationPath, 'utf8');
+
+    await client.query('BEGIN');
+    await client.query(migration);
+    await client.query('COMMIT');
+
+    console.log('✅ Block metadata columns added successfully');
+    return true;
+  } catch (error) {
+    await client.query('ROLLBACK');
+
+    // Ignore "already exists" errors
+    if (error.message.includes('already exists') ||
+        error.message.includes('ya existe') ||
+        error.code === '42P07' ||
+        error.code === '42701') {
+      console.log('⚠️  Metadata columns already exist (OK)');
+      return true;
+    }
+
+    console.error('❌ Error adding block metadata columns:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
  * Run all pending migrations
  */
 async function runMigrations() {
@@ -184,6 +249,17 @@ async function runMigrations() {
       await applyCommunicationSchema();
     } else {
       console.log('✅ Communication system already configured');
+    }
+
+    // Check and add block metadata columns if needed
+    const metadataColumnsExist = await checkBlockMetadataColumns();
+
+    if (!metadataColumnsExist) {
+      console.log('⚠️  Block metadata columns not found');
+      console.log('   - Adding tipo_id, nivel_id, estado_id columns...');
+      await addBlockMetadataColumns();
+    } else {
+      console.log('✅ Block metadata columns already exist');
     }
 
     console.log('✨ Database schema is up to date');
