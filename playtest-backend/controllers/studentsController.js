@@ -166,9 +166,9 @@ async function getAssignedBlocks(studentId) {
                 tc.class_code,
                 u.nickname as teacher_name,
                 ca.due_date,
-                ca.created_at as assigned_at,
-                ca.assignment_type as content_type,
-                ca.assignment_name as instructions,
+                ca.assigned_at,
+                ca.content_type,
+                ca.instructions,
                 (SELECT COUNT(*) FROM questions WHERE block_id = b.id) as questions_count,
                 CASE
                     WHEN ulb.id IS NOT NULL THEN true
@@ -183,8 +183,7 @@ async function getAssignedBlocks(studentId) {
             JOIN teacher_classes tc ON ca.class_id = tc.id
             JOIN users u ON tc.teacher_id = u.id
             JOIN class_enrollments ce ON ce.class_id = tc.id AND ce.student_id = $1
-            CROSS JOIN LATERAL unnest(ca.block_ids) as block_id
-            JOIN blocks b ON b.id = block_id
+            JOIN blocks b ON b.id = ca.block_id
             LEFT JOIN user_loaded_blocks ulb ON ulb.user_id = $1 AND ulb.block_id = b.id
             WHERE ce.enrollment_status = 'active'
               AND ca.is_active = true
