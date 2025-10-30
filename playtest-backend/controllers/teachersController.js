@@ -264,7 +264,7 @@ async function assignBlockToClass(classId, teacherId, assignmentData) {
 
         // Verificar si ya existe la asignación
         const existingAssignment = await client.query(
-            'SELECT id FROM content_assignments WHERE class_id = $1 AND block_id = $2',
+            'SELECT id FROM content_assignments WHERE class_id = $1 AND $2 = ANY(block_ids)',
             [classId, assignmentData.block_id]
         );
 
@@ -272,26 +272,25 @@ async function assignBlockToClass(classId, teacherId, assignmentData) {
             throw new Error('Este bloque ya está asignado a esta clase');
         }
 
-        // Crear asignación
+        // Crear asignación (usando campos del schema SQL real)
         const insertQuery = `
             INSERT INTO content_assignments (
                 class_id,
-                block_id,
-                content_type,
-                assigned_at,
+                assignment_name,
+                assignment_type,
+                block_ids,
                 due_date,
-                instructions,
                 is_active
-            ) VALUES ($1, $2, $3, NOW(), $4, $5, true)
+            ) VALUES ($1, $2, $3, $4, $5, true)
             RETURNING *;
         `;
 
         const values = [
             classId,
-            assignmentData.block_id,
+            assignmentData.instructions || 'Asignación de bloque',
             assignmentData.content_type || 'homework',
-            assignmentData.due_date || null,
-            assignmentData.instructions || null
+            [assignmentData.block_id], // Array con un solo bloque
+            assignmentData.due_date || null
         ];
 
         const result = await client.query(insertQuery, values);
@@ -322,22 +321,23 @@ async function getClassBlocks(classId, teacherId) {
     const query = `
         SELECT
             ca.id as assignment_id,
-            ca.assigned_at,
+            ca.created_at as assigned_at,
             ca.due_date,
-            ca.instructions,
-            ca.content_type,
+            ca.assignment_name as instructions,
+            ca.assignment_type as content_type,
             b.id as block_id,
             b.name as block_name,
             b.description as block_description,
             (SELECT COUNT(*) FROM questions WHERE block_id = b.id) as questions_count,
             COUNT(DISTINCT ulb.user_id) as students_loaded_count
         FROM content_assignments ca
-        JOIN blocks b ON ca.block_id = b.id
+        CROSS JOIN LATERAL unnest(ca.block_ids) as block_id
+        JOIN blocks b ON b.id = block_id
         LEFT JOIN user_loaded_blocks ulb ON ulb.block_id = b.id
         LEFT JOIN class_enrollments ce ON ce.class_id = ca.class_id AND ce.student_id = ulb.user_id
         WHERE ca.class_id = $1 AND ca.is_active = true
         GROUP BY ca.id, b.id
-        ORDER BY ca.assigned_at DESC;
+        ORDER BY ca.created_at DESC;
     `;
 
     const result = await pool.query(query, [classId]);
@@ -422,7 +422,7 @@ async function getClassProgress(classId, teacherId) {
         FROM academic_progress ap
         JOIN users u ON ap.student_id = u.id
         JOIN blocks b ON b.id = (
-            SELECT block_id FROM content_assignments WHERE id = ap.assignment_id LIMIT 1
+            SELECT unnest(block_ids) FROM content_assignments WHERE id = ap.assignment_id LIMIT 1
         )
         WHERE ap.class_id = $1
         ORDER BY u.nickname, ap.date_started DESC;
