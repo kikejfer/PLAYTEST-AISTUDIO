@@ -166,9 +166,9 @@ async function getAssignedBlocks(studentId) {
                 tc.class_code,
                 u.nickname as teacher_name,
                 ca.due_date,
-                ca.assigned_at,
-                ca.content_type,
-                ca.instructions,
+                COALESCE(ca.assigned_at, ca.created_at) as assigned_at,
+                COALESCE(ca.content_type, ca.assignment_type) as content_type,
+                COALESCE(ca.instructions, ca.assignment_name) as instructions,
                 (SELECT COUNT(*) FROM questions WHERE block_id = b.id) as questions_count,
                 CASE
                     WHEN ulb.id IS NOT NULL THEN true
