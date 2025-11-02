@@ -705,6 +705,7 @@
 
                 groupData = await response.json();
                 renderGroupHeader();
+                loadAssignments();
             } catch (error) {
                 console.error('Error loading group:', error);
                 alert('Error al cargar el grupo');
@@ -886,15 +887,71 @@
             }
         }
 
-        // Load assignments (placeholder)
+        // Load assignments
         function loadAssignments() {
-            document.getElementById('assignments-list').innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">📚</div>
-                    <h3>Funcionalidad en desarrollo</h3>
-                    <p>Próximamente podrás ver y gestionar las asignaciones desde aquí</p>
+            const container = document.getElementById('assignments-list');
+            const assignedBlocks = groupData.assigned_blocks || [];
+
+            if (assignedBlocks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📚</div>
+                        <h3>No hay bloques asignados</h3>
+                        <p>Haz clic en "Asignar Bloque" para asignar contenido a este grupo</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = assignedBlocks.map(assignment => `
+                <div class="card" style="margin-bottom: 15px; border: 1px solid #415A77;">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <h3 style="color: #3B82F6; font-size: 1.1rem; margin: 0 0 8px 0;">
+                                ${escapeHtml(assignment.block_name)}
+                            </h3>
+                            ${assignment.description ? `<p style="color: #778DA9; margin: 0 0 10px 0; font-size: 0.9rem;">${escapeHtml(assignment.description)}</p>` : ''}
+                            <div style="display: flex; flex-wrap: wrap; gap: 15px; font-size: 0.85rem; color: #778DA9;">
+                                <span>👨‍🏫 Asignado por: ${escapeHtml(assignment.assigned_by_nickname || 'Desconocido')}</span>
+                                <span>📅 ${new Date(assignment.assigned_at).toLocaleDateString('es-ES')}</span>
+                                ${assignment.due_date ? `<span style="color: #F59E0B;">⏰ Vence: ${new Date(assignment.due_date).toLocaleDateString('es-ES')}</span>` : ''}
+                            </div>
+                            ${assignment.notes ? `
+                                <div style="margin-top: 10px; padding: 10px; background: #0D1B2A; border-radius: 6px; border-left: 3px solid #3B82F6;">
+                                    <div style="font-size: 0.85rem; color: #778DA9; margin-bottom: 4px;">📝 Notas:</div>
+                                    <div style="color: #E0E1DD; font-size: 0.9rem;">${escapeHtml(assignment.notes)}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <button class="btn btn-danger btn-sm" onclick="removeAssignment(${assignment.assignment_id})" style="margin-left: 15px;">
+                            🗑️ Eliminar
+                        </button>
+                    </div>
                 </div>
-            `;
+            `).join('');
+        }
+
+        // Remove assignment
+        async function removeAssignment(assignmentId) {
+            if (!confirm('¿Eliminar esta asignación?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/groups/assignments/${assignmentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${userSession.token}`,
+                        'X-Current-Role': 'PPF'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Error al eliminar asignación');
+
+                alert('✅ Asignación eliminada correctamente');
+                loadGroupData();  // Reload to refresh assignments
+            } catch (error) {
+                console.error('Error removing assignment:', error);
+                alert('❌ Error al eliminar la asignación');
+            }
         }
 
         // Navigate to assign block
