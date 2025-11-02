@@ -187,4 +187,76 @@ router.get('/my-groups', async (req, res) => {
   }
 });
 
+// ============ BLOQUES ASIGNADOS DE UN ESTUDIANTE ESPECÍFICO ============
+
+/**
+ * GET /api/students/:studentId/assigned-blocks
+ * Obtener bloques asignados a un estudiante específico (para profesores)
+ */
+router.get('/:studentId/assigned-blocks', authenticateToken, async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const teacherId = req.user.id;
+
+    // Verificar que el profesor tiene acceso a este estudiante (está en una de sus clases o grupos)
+    const accessCheck = await pool.query(`
+      SELECT DISTINCT 1
+      FROM block_assignments ba
+      WHERE ba.assigned_by = $1
+        AND (ba.assigned_to_user = $2 OR ba.group_id IN (
+          SELECT group_id FROM group_members WHERE user_id = $2
+        ))
+      LIMIT 1
+    `, [teacherId, studentId]);
+
+    if (accessCheck.rows.length === 0) {
+      return res.status(403).json({
+        success: false,
+        message: 'No tienes acceso a los bloques de este estudiante'
+      });
+    }
+
+    // Obtener bloques asignados al estudiante (individuales y de grupo)
+    const result = await pool.query(`
+      SELECT DISTINCT
+        ba.id as assignment_id,
+        ba.block_id,
+        b.name as block_name,
+        b.description,
+        ba.due_date,
+        ba.notes,
+        ba.assigned_at,
+        CASE
+          WHEN ba.assigned_to_user IS NOT NULL THEN 'INDIVIDUAL'
+          ELSE 'GROUP'
+        END as assignment_type,
+        g.name as group_name,
+        u.nickname as assigned_by_nickname
+      FROM block_assignments ba
+      JOIN blocks b ON ba.block_id = b.id
+      LEFT JOIN groups g ON ba.group_id = g.id
+      LEFT JOIN users u ON ba.assigned_by = u.id
+      WHERE ba.assigned_by = $1
+        AND (
+          ba.assigned_to_user = $2
+          OR ba.group_id IN (SELECT group_id FROM group_members WHERE user_id = $2)
+        )
+      ORDER BY ba.assigned_at DESC
+    `, [teacherId, studentId]);
+
+    res.json({
+      success: true,
+      blocks: result.rows
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo bloques asignados del estudiante:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener bloques asignados',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
