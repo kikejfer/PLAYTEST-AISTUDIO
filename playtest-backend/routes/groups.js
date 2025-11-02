@@ -424,9 +424,29 @@ router.get('/:id', authenticateToken, async (req, res) => {
       ORDER BY gm.joined_at DESC
     `, [groupId]);
 
+    // Get assigned blocks for this group
+    const blocksResult = await pool.query(`
+      SELECT
+        ba.id as assignment_id,
+        ba.block_id,
+        b.name as block_name,
+        b.description,
+        b.image_url,
+        ba.due_date,
+        ba.notes,
+        ba.assigned_at,
+        u.nickname as assigned_by_nickname
+      FROM block_assignments ba
+      JOIN blocks b ON ba.block_id = b.id
+      LEFT JOIN users u ON ba.assigned_by = u.id
+      WHERE ba.group_id = $1
+      ORDER BY ba.assigned_at DESC
+    `, [groupId]);
+
     res.json({
       ...group,
-      members: membersResult.rows
+      members: membersResult.rows,
+      assigned_blocks: blocksResult.rows
     });
   } catch (error) {
     handleError(error, res, 'fetching group details');
