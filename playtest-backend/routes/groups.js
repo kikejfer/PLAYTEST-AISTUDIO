@@ -444,9 +444,10 @@ router.get('/:id', authenticateToken, async (req, res) => {
     `, [groupId]);
 
     res.json({
-      ...group,
+      group: group,
       members: membersResult.rows,
-      assigned_blocks: blocksResult.rows
+      assigned_blocks: blocksResult.rows,
+      assigned_blocks_count: blocksResult.rows.length
     });
   } catch (error) {
     handleError(error, res, 'fetching group details');
