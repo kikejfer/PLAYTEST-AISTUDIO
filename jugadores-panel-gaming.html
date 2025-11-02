@@ -553,7 +553,11 @@
             const { currentUser } = useUser();
             const [allUsers, setAllUsers] = useState([]);
             const [allProfiles, setAllProfiles] = useState({});
-            
+            const [blockFilter, setBlockFilter] = useState('all'); // 'all', 'class:id', 'group:id'
+            const [userClasses, setUserClasses] = useState([]);
+            const [userGroups, setUserGroups] = useState([]);
+            const [assignedBlocks, setAssignedBlocks] = useState([]);
+
             const trainingModes = [
                 { key: 'game_mode_classic', value: 'Modo Clásico', image: './Imagenes/Clasico.png'},
                 { key: 'game_mode_timetrial', value: 'Modo Contrarreloj', image: './Imagenes/Contrarreloj.png'},
@@ -601,7 +605,93 @@
                 };
                 fetchUsersAndProfiles();
             }, []);
+
+            // Fetch user's classes, groups, and assigned blocks for filters
+            useEffect(() => {
+                const fetchFilterData = async () => {
+                    const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+                    if (!session.token) return;
+
+                    const API_URL = window.location.hostname.includes('onrender.com')
+                        ? 'https://playtest-backend.onrender.com/api'
+                        : 'http://localhost:3001/api';
+
+                    try {
+                        // Fetch user's classes
+                        const classesResponse = await fetch(`${API_URL}/students/my-classes`, {
+                            headers: { 'Authorization': `Bearer ${session.token}` }
+                        });
+                        if (classesResponse.ok) {
+                            const classes = await classesResponse.json();
+                            setUserClasses(classes || []);
+                        }
+
+                        // Fetch user's groups
+                        const groupsResponse = await fetch(`${API_URL}/groups/my-groups`, {
+                            headers: { 'Authorization': `Bearer ${session.token}` }
+                        });
+                        if (groupsResponse.ok) {
+                            const groups = await groupsResponse.json();
+                            setUserGroups(groups || []);
+                        }
+
+                        // Fetch assigned blocks
+                        const assignedResponse = await fetch(`${API_URL}/groups/my-assigned-blocks`, {
+                            headers: { 'Authorization': `Bearer ${session.token}` }
+                        });
+                        if (assignedResponse.ok) {
+                            const assigned = await assignedResponse.json();
+                            setAssignedBlocks(assigned || []);
+                        }
+                    } catch (error) {
+                        console.error('Error fetching filter data:', error);
+                    }
+                };
+                fetchFilterData();
+            }, []);
             
+            // Filter blocks based on selected filter
+            const filteredBlocks = useMemo(() => {
+                if (blockFilter === 'all') {
+                    return blocks;
+                }
+
+                if (blockFilter.startsWith('class:')) {
+                    const classId = parseInt(blockFilter.split(':')[1]);
+                    // Get blocks assigned to groups that belong to this class
+                    // Note: We need to check if groups belong to a class, but the API doesn't provide this
+                    // For now, we'll show blocks from all groups as "class" is more of a concept
+                    const classAssignedBlockIds = assignedBlocks
+                        .filter(ab => ab.assignment_type === 'GROUP')
+                        .map(ab => ab.id);
+                    return blocks.filter(b => classAssignedBlockIds.includes(b.id));
+                }
+
+                if (blockFilter.startsWith('group:')) {
+                    const groupId = parseInt(blockFilter.split(':')[1]);
+                    // Get blocks assigned to this specific group
+                    const groupAssignedBlockIds = assignedBlocks
+                        .filter(ab => {
+                            // Check if assignment is to this group (for GROUP assignments)
+                            // or if user is in this group (could be INDIVIDUAL but user is in group)
+                            return ab.assignment_type === 'GROUP' && ab.group_name &&
+                                   userGroups.some(g => g.id === groupId && g.name === ab.group_name);
+                        })
+                        .map(ab => ab.id);
+                    return blocks.filter(b => groupAssignedBlockIds.includes(b.id));
+                }
+
+                if (blockFilter === 'individual') {
+                    // Get blocks assigned individually to this user
+                    const individualBlockIds = assignedBlocks
+                        .filter(ab => ab.assignment_type === 'INDIVIDUAL')
+                        .map(ab => ab.id);
+                    return blocks.filter(b => individualBlockIds.includes(b.id));
+                }
+
+                return blocks;
+            }, [blocks, blockFilter, assignedBlocks, userGroups]);
+
             const challengeableUsers = useMemo(() => {
                 const selectedBlockIds = Object.keys(configuredBlocks).map(id => parseInt(id));
                 if (!isCompetitionMode || selectedBlockIds.length === 0) return [];
@@ -610,7 +700,7 @@
                     if (user.isAdmin || user.id === currentUser.id) return false;
                     const profile = allProfiles[user.id];
                     if (!profile || !profile.loadedBlocks) return false;
-                    
+
                     const userLoadedBlocks = profile.loadedBlocks.map(id => parseInt(id));
                     return selectedBlockIds.every(blockId => userLoadedBlocks.includes(blockId));
                 });
@@ -841,16 +931,49 @@
                         }, t('game_setup_challenge_random'))
                     ]),
 
+                    // Block filter selector
+                    React.createElement('div', { key: 'block-filter' }, [
+                        React.createElement('label', {
+                            key: 'label',
+                            className: "block text-sm font-medium text-gray-400 mb-1"
+                        }, 'Filtrar bloques'),
+                        React.createElement('select', {
+                            key: 'select',
+                            value: blockFilter,
+                            onChange: (e) => setBlockFilter(e.target.value),
+                            className: "w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                        }, [
+                            React.createElement('option', { key: 'all', value: 'all' }, '📚 Todos los bloques cargados'),
+                            React.createElement('option', { key: 'individual', value: 'individual' }, '👤 Bloques asignados individualmente'),
+                            userClasses.length > 0 && React.createElement('optgroup', { key: 'classes', label: '🎓 Por clase' },
+                                userClasses.map(cls =>
+                                    React.createElement('option', { key: `class-${cls.id}`, value: `class:${cls.id}` }, cls.name)
+                                )
+                            ),
+                            userGroups.length > 0 && React.createElement('optgroup', { key: 'groups', label: '👥 Por grupo' },
+                                userGroups.map(grp =>
+                                    React.createElement('option', { key: `group-${grp.id}`, value: `group:${grp.id}` }, grp.name)
+                                )
+                            )
+                        ])
+                    ]),
+
                     // Block selection
                     React.createElement('div', { key: 'blocks' }, [
                         React.createElement('label', {
                             key: 'label',
                             className: "block text-sm font-medium text-gray-400 mb-2"
                         }, t('game_setup_blocks_topics')),
-                        React.createElement('div', {
+                        filteredBlocks.length === 0 ? React.createElement('div', {
+                            key: 'empty',
+                            className: "text-center py-8 text-gray-400"
+                        }, [
+                            React.createElement('div', { key: 'icon', className: "text-4xl mb-2" }, '📭'),
+                            React.createElement('p', { key: 'text' }, 'No hay bloques para este filtro')
+                        ]) : React.createElement('div', {
                             key: 'list',
                             className: "max-h-40 overflow-y-auto space-y-2 p-1"
-                        }, blocks.map(block =>
+                        }, filteredBlocks.map(block =>
                             React.createElement('div', {
                                 key: block.id,
                                 className: "flex items-center justify-between p-2 rounded-md hover:bg-slate-700 transition-colors"
