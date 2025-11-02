@@ -1344,7 +1344,7 @@ const StudentsManagementComponent = (() => {
         },
 
         // Métodos de acciones
-        showStudentDetails: (studentId) => {
+        showStudentDetails: async (studentId) => {
             console.log(`📊 Mostrando detalles del estudiante ${studentId}`);
 
             const student = studentsData.find(s => s.id === studentId);
@@ -1357,6 +1357,36 @@ const StudentsManagementComponent = (() => {
             if (!modal) return;
 
             const detailsContent = document.getElementById('student-details-content');
+
+            // Show loading state
+            detailsContent.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div style="color: #778DA9;">Cargando detalles del estudiante...</div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+
+            // Fetch assigned blocks for this student
+            const API_URL = window.API_URL || 'https://playtest-backend.onrender.com';
+            const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+
+            let assignedBlocks = [];
+            try {
+                const response = await fetch(`${API_URL}/api/students/${studentId}/assigned-blocks`, {
+                    headers: {
+                        'Authorization': `Bearer ${session.token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    assignedBlocks = data.blocks || [];
+                }
+            } catch (error) {
+                console.error('Error loading assigned blocks:', error);
+            }
+
             detailsContent.innerHTML = `
                 <div style="display: grid; gap: 20px;">
                     <div style="display: flex; align-items: center; gap: 15px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px;">
@@ -1413,6 +1443,42 @@ const StudentsManagementComponent = (() => {
                         </div>
                     </div>
 
+                    <div style="background: #1B263B; padding: 20px; border-radius: 8px;">
+                        <h4 style="color: #E0E1DD; margin-bottom: 15px;">📝 Bloques Asignados (${assignedBlocks.length})</h4>
+                        ${assignedBlocks.length > 0 ? `
+                            <div style="display: grid; gap: 10px; max-height: 300px; overflow-y: auto;">
+                                ${assignedBlocks.map(block => `
+                                    <div style="background: #0D1B2A; padding: 12px; border-radius: 6px; border-left: 3px solid ${block.assignment_type === 'INDIVIDUAL' ? '#10B981' : '#3B82F6'}; display: flex; justify-content: space-between; align-items: center;">
+                                        <div style="flex: 1;">
+                                            <div style="color: #E0E1DD; font-weight: 600; margin-bottom: 4px;">
+                                                ${block.block_name}
+                                                <span style="background: ${block.assignment_type === 'INDIVIDUAL' ? '#10B981' : '#3B82F6'}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-left: 8px;">
+                                                    ${block.assignment_type === 'INDIVIDUAL' ? '👤 Individual' : '👥 ' + (block.group_name || 'Grupo')}
+                                                </span>
+                                            </div>
+                                            <div style="color: #778DA9; font-size: 0.85rem;">
+                                                ${block.assigned_by_nickname ? '👨‍🏫 ' + block.assigned_by_nickname : ''}
+                                                ${block.due_date ? ' • 📅 ' + new Date(block.due_date).toLocaleDateString() : ''}
+                                                ${block.notes ? ' • 💬 ' + block.notes : ''}
+                                            </div>
+                                        </div>
+                                        <button
+                                            onclick="StudentsManagementComponent.removeBlockAssignment(${block.assignment_id}, ${studentId})"
+                                            style="background: #EF4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; white-space: nowrap; margin-left: 10px;"
+                                            title="Eliminar asignación">
+                                            🗑️ Eliminar
+                                        </button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : `
+                            <div style="text-align: center; padding: 20px; color: #778DA9;">
+                                <div style="font-size: 2rem; margin-bottom: 10px;">📝</div>
+                                <p>No hay bloques asignados a este estudiante</p>
+                            </div>
+                        `}
+                    </div>
+
                     <div style="display: flex; gap: 10px; justify-content: flex-end;">
                         <button onclick="StudentsManagementComponent.closeModal('student-details-modal')"
                                 style="padding: 10px 20px; background: #6B7280; color: white; border: none; border-radius: 6px; cursor: pointer;">
@@ -1421,8 +1487,6 @@ const StudentsManagementComponent = (() => {
                     </div>
                 </div>
             `;
-
-            modal.classList.remove('hidden');
         },
 
         sendMessage: (studentId) => {
@@ -1761,6 +1825,41 @@ const StudentsManagementComponent = (() => {
         closeModal: (modalId) => {
             const modal = document.getElementById(modalId);
             if (modal) modal.classList.add('hidden');
+        },
+
+        removeBlockAssignment: async (assignmentId, studentId) => {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta asignación de bloque?')) {
+                return;
+            }
+
+            const API_URL = window.API_URL || 'https://playtest-backend.onrender.com';
+            const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+
+            try {
+                const response = await fetch(`${API_URL}/api/groups/assignments/${assignmentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${session.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al eliminar la asignación');
+                }
+
+                alert('✅ Asignación eliminada correctamente');
+
+                // Reload student details to show updated list
+                const modal = document.getElementById('student-details-modal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    // Reopen the modal with updated data
+                    StudentsManagementComponent.showStudentDetails(studentId);
+                }
+            } catch (error) {
+                console.error('Error removing block assignment:', error);
+                alert('❌ Error al eliminar la asignación: ' + error.message);
+            }
         }
     };
 
