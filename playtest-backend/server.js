@@ -14,8 +14,11 @@ const PORT = process.env.PORT || 3000;
 // Trust proxy for Render.com
 app.set('trust proxy', 1);
 
-// Security middleware
-app.use(helmet());
+// Security middleware - Configure helmet to not interfere with CORS
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
+}));
 app.use(compression());
 
 // Rate limiting - more generous for question uploads
@@ -35,9 +38,14 @@ app.use('/api/questions', questionLimiter);
 // CORS configuration
 const corsOptions = {
   origin: function (origin, callback) {
+    console.log('🌐 CORS Request from origin:', origin);
+
     // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
+    if (!origin) {
+      console.log('✅ CORS: Allowing request with no origin');
+      return callback(null, true);
+    }
+
     const allowedOrigins = [
       'http://localhost:5173',
       'http://localhost:3000',
@@ -45,22 +53,33 @@ const corsOptions = {
       'https://playtest-frontend.onrender.com',
       process.env.FRONTEND_URL
     ].filter(Boolean); // Remove undefined/null values
-    
+
+    console.log('🔍 CORS: Checking against allowed origins:', allowedOrigins);
+
     if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log('✅ CORS: Origin allowed:', origin);
       callback(null, true);
     } else {
-      console.log(`❌ CORS blocked origin: ${origin}`);
+      console.log(`❌ CORS: Origin blocked: ${origin}`);
+      console.log(`❌ CORS: Allowed origins are:`, allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-Current-Role'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
   preflightContinue: false,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 204
 };
 
 app.use(cors(corsOptions));
+
+// Add explicit OPTIONS handler for debugging
+app.options('*', cors(corsOptions), (req, res) => {
+  console.log('✅ OPTIONS preflight handled for:', req.path);
+  res.sendStatus(204);
+});
 
 // Configure Socket.IO with CORS
 const io = new Server(server, {
