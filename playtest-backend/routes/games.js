@@ -522,6 +522,36 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     console.log(`✅ Game ${gameId} updated successfully`);
 
+    // If game is being marked as completed, update user activity
+    if (updates.status === 'completed') {
+      console.log(`🎯 Game completed - updating user activity for user ${req.user.id}`);
+
+      // Update user's last activity timestamp in user_profiles
+      await pool.query(
+        'UPDATE user_profiles SET last_activity = CURRENT_TIMESTAMP WHERE user_id = $1',
+        [req.user.id]
+      );
+
+      // Update last activity in class_enrollments (for teacher panel)
+      await pool.query(
+        'UPDATE class_enrollments SET last_activity = CURRENT_TIMESTAMP WHERE student_id = $1',
+        [req.user.id]
+      );
+
+      // Increment total games played counter
+      await pool.query(`
+        UPDATE user_profiles
+        SET preferences = jsonb_set(
+          COALESCE(preferences, '{}'::jsonb),
+          '{total_games_played}',
+          (COALESCE(preferences->>'total_games_played', '0')::int + 1)::text::jsonb
+        )
+        WHERE user_id = $1
+      `, [req.user.id]);
+
+      console.log(`✅ Updated activity and stats for user ${req.user.id} after completing game ${gameId}`);
+    }
+
     res.json({
       message: 'Game updated successfully',
       game: result.rows[0]
