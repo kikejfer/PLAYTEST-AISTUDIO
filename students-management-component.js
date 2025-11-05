@@ -781,13 +781,20 @@ const StudentsManagementComponent = (() => {
 
             // Filtro de actividad
             if (currentFilters.activityLevel) {
-                const daysSinceActivity = Math.floor((Date.now() - student.lastActivity) / (1000 * 60 * 60 * 24));
+                const activityTimestamp = typeof student.lastActivity === 'string'
+                    ? new Date(student.lastActivity).getTime()
+                    : student.lastActivity;
+                const daysSinceActivity = Math.floor((Date.now() - activityTimestamp) / (1000 * 60 * 60 * 24));
+
                 switch (currentFilters.activityLevel) {
                     case 'active': if (daysSinceActivity > 7) return false; break;
                     case 'inactive': if (daysSinceActivity <= 7) return false; break;
-                    case 'new': 
-                        const daysSinceJoin = Math.floor((Date.now() - student.joinDate) / (1000 * 60 * 60 * 24));
-                        if (daysSinceJoin > 30) return false; 
+                    case 'new':
+                        const joinTimestamp = typeof student.joinDate === 'string'
+                            ? new Date(student.joinDate).getTime()
+                            : student.joinDate;
+                        const daysSinceJoin = Math.floor((Date.now() - joinTimestamp) / (1000 * 60 * 60 * 24));
+                        if (daysSinceJoin > 30) return false;
                         break;
                 }
             }
@@ -810,7 +817,11 @@ const StudentsManagementComponent = (() => {
         const total = filteredStudents.length;
         const avgProgress = total > 0 ? Math.round(filteredStudents.reduce((sum, s) => sum + s.progress, 0) / total) : 0;
         const activeCount = filteredStudents.filter(s => {
-            const daysSince = Math.floor((Date.now() - s.lastActivity) / (1000 * 60 * 60 * 24));
+            if (!s.lastActivity) return false;
+            const activityTimestamp = typeof s.lastActivity === 'string'
+                ? new Date(s.lastActivity).getTime()
+                : s.lastActivity;
+            const daysSince = Math.floor((Date.now() - activityTimestamp) / (1000 * 60 * 60 * 24));
             return daysSince <= 7;
         }).length;
         const completionRate = total > 0 ? Math.round((filteredStudents.filter(s => s.progress >= 100).length / total) * 100) : 0;
@@ -1196,7 +1207,14 @@ const StudentsManagementComponent = (() => {
     };
 
     const getActivityStatus = (lastActivity) => {
-        const daysSince = Math.floor((Date.now() - lastActivity) / (1000 * 60 * 60 * 24));
+        if (!lastActivity) return { class: 'inactive', text: 'Inactivo' };
+
+        // Convert to timestamp if it's a string date
+        const activityTimestamp = typeof lastActivity === 'string'
+            ? new Date(lastActivity).getTime()
+            : lastActivity;
+
+        const daysSince = Math.floor((Date.now() - activityTimestamp) / (1000 * 60 * 60 * 24));
         if (daysSince <= 7) return { class: 'active', text: 'Activo' };
         return { class: 'inactive', text: 'Inactivo' };
     };
