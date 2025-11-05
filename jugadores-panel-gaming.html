@@ -689,6 +689,12 @@
                     return blocks.filter(b => individualBlockIds.includes(b.id));
                 }
 
+                if (blockFilter === 'free-creators') {
+                    // Get blocks that are NOT assigned (free) and are from creators
+                    const assignedBlockIds = assignedBlocks.map(ab => ab.id);
+                    return blocks.filter(b => !assignedBlockIds.includes(b.id));
+                }
+
                 return blocks;
             }, [blocks, blockFilter, assignedBlocks, userGroups]);
 
@@ -945,6 +951,7 @@
                         }, [
                             React.createElement('option', { key: 'all', value: 'all' }, '📚 Todos los bloques cargados'),
                             React.createElement('option', { key: 'individual', value: 'individual' }, '👤 Bloques asignados individualmente'),
+                            React.createElement('option', { key: 'free-creators', value: 'free-creators' }, '🆓 Bloques libres de Creadores'),
                             userClasses.length > 0 && React.createElement('optgroup', { key: 'classes', label: '🎓 Por clase' },
                                 userClasses.map(cls =>
                                     React.createElement('option', { key: `class-${cls.id}`, value: `class:${cls.id}` }, cls.name)
@@ -987,16 +994,25 @@
                                         key: 'creator',
                                         className: "text-xs text-gray-400 truncate"
                                     }, `${t('admin_blocks_by')} ${block.creatorNickname}`),
+                                    // Show class info for individually assigned blocks
+                                    blockFilter === 'individual' && (() => {
+                                        const assignment = assignedBlocks.find(ab => ab.id === block.id && ab.assignment_type === 'INDIVIDUAL');
+                                        const className = assignment?.class_name || assignment?.group_name || 'Sin clase asignada';
+                                        return React.createElement('p', {
+                                            key: 'class',
+                                            className: "text-xs text-blue-400 truncate"
+                                        }, `📚 Clase: ${className}`);
+                                    })(),
                                     React.createElement('p', {
                                         key: 'status',
                                         className: "text-xs mt-1"
-                                    }, category === 'Competición' ? 
-                                        (configuredBlocks[block.id] ? 
-                                            React.createElement('span', { className: "text-green-400" }, t('game_setup_selected')) : 
+                                    }, category === 'Competición' ?
+                                        (configuredBlocks[block.id] ?
+                                            React.createElement('span', { className: "text-green-400" }, t('game_setup_selected')) :
                                             React.createElement('span', { className: "text-gray-400" }, t('game_setup_not_selected'))
                                         ) : getBlockSelectionText(block.id)
                                     )
-                                ]),
+                                ].filter(Boolean)),
                                 category === 'Competición' ? 
                                     React.createElement('button', {
                                         key: 'toggle',

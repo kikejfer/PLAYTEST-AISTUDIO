@@ -622,6 +622,25 @@ router.post('/:id/scores', authenticateToken, async (req, res) => {
       ['completed', gameId]
     );
 
+    // Update user's last activity timestamp
+    await pool.query(
+      'UPDATE user_profiles SET last_activity = CURRENT_TIMESTAMP WHERE user_id = $1',
+      [req.user.id]
+    );
+
+    // Increment total games played counter
+    await pool.query(`
+      UPDATE user_profiles
+      SET preferences = jsonb_set(
+        COALESCE(preferences, '{}'::jsonb),
+        '{total_games_played}',
+        (COALESCE(preferences->>'total_games_played', '0')::int + 1)::text::jsonb
+      )
+      WHERE user_id = $1
+    `, [req.user.id]);
+
+    console.log(`✅ Updated activity and stats for user ${req.user.id} after completing game ${gameId}`);
+
     res.status(201).json({ message: 'Score saved and game completed successfully' });
 
   } catch (error) {
