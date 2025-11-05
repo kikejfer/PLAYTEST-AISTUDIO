@@ -622,9 +622,15 @@ router.post('/:id/scores', authenticateToken, async (req, res) => {
       ['completed', gameId]
     );
 
-    // Update user's last activity timestamp
+    // Update user's last activity timestamp in user_profiles
     await pool.query(
       'UPDATE user_profiles SET last_activity = CURRENT_TIMESTAMP WHERE user_id = $1',
+      [req.user.id]
+    );
+
+    // Update last activity in class_enrollments (for teacher panel)
+    await pool.query(
+      'UPDATE class_enrollments SET last_activity = CURRENT_TIMESTAMP WHERE student_id = $1',
       [req.user.id]
     );
 
