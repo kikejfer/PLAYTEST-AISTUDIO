@@ -630,6 +630,9 @@ router.post('/:id/scores', authenticateToken, async (req, res) => {
     const gameId = req.params.id;
     const { scoreData, gameType } = req.body;
 
+    console.log(`💾 Saving score for game ${gameId}, user ${req.user.id}, gameType: ${gameType}`);
+    console.log(`📊 Score data:`, JSON.stringify(scoreData, null, 2));
+
     // Check if user is part of the game
     const playerCheck = await pool.query(
       'SELECT user_id FROM game_players WHERE game_id = $1 AND user_id = $2',
@@ -637,13 +640,24 @@ router.post('/:id/scores', authenticateToken, async (req, res) => {
     );
 
     if (playerCheck.rows.length === 0) {
+      console.log(`❌ User ${req.user.id} not authorized to save score for game ${gameId}`);
       return res.status(403).json({ error: 'Not authorized to save score for this game' });
     }
 
-    // Save the score
+    // Prepare score_data as proper JSON string if it's an object
+    const scoreDataJson = typeof scoreData === 'string' ? scoreData : JSON.stringify(scoreData);
+
+    // Calculate numeric score (0-10 scale) from scoreData
+    const correct = scoreData?.correct || 0;
+    const totalQuestions = scoreData?.totalQuestions || 1;
+    const numericScore = Math.round((correct / totalQuestions) * 10 * 100) / 100;
+
+    console.log(`📊 Inserting score: gameId=${gameId}, userId=${req.user.id}, gameType=${gameType}, score=${numericScore}`);
+
+    // Save the score with user_id
     await pool.query(
-      'INSERT INTO game_scores (game_id, game_type, score_data) VALUES ($1, $2, $3)',
-      [gameId, gameType, scoreData]
+      'INSERT INTO game_scores (game_id, user_id, game_type, score, score_data) VALUES ($1, $2, $3, $4, $5)',
+      [gameId, req.user.id, gameType, numericScore, scoreDataJson]
     );
 
     // Mark game as completed
@@ -676,12 +690,19 @@ router.post('/:id/scores', authenticateToken, async (req, res) => {
     `, [req.user.id]);
 
     console.log(`✅ Updated activity and stats for user ${req.user.id} after completing game ${gameId}`);
+    console.log(`✅ Score saved successfully for game ${gameId}`);
 
     res.status(201).json({ message: 'Score saved and game completed successfully' });
 
   } catch (error) {
-    console.error('Error saving game score:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Error saving game score:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Game ID:', req.params.id, 'User ID:', req.user?.id);
+    res.status(500).json({
+      error: 'Internal server error',
+      details: error.message
+    });
   }
 });
 
