@@ -421,6 +421,27 @@ router.post('/registrar-respuesta', async (req, res) => {
       WHERE alumno_id = $1 AND oposicion_id = $2
     `, [studentId, oposicion_id]);
 
+    // Actualizar racha de estudio (si existe tabla)
+    try {
+      await client.query('SELECT actualizar_racha_estudio($1, $2)', [studentId, oposicion_id]);
+    } catch (err) {
+      console.log('Racha no disponible aún (tabla no existe)');
+    }
+
+    // Verificar y otorgar badges automáticos (si existe tabla)
+    try {
+      await client.query('SELECT verificar_badges_automaticos($1, $2)', [studentId, oposicion_id]);
+    } catch (err) {
+      console.log('Badges no disponibles aún (tabla no existe)');
+    }
+
+    // Actualizar puntos de gamificación (si existe tabla)
+    try {
+      await client.query('SELECT actualizar_puntos_gamificacion($1, $2)', [studentId, oposicion_id]);
+    } catch (err) {
+      console.log('Puntos no disponibles aún (tabla no existe)');
+    }
+
     await client.query('COMMIT');
 
     res.json({

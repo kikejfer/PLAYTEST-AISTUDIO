@@ -580,6 +580,7 @@
             <button class="tab-btn active" onclick="switchTab('resumen')">📊 Resumen</button>
             <button class="tab-btn" onclick="switchTab('cronograma')">📅 Mi Cronograma</button>
             <button class="tab-btn" onclick="switchTab('practica')">✍️ Practicar</button>
+            <button class="tab-btn" onclick="switchTab('gamificacion')">🎮 Gamificación</button>
             <button class="tab-btn" onclick="switchTab('comentarios')">💬 Comentarios</button>
         </div>
 
@@ -604,6 +605,13 @@
             </div>
         </div>
 
+        <!-- Tab: Gamificación -->
+        <div id="tab-gamificacion" class="tab-content">
+            <div id="gamificacion-container">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
+
         <!-- Tab: Comentarios -->
         <div id="tab-comentarios" class="tab-content">
             <div id="comentarios-container">
@@ -616,6 +624,7 @@
     <script src="api-data-service.js"></script>
     <script src="cronograma-alumno-manager.js"></script>
     <script src="practica-adaptativa-manager.js"></script>
+    <script src="gamificacion-manager.js"></script>
     <script>
         // Global state
         let currentUser = null;
@@ -916,6 +925,8 @@
                 renderCronograma();
             } else if (tabName === 'practica' && currentOposicion) {
                 renderPractica();
+            } else if (tabName === 'gamificacion' && currentOposicion) {
+                renderGamificacion();
             } else if (tabName === 'comentarios' && currentOposicion) {
                 renderComentarios();
             }
@@ -936,6 +947,15 @@
                 PracticaAdaptativaManager.render(currentOposicion, currentCronograma);
             } else {
                 document.getElementById('practica-container').innerHTML = '<div class="loading">Cargando módulo...</div>';
+            }
+        }
+
+        // Render gamificacion (will be in separate file)
+        function renderGamificacion() {
+            if (typeof GamificacionManager !== 'undefined') {
+                GamificacionManager.render(currentOposicion);
+            } else {
+                document.getElementById('gamificacion-container').innerHTML = '<div class="loading">Cargando módulo...</div>';
             }
         }
 

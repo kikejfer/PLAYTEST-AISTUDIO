@@ -118,6 +118,7 @@ const studentsRoutes = require('./routes/students');
 const teachersRoutes = require('./routes/teachers');
 const teachersPanelRoutes = require('./routes/teachers-panel');
 const oposicionesRoutes = require('./routes/oposiciones');
+const gamificacionRoutes = require('./routes/gamificacion');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -142,6 +143,7 @@ app.use('/api/students', studentsRoutes);
 app.use('/api/teachers', teachersRoutes);
 app.use('/api/teachers-panel', teachersPanelRoutes);
 app.use('/api/oposiciones', oposicionesRoutes);
+app.use('/api/gamificacion', gamificacionRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
