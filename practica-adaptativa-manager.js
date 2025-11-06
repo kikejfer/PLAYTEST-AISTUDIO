@@ -3,6 +3,11 @@
  * Sistema de práctica adaptativo que prioriza preguntas según dominio
  */
 
+// Helper function to get authentication token
+function getToken() {
+    return localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken') || localStorage.getItem('token');
+}
+
 const PracticaAdaptativaManager = {
     oposicion: null,
     cronograma: null,
@@ -134,7 +139,7 @@ const PracticaAdaptativaManager = {
                 `https://playtest-backend.onrender.com/api/oposiciones/bloques/${bloqueId}/preguntas-adaptativas`,
                 {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${getToken()}`
                     }
                 }
             );
