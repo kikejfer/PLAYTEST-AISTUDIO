@@ -1155,10 +1155,8 @@
         document.addEventListener('DOMContentLoaded', async () => {
             if (!checkAuth()) return;
 
-            // Set user info
-            const nickname = localStorage.getItem('nickname') || 'Profesor';
-            document.getElementById('userName').textContent = nickname;
-            document.getElementById('userAvatar').textContent = nickname.charAt(0).toUpperCase();
+            // Note: User info (name, avatar) is now handled by header-loader.js
+            // No need to set it manually here
 
             // Load initial data
             await cargarOposiciones();
