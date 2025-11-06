@@ -119,6 +119,7 @@ const teachersRoutes = require('./routes/teachers');
 const teachersPanelRoutes = require('./routes/teachers-panel');
 const oposicionesRoutes = require('./routes/oposiciones');
 const gamificacionRoutes = require('./routes/gamificacion');
+const directMessagingRoutes = require('./routes/direct-messaging');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -144,6 +145,7 @@ app.use('/api/teachers', teachersRoutes);
 app.use('/api/teachers-panel', teachersPanelRoutes);
 app.use('/api/oposiciones', oposicionesRoutes);
 app.use('/api/gamificacion', gamificacionRoutes);
+app.use('/api/messages', directMessagingRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -201,6 +203,19 @@ const LevelsSetup = require('./levels-setup');
 // Real-time events system
 const RealTimeEvents = require('./realtime-events');
 const realTimeEvents = new RealTimeEvents(io);
+
+// WebSocket messaging handler
+const { MessagingWebSocketHandler, cleanupExpiredTypingStatus } = require('./websocket/messaging-handler');
+const messagingHandler = new MessagingWebSocketHandler(io);
+messagingHandler.initialize();
+
+// Cleanup expired typing status every minute
+const cron = require('node-cron');
+cron.schedule('* * * * *', cleanupExpiredTypingStatus);
+
+// Make io available to routes
+app.set('io', io);
+app.set('messagingHandler', messagingHandler);
 
 // Routes compatibility layer for unified tables
 const RoutesCompatibilityLayer = require('./routes-compatibility-layer');
