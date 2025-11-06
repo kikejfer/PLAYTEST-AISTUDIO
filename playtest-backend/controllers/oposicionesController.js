@@ -73,7 +73,7 @@ async function obtenerMisOposiciones(profesorId, filters = {}) {
                 COUNT(DISTINCT ce.alumno_id) as alumnos_inscritos,
                 COUNT(DISTINCT bt.id) as bloques_creados,
                 COALESCE(AVG(ca.porcentaje_progreso), 0) as progreso_promedio,
-                COALESCE(AVG(ca.fecha_objetivo), NULL) as fecha_objetivo_promedio
+                MAX(ca.fecha_objetivo) as fecha_objetivo_promedio
             FROM oposiciones o
             LEFT JOIN class_enrollments ce ON o.id = ce.oposicion_id AND ce.enrollment_status = 'active'
             LEFT JOIN bloques_temas bt ON o.id = bt.oposicion_id
