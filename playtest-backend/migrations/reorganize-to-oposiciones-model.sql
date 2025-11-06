@@ -23,7 +23,7 @@ SELECT * FROM attendance_tracking;
 CREATE TABLE IF NOT EXISTS _backup_pedagogical_interventions AS
 SELECT * FROM pedagogical_interventions;
 
-RAISE NOTICE '✅ Paso 1 completado: Tablas de respaldo creadas';
+-- ✅ Paso 1 completado: Tablas de respaldo creadas
 
 -- ==========================================
 -- PASO 2: RENOMBRAR Y REESTRUCTURAR teacher_classes → oposiciones
@@ -60,7 +60,7 @@ DROP INDEX IF EXISTS idx_teacher_classes_code;
 CREATE INDEX IF NOT EXISTS idx_oposiciones_profesor ON oposiciones(profesor_id, is_active);
 CREATE INDEX IF NOT EXISTS idx_oposiciones_codigo ON oposiciones(codigo_acceso);
 
-RAISE NOTICE '✅ Paso 2 completado: teacher_classes renombrada a oposiciones';
+-- ✅ Paso 2 completado: teacher_classes renombrada a oposiciones
 
 -- ==========================================
 -- PASO 3: ACTUALIZAR class_enrollments (inscripciones en oposiciones)
@@ -86,7 +86,7 @@ DROP INDEX IF EXISTS idx_class_enrollments_student;
 CREATE INDEX IF NOT EXISTS idx_class_enrollments_oposicion ON class_enrollments(oposicion_id, enrollment_status);
 CREATE INDEX IF NOT EXISTS idx_class_enrollments_alumno ON class_enrollments(alumno_id);
 
-RAISE NOTICE '✅ Paso 3 completado: class_enrollments actualizada';
+-- ✅ Paso 3 completado: class_enrollments actualizada
 
 -- ==========================================
 -- PASO 4: CREAR NUEVAS TABLAS DEL MODELO DE OPOSICIONES
@@ -237,7 +237,7 @@ CREATE TABLE IF NOT EXISTS dominio_preguntas (
     UNIQUE(alumno_id, pregunta_id)
 );
 
-RAISE NOTICE '✅ Paso 4 completado: Nuevas tablas creadas';
+-- ✅ Paso 4 completado: Nuevas tablas creadas
 
 -- ==========================================
 -- PASO 5: ACTUALIZAR TABLA questions PARA LINKEAR CON TEMAS
@@ -250,7 +250,7 @@ ADD COLUMN IF NOT EXISTS tema_id INTEGER REFERENCES temas(id) ON DELETE SET NULL
 -- Crear índice
 CREATE INDEX IF NOT EXISTS idx_questions_tema ON questions(tema_id);
 
-RAISE NOTICE '✅ Paso 5 completado: questions actualizada con tema_id';
+-- ✅ Paso 5 completado: questions actualizada con tema_id
 
 -- ==========================================
 -- PASO 6: CREAR ÍNDICES PARA OPTIMIZACIÓN
@@ -281,7 +281,7 @@ CREATE INDEX IF NOT EXISTS idx_dominio_preguntas_alumno ON dominio_preguntas(alu
 CREATE INDEX IF NOT EXISTS idx_dominio_preguntas_pregunta ON dominio_preguntas(pregunta_id);
 CREATE INDEX IF NOT EXISTS idx_dominio_preguntas_dominada ON dominio_preguntas(alumno_id, dominada);
 
-RAISE NOTICE '✅ Paso 6 completado: Índices creados';
+-- ✅ Paso 6 completado: Índices creados
 
 -- ==========================================
 -- PASO 7: ACTUALIZAR TABLAS RELACIONADAS
@@ -332,7 +332,7 @@ BEGIN
     END IF;
 END $$;
 
-RAISE NOTICE '✅ Paso 7 completado: Tablas relacionadas actualizadas';
+-- ✅ Paso 7 completado: Tablas relacionadas actualizadas
 
 -- ==========================================
 -- PASO 8: ELIMINAR TABLAS INNECESARIAS (RESPALDADAS)
@@ -344,7 +344,7 @@ DROP TABLE IF EXISTS pedagogical_interventions CASCADE;
 -- Nota: Las tablas educational_tournaments, educational_resources pueden mantenerse
 -- para funcionalidades futuras de gamificación
 
-RAISE NOTICE '✅ Paso 8 completado: Tablas innecesarias eliminadas (respaldadas)';
+-- ✅ Paso 8 completado: Tablas innecesarias eliminadas (respaldadas)
 
 -- ==========================================
 -- PASO 9: CREAR FUNCIONES DE UTILIDAD
@@ -513,7 +513,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-RAISE NOTICE '✅ Paso 9 completado: Funciones de utilidad creadas';
+-- ✅ Paso 9 completado: Funciones de utilidad creadas
 
 -- ==========================================
 -- PASO 10: CREAR TRIGGERS
@@ -565,7 +565,7 @@ CREATE TRIGGER trigger_update_dominio_preguntas_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
-RAISE NOTICE '✅ Paso 10 completado: Triggers creados';
+-- ✅ Paso 10 completado: Triggers creados
 
 -- ==========================================
 -- VERIFICACIÓN FINAL
