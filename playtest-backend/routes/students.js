@@ -259,4 +259,186 @@ router.get('/:studentId/assigned-blocks', authenticateToken, async (req, res) =>
   }
 });
 
+// ============ OPOSICIONES - STUDENT PANEL ============
+
+/**
+ * GET /api/students/my-oposiciones
+ * Obtener oposiciones en las que el estudiante está inscrito
+ */
+router.get('/my-oposiciones', async (req, res) => {
+  try {
+    const studentId = req.user.id;
+
+    const result = await pool.query(`
+      SELECT
+        o.id,
+        o.nombre_oposicion,
+        o.descripcion,
+        o.fecha_examen,
+        o.codigo_acceso,
+        ce.enrollment_status,
+        ce.enrolled_at,
+        ce.last_activity,
+        ca.fecha_objetivo,
+        ca.porcentaje_progreso,
+        ca.estado,
+        ca.diferencia_porcentual,
+        ca.preguntas_dominadas,
+        ca.total_preguntas_oposicion
+      FROM class_enrollments ce
+      JOIN oposiciones o ON ce.oposicion_id = o.id
+      LEFT JOIN cronograma_alumno ca ON ce.oposicion_id = ca.oposicion_id AND ce.alumno_id = ca.alumno_id
+      WHERE ce.alumno_id = $1 AND ce.enrollment_status = 'active' AND o.is_active = true
+      ORDER BY ce.enrolled_at DESC
+    `, [studentId]);
+
+    res.json({
+      success: true,
+      oposiciones: result.rows
+    });
+  } catch (error) {
+    console.error('Error obteniendo oposiciones del estudiante:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener tus oposiciones',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * POST /api/students/registrar-respuesta
+ * Registrar respuesta de alumno a pregunta (para sistema adaptativo)
+ * Body: { pregunta_id, oposicion_id, tema_id, respuesta, correcta }
+ */
+router.post('/registrar-respuesta', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const studentId = req.user.id;
+    const { pregunta_id, oposicion_id, tema_id, respuesta, correcta } = req.body;
+
+    if (!pregunta_id || !oposicion_id || !respuesta || correcta === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'Datos incompletos'
+      });
+    }
+
+    // Registrar en game_scores (historial de respuestas)
+    await client.query(`
+      INSERT INTO game_scores (
+        user_id,
+        question_id,
+        score,
+        game_mode,
+        created_at
+      ) VALUES ($1, $2, $3, 'oposiciones', NOW())
+    `, [studentId, pregunta_id, correcta ? 100 : 0]);
+
+    // Actualizar o crear registro de dominio
+    await client.query(`
+      SELECT actualizar_dominio_pregunta($1, $2, $3)
+    `, [studentId, pregunta_id, correcta]);
+
+    // Actualizar última actividad
+    await client.query(`
+      UPDATE class_enrollments
+      SET last_activity = NOW()
+      WHERE alumno_id = $1 AND oposicion_id = $2
+    `, [studentId, oposicion_id]);
+
+    // Recalcular progreso del cronograma
+    if (tema_id) {
+      // Obtener bloque_id del tema
+      const bloqueResult = await client.query(
+        'SELECT bloque_id FROM temas WHERE id = $1',
+        [tema_id]
+      );
+
+      if (bloqueResult.rows.length > 0) {
+        const bloqueId = bloqueResult.rows[0].bloque_id;
+
+        // Obtener total de preguntas dominadas en el bloque
+        const dominadasResult = await client.query(`
+          SELECT COUNT(DISTINCT dp.pregunta_id) as dominadas
+          FROM dominio_preguntas dp
+          JOIN questions q ON dp.pregunta_id = q.id
+          WHERE dp.alumno_id = $1
+            AND dp.es_dominada = true
+            AND q.tema_id IN (SELECT id FROM temas WHERE bloque_id = $2)
+        `, [studentId, bloqueId]);
+
+        const preguntasDominadas = dominadasResult.rows[0].dominadas || 0;
+
+        // Actualizar cronograma_bloques
+        await client.query(`
+          UPDATE cronograma_bloques cb
+          SET preguntas_dominadas = $1,
+              porcentaje_progreso = CASE
+                WHEN total_preguntas_bloque > 0
+                THEN (CAST($1 AS FLOAT) / total_preguntas_bloque) * 100
+                ELSE 0
+              END,
+              updated_at = NOW()
+          WHERE cb.bloque_id = $2
+            AND cb.cronograma_id IN (
+              SELECT id FROM cronograma_alumno WHERE alumno_id = $3 AND oposicion_id = $4
+            )
+        `, [preguntasDominadas, bloqueId, studentId, oposicion_id]);
+      }
+    }
+
+    // Actualizar totales del cronograma general
+    await client.query(`
+      UPDATE cronograma_alumno ca
+      SET preguntas_dominadas = (
+            SELECT COUNT(DISTINCT dp.pregunta_id)
+            FROM dominio_preguntas dp
+            JOIN questions q ON dp.pregunta_id = q.id
+            JOIN temas t ON q.tema_id = t.id
+            JOIN bloques_temas bt ON t.bloque_id = bt.id
+            WHERE dp.alumno_id = ca.alumno_id
+              AND dp.es_dominada = true
+              AND bt.oposicion_id = ca.oposicion_id
+          ),
+          porcentaje_progreso = CASE
+            WHEN total_preguntas_oposicion > 0
+            THEN (CAST((
+              SELECT COUNT(DISTINCT dp.pregunta_id)
+              FROM dominio_preguntas dp
+              JOIN questions q ON dp.pregunta_id = q.id
+              JOIN temas t ON q.tema_id = t.id
+              JOIN bloques_temas bt ON t.bloque_id = bt.id
+              WHERE dp.alumno_id = ca.alumno_id
+                AND dp.es_dominada = true
+                AND bt.oposicion_id = ca.oposicion_id
+            ) AS FLOAT) / total_preguntas_oposicion) * 100
+            ELSE 0
+          END,
+          updated_at = NOW()
+      WHERE alumno_id = $1 AND oposicion_id = $2
+    `, [studentId, oposicion_id]);
+
+    await client.query('COMMIT');
+
+    res.json({
+      success: true,
+      message: 'Respuesta registrada exitosamente'
+    });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error registrando respuesta:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al registrar respuesta',
+      error: error.message
+    });
+  } finally {
+    client.release();
+  }
+});
+
 module.exports = router;

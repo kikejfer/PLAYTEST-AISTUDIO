@@ -350,6 +350,72 @@ router.post('/bloques/:bloqueId/recalcular-totales', authenticateToken, requireT
     }
 });
 
+/**
+ * GET /api/oposiciones/bloques/:bloqueId/preguntas-adaptativas
+ * Obtener preguntas de un bloque con información de dominio para sistema adaptativo
+ */
+router.get('/bloques/:bloqueId/preguntas-adaptativas', authenticateToken, async (req, res) => {
+    try {
+        const alumnoId = req.user.id;
+        const { bloqueId } = req.params;
+
+        // Verificar que el alumno tiene acceso al bloque (está inscrito y el bloque está habilitado)
+        const accessCheck = await pool.query(`
+            SELECT cb.habilitado
+            FROM cronograma_bloques cb
+            JOIN cronograma_alumno ca ON cb.cronograma_id = ca.id
+            WHERE ca.alumno_id = $1
+              AND cb.bloque_id = $2
+        `, [alumnoId, bloqueId]);
+
+        if (accessCheck.rows.length === 0) {
+            return res.status(403).json({
+                error: 'No tienes acceso a este bloque'
+            });
+        }
+
+        if (!accessCheck.rows[0].habilitado) {
+            return res.status(403).json({
+                error: 'Este bloque aún no está habilitado en tu cronograma'
+            });
+        }
+
+        // Obtener preguntas del bloque con información de dominio
+        const preguntasResult = await pool.query(`
+            SELECT
+                q.id,
+                q.question_text,
+                q.option_a,
+                q.option_b,
+                q.option_c,
+                q.option_d,
+                q.correct_answer,
+                q.explanation,
+                q.tema_id,
+                t.nombre as tema_nombre,
+                COALESCE(dp.intentos_totales, 0) as intentos_totales,
+                COALESCE(dp.aciertos, 0) as aciertos,
+                COALESCE(dp.porcentaje_acierto, 0) as porcentaje_acierto,
+                COALESCE(dp.es_dominada, false) as es_dominada,
+                dp.ultima_respuesta_correcta
+            FROM questions q
+            JOIN temas t ON q.tema_id = t.id
+            LEFT JOIN dominio_preguntas dp ON q.id = dp.pregunta_id AND dp.alumno_id = $1
+            WHERE t.bloque_id = $2
+            ORDER BY q.id
+        `, [alumnoId, bloqueId]);
+
+        res.json({
+            success: true,
+            preguntas: preguntasResult.rows
+        });
+
+    } catch (error) {
+        console.error('Error obteniendo preguntas adaptativas:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
 // ==========================================
 // RUTAS: CRONOGRAMA
 // ==========================================

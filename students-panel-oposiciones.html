@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Oposición - PLAYTEST</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0D1B2A 0%, #1B263B 50%, #2C3E50 100%);
+            min-height: 100vh;
+            color: #E0E1DD;
+            padding-top: 70px;
+        }
+
+        /* User Header */
+        .user-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(13, 27, 42, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            border-bottom: 2px solid #415A77;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #00D4FF 0%, #0099FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00D4FF 0%, #0099FF 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background: rgba(220, 53, 69, 0.2);
+            color: #FF6B6B;
+            border: 1px solid #FF6B6B;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #FF6B6B;
+            color: white;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        /* Page Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #00D4FF 0%, #0099FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-header p {
+            color: #778DA9;
+            font-size: 16px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #415A77;
+            border-radius: 10px;
+            color: #E0E1DD;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #00D4FF;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #00D4FF 0%, #0099FF 100%);
+            border-color: #00D4FF;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #00D4FF;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .card h3 {
+            color: #E0E1DD;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        /* Enrollment Section */
+        .enrollment-form {
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #E0E1DD;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #415A77;
+            border-radius: 8px;
+            color: #E0E1DD;
+            font-size: 16px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #00D4FF;
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        .btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #00D4FF 0%, #0099FF 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #415A77;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Oposición Info */
+        .oposicion-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #00D4FF;
+        }
+
+        .info-item .label {
+            color: #778DA9;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .info-item .value {
+            color: #E0E1DD;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* Cronograma Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 50px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #00D4FF 0%, #415A77 100%);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .timeline-item.locked {
+            opacity: 0.5;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .timeline-item.completed {
+            border-left: 4px solid #28A745;
+        }
+
+        .timeline-item.enabled {
+            border-left: 4px solid #00D4FF;
+        }
+
+        .timeline-item.locked {
+            border-left: 4px solid #6C757D;
+        }
+
+        .timeline-icon {
+            position: absolute;
+            left: -35px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 0 0 4px #0D1B2A;
+        }
+
+        .timeline-icon.completed {
+            background: #28A745;
+        }
+
+        .timeline-icon.enabled {
+            background: #00D4FF;
+        }
+
+        .timeline-icon.locked {
+            background: #6C757D;
+        }
+
+        .bloque-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .bloque-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #E0E1DD;
+        }
+
+        .bloque-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .bloque-status.completed {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28A745;
+        }
+
+        .bloque-status.enabled {
+            background: rgba(0, 212, 255, 0.2);
+            color: #00D4FF;
+        }
+
+        .bloque-status.locked {
+            background: rgba(108, 117, 125, 0.2);
+            color: #6C757D;
+        }
+
+        .bloque-dates {
+            font-size: 14px;
+            color: #778DA9;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00D4FF 0%, #0099FF 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .progress-fill.low {
+            background: linear-gradient(90deg, #FF6B6B 0%, #DC3545 100%);
+        }
+
+        .progress-fill.medium {
+            background: linear-gradient(90deg, #FFC107 0%, #FF9800 100%);
+        }
+
+        .progress-fill.high {
+            background: linear-gradient(90deg, #28A745 0%, #20C997 100%);
+        }
+
+        .bloque-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Statistics Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 12px;
+            border-left: 4px solid #00D4FF;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #00D4FF;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #778DA9;
+            font-size: 14px;
+        }
+
+        /* Comments Section */
+        .comments-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .comment-item {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 3px solid #00D4FF;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .comment-bloque {
+            color: #00D4FF;
+            font-weight: 600;
+        }
+
+        .comment-date {
+            color: #778DA9;
+            font-size: 12px;
+        }
+
+        .comment-text {
+            color: #E0E1DD;
+            line-height: 1.6;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            color: #E0E1DD;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #778DA9;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #778DA9;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #00D4FF;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .page-header h1 {
+                font-size: 32px;
+            }
+
+            .tabs {
+                gap: 5px;
+            }
+
+            .tab-btn {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+
+            .timeline {
+                padding-left: 40px;
+            }
+
+            .oposicion-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- User Header -->
+    <div class="user-header">
+        <div class="logo-section">
+            <div class="logo">PLAYTEST</div>
+            <span style="color: #778DA9;">|</span>
+            <span style="color: #E0E1DD; font-weight: 500;">Panel de Alumno</span>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar" id="user-avatar">A</div>
+            <div>
+                <div style="font-weight: 600;" id="user-name">Alumno</div>
+                <div style="font-size: 12px; color: #778DA9;">Estudiante</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>🎓 Mi Oposición</h1>
+            <p>Sigue tu progreso y practica con el sistema adaptativo</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('resumen')">📊 Resumen</button>
+            <button class="tab-btn" onclick="switchTab('cronograma')">📅 Mi Cronograma</button>
+            <button class="tab-btn" onclick="switchTab('practica')">✍️ Practicar</button>
+            <button class="tab-btn" onclick="switchTab('comentarios')">💬 Comentarios</button>
+        </div>
+
+        <!-- Tab: Resumen -->
+        <div id="tab-resumen" class="tab-content active">
+            <div id="resumen-container">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
+
+        <!-- Tab: Cronograma -->
+        <div id="tab-cronograma" class="tab-content">
+            <div id="cronograma-container">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
+
+        <!-- Tab: Practicar -->
+        <div id="tab-practica" class="tab-content">
+            <div id="practica-container">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
+
+        <!-- Tab: Comentarios -->
+        <div id="tab-comentarios" class="tab-content">
+            <div id="comentarios-container">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="api-data-service.js"></script>
+    <script src="cronograma-alumno-manager.js"></script>
+    <script src="practica-adaptativa-manager.js"></script>
+    <script>
+        // Global state
+        let currentUser = null;
+        let currentOposicion = null;
+        let currentCronograma = null;
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadUser();
+            await loadOposicionData();
+        });
+
+        // Load user data
+        async function loadUser() {
+            try {
+                const response = await fetch('https://playtest-backend.onrender.com/api/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                currentUser = await response.json();
+                document.getElementById('user-name').textContent = currentUser.nickname;
+                document.getElementById('user-avatar').textContent = currentUser.nickname.charAt(0).toUpperCase();
+            } catch (error) {
+                console.error('Error loading user:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Load oposición data
+        async function loadOposicionData() {
+            const resumenContainer = document.getElementById('resumen-container');
+            resumenContainer.innerHTML = '<div class="loading"><div class="spinner"></div><p>Cargando datos...</p></div>';
+
+            try {
+                // Check if student is enrolled in any oposición
+                const response = await fetch('https://playtest-backend.onrender.com/api/students/my-oposiciones', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.oposiciones || data.oposiciones.length === 0) {
+                    // Not enrolled - show enrollment form
+                    showEnrollmentForm();
+                    return;
+                }
+
+                // Student is enrolled - load their oposición
+                currentOposicion = data.oposiciones[0]; // For now, use first oposición
+                await loadCronograma();
+                renderResumen();
+
+            } catch (error) {
+                console.error('Error loading oposición:', error);
+                resumenContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <h3>Error al cargar datos</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Show enrollment form
+        function showEnrollmentForm() {
+            document.getElementById('resumen-container').innerHTML = `
+                <div class="card enrollment-form">
+                    <h2 style="text-align: center;">✨ Inscríbete en una Oposición</h2>
+                    <p style="text-align: center; color: #778DA9; margin-bottom: 30px;">
+                        Introduce el código de acceso proporcionado por tu profesor
+                    </p>
+                    <form onsubmit="enrollInOposicion(event)">
+                        <div class="form-group">
+                            <label>Código de Acceso</label>
+                            <input type="text" id="codigo-acceso" required placeholder="Ej: OPO-ABC123">
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha Objetivo del Examen</label>
+                            <input type="date" id="fecha-objetivo" required>
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">
+                            Inscribirse
+                        </button>
+                    </form>
+                </div>
+            `;
+
+            // Set min date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('fecha-objetivo').setAttribute('min', today);
+        }
+
+        // Enroll in oposición
+        async function enrollInOposicion(event) {
+            event.preventDefault();
+
+            const codigo = document.getElementById('codigo-acceso').value.trim();
+            const fechaObjetivo = document.getElementById('fecha-objetivo').value;
+
+            try {
+                // First, enroll in the oposición
+                const enrollResponse = await fetch('https://playtest-backend.onrender.com/api/oposiciones/inscribir', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ codigo_acceso: codigo })
+                });
+
+                const enrollData = await enrollResponse.json();
+
+                if (!enrollResponse.ok) {
+                    alert('Error: ' + (enrollData.error || 'No se pudo inscribir'));
+                    return;
+                }
+
+                // Then generate cronograma
+                const cronogramaResponse = await fetch(`https://playtest-backend.onrender.com/api/oposiciones/${enrollData.oposicion_id}/cronograma`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ fecha_objetivo: fechaObjetivo })
+                });
+
+                const cronogramaData = await cronogramaResponse.json();
+
+                if (!cronogramaResponse.ok) {
+                    alert('Inscrito, pero error al generar cronograma: ' + (cronogramaData.error || 'Error desconocido'));
+                }
+
+                // Reload page
+                alert('¡Inscripción exitosa! Tu cronograma ha sido generado.');
+                location.reload();
+
+            } catch (error) {
+                console.error('Error enrolling:', error);
+                alert('Error al inscribirse: ' + error.message);
+            }
+        }
+
+        // Load cronograma
+        async function loadCronograma() {
+            try {
+                const response = await fetch(`https://playtest-backend.onrender.com/api/oposiciones/${currentOposicion.id}/cronograma`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.cronograma) {
+                    currentCronograma = data.cronograma;
+                }
+            } catch (error) {
+                console.error('Error loading cronograma:', error);
+            }
+        }
+
+        // Render resumen
+        function renderResumen() {
+            if (!currentOposicion || !currentCronograma) {
+                document.getElementById('resumen-container').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📚</div>
+                        <h3>No hay datos disponibles</h3>
+                    </div>
+                `;
+                return;
+            }
+
+            const progreso = currentCronograma.porcentaje_progreso || 0;
+            const bloques = currentCronograma.bloques_cronograma || [];
+            const bloquesHabilitados = bloques.filter(b => b.habilitado).length;
+            const bloquesCompletados = bloques.filter(b => b.completado).length;
+
+            let estadoBadge = '';
+            switch (currentCronograma.estado) {
+                case 'adelantado':
+                    estadoBadge = '<span class="bloque-status completed">🔥 Adelantado</span>';
+                    break;
+                case 'en_tiempo':
+                    estadoBadge = '<span class="bloque-status enabled">✅ En Tiempo</span>';
+                    break;
+                case 'retrasado':
+                    estadoBadge = '<span class="bloque-status locked">⚠️ Retrasado</span>';
+                    break;
+                case 'inactivo':
+                    estadoBadge = '<span class="bloque-status locked">⏸️ Inactivo</span>';
+                    break;
+            }
+
+            document.getElementById('resumen-container').innerHTML = `
+                <div class="card">
+                    <h2>${currentOposicion.nombre_oposicion}</h2>
+
+                    <div class="oposicion-info">
+                        <div class="info-item">
+                            <div class="label">Estado Actual</div>
+                            <div class="value">${estadoBadge}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="label">Fecha Objetivo</div>
+                            <div class="value">${new Date(currentCronograma.fecha_objetivo).toLocaleDateString('es-ES')}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="label">Progreso Global</div>
+                            <div class="value">${progreso.toFixed(1)}%</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="label">Bloques Completados</div>
+                            <div class="value">${bloquesCompletados} / ${bloques.length}</div>
+                        </div>
+                    </div>
+
+                    <h3>Progreso General</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill ${progreso < 30 ? 'low' : progreso < 70 ? 'medium' : 'high'}"
+                             style="width: ${progreso}%">
+                            ${progreso.toFixed(1)}%
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${currentCronograma.preguntas_dominadas || 0}</div>
+                        <div class="stat-label">Preguntas Dominadas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${currentCronograma.total_preguntas_oposicion || 0}</div>
+                        <div class="stat-label">Total Preguntas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${bloquesHabilitados}</div>
+                        <div class="stat-label">Bloques Habilitados</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${bloques.length}</div>
+                        <div class="stat-label">Total Bloques</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Próximos Bloques</h3>
+                    ${renderProximosBloques(bloques.filter(b => !b.completado).slice(0, 3))}
+                </div>
+            `;
+        }
+
+        // Render próximos bloques
+        function renderProximosBloques(bloques) {
+            if (bloques.length === 0) {
+                return '<p style="color: #778DA9;">No hay bloques pendientes</p>';
+            }
+
+            return bloques.map(b => `
+                <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 10px;">
+                    <strong>${b.bloque_nombre}</strong><br>
+                    <span style="font-size: 12px; color: #778DA9;">
+                        Previsto: ${new Date(b.fecha_inicio_prevista).toLocaleDateString('es-ES')} - ${new Date(b.fecha_fin_prevista).toLocaleDateString('es-ES')}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        // Switch tab
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
+
+            // Load tab content if needed
+            if (tabName === 'cronograma' && currentCronograma) {
+                renderCronograma();
+            } else if (tabName === 'practica' && currentOposicion) {
+                renderPractica();
+            } else if (tabName === 'comentarios' && currentOposicion) {
+                renderComentarios();
+            }
+        }
+
+        // Render cronograma (will be in separate file)
+        function renderCronograma() {
+            if (typeof CronogramaAlumnoManager !== 'undefined') {
+                CronogramaAlumnoManager.render(currentCronograma);
+            } else {
+                document.getElementById('cronograma-container').innerHTML = '<div class="loading">Cargando módulo...</div>';
+            }
+        }
+
+        // Render practica (will be in separate file)
+        function renderPractica() {
+            if (typeof PracticaAdaptativaManager !== 'undefined') {
+                PracticaAdaptativaManager.render(currentOposicion, currentCronograma);
+            } else {
+                document.getElementById('practica-container').innerHTML = '<div class="loading">Cargando módulo...</div>';
+            }
+        }
+
+        // Render comentarios
+        async function renderComentarios() {
+            const container = document.getElementById('comentarios-container');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Cargando comentarios...</p></div>';
+
+            try {
+                const response = await fetch(`https://playtest-backend.onrender.com/api/comentarios/alumno/${currentUser.id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.comentarios || data.comentarios.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💬</div>
+                            <h3>No tienes comentarios</h3>
+                            <p>Tu profesor aún no ha dejado comentarios sobre tu progreso</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const comentariosHTML = data.comentarios.map(c => `
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <span class="comment-bloque">${c.bloque_nombre}</span>
+                            <span class="comment-date">${new Date(c.created_at).toLocaleDateString('es-ES')}</span>
+                        </div>
+                        <div class="comment-text">${c.comentario}</div>
+                        <div style="margin-top: 10px; font-size: 12px; color: #778DA9;">
+                            Por: ${c.profesor_nombre}
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="card">
+                        <h2>💬 Comentarios de tu Profesor</h2>
+                        <div class="comments-list">
+                            ${comentariosHTML}
+                        </div>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Error loading comentarios:', error);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <h3>Error al cargar comentarios</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
