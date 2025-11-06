@@ -3,6 +3,11 @@
  * Funcionalidad para la Pestaña 3 del Panel de Profesor
  */
 
+// Helper function to get authentication token
+function getTokenAlumnos() {
+    return localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken') || localStorage.getItem('token');
+}
+
 const AlumnosManager = {
     oposicionActual: null,
     alumnos: [],
@@ -20,7 +25,7 @@ const AlumnosManager = {
         try {
             const response = await fetch(`${this.API_URL}/oposiciones/${oposicionId}/alumnos`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getTokenAlumnos()}`
                 }
             });
 
@@ -168,7 +173,7 @@ const AlumnosManager = {
             // Obtener cronograma del alumno
             const response = await fetch(`${this.API_URL}/oposiciones/${this.oposicionActual}/cronogramas`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getTokenAlumnos()}`
                 }
             });
 
@@ -192,7 +197,7 @@ const AlumnosManager = {
             // Obtener detalle del cronograma con bloques
             const cronogramaResponse = await fetch(`${this.API_URL}/oposiciones/${this.oposicionActual}/cronograma?alumno_id=${alumnoId}`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getTokenAlumnos()}`
                 }
             });
 
@@ -394,7 +399,7 @@ const AlumnosManager = {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getTokenAlumnos()}`
                 },
                 body: JSON.stringify(data)
             });

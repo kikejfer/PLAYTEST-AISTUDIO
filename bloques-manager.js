@@ -3,6 +3,11 @@
  * Funcionalidad para la Pestaña 2 del Panel de Profesor
  */
 
+// Helper function to get authentication token
+function getTokenBloques() {
+    return localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken') || localStorage.getItem('token');
+}
+
 const BloquesManager = {
     oposicionActual: null,
     bloques: [],
@@ -19,7 +24,7 @@ const BloquesManager = {
         try {
             const response = await fetch(`${this.API_URL}/oposiciones/${oposicionId}/bloques`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getTokenBloques()}`
                 }
             });
 
@@ -186,7 +191,7 @@ const BloquesManager = {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getTokenBloques()}`
                 },
                 body: JSON.stringify(data)
             });
@@ -216,7 +221,7 @@ const BloquesManager = {
             const response = await fetch(`${this.API_URL}/bloques/${bloqueId}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getTokenBloques()}`
                 }
             });
 
@@ -260,7 +265,7 @@ const BloquesManager = {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getTokenBloques()}`
                 },
                 body: JSON.stringify(data)
             });
@@ -290,7 +295,7 @@ const BloquesManager = {
             const response = await fetch(`${this.API_URL}/temas/${temaId}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getTokenBloques()}`
                 }
             });
 
