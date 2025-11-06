@@ -356,7 +356,7 @@ async function enhanceExistingHeader() {
                 { code: 'PAS', name: 'Administrador Secundario', panel: 'admin-secundario-panel.html' },
                 { code: 'PST', name: 'Soporte Técnico', panel: 'support-dashboard.html' },
                 { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
-                { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-schedules.html' },
+                { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-oposiciones.html' },
                 { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' }
             ];
             
@@ -585,7 +585,7 @@ function getUserRolesFromSystem(profile, session) {
         'creador': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
         'creador_contenido': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
         'profesor_creador': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
-        'profesor': { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-schedules.html' },        
+        'profesor': { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-oposiciones.html' },
         'jugador': { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' }
     };
     
