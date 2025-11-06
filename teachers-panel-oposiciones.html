@@ -1048,21 +1048,27 @@
         // AUTHENTICATION
         // ====================================
         function getToken() {
-            return localStorage.getItem('token');
+            return localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken') || localStorage.getItem('token');
         }
 
         function checkAuth() {
             const token = getToken();
             if (!token) {
+                console.error('❌ No authentication token found');
                 window.location.href = 'index.html';
                 return false;
             }
+            console.log('✅ Authentication token found');
             return true;
         }
 
         function handleLogout() {
+            localStorage.removeItem('playtest_auth_token');
+            localStorage.removeItem('authToken');
             localStorage.removeItem('token');
             localStorage.removeItem('nickname');
+            localStorage.removeItem('playtest_session');
+            localStorage.removeItem('gameSession');
             window.location.href = 'index.html';
         }
 
