@@ -10,6 +10,7 @@
     <script src="bloques-manager.js"></script>
     <script src="alumnos-manager.js"></script>
     <script src="estadisticas-manager.js"></script>
+    <script src="torneos-manager.js"></script>
     <style>
         * {
             margin: 0;
@@ -714,6 +715,7 @@
                 <button class="tab-button active" onclick="switchTab('oposiciones')">📚 Mis Oposiciones</button>
                 <button class="tab-button" onclick="switchTab('bloques')">📦 Bloques de Temas</button>
                 <button class="tab-button" onclick="switchTab('alumnos')">👥 Seguimiento de Alumnos</button>
+                <button class="tab-button" onclick="switchTab('torneos')">⚔️ Torneos</button>
                 <button class="tab-button" onclick="switchTab('estadisticas')">📊 Estadísticas</button>
             </div>
 
@@ -777,7 +779,32 @@
                 </div>
             </div>
 
-            <!-- TAB 4: ESTADÍSTICAS -->
+            <!-- TAB 4: TORNEOS -->
+            <div id="tab-torneos" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: #E0E1DD; font-size: 22px;">Gestión de Torneos</h2>
+                    <button class="btn btn-primary" onclick="TorneosManager.openModalCrearTorneo()">
+                        ⚔️ Nuevo Torneo
+                    </button>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="select-oposicion-torneos" class="form-label">Seleccionar Oposición:</label>
+                    <select id="select-oposicion-torneos" class="form-input" onchange="cargarTorneos()">
+                        <option value="">Selecciona una oposición...</option>
+                    </select>
+                </div>
+
+                <div id="torneos-container">
+                    <div class="empty-state">
+                        <div class="empty-icon">⚔️</div>
+                        <h3 class="empty-title">Selecciona una oposición</h3>
+                        <p class="empty-description">Elige una oposición para gestionar sus torneos</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: ESTADÍSTICAS -->
             <div id="tab-estadisticas" class="tab-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h2 style="color: #E0E1DD; font-size: 22px;">Estadísticas Globales</h2>
@@ -911,6 +938,101 @@
                     <button type="submit" class="btn btn-primary">Añadir Comentario</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Crear Torneo -->
+    <div id="modal-crear-torneo" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 class="modal-title">⚔️ Crear Torneo</h2>
+                <button class="close-modal" onclick="TorneosManager.closeModal('modal-crear-torneo')">&times;</button>
+            </div>
+            <form id="form-crear-torneo" onsubmit="TorneosManager.crearTorneo(event)">
+                <div class="form-group">
+                    <label class="form-label">Nombre del Torneo *</label>
+                    <input type="text" class="form-input" name="nombre" placeholder="Ej: Torneo Velocidad - Bloque 1" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-input" name="descripcion" placeholder="Describe el torneo y sus reglas..." rows="3"></textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Torneo *</label>
+                        <select class="form-input" name="tipo" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="puntos">💯 Puntos (100 pts por acierto)</option>
+                            <option value="velocidad">⚡ Velocidad (50-200 pts según tiempo)</option>
+                            <option value="precision">🎯 Precisión (150 pts, sin bonus velocidad)</option>
+                            <option value="resistencia">💪 Resistencia (100 pts estándar)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Ámbito</label>
+                        <select class="form-input" name="bloque_id" id="select-bloque-torneo">
+                            <option value="">Toda la oposición</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Fecha y Hora de Inicio *</label>
+                        <input type="datetime-local" class="form-input" name="fecha_inicio" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Fecha y Hora de Fin *</label>
+                        <input type="datetime-local" class="form-input" name="fecha_fin" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Número de Preguntas *</label>
+                        <input type="number" class="form-input" name="num_preguntas" value="20" min="5" max="100" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Máximo de Participantes</label>
+                        <input type="number" class="form-input" name="max_participantes" placeholder="Ilimitado" min="2">
+                    </div>
+                </div>
+
+                <div style="padding: 15px; background: rgba(0, 212, 255, 0.1); border-radius: 8px; border-left: 4px solid #00D4FF; margin-bottom: 15px;">
+                    <strong style="color: #00D4FF;">💡 Tipos de Torneo:</strong>
+                    <ul style="color: #E0E1DD; margin-top: 10px; line-height: 1.8; padding-left: 20px; font-size: 13px;">
+                        <li><strong>Puntos:</strong> Gana quien más preguntas acierte (100 pts c/u)</li>
+                        <li><strong>Velocidad:</strong> Bonus por responder rápido (50-200 pts según tiempo)</li>
+                        <li><strong>Precisión:</strong> Solo cuenta precisión, sin bonus de velocidad (150 pts c/u)</li>
+                        <li><strong>Resistencia:</strong> Enfocado en completar todas las preguntas</li>
+                    </ul>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="TorneosManager.closeModal('modal-crear-torneo')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">⚔️ Crear Torneo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Detalle Torneo -->
+    <div id="modal-detalle-torneo" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2 class="modal-title">⚔️ Detalle del Torneo</h2>
+                <button class="close-modal" onclick="TorneosManager.closeModal('modal-detalle-torneo')">&times;</button>
+            </div>
+            <div id="modal-detalle-torneo-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1113,6 +1235,7 @@
             const selects = [
                 document.getElementById('select-oposicion-bloques'),
                 document.getElementById('select-oposicion-alumnos'),
+                document.getElementById('select-oposicion-torneos'),
                 document.getElementById('select-oposicion-stats')
             ];
 
@@ -1155,6 +1278,13 @@
             if (!oposicionId) return;
 
             await EstadisticasManager.cargarEstadisticas(oposicionId);
+        }
+
+        async function cargarTorneos() {
+            const oposicionId = document.getElementById('select-oposicion-torneos').value;
+            if (!oposicionId) return;
+
+            await TorneosManager.cargarTorneos(oposicionId);
         }
 
         // ====================================

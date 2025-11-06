@@ -516,8 +516,499 @@ const GamificacionManager = {
      * Ver detalle de torneo
      */
     async verDetalleTorneo(torneoId) {
-        alert('Funcionalidad de torneos en desarrollo. Torneo ID: ' + torneoId);
-        // TODO: Implementar modal con detalle de torneo e inscripción
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.id = 'modal-torneo-detalle';
+        modal.style.display = 'flex';
+
+        modal.innerHTML = `
+            <div class="card" style="max-width: 700px; margin: auto; position: relative;">
+                <button onclick="this.closest('.modal').remove()"
+                        style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #E0E1DD; font-size: 24px; cursor: pointer;">
+                    &times;
+                </button>
+                <div id="torneo-detalle-content">
+                    <div class="loading"><div class="spinner"></div></div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        try {
+            const response = await fetch(
+                `https://playtest-backend.onrender.com/api/gamificacion/torneos/detalle/${torneoId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                }
+            );
+
+            if (!response.ok) throw new Error('Error cargando torneo');
+
+            const data = await response.json();
+            this.renderDetalleTorneoAlumno(data.torneo, data.participantes);
+
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('torneo-detalle-content').innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 48px; margin-bottom: 15px;">❌</div>
+                    <h3>Error al cargar torneo</h3>
+                    <p style="color: #778DA9;">${error.message}</p>
+                </div>
+            `;
+        }
+    },
+
+    /**
+     * Renderizar detalle del torneo para alumno
+     */
+    renderDetalleTorneoAlumno(torneo, participantes) {
+        const content = document.getElementById('torneo-detalle-content');
+        const fechaInicio = new Date(torneo.fecha_inicio).toLocaleString('es-ES');
+        const fechaFin = new Date(torneo.fecha_fin).toLocaleString('es-ES');
+
+        // Verificar si el alumno ya está inscrito
+        const miParticipacion = participantes.find(p => p.alumno_id === currentUser.id);
+        const estaInscrito = !!miParticipacion;
+        const haCompletado = miParticipacion?.completado || false;
+
+        let actionButton = '';
+        if (torneo.estado === 'finalizado') {
+            actionButton = '<button class="btn btn-secondary" style="width: 100%;" disabled>🏁 Torneo Finalizado</button>';
+        } else if (haCompletado) {
+            actionButton = '<button class="btn btn-secondary" style="width: 100%;" disabled>✅ Ya has participado</button>';
+        } else if (estaInscrito && torneo.estado === 'activo') {
+            actionButton = `<button class="btn" style="width: 100%;" onclick="GamificacionManager.iniciarTorneo(${torneo.id})">🚀 ¡Comenzar Torneo!</button>`;
+        } else if (estaInscrito) {
+            actionButton = '<button class="btn btn-secondary" style="width: 100%;" disabled>✓ Inscrito - Espera a que inicie</button>';
+        } else if (torneo.max_participantes && participantes.length >= torneo.max_participantes) {
+            actionButton = '<button class="btn btn-secondary" style="width: 100%;" disabled>🚫 Torneo Completo</button>';
+        } else {
+            actionButton = `<button class="btn" style="width: 100%;" onclick="GamificacionManager.inscribirseEnTorneo(${torneo.id})">📝 Inscribirse Ahora</button>`;
+        }
+
+        content.innerHTML = `
+            <div style="padding: 20px;">
+                <h2 style="color: #00D4FF; margin-bottom: 10px;">${torneo.nombre}</h2>
+                ${torneo.descripcion ? `<p style="color: #778DA9; margin-bottom: 20px;">${torneo.descripcion}</p>` : ''}
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div style="padding: 15px; background: rgba(0, 212, 255, 0.1); border-radius: 10px; text-align: center;">
+                        <div style="font-size: 11px; color: #778DA9; margin-bottom: 5px;">TIPO</div>
+                        <div style="color: #E0E1DD; font-weight: 600;">${this.getTipoTorneoLabel(torneo.tipo)}</div>
+                    </div>
+                    <div style="padding: 15px; background: rgba(0, 212, 255, 0.1); border-radius: 10px; text-align: center;">
+                        <div style="font-size: 11px; color: #778DA9; margin-bottom: 5px;">PARTICIPANTES</div>
+                        <div style="color: #E0E1DD; font-weight: 600;">${participantes.length}${torneo.max_participantes ? `/${torneo.max_participantes}` : ''}</div>
+                    </div>
+                    <div style="padding: 15px; background: rgba(0, 212, 255, 0.1); border-radius: 10px; text-align: center;">
+                        <div style="font-size: 11px; color: #778DA9; margin-bottom: 5px;">PREGUNTAS</div>
+                        <div style="color: #E0E1DD; font-weight: 600;">${torneo.num_preguntas}</div>
+                    </div>
+                </div>
+
+                <div style="padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 20px;">
+                    <div style="margin-bottom: 8px;">📅 <strong>Inicio:</strong> ${fechaInicio}</div>
+                    <div>🏁 <strong>Fin:</strong> ${fechaFin}</div>
+                </div>
+
+                ${actionButton}
+
+                ${haCompletado && miParticipacion ? `
+                    <div style="margin-top: 20px; padding: 20px; background: rgba(40, 167, 69, 0.1); border-radius: 10px; border-left: 4px solid #28A745;">
+                        <h4 style="color: #28A745; margin-bottom: 10px;">🎉 ¡Tu Resultado!</h4>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
+                            <div>
+                                <div style="font-size: 24px; font-weight: bold; color: #00D4FF;">${miParticipacion.posicion || '-'}</div>
+                                <div style="font-size: 11px; color: #778DA9;">POSICIÓN</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 24px; font-weight: bold; color: #00D4FF;">${miParticipacion.puntuacion}</div>
+                                <div style="font-size: 11px; color: #778DA9;">PUNTOS</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 24px; font-weight: bold; color: #00D4FF;">${miParticipacion.respuestas_correctas}/${miParticipacion.respuestas_correctas + miParticipacion.respuestas_incorrectas}</div>
+                                <div style="font-size: 11px; color: #778DA9;">ACIERTOS</div>
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    },
+
+    /**
+     * Inscribirse en torneo
+     */
+    async inscribirseEnTorneo(torneoId) {
+        if (!confirm('¿Quieres inscribirte en este torneo?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `https://playtest-backend.onrender.com/api/gamificacion/torneos/${torneoId}/inscribir`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error al inscribirse');
+            }
+
+            alert('✅ ¡Inscripción exitosa! Podrás participar cuando el torneo esté activo.');
+
+            // Cerrar y recargar modal
+            document.getElementById('modal-torneo-detalle').remove();
+            this.verDetalleTorneo(torneoId);
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('❌ Error al inscribirse: ' + error.message);
+        }
+    },
+
+    /**
+     * Iniciar participación en torneo
+     */
+    async iniciarTorneo(torneoId) {
+        if (!confirm('¿Estás listo para comenzar el torneo? El cronómetro comenzará inmediatamente.')) {
+            return;
+        }
+
+        // Cerrar modal de detalle
+        document.getElementById('modal-torneo-detalle').remove();
+
+        // Mostrar interfaz de torneo con loading
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.id = 'modal-torneo-play';
+        modal.style.display = 'flex';
+
+        modal.innerHTML = `
+            <div class="card" style="max-width: 900px; width: 95%; margin: auto;">
+                <div id="torneo-play-content">
+                    <div class="loading"><div class="spinner"></div><p>Preparando torneo...</p></div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        try {
+            const response = await fetch(
+                `https://playtest-backend.onrender.com/api/gamificacion/torneos/${torneoId}/iniciar`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error al iniciar torneo');
+            }
+
+            const data = await response.json();
+            this.jugarTorneo(data);
+
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('torneo-play-content').innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 48px; margin-bottom: 15px;">❌</div>
+                    <h3>Error al iniciar torneo</h3>
+                    <p style="color: #778DA9;">${error.message}</p>
+                    <button class="btn" onclick="document.getElementById('modal-torneo-play').remove()" style="margin-top: 20px;">Cerrar</button>
+                </div>
+            `;
+        }
+    },
+
+    /**
+     * Jugar torneo (interfaz de preguntas con cronómetro)
+     */
+    jugarTorneo(data) {
+        const { participante_id, preguntas, tipo_torneo } = data;
+
+        const estado = {
+            participante_id,
+            tipo_torneo,
+            preguntas,
+            indiceActual: 0,
+            respuestas: [],
+            tiempoInicioPregunta: Date.now(),
+            tiempoInicioTorneo: Date.now()
+        };
+
+        this.renderPreguntaTorneo(estado);
+    },
+
+    /**
+     * Renderizar pregunta del torneo
+     */
+    renderPreguntaTorneo(estado) {
+        const pregunta = estado.preguntas[estado.indiceActual];
+        const progreso = ((estado.indiceActual + 1) / estado.preguntas.length) * 100;
+        const tiempoTranscurrido = Math.floor((Date.now() - estado.tiempoInicioTorneo) / 1000);
+        const minutos = Math.floor(tiempoTranscurrido / 60);
+        const segundos = tiempoTranscurrido % 60;
+
+        const content = document.getElementById('torneo-play-content');
+
+        content.innerHTML = `
+            <div style="padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="color: #00D4FF; margin: 0;">⚔️ Torneo en Curso</h3>
+                    <div style="font-size: 24px; font-weight: bold; color: #FFC107;">
+                        ⏱️ ${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span style="color: #778DA9;">Pregunta ${estado.indiceActual + 1} de ${estado.preguntas.length}</span>
+                        <span style="color: #E0E1DD; font-weight: 600;">${progreso.toFixed(0)}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progreso}%"></div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(0, 212, 255, 0.1); padding: 25px; border-radius: 12px; border-left: 4px solid #00D4FF; margin-bottom: 30px;">
+                    <p style="color: #E0E1DD; font-size: 18px; line-height: 1.6; margin: 0;">
+                        ${pregunta.question_text}
+                    </p>
+                </div>
+
+                <div id="opciones-torneo" style="display: grid; gap: 15px; margin-bottom: 30px;">
+                    ${this.renderOpcionesTorneo(pregunta)}
+                </div>
+
+                <button class="btn" id="btn-confirmar-torneo" onclick="GamificacionManager.confirmarRespuestaTorneo()" disabled style="width: 100%;">
+                    ✓ Confirmar Respuesta
+                </button>
+            </div>
+        `;
+
+        // Guardar estado globalmente
+        window.torneoEstado = estado;
+
+        // Actualizar cronómetro cada segundo
+        if (window.torneoTimer) clearInterval(window.torneoTimer);
+        window.torneoTimer = setInterval(() => {
+            const tiempo = Math.floor((Date.now() - estado.tiempoInicioTorneo) / 1000);
+            const m = Math.floor(tiempo / 60);
+            const s = tiempo % 60;
+            const timerElement = document.querySelector('[style*="24px"][style*="FFC107"]');
+            if (timerElement) {
+                timerElement.textContent = `⏱️ ${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            }
+        }, 1000);
+    },
+
+    /**
+     * Renderizar opciones de torneo
+     */
+    renderOpcionesTorneo(pregunta) {
+        const opciones = [
+            { id: 'a', texto: pregunta.option_a },
+            { id: 'b', texto: pregunta.option_b },
+            { id: 'c', texto: pregunta.option_c },
+            { id: 'd', texto: pregunta.option_d }
+        ].filter(op => op.texto && op.texto.trim() !== '');
+
+        return opciones.map(opcion => `
+            <div class="opcion-respuesta-torneo" onclick="GamificacionManager.seleccionarOpcionTorneo('${opcion.id}')"
+                 data-opcion="${opcion.id}"
+                 style="padding: 20px; background: rgba(255, 255, 255, 0.05); border: 2px solid #415A77; border-radius: 12px; cursor: pointer; transition: all 0.3s;">
+                <span style="display: inline-block; width: 35px; height: 35px; background: #415A77; border-radius: 50%; text-align: center; line-height: 35px; margin-right: 15px; font-weight: bold;">
+                    ${opcion.id.toUpperCase()}
+                </span>
+                <span style="color: #E0E1DD; font-size: 16px;">
+                    ${opcion.texto}
+                </span>
+            </div>
+        `).join('');
+    },
+
+    /**
+     * Seleccionar opción en torneo
+     */
+    seleccionarOpcionTorneo(opcionId) {
+        // Remover selección anterior
+        document.querySelectorAll('.opcion-respuesta-torneo').forEach(el => {
+            el.style.border = '2px solid #415A77';
+            el.style.background = 'rgba(255, 255, 255, 0.05)';
+        });
+
+        // Marcar nueva selección
+        const opcion = document.querySelector(`[data-opcion="${opcionId}"]`);
+        opcion.style.border = '2px solid #00D4FF';
+        opcion.style.background = 'rgba(0, 212, 255, 0.1)';
+
+        // Habilitar botón confirmar
+        document.getElementById('btn-confirmar-torneo').disabled = false;
+
+        // Guardar selección
+        window.torneoEstado.opcionSeleccionada = opcionId;
+    },
+
+    /**
+     * Confirmar respuesta en torneo
+     */
+    confirmarRespuestaTorneo() {
+        const estado = window.torneoEstado;
+        const pregunta = estado.preguntas[estado.indiceActual];
+        const opcionSeleccionada = estado.opcionSeleccionada;
+        const esCorrecta = opcionSeleccionada === pregunta.correct_answer.toLowerCase();
+        const tiempoRespuesta = Math.floor((Date.now() - estado.tiempoInicioPregunta) / 1000);
+
+        // Guardar respuesta
+        estado.respuestas.push({
+            pregunta_id: pregunta.id,
+            respuesta: opcionSeleccionada,
+            tiempo_segundos: tiempoRespuesta
+        });
+
+        // Avanzar a siguiente pregunta o finalizar
+        estado.indiceActual++;
+
+        if (estado.indiceActual < estado.preguntas.length) {
+            // Siguiente pregunta
+            estado.tiempoInicioPregunta = Date.now();
+            estado.opcionSeleccionada = null;
+            this.renderPreguntaTorneo(estado);
+        } else {
+            // Finalizar torneo
+            clearInterval(window.torneoTimer);
+            this.finalizarTorneo(estado);
+        }
+    },
+
+    /**
+     * Finalizar torneo
+     */
+    async finalizarTorneo(estado) {
+        const content = document.getElementById('torneo-play-content');
+        content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Enviando respuestas...</p></div>';
+
+        try {
+            const response = await fetch(
+                `https://playtest-backend.onrender.com/api/gamificacion/torneos/finalizar/${estado.participante_id}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        respuestas: estado.respuestas
+                    })
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error al finalizar torneo');
+            }
+
+            const data = await response.json();
+            this.mostrarResultadosTorneo(data);
+
+        } catch (error) {
+            console.error('Error:', error);
+            content.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 48px; margin-bottom: 15px;">❌</div>
+                    <h3>Error al enviar respuestas</h3>
+                    <p style="color: #778DA9;">${error.message}</p>
+                </div>
+            `;
+        }
+    },
+
+    /**
+     * Mostrar resultados del torneo
+     */
+    mostrarResultadosTorneo(data) {
+        const { puntuacion, correctas, incorrectas, tiempo_total, posicion } = data;
+        const content = document.getElementById('torneo-play-content');
+
+        const minutos = Math.floor(tiempo_total / 60);
+        const segundos = tiempo_total % 60;
+
+        let medalIcon = '';
+        let mensajeFelicitacion = '';
+
+        if (posicion === 1) {
+            medalIcon = '🥇';
+            mensajeFelicitacion = '¡ERES EL CAMPEÓN!';
+        } else if (posicion === 2) {
+            medalIcon = '🥈';
+            mensajeFelicitacion = '¡SEGUNDO LUGAR!';
+        } else if (posicion === 3) {
+            medalIcon = '🥉';
+            mensajeFelicitacion = '¡TERCER LUGAR!';
+        } else {
+            medalIcon = '🏆';
+            mensajeFelicitacion = '¡TORNEO COMPLETADO!';
+        }
+
+        content.innerHTML = `
+            <div style="padding: 40px; text-align: center;">
+                <div style="font-size: 64px; margin-bottom: 20px;">${medalIcon}</div>
+                <h2 style="color: #00D4FF; margin-bottom: 10px; font-size: 32px;">${mensajeFelicitacion}</h2>
+                <p style="color: #778DA9; margin-bottom: 40px;">Has completado el torneo</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; margin-bottom: 40px;">
+                    <div style="padding: 20px; background: rgba(0, 212, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 36px; font-weight: bold; color: #00D4FF;">${posicion}</div>
+                        <div style="color: #778DA9; font-size: 12px;">POSICIÓN</div>
+                    </div>
+                    <div style="padding: 20px; background: rgba(0, 212, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 36px; font-weight: bold; color: #00D4FF;">${puntuacion}</div>
+                        <div style="color: #778DA9; font-size: 12px;">PUNTOS</div>
+                    </div>
+                    <div style="padding: 20px; background: rgba(40, 167, 69, 0.1); border-radius: 12px;">
+                        <div style="font-size: 36px; font-weight: bold; color: #28A745;">${correctas}</div>
+                        <div style="color: #778DA9; font-size: 12px;">ACIERTOS</div>
+                    </div>
+                    <div style="padding: 20px; background: rgba(220, 53, 69, 0.1); border-radius: 12px;">
+                        <div style="font-size: 36px; font-weight: bold; color: #DC3545;">${incorrectas}</div>
+                        <div style="color: #778DA9; font-size: 12px;">ERRORES</div>
+                    </div>
+                </div>
+
+                <div style="padding: 20px; background: rgba(255, 193, 7, 0.1); border-radius: 12px; margin-bottom: 30px;">
+                    <div style="font-size: 24px; font-weight: bold; color: #FFC107;">
+                        ⏱️ ${minutos}m ${segundos}s
+                    </div>
+                    <div style="color: #778DA9; font-size: 12px; margin-top: 5px;">TIEMPO TOTAL</div>
+                </div>
+
+                <button class="btn" onclick="document.getElementById('modal-torneo-play').remove(); GamificacionManager.render(currentOposicion)" style="width: 100%;">
+                    ✓ Cerrar y Actualizar
+                </button>
+            </div>
+        `;
+
+        // Limpiar timer
+        if (window.torneoTimer) {
+            clearInterval(window.torneoTimer);
+            window.torneoTimer = null;
+        }
+        window.torneoEstado = null;
     },
 
     /**
