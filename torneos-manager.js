@@ -3,6 +3,11 @@
  * Gestión de torneos: creación, visualización y control
  */
 
+// Helper function to get authentication token
+function getTokenTorneos() {
+    return localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken') || localStorage.getItem('token');
+}
+
 const TorneosManager = {
     oposicionActual: null,
     torneos: [],
@@ -23,7 +28,7 @@ const TorneosManager = {
                 `https://playtest-backend.onrender.com/api/gamificacion/torneos/${oposicionId}`,
                 {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${getTokenTorneos()}`
                     }
                 }
             );
@@ -59,7 +64,7 @@ const TorneosManager = {
                 `https://playtest-backend.onrender.com/api/oposiciones/${oposicionId}/bloques`,
                 {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${getTokenTorneos()}`
                     }
                 }
             );
@@ -282,7 +287,7 @@ const TorneosManager = {
             const response = await fetch('https://playtest-backend.onrender.com/api/gamificacion/torneos', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${getTokenTorneos()}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -327,7 +332,7 @@ const TorneosManager = {
                 `https://playtest-backend.onrender.com/api/gamificacion/torneos/detalle/${torneoId}`,
                 {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${getTokenTorneos()}`
                     }
                 }
             );
