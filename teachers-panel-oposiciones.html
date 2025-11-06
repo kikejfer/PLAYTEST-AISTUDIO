@@ -7,6 +7,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="api-data-service.js"></script>
     <script src="navigation-service.js"></script>
+    <script src="bloques-manager.js"></script>
+    <script src="alumnos-manager.js"></script>
+    <script src="estadisticas-manager.js"></script>
     <style>
         * {
             margin: 0;
@@ -826,6 +829,91 @@
         </div>
     </div>
 
+    <!-- MODAL: Crear Bloque -->
+    <div id="modal-crear-bloque" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📦 Nuevo Bloque de Temas</h2>
+                <button class="close-modal" onclick="BloquesManager.closeModal('modal-crear-bloque')">&times;</button>
+            </div>
+            <form id="form-crear-bloque" onsubmit="BloquesManager.crearBloque(event)">
+                <div class="form-group">
+                    <label class="form-label">Nombre del Bloque *</label>
+                    <input type="text" class="form-input" name="nombre" placeholder="Ej: Constitución Española" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-input" name="descripcion" placeholder="Descripción del bloque..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tiempo Estimado (días)</label>
+                    <input type="number" class="form-input" name="tiempo_estimado_dias" placeholder="14" value="14" min="1" required>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="BloquesManager.closeModal('modal-crear-bloque')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Crear Bloque</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Crear Tema -->
+    <div id="modal-crear-tema" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📝 Nuevo Tema</h2>
+                <button class="close-modal" onclick="BloquesManager.closeModal('modal-crear-tema')">&times;</button>
+            </div>
+            <form id="form-crear-tema" onsubmit="BloquesManager.crearTema(event)">
+                <div class="form-group">
+                    <label class="form-label">Nombre del Tema *</label>
+                    <input type="text" class="form-input" name="nombre" placeholder="Ej: Título Preliminar" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-input" name="descripcion" placeholder="Descripción del tema..."></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="BloquesManager.closeModal('modal-crear-tema')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Crear Tema</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Detalle Alumno -->
+    <div id="modal-detalle-alumno" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title">👤 Detalle del Alumno</h2>
+                <button class="close-modal" onclick="AlumnosManager.closeModal('modal-detalle-alumno')">&times;</button>
+            </div>
+            <div id="modal-detalle-content">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Comentario -->
+    <div id="modal-comentario" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">💬 Añadir Comentario</h2>
+                <button class="close-modal" onclick="AlumnosManager.closeModal('modal-comentario')">&times;</button>
+            </div>
+            <form id="form-comentario" onsubmit="AlumnosManager.crearComentario(event)">
+                <div class="form-group">
+                    <label class="form-label">Comentario *</label>
+                    <textarea class="form-input" name="comentario" placeholder="Escribe tu comentario para el alumno..." rows="5" required></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="AlumnosManager.closeModal('modal-comentario')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Añadir Comentario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // ====================================
         // GLOBAL STATE
@@ -1049,38 +1137,24 @@
         }
 
         async function cargarBloques() {
-            // TODO: Implementar carga de bloques
             const oposicionId = document.getElementById('select-oposicion-bloques').value;
             if (!oposicionId) return;
 
-            document.getElementById('bloques-content').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-
-            // Simulación - implementar con API real
-            setTimeout(() => {
-                document.getElementById('bloques-content').innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">📦</div>
-                        <h3 class="empty-title">No hay bloques creados</h3>
-                        <p class="empty-description">Crea tu primer bloque de temas</p>
-                    </div>
-                `;
-            }, 500);
+            await BloquesManager.cargarBloques(oposicionId);
         }
 
         async function cargarAlumnos() {
-            // TODO: Implementar carga de alumnos
             const oposicionId = document.getElementById('select-oposicion-alumnos').value;
             if (!oposicionId) return;
 
-            document.getElementById('alumnos-content').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            await AlumnosManager.cargarAlumnos(oposicionId);
         }
 
         async function cargarEstadisticas() {
-            // TODO: Implementar estadísticas
             const oposicionId = document.getElementById('select-oposicion-stats').value;
             if (!oposicionId) return;
 
-            document.getElementById('estadisticas-content').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            await EstadisticasManager.cargarEstadisticas(oposicionId);
         }
 
         // ====================================
