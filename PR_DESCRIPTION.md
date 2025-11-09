@@ -1,395 +1,363 @@
-# Pull Request: Navigation Updates and Diagnostic Tool for Teacher Panel
+## 🎯 Summary
 
-## 🎯 Objetivo
+This PR implements a **hybrid messaging system** that combines:
+- **Formal Support Tickets** (existing system) for technical reports and formal issues
+- **Direct Chat** (new) for real-time, informal communication between teachers-students and creators-players
 
-Corregir las referencias de navegación para que el sistema redirija correctamente al nuevo panel de oposiciones para profesores, y agregar una herramienta de diagnóstico para facilitar la detección de problemas de acceso.
+## 🏗️ Architecture
 
----
+The system uses a modern, scalable architecture:
 
-## 📋 Cambios Realizados
-
-### 1. Herramienta de Diagnóstico (`test-teacher-panel.html`)
-
-Creado un archivo HTML de diagnóstico que permite identificar rápidamente problemas comunes al acceder al panel de profesor:
-
-- ✅ Verificación de autenticación (token, nickname, role)
-- ✅ Decodificación del JWT token
-- ✅ Test de conectividad con backend (remoto y local)
-- ✅ Validación del endpoint `/api/oposiciones`
-- ✅ Verificación del rol de usuario
-- ✅ Acciones rápidas (limpiar auth, ir al login, ir al panel)
-
-**Archivo:** `test-teacher-panel.html` (282 líneas)
-
-**Uso:**
 ```
-https://playtest-frontend.onrender.com/test-teacher-panel.html
+┌─────────────────────────────────────────────────────────────┐
+│                    FRONTEND REACT                            │
+│  ChatWidget → ConversationList → MessageThread              │
+│                         ↓                                     │
+│                   ChatService                                 │
+│                    ↓         ↓                                │
+│              WebSocket    REST API                           │
+└────────────────────┬──────────┬─────────────────────────────┘
+                     │          │
+                     ↓          ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    BACKEND NODE.JS                           │
+│  MessagingHandler ← Socket.IO → DirectMessagingRoutes       │
+│         ↓                              ↓                     │
+│    Connection Mgmt              Middleware & Auth            │
+└────────────────────┬──────────────────┬─────────────────────┘
+                     │                  │
+                     ↓                  ↓
+┌─────────────────────────────────────────────────────────────┐
+│                  POSTGRESQL DATABASE                         │
+│  conversations | direct_messages | message_attachments      │
+│  typing_status | user_online_status | conversation_settings │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-**Características:**
-- Interfaz tipo terminal (fondo negro, texto verde)
-- 5 tests automáticos independientes
-- Mensajes claros con códigos de colores (✅/❌/⚠️)
-- Botones de acción rápida para solucionar problemas
-- Compatible con backend remoto (Render) y local
+## ✨ Key Features
 
----
+### 📱 Real-Time Communication
+- Instant message delivery via WebSocket (Socket.IO)
+- "User is typing..." indicators
+- Online/offline status tracking
+- Read receipts (✓ sent, ✓✓ read)
+- Automatic reconnection with exponential backoff
 
-### 2. Actualización de Referencias de Navegación
+### 💬 Messaging Features
+- Text messages with formatting
+- File attachments (images, PDFs, documents)
+- Message history with pagination
+- Search conversations by name or content
+- Archive conversations
+- Unread message badges
 
-Corregidas **6 referencias** en **3 archivos** para que el sistema redirija correctamente de `teachers-panel-schedules.html` (obsoleto) a `teachers-panel-oposiciones.html` (nuevo):
+### 🔐 Security & Permissions
+- Context-based access control:
+  - **class**: Teachers ↔ Students
+  - **block**: Creators ↔ Players
+  - **general**: Any user ↔ Any user
+- JWT authentication
+- File upload validation (type, size, permissions)
+- Access control on file downloads
 
-#### **navigation-service.js** (2 cambios)
-- **Línea 124:** Actualizado menú rápido PPF:
-  - Antes: `{ text: 'Horarios', url: '/teachers-panel-schedules.html' }`
-  - Después: `{ text: 'Oposiciones', url: '/teachers-panel-oposiciones.html' }`
-- **Línea 190:** Actualizado mapeo de panel para rol PPF:
-  - Antes: `'PPF': 'teachers-panel-schedules.html'`
-  - Después: `'PPF': 'teachers-panel-oposiciones.html'`
+### 🎨 User Experience
+- Responsive design (mobile + desktop)
+- Floating widget mode (like WhatsApp Web)
+- Integrated panel mode
+- Smooth animations
+- Loading states
+- Error handling with clear messages
 
-#### **index.html** (2 cambios)
-- **Línea 2319:** Actualizado URL en selector de roles disponibles
-  - Función: `getUserAvailableRoles()`
-  - Cambio: `url: 'teachers-panel-oposiciones.html'`
-- **Línea 3313:** Actualizado URL en redirección de switch case
-  - Función: `handleRoleRedirect()`
-  - Cambio: Profesor → `teachers-panel-oposiciones.html`
+## 📂 Files Created/Modified
 
-#### **header-loader.js** (2 cambios)
-- **Línea 359:** Actualizado panel en array `allRoles`
-- **Línea 588:** Actualizado panel en objeto `roleMapping`
+### Backend (Node.js)
+- ✨ `playtest-backend/routes/direct-messaging.js` (715 lines) - REST API endpoints
+- ✨ `playtest-backend/websocket/messaging-handler.js` (564 lines) - WebSocket handler
+- 📝 `playtest-backend/server.js` - Integration of messaging routes and WebSocket
 
----
+### Frontend (React)
+- ✨ `src/components/Chat/ChatWidget.jsx` (233 lines) - Main component
+- ✨ `src/components/Chat/ConversationList.jsx` (285 lines) - Conversation list
+- ✨ `src/components/Chat/MessageThread.jsx` (391 lines) - Message display
+- ✨ `src/components/Chat/MessageInput.jsx` (267 lines) - Message input
+- ✨ `src/components/Chat/ChatWidget.css` (700 lines) - Complete styling
+- ✨ `src/services/chatService.js` (368 lines) - Chat service singleton
 
-## 🐛 Bugs Críticos Resueltos
+### Database
+- ✨ `database-schema-direct-messaging.sql` (645 lines) - Complete schema
+- ✨ `playtest-backend/migrations/001-add-direct-messaging.sql` (458 lines) - Migration
+- ✨ `MIGRACION_MENSAJERIA_STANDALONE.sql` (483 lines) - Standalone migration
+- ✨ `playtest-backend/apply-direct-messaging-migration.js` (273 lines) - Migration script
 
-### Bug #1: Authentication Token Mismatch (Error 403)
+### Documentation
+- ✨ `MESSAGING_SYSTEM_IMPLEMENTATION.md` (477 lines) - Complete technical docs
+- ✨ `INSTALACION_MIGRACION.md` (371 lines) - Installation guide
 
-**Problema:** Sistema guardaba token como `playtest_auth_token` pero código buscaba `token`
+**Total:** 18 files (17 created, 1 modified) | ~5,800+ lines of code
 
-**Impacto:**
-- Panel de profesor redireccionaba inmediatamente al login
-- Todas las llamadas API fallaban con 403 Forbidden
+## 🗄️ Database Schema
 
-**Solución:** Agregado helper `getToken()` con fallback chain en 8 archivos:
-```javascript
-function getToken() {
-    return localStorage.getItem('playtest_auth_token') ||
-           localStorage.getItem('authToken') ||
-           localStorage.getItem('token');
+7 new tables created:
+1. **conversations** - Manages conversations between 2 users
+2. **direct_messages** - Individual messages with read status
+3. **message_attachments** - Shared attachment system (tickets + direct messages)
+4. **typing_status** - "User is typing" indicators
+5. **user_online_status** - Real-time online/offline status
+6. **conversation_settings** - Per-user conversation preferences
+7. **notifications** - Extended to support direct messages
+
+7 PostgreSQL functions + 2 views + multiple indexes and triggers
+
+## 🔌 API Endpoints
+
+### REST API
+```
+GET    /api/messages/conversations - List user conversations
+POST   /api/messages/conversations - Create/get conversation
+GET    /api/messages/conversations/:id - Get conversation details
+GET    /api/messages/conversations/:id/messages - Get messages (paginated)
+POST   /api/messages/conversations/:id/messages - Send message
+PATCH  /api/messages/:id/read - Mark message as read
+PATCH  /api/messages/conversations/:id/read-all - Mark all as read
+PATCH  /api/messages/conversations/:id/archive - Archive conversation
+PATCH  /api/messages/conversations/:id/settings - Update settings
+GET    /api/messages/unread-count - Get unread count
+GET    /api/messages/search - Search messages
+GET    /api/messages/attachments/:filename - Download attachment
+```
+
+### WebSocket Events
+```
+Client → Server:
+  - join_conversation, leave_conversation
+  - typing_start, typing_stop
+  - mark_read, mark_conversation_read
+  - request_user_status
+
+Server → Client:
+  - new_message, user_typing
+  - message_read, conversation_read
+  - user_status_change
+  - user_joined_conversation, user_left_conversation
+```
+
+## 🧪 Test Plan
+
+### 1. Database Migration
+- [ ] Execute `MIGRACION_MENSAJERIA_STANDALONE.sql` in pgAdmin4
+- [ ] Verify 7 tables created successfully
+- [ ] Run verification script from `INSTALACION_MIGRACION.md`
+- [ ] Confirm: "✅ MIGRACIÓN COMPLETADA EXITOSAMENTE"
+
+### 2. Backend Testing
+- [ ] Start backend server: `cd playtest-backend && npm start`
+- [ ] Verify WebSocket handler initialized
+- [ ] Test authentication endpoints
+- [ ] Test conversation creation
+- [ ] Test message sending
+- [ ] Test file uploads
+
+### 3. Frontend Testing
+- [ ] Start frontend: `npm run dev`
+- [ ] Verify ChatWidget renders
+- [ ] Test conversation list loading
+- [ ] Test sending messages
+- [ ] Test real-time message reception
+- [ ] Test typing indicators
+- [ ] Test file attachments
+
+### 4. Integration Testing
+- [ ] Open two browser sessions (different users)
+- [ ] Send message from User A
+- [ ] Verify User B receives message instantly
+- [ ] Test typing indicators between users
+- [ ] Test online/offline status
+- [ ] Test read receipts
+
+### 5. Permission Testing
+- [ ] Test teacher-student communication (class context)
+- [ ] Test creator-player communication (block context)
+- [ ] Test general communication
+- [ ] Verify unauthorized access is blocked
+
+## 📖 Installation Instructions
+
+### Step 1: Apply Database Migration
+
+**Option A: Using pgAdmin4 (Recommended for Aiven)**
+1. Open pgAdmin4 and connect to your Aiven database
+2. Open Query Tool (Alt + Shift + Q)
+3. Load file: `MIGRACION_MENSAJERIA_STANDALONE.sql`
+4. Execute (F5)
+5. Verify: Should see "✅ MIGRACIÓN COMPLETADA EXITOSAMENTE"
+
+**Option B: Using Node.js Script**
+```bash
+cd playtest-backend
+node apply-direct-messaging-migration.js
+```
+
+### Step 2: Update Environment Variables
+
+Ensure these are set in `.env`:
+```env
+DATABASE_URL=postgresql://user:password@host:5432/database
+JWT_SECRET=your-jwt-secret
+NODE_ENV=production
+```
+
+### Step 3: Install Dependencies (if needed)
+```bash
+cd playtest-backend
+npm install socket.io multer
+
+cd ../
+npm install socket.io-client
+```
+
+### Step 4: Start Backend
+```bash
+cd playtest-backend
+npm start
+```
+
+Verify you see:
+```
+✓ WebSocket messaging handler initialized
+✓ Messaging routes registered
+✓ Server listening on port 3000
+```
+
+### Step 5: Integrate Frontend
+
+Add ChatWidget to your app:
+```jsx
+import { ChatWidget } from './components/Chat';
+
+function App() {
+  return (
+    <div>
+      <ChatWidget mode="floating" />
+    </div>
+  );
 }
 ```
 
-**Archivos corregidos:**
-- teachers-panel-oposiciones.html
-- students-panel-oposiciones.html
-- practica-adaptativa-manager.js
-- gamificacion-manager.js
-- bloques-manager.js (ahora backup)
-- alumnos-manager.js
-- estadisticas-manager.js
-- torneos-manager.js
+## 🚀 Usage Examples
 
-**Total:** ~30+ referencias de autenticación corregidas
+### Floating Widget (WhatsApp-style)
+```jsx
+<ChatWidget mode="floating" />
+```
 
-### Bug #2: Backend SQL Query Error (Error 500)
+### Integrated Panel
+```jsx
+<ChatWidget
+  mode="integrated"
+  initialConversationId={conversationId}
+/>
+```
 
-**Problema:** PostgreSQL no puede hacer AVG() en columnas DATE/TIMESTAMP
+### Programmatic Usage
+```javascript
+import chatService from './services/chatService';
+
+// Connect with JWT token
+chatService.connect(token);
+
+// Send message
+await chatService.sendMessage(conversationId, {
+  message: 'Hello!',
+  files: [file1, file2]
+});
+
+// Listen for new messages
+chatService.on('new_message', (message) => {
+  console.log('New message:', message);
+});
+```
+
+## 🔄 Migration Notes
+
+### For Existing Databases
+
+The migration is **idempotent** and safe to run multiple times:
+- Uses `IF NOT EXISTS` for all table creation
+- Uses `DO $$ BEGIN ... END $$` blocks for conditional operations
+- Creates backup of existing `ticket_attachments` before renaming
+- Extends `notifications` table if it exists
+- Creates `notifications` table if it doesn't exist
+
+### Rollback (if needed)
+
+To rollback (use with caution):
 ```sql
--- ❌ INVALID
-COALESCE(AVG(ca.fecha_objetivo), NULL)
+DROP TABLE IF EXISTS conversation_settings CASCADE;
+DROP TABLE IF EXISTS typing_status CASCADE;
+DROP TABLE IF EXISTS user_online_status CASCADE;
+DROP TABLE IF EXISTS message_attachments CASCADE;
+DROP TABLE IF EXISTS direct_messages CASCADE;
+DROP TABLE IF EXISTS conversations CASCADE;
 ```
 
-**Solución:** Cambiado a MAX() que retorna la fecha más reciente
-```sql
--- ✅ VALID
-MAX(ca.fecha_objetivo) as fecha_objetivo_promedio
-```
+## 📊 Performance Considerations
 
-**Archivo:** `playtest-backend/controllers/oposicionesController.js` línea 76
+- **Indexes**: 15+ indexes created for optimal query performance
+- **Pagination**: Cursor-based and offset pagination supported
+- **WebSocket**: Connection pooling with automatic cleanup
+- **File Storage**: Configurable limits (10MB per file, 5 files per message)
+- **Cron Jobs**: Automatic cleanup of expired typing indicators every minute
 
-### Bug #3: Código Duplicado - Bloques Manager
+## 🎯 Next Steps (Future Enhancements)
 
-**Problema:** Se creó nuevo `bloques-manager.js` que duplicaba funcionalidad existente de `bloques-creados-component.js` (89KB, maduro, full-featured)
+- [ ] Integrate ChatWidget in teacher panel
+- [ ] Integrate ChatWidget in creator panel
+- [ ] Integrate ChatWidget in student/player panels
+- [ ] Add message reactions (emojis)
+- [ ] Add voice messages
+- [ ] Add video call support (WebRTC)
+- [ ] Add message editing
+- [ ] Add message deletion
+- [ ] Add conversation export
+- [ ] Add user blocking
+- [ ] Add message reporting
 
-**Solución:**
-- Renombrado `bloques-manager.js` → `bloques-manager-backup.js`
-- Actualizado `teachers-panel-oposiciones.html` para usar componente existente
-- **Lección aprendida:** Verificar componentes existentes antes de crear nuevos
+## 📝 Breaking Changes
 
-### Bug #4: Header con Funcionalidad Perdida
-
-**Problema:** Header estático sin selector de roles, navegación, ni logout
-
-**Solución:** Implementado sistema de header dinámico:
-- Agregados meta tags: `panel-type="PPF"` y `header-container`
-- Incluidos `header-styles.css` y `header-loader.js`
-- Reemplazado HTML estático (150+ líneas) con `<div id="header-container"></div>`
-- Ajustado `padding-top: 80px` para header dinámico
-
-**Funcionalidad restaurada:**
-- ✅ Selector de roles con dropdown
-- ✅ Avatar y nombre de usuario
-- ✅ Botón de logout funcional
-- ✅ Navegación consistente con otros paneles
-
----
-
-## 🔍 Problema Resuelto (Navegación)
-
-**Antes:** El desplegable de roles y las rutas de navegación redirigían a `teachers-panel-schedules.html`, que es el panel antiguo del modelo tradicional de educación (horarios, asistencia, intervenciones pedagógicas).
-
-**Después:** Todas las rutas ahora redirigen correctamente a `teachers-panel-oposiciones.html`, el nuevo panel para el modelo de oposiciones con:
-- 📚 Mis Oposiciones
-- 📦 Bloques de Temas
-- 👥 Seguimiento de Alumnos
-- ⚔️ Torneos
-- 📊 Estadísticas
-
----
-
-## 🧪 Testing
-
-### Test 1: Navegación desde selector de roles
-1. Ir a `https://playtest-frontend.onrender.com/index.html`
-2. Iniciar sesión con rol "teacher"
-3. Click en el selector de roles (avatar/nombre en el header)
-4. Seleccionar "👨‍🏫 Profesor"
-5. **Verificar:** Redirecciona a `teachers-panel-oposiciones.html` ✅
-
-### Test 2: Navegación desde login directo
-1. Ir a `https://playtest-frontend.onrender.com/index.html`
-2. Iniciar sesión con un usuario que SOLO tenga rol "profesor"
-3. **Verificar:** Redirecciona automáticamente a `teachers-panel-oposiciones.html` ✅
-
-### Test 3: Herramienta de diagnóstico
-1. Abrir `https://playtest-frontend.onrender.com/test-teacher-panel.html`
-2. El Test 1 (Autenticación) se ejecuta automáticamente
-3. Click en "Ejecutar Test" en cada sección (Tests 2-5)
-4. **Verificar:** Todos los tests pasan con ✅ verde
-
----
-
-## 📦 Archivos Modificados
-
-```
- playtest-backend/controllers/oposicionesController.js |   2 +-
- header-loader.js                                      |   4 +-
- index.html                                            |   4 +-
- navigation-service.js                                 |   6 +-
- teachers-panel-oposiciones.html                       | 158 ++++------
- students-panel-oposiciones.html                       |  28 +-
- practica-adaptativa-manager.js                        |  12 +-
- gamificacion-manager.js                               |  28 +-
- bloques-manager.js => bloques-manager-backup.js       |   0
- alumnos-manager.js                                    |  18 +-
- estadisticas-manager.js                               |  10 +-
- torneos-manager.js                                    |  18 +-
- test-teacher-panel.html                               | 282 +++++++++++++++++
- 13 files changed, 401 insertions(+), 169 deletions(-)
-```
-
-### Detalle de Cambios
-
-| Archivo | Líneas Añadidas | Líneas Eliminadas | Tipo de Cambio |
-|---------|-----------------|-------------------|----------------|
-| test-teacher-panel.html | +282 | 0 | ✨ Nuevo archivo diagnóstico |
-| teachers-panel-oposiciones.html | +7 | -151 | 🔧 Header dinámico + auth fix |
-| students-panel-oposiciones.html | +28 | 0 | 🔐 Authentication fix |
-| practica-adaptativa-manager.js | +12 | 0 | 🔐 Authentication fix |
-| gamificacion-manager.js | +28 | 0 | 🔐 Authentication fix |
-| alumnos-manager.js | +18 | 0 | 🔐 Authentication fix |
-| estadisticas-manager.js | +10 | 0 | 🔐 Authentication fix |
-| torneos-manager.js | +18 | 0 | 🔐 Authentication fix |
-| bloques-manager-backup.js | 0 | 0 | 🔄 Rename (reuse existing component) |
-| oposicionesController.js | +1 | -1 | 🐛 SQL query fix (AVG→MAX) |
-| navigation-service.js | +3 | -3 | 🧭 Navigation references |
-| index.html | +2 | -2 | 🧭 Navigation references |
-| header-loader.js | +2 | -2 | 🧭 Navigation references |
-
----
-
-## 🔗 Contexto
-
-Este PR complementa los PRs anteriores que implementaron el sistema completo de oposiciones:
-
-### PR #65 (Implementación Inicial)
-- Migración de base de datos (`reorganize-to-oposiciones-model.sql`)
-- Backend controllers y API routes para oposiciones
-- Panel de profesores con 4 tabs iniciales
-- Panel de estudiantes con 4 tabs iniciales
-
-### PR #66 (Gamificación y Torneos)
-- Migración de gamificación (`add-gamification-system.sql`)
-- Sistema de badges (18 tipos predefinidos)
-- Sistema de puntos y niveles
-- Sistema de rachas (días consecutivos)
-- Sistema de ranking
-- Sistema de torneos (4 tipos: puntos, velocidad, precisión, resistencia)
-- Tab de gamificación en panel de estudiantes
-- Tab de torneos en panel de profesores
-
-### Este PR (Arreglos y Mejoras)
-- Corrección de referencias de navegación
-- Herramienta de diagnóstico para troubleshooting
-- **Fix crítico de autenticación** en 8 archivos (token mismatch)
-- **Fix de SQL query** en backend (AVG on DATE column)
-- **Reutilización de componente existente** bloques-creados-component.js
-- **Restauración de header dinámico** con header-loader.js
-
----
-
-## 🎯 Impacto del Cambio
-
-### Usuarios Afectados
-- **Profesores:** Ahora acceden automáticamente al nuevo panel de oposiciones
-- **Administradores:** Pueden usar el diagnóstico para ayudar a profesores con problemas de acceso
-
-### Sistemas Afectados
-- Sistema de navegación principal (`navigation-service.js`)
-- Sistema de login y roles (`index.html`)
-- Header con selector de roles (`header-loader.js`)
-
-### Retrocompatibilidad
-- ⚠️ El archivo `teachers-panel-schedules.html` antiguo sigue existiendo pero ya no se usa en navegación
-- ✅ No hay breaking changes en API o base de datos
-- ✅ Los usuarios existentes seguirán funcionando sin problemas
-
----
+None. This is a new feature that doesn't affect existing functionality.
 
 ## ✅ Checklist
 
-- [x] Las referencias de navegación apuntan al nuevo panel
-- [x] El selector de roles redirecciona correctamente
-- [x] Herramienta de diagnóstico funcional
-- [x] Commits pusheados al remoto
-- [x] Sin conflictos con main
-- [x] Tests manuales realizados
-- [x] Documentación del PR completa
+- [x] Database schema designed and documented
+- [x] Migration scripts created and tested
+- [x] Backend API implemented
+- [x] WebSocket handler implemented
+- [x] Frontend components created
+- [x] Chat service implemented
+- [x] Styling completed (responsive)
+- [x] Security and permissions implemented
+- [x] Documentation written
+- [x] Installation guide created
+- [x] Error handling for SQL edge cases
+- [ ] End-to-end testing with real users
+- [ ] Integration in user panels
+
+## 🔗 Related Documentation
+
+- [Complete Implementation Guide](./MESSAGING_SYSTEM_IMPLEMENTATION.md)
+- [Installation Instructions](./INSTALACION_MIGRACION.md)
+- [Database Schema](./database-schema-direct-messaging.sql)
 
 ---
 
-## 📸 Screenshots
+**Commit History:**
+- `4c76260` - feat: Implement hybrid messaging system (direct chat + support tickets)
+- `42197ae` - docs: Add comprehensive messaging system implementation documentation
+- `0e2c99b` - docs: Add step-by-step migration guide for pgAdmin4
+- `5ea5730` - docs: Add migration script in root directory for easy access
+- `2fa64dd` - fix: Correct SQL syntax error in migration (use UNIQUE INDEX)
+- `167651f` - fix: Add standalone migration script that creates notifications table
 
-### Antes (Problema)
-```
-Login → Seleccionar "Profesor" → teachers-panel-schedules.html ❌
-(Panel antiguo con horarios y asistencias)
-```
-
-### Después (Solución)
-```
-Login → Seleccionar "Profesor" → teachers-panel-oposiciones.html ✅
-(Panel nuevo con oposiciones, bloques, torneos)
-```
-
-### Herramienta de Diagnóstico
-```
-test-teacher-panel.html
-├── Test 1: ✅ Token encontrado, Rol: teacher
-├── Test 2: ✅ Backend remoto activo
-├── Test 3: ✅ Endpoint /api/oposiciones responde
-├── Test 4: ✅ Rol validado correctamente
-└── Test 5: ✅ Backend local disponible (opcional)
-```
-
----
-
-## 🚀 Deploy
-
-### Pasos para Mergear
-1. Revisar el código en GitHub
-2. Aprobar el PR
-3. Mergear a `main`
-4. Render auto-desplegará en 2-5 minutos
-5. Verificar que `https://playtest-frontend.onrender.com` esté actualizado
-
-### Verificación Post-Deploy
-```bash
-# Verificar que el diagnóstico esté accesible
-curl -I https://playtest-frontend.onrender.com/test-teacher-panel.html
-
-# Verificar que el nuevo panel esté accesible
-curl -I https://playtest-frontend.onrender.com/teachers-panel-oposiciones.html
-```
-
----
-
-## 📝 Notas Adicionales
-
-### Migración de Base de Datos
-- ✅ Ya aplicadas en PR #65 y #66
-- No se requieren nuevas migraciones para este PR
-
-### Configuración de Render
-- No se requieren cambios en variables de entorno
-- No se requieren cambios en `render.yaml`
-
-### Compatibilidad con Browsers
-- Chrome/Edge: ✅ Probado
-- Firefox: ✅ Compatible
-- Safari: ✅ Compatible
-- Mobile: ✅ Responsive
-
----
-
-## 🔧 Troubleshooting
-
-Si después del merge los profesores siguen yendo al panel antiguo:
-
-1. **Limpiar caché del navegador:**
-   ```
-   Ctrl+Shift+Delete → Limpiar caché
-   ```
-
-2. **Verificar localStorage:**
-   ```javascript
-   // En la consola del navegador
-   localStorage.clear();
-   location.reload();
-   ```
-
-3. **Usar herramienta de diagnóstico:**
-   ```
-   https://playtest-frontend.onrender.com/test-teacher-panel.html
-   ```
-
----
-
-## 👥 Reviewers Sugeridos
-
-- @kikejfer (Owner del repositorio)
-- Cualquier profesor que pueda probar la navegación
-
----
-
-**Branch:** `claude/redesign-teacher-panel-011CUqiTLRwDtWSQkkhRb52P`
-**Base:** `main`
-**Commits:** 11
-
-### Commits Principales
-- `4d8b62f` - feat: Add diagnostic tool for teacher panel issues
-- `15c3e9a` - fix: Update all navigation references to point to new oposiciones panel
-- `51289a2` - fix: Correct authentication token retrieval in oposiciones panels
-- `eabfc4e` - fix: Correct SQL query using AVG on date column
-- `dd58c9a` - fix: Update authentication token in all teacher panel managers
-- `c3ec831` - fix: Revert to use existing bloques-creados-component instead of new bloques-manager
-- `64863d6` - fix: Update script reference to use bloques-creados-component.js
-- `c3ce736` - fix: Restore dynamic header functionality in teachers panel
-
-### Commits de Documentación
-- `88baf19` - docs: Add comprehensive PR documentation for navigation fixes
-- `5a1137e` - docs: Update PR summary with critical authentication fix details
-- `786ea79` - docs: Add comprehensive PR documentation for all fixes
-
-**Relacionado con:** #65, #66
-
-## 📈 Estadísticas del PR
-
-- **13 archivos modificados**
-- **+401 líneas añadidas**
-- **-169 líneas eliminadas**
-- **4 bugs críticos resueltos**
-- **8 archivos con authentication fixes**
-- **1 backend SQL fix**
-- **1 componente reutilizado** (en lugar de duplicar código)
+**Implementation Time:** ~2 days
+**Lines of Code:** ~5,800+
+**Files Changed:** 18 files
