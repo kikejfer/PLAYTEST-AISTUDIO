@@ -297,7 +297,7 @@ BEGIN
         c.id,
         CASE WHEN c.user1_id = p_user_id THEN c.user2_id ELSE c.user1_id END,
         CASE WHEN c.user1_id = p_user_id THEN u2.nickname ELSE u1.nickname END,
-        CASE WHEN c.user1_id = p_user_id THEN u2.avatar_url ELSE u1.avatar_url END,
+        NULL::VARCHAR, -- avatar_url no existe en la tabla users
         c.context_type::VARCHAR,
         c.context_id,
         (SELECT dm.message_text FROM direct_messages dm
@@ -407,8 +407,8 @@ SELECT
     dm.id, dm.conversation_id, dm.message_text, dm.message_html,
     dm.is_read, dm.read_at, dm.is_edited, dm.edited_at,
     dm.message_type, dm.created_at,
-    sender.id as sender_id, sender.nickname as sender_nickname, sender.avatar_url as sender_avatar,
-    recipient.id as recipient_id, recipient.nickname as recipient_nickname, recipient.avatar_url as recipient_avatar,
+    sender.id as sender_id, sender.nickname as sender_nickname, NULL::VARCHAR as sender_avatar,
+    recipient.id as recipient_id, recipient.nickname as recipient_nickname, NULL::VARCHAR as recipient_avatar,
     (SELECT COUNT(*) FROM message_attachments ma WHERE ma.direct_message_id = dm.id) as attachment_count
 FROM direct_messages dm
 LEFT JOIN users sender ON dm.sender_id = sender.id
