@@ -852,6 +852,54 @@ class APIDataService {
     }
   }
 
+  async getCurrentUser() {
+    try {
+      const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+      if (session && session.id) {
+        return {
+          id: session.id || session.userId,
+          userId: session.id || session.userId,
+          nickname: session.nickname || session.username || 'Usuario',
+          email: session.email || '',
+          roles: session.roles || [],
+          ...session
+        };
+      }
+
+      // If no session, try to fetch from API
+      try {
+        const userData = await this.apiCall('/users/me');
+        return {
+          id: userData.id,
+          userId: userData.id,
+          nickname: userData.nickname || userData.username,
+          email: userData.email,
+          roles: userData.roles || [],
+          ...userData
+        };
+      } catch (apiError) {
+        console.warn('⚠️ Could not fetch user from API:', apiError);
+        // Return minimal fallback
+        return {
+          id: session.userId || 1,
+          userId: session.userId || 1,
+          nickname: 'Usuario',
+          email: '',
+          roles: []
+        };
+      }
+    } catch (error) {
+      console.error('❌ Error getting current user:', error);
+      return {
+        id: 1,
+        userId: 1,
+        nickname: 'Usuario',
+        email: '',
+        roles: []
+      };
+    }
+  }
+
   async updateUserProfile(profileData) {
     const response = await this.apiCall('/users/profile', {
       method: 'PUT',
