@@ -2,7 +2,29 @@
 
 ## 📋 Descripción General
 
-Se ha implementado un sistema completo de mensajería directa que permite a los usuarios (alumnos/jugadores) contactar directamente con los creadores de bloques. Este sistema utiliza el sistema de tickets existente pero proporciona una experiencia de usuario más amigable y específica para la comunicación sobre bloques.
+Se ha implementado un sistema completo de mensajería contextual que permite a los usuarios (alumnos/jugadores) contactar directamente con los creadores de bloques. Este sistema utiliza el sistema de tickets existente pero proporciona una experiencia de usuario más amigable y específica para la comunicación sobre bloques.
+
+## 🔄 Diferencia con Mensajes Directos
+
+**IMPORTANTE:** Existen DOS sistemas de mensajería independientes en la plataforma:
+
+### 📝 Mensajes de Bloques (Este Sistema)
+- **Propósito:** Comunicación contextual sobre bloques específicos
+- **Tipo:** Sistema de tickets estructurado
+- **Icono:** 📝 (verde esmeralda #10B981)
+- **Uso:** Reportar problemas, hacer preguntas o sugerencias sobre el contenido de un bloque
+- **Asignación:** Automática al creador del bloque mediante trigger de BD
+- **Archivo:** `block-messaging.html`
+
+### 💬 Mensajes Directos (Sistema Existente)
+- **Propósito:** Chat instantáneo usuario-a-usuario
+- **Tipo:** Mensajería en tiempo real tipo WhatsApp
+- **Icono:** 💬 (violeta #8B5CF6)
+- **Uso:** Comunicación rápida y directa entre usuarios
+- **Características:** Badge de mensajes no leídos, chat en vivo
+- **Archivo:** `direct-messaging.html`
+
+Ambos sistemas coexisten y se complementan, cada uno con su propósito específico.
 
 ## 🎯 Características Implementadas
 
@@ -87,21 +109,48 @@ GET /api/communication/tickets/:ticketId/messages
 POST /api/communication/tickets/:ticketId/messages
 ```
 
-### 4. **Botón en Header**
+### 4. **Botones en Header**
 
-#### Archivo: `header-component.html` (líneas 18-21)
+#### Archivo: `header-component.html`
 
-**Nuevo botón añadido:**
+**Botones de comunicación implementados (de izquierda a derecha):**
+
 ```html
-<!-- 2. Mensajes de Bloques -->
+<!-- 1. Soporte Técnico Global -->
+<button onclick="window.open('support-form.html?type=global', '_blank')"
+        style="background: #059669; color: white; ..."
+        title="Soporte Técnico Global">
+    🛠️
+</button>
+
+<!-- 2. Mensajes de Bloques (NUEVO) -->
 <button onclick="window.open('block-messaging.html', '_blank')"
         style="background: #10B981; color: white; ..."
         title="Mensajes de Bloques">
+    📝
+</button>
+
+<!-- 3. Mensajes Directos (Sistema Existente) -->
+<button onclick="window.location.href='direct-messaging.html'"
+        style="background: #8B5CF6; color: white; ..."
+        title="Mensajes Directos">
     💬
+    <span id="messages-unread-badge">0</span>
+</button>
+
+<!-- 4. Todos los Tickets -->
+<button onclick="window.open('tickets-list.html', '_blank')"
+        style="background: #3B82F6; color: white; ..."
+        title="Todos los Tickets">
+    📧
 </button>
 ```
 
-**Ubicación:** Entre el botón de Soporte (🛠️) y el de Tickets (📧)
+**Layout Visual:**
+```
+🛠️ Soporte | 📝 Bloques | 💬 Directos | 📧 Tickets
+ (verde)     (esmeralda)   (violeta)     (azul)
+```
 
 ## 🔄 Flujo de Usuario
 
@@ -209,17 +258,23 @@ WHERE id = NEW.block_id;
 
 ## 🎨 Diseño Visual
 
-### Colores Utilizados:
-- **Botón Mensajes:** `#10B981` (Verde esmeralda)
-- **Botón Soporte:** `#059669` (Verde oscuro)
-- **Botón Tickets:** `#3B82F6` (Azul)
+### Colores de Botones en Header:
+- **🛠️ Soporte Técnico:** `#059669` (Verde oscuro)
+- **📝 Mensajes de Bloques:** `#10B981` (Verde esmeralda) - NUEVO
+- **💬 Mensajes Directos:** `#8B5CF6` (Violeta) - Sistema existente
+- **📧 Todos los Tickets:** `#3B82F6` (Azul)
+
+### Colores en Interfaz de Chat:
 - **Mensaje Enviado:** `#3B82F6` (Azul)
 - **Mensaje Recibido:** `#0F172A` (Gris oscuro)
+- **Fondo Conversación Activa:** `#1E293B`
+- **Badge No Leído:** `#EF4444` (Rojo)
 
-### Iconos:
-- 💬 - Mensajes/Chat
-- 🛠️ - Soporte técnico
-- 📧 - Tickets/Notificaciones
+### Iconos y Significado:
+- 🛠️ - Soporte técnico general del sistema
+- 📝 - Mensajes sobre bloques específicos (tickets contextuales)
+- 💬 - Mensajería instantánea usuario-a-usuario
+- 📧 - Vista de todos los tickets/notificaciones
 
 ## 🔐 Seguridad
 
