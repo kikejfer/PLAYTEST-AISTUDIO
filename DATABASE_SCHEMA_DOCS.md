@@ -1,6 +1,6 @@
 # Documentación del Esquema de Base de Datos - PLAYTEST
 
-> Generado automáticamente el 9/11/2025, 17:16:38
+> Generado automáticamente el 12/11/2025, 15:57:13
 
 ---
 
