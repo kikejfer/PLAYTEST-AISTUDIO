@@ -879,32 +879,37 @@ class BloquesCreados {
     createBlockCard(block) {
         const card = document.createElement('div');
         card.className = 'bc-block-card';
-        
+        card.setAttribute('data-block-id', block.id);
+        card.setAttribute('data-creator-id', block.creatorId || '');
+
         const statusClass = block.isPublic ? 'bc-status-public' : 'bc-status-private';
         const statusText = block.isPublic ? 'Público' : 'Privado';
         const userLabel = this.labels[this.userType] || 'Usuarios';
-        
+
         // Diferentes acciones según el tipo de usuario
         const isTeacher = this.userType === 'alumnos' || this.userType === 'estudiantes'; // PPF (profesores)
         const isCreator = this.userType === 'jugadores'; // PCC (creadores)
         const isStudent = this.userType === 'estudiantes'; // PJG (estudiantes)
         const canEditQuestions = (isTeacher || isCreator) && this.displayMode === 'created'; // Only for created blocks
         const canViewContent = isStudent || (this.displayMode === 'loaded'); // Students can view content, and anyone can view loaded blocks
-        
+
+        // Determinar si mostrar botón de contacto (solo en bloques cargados o disponibles)
+        const showContactButton = this.displayMode === 'loaded' || this.displayMode === 'available';
+
         card.innerHTML = `
             <div class="bc-block-header">
-                <h3 class="bc-block-title ${canEditQuestions || canViewContent ? 'bc-clickable-title' : ''}" 
-                    ${canEditQuestions ? `onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.loadQuestionsEditor(${block.id}, '${this.escapeHtml(block.name)}')"` : 
+                <h3 class="bc-block-title ${canEditQuestions || canViewContent ? 'bc-clickable-title' : ''}"
+                    ${canEditQuestions ? `onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.loadQuestionsEditor(${block.id}, '${this.escapeHtml(block.name)}')"` :
                       canViewContent ? `onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.loadBlockContentViewer(${block.id}, '${this.escapeHtml(block.name)}')"` : ''}>
                     ${this.escapeHtml(block.name)}
                 </h3>
                 <span class="bc-block-status ${statusClass}">${statusText}</span>
             </div>
-            
+
             <div class="bc-block-description">
                 ${block.description ? this.escapeHtml(block.description) : 'Sin descripción'}
             </div>
-            
+
             ${block.metadata ? `
             <div class="bc-block-metadata">
                 <span class="bc-metadata-item">
@@ -918,7 +923,7 @@ class BloquesCreados {
                 </span>
             </div>
             ` : ''}
-            
+
             <div style="margin-bottom: 16px; font-size: 13px; color: #CBD5E1; display: flex; flex-wrap: wrap; gap: 8px 16px;">
                 <span><strong>Preguntas:</strong> ${block.stats?.totalQuestions || 0}</span>
                 <span><strong>Temas:</strong> ${block.stats?.totalTopics || 0}</span>
@@ -926,8 +931,15 @@ class BloquesCreados {
                 <span><strong>Autor:</strong> ${block.creatorNickname || 'Usuario'}</span>
                 ${this.displayMode === 'loaded' && (block.stats?.loadedAt || block.loadedAt) ? `<span><strong>Cargado:</strong> ${new Date(block.stats?.loadedAt || block.loadedAt).toLocaleDateString()}</span>` : ''}
             </div>
-            
+
             <div class="bc-block-actions">
+                ${showContactButton ? `
+                    <button class="bc-action-btn bc-btn-view"
+                            onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.contactCreator(${block.id}, '${this.escapeHtml(block.name)}', '${this.escapeHtml(block.creatorNickname || 'Creador')}')"
+                            title="Contactar al creador">
+                        💬 Contactar
+                    </button>
+                ` : ''}
                 ${this.displayMode === 'loaded' ? `
                     <button class="bc-action-btn bc-btn-delete" onclick="window.bloquesCreados_${this.containerId.replace(/[-]/g, '_')}?.unloadBlock(${block.id}, '${this.escapeHtml(block.name)}')">Eliminar</button>
                 ` : `
@@ -935,7 +947,7 @@ class BloquesCreados {
                 `}
             </div>
         `;
-        
+
         return card;
     }
 
@@ -972,11 +984,11 @@ class BloquesCreados {
         try {
             console.log('Removing block from loaded blocks:', blockId);
             await apiDataService.unloadBlockForUser(blockId);
-            
+
             // Remove from local data and refresh display
             this.blocksData = this.blocksData.filter(block => block.id !== blockId);
             this.displayBlocks();
-            
+
             // 🔄 También refrescar la sección "Bloques Disponibles" si existe
             console.log('🔄 [BloquesCreados] Refreshing Available Blocks after unload...');
             if (typeof refreshAvailableBlocksAfterUnload === 'function') {
@@ -988,12 +1000,18 @@ class BloquesCreados {
             } else {
                 console.log('ℹ️ No available blocks refresh function found');
             }
-            
+
             alert('Bloque eliminado de tu lista correctamente');
         } catch (error) {
             console.error('Error removing block from loaded blocks:', error);
             alert('Error al eliminar el bloque de tu lista: ' + error.message);
         }
+    }
+
+    contactCreator(blockId, blockName, creatorNickname) {
+        console.log('Opening contact form for block:', blockId, blockName, creatorNickname);
+        // Abrir formulario de soporte con tipo 'block'
+        window.open(`support-form.html?type=block&blockId=${blockId}&blockName=${encodeURIComponent(blockName)}&creatorName=${encodeURIComponent(creatorNickname)}`, '_blank');
     }
 
     showLoading(show) {
