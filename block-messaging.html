@@ -477,6 +477,9 @@
     </div>
 
     <script>
+        // Backend URL configuration
+        const API_BASE_URL = 'https://playtest-backend.onrender.com/api';
+
         let conversations = [];
         let selectedTicketId = null;
         let messages = [];
@@ -500,9 +503,10 @@
         async function loadConversations() {
             try {
                 // Cargar tickets de tipo 'block'
-                const response = await fetch('/api/communication/tickets?originType=block', {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('playtest_auth_token');
+                const response = await fetch(`${API_BASE_URL}/communication/tickets?originType=block`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
@@ -575,9 +579,10 @@
 
         async function loadMessages(ticketId) {
             try {
-                const response = await fetch(`/api/communication/tickets/${ticketId}/messages`, {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('playtest_auth_token');
+                const response = await fetch(`${API_BASE_URL}/communication/tickets/${ticketId}/messages`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
@@ -646,10 +651,11 @@
             }
 
             try {
-                const response = await fetch(`/api/communication/tickets/${selectedTicketId}/messages`, {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('playtest_auth_token');
+                const response = await fetch(`${API_BASE_URL}/communication/tickets/${selectedTicketId}/messages`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
