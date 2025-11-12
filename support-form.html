@@ -510,8 +510,26 @@
                 return;
             }
 
+            // Obtener información adicional de URL params
+            const urlParams = new URLSearchParams(window.location.search);
+            const blockName = urlParams.get('blockName');
+            const creatorName = urlParams.get('creatorName');
+
             try {
-                // Obtener información del bloque
+                // Si tenemos el nombre del bloque en params, usarlo inmediatamente
+                if (blockName) {
+                    document.getElementById('form-title').textContent = 'Contactar al Creador del Bloque';
+                    document.getElementById('form-subtitle').textContent = `Bloque: ${blockName}`;
+
+                    document.getElementById('info-message').innerHTML = `
+                        <strong>💬 Mensaje al Creador del Bloque</strong><br>
+                        Estás enviando un mensaje sobre el bloque <strong>"${blockName}"</strong>${creatorName ? ` creado por <strong>${creatorName}</strong>` : ''}.<br><br>
+                        Puedes reportar problemas, hacer sugerencias o solicitar aclaraciones sobre el contenido del bloque.<br><br>
+                        <em>El creador del bloque recibirá tu mensaje y podrá responder en el sistema de tickets.</em>
+                    `;
+                }
+
+                // Intentar obtener información completa del bloque desde el backend
                 const response = await fetch(`/api/blocks/${blockId}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -521,23 +539,27 @@
 
                 if (response.ok) {
                     const block = await response.json();
-                    
-                    document.getElementById('form-title').textContent = 'Reportar Problema del Bloque';
-                    document.getElementById('form-subtitle').textContent = `Bloque: ${block.name}`;
-                    
-                    document.getElementById('info-message').innerHTML = `
-                        <strong>📝 Problema de Bloque Específico</strong><br>
-                        Este formulario es para problemas específicos del bloque <strong>"${block.name}"</strong> 
-                        (preguntas incorrectas, contenido, sugerencias, etc.).<br><br>
-                        Si tu problema es <strong>técnico general del programa</strong> (bugs, errores de sistema, etc.), 
-                        <span class="redirect-link" onclick="redirectToGlobalSupport()">usa el botón 'Soporte Técnico' del menú principal</span>.
-                    `;
-                } else {
+
+                    // Solo actualizar si no teníamos la info en params
+                    if (!blockName) {
+                        document.getElementById('form-title').textContent = 'Contactar al Creador del Bloque';
+                        document.getElementById('form-subtitle').textContent = `Bloque: ${block.name}`;
+
+                        document.getElementById('info-message').innerHTML = `
+                            <strong>💬 Mensaje al Creador del Bloque</strong><br>
+                            Estás enviando un mensaje sobre el bloque <strong>"${block.name}"</strong>${block.creatorNickname ? ` creado por <strong>${block.creatorNickname}</strong>` : ''}.<br><br>
+                            Puedes reportar problemas, hacer sugerencias o solicitar aclaraciones sobre el contenido del bloque.<br><br>
+                            <em>El creador del bloque recibirá tu mensaje y podrá responder en el sistema de tickets.</em>
+                        `;
+                    }
+                } else if (!blockName) {
                     throw new Error('Bloque no encontrado');
                 }
             } catch (error) {
                 console.error('Error cargando bloque:', error);
-                showError('Error al cargar información del bloque');
+                if (!blockName) {
+                    showError('Error al cargar información del bloque');
+                }
             }
         }
 
