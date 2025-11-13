@@ -573,6 +573,9 @@
 
     <script src="api-data-service.js"></script>
     <script>
+        // Backend URL configuration
+        const API_BASE_URL = 'https://playtest-backend.onrender.com/api';
+
         // Variables globales
         let currentPage = 1;
         let totalPages = 1;
@@ -617,9 +620,11 @@
 
         async function loadCategories() {
             try {
-                const response = await fetch('/api/support/categories', {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('playtest_auth_token');
+                // Load categories for both types (global and block)
+                const response = await fetch(`${API_BASE_URL}/communication/categories/global`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
@@ -653,9 +658,10 @@
                     ...currentFilters
                 });
 
-                const response = await fetch(`/api/support/tickets?${params}`, {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('playtest_auth_token');
+                const response = await fetch(`${API_BASE_URL}/communication/tickets?${params}`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
@@ -681,9 +687,10 @@
 
         async function loadNotifications() {
             try {
-                const response = await fetch('/api/support/notifications?limit=5&is_read=false', {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('playtest_auth_token');
+                const response = await fetch(`${API_BASE_URL}/communication/notifications?limit=5&unreadOnly=true`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
@@ -699,40 +706,20 @@
 
         async function loadStats() {
             try {
-                // Primero intentar obtener estadísticas del backend
-                const response = await fetch('/api/support/dashboard/metrics', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const stats = {
-                        total: data.metrics.open_tickets + data.metrics.today_resolved || 0,
-                        open: data.metrics.open_tickets || 0,
-                        resolved: data.metrics.today_resolved || 0,
-                        avgResponseTime: data.metrics.avg_resolution_hours ? 
-                            `${data.metrics.avg_resolution_hours.toFixed(1)}h` : 'N/A'
-                    };
-                    updateStatsDisplay(stats);
-                } else {
-                    // Fallback: calcular desde los tickets cargados
-                    const stats = {
-                        total: tickets.length,
-                        open: tickets.filter(t => ['open', 'in_progress'].includes(t.status)).length,
-                        resolved: tickets.filter(t => ['resolved', 'closed'].includes(t.status)).length,
-                        avgResponseTime: 'N/A'
-                    };
-                    updateStatsDisplay(stats);
-                }
-            } catch (error) {
-                console.error('Error cargando estadísticas:', error);
-                // Fallback en caso de error
+                // Calculate stats from loaded tickets (backend metrics endpoint not available)
                 const stats = {
                     total: tickets.length,
                     open: tickets.filter(t => ['open', 'in_progress'].includes(t.status)).length,
                     resolved: tickets.filter(t => ['resolved', 'closed'].includes(t.status)).length,
+                    avgResponseTime: 'N/A'
+                };
+                updateStatsDisplay(stats);
+            } catch (error) {
+                console.error('Error calculando estadísticas:', error);
+                const stats = {
+                    total: 0,
+                    open: 0,
+                    resolved: 0,
                     avgResponseTime: 'N/A'
                 };
                 updateStatsDisplay(stats);
@@ -1010,10 +997,11 @@
         async function handleNotificationClick(notificationId, actionUrl) {
             try {
                 // Marcar como leída
-                await fetch(`/api/support/notifications/${notificationId}`, {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('playtest_auth_token');
+                await fetch(`${API_BASE_URL}/communication/notifications/${notificationId}`, {
                     method: 'PATCH',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ is_read: true })
@@ -1034,10 +1022,11 @@
 
         async function markAllNotificationsRead() {
             try {
-                await fetch('/api/support/notifications/mark-all-read', {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('playtest_auth_token');
+                await fetch(`${API_BASE_URL}/communication/notifications/mark-all-read`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
