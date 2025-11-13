@@ -10,6 +10,7 @@
     "create-admin": "node create-admin-principal.js",
     "deploy": "node deploy.js",
     "init-db": "node init-render-db.js",
+    "fix-db": "node fix-render-database.js",
     "build": "npm install",
     "postbuild": "npm run init-db",
     "docs:schema": "node scripts/generate-schema-docs-from-sql.js",
