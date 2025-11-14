@@ -20,11 +20,15 @@ class MessagingWebSocketHandler {
             try {
                 const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.split(' ')[1];
 
+                console.log('🔐 WebSocket auth attempt - Token present:', !!token);
+
                 if (!token) {
+                    console.error('🔒 WebSocket auth failed: No token provided');
                     return next(new Error('Authentication error: No token provided'));
                 }
 
                 const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                console.log('✅ JWT verified, userId:', decoded.userId);
 
                 // Verificar que el usuario existe
                 const result = await pool.query(
@@ -33,6 +37,7 @@ class MessagingWebSocketHandler {
                 );
 
                 if (result.rows.length === 0) {
+                    console.error('🔒 WebSocket auth failed: User not found in database, userId:', decoded.userId);
                     return next(new Error('Authentication error: User not found'));
                 }
 
@@ -44,8 +49,13 @@ class MessagingWebSocketHandler {
                 next();
 
             } catch (error) {
-                console.error('🔒 Socket authentication failed:', error.message);
-                next(new Error('Authentication error'));
+                console.error('🔒 Socket authentication failed:', error);
+                if (error.name === 'JsonWebTokenError') {
+                    return next(new Error('Authentication error: Invalid token'));
+                } else if (error.name === 'TokenExpiredError') {
+                    return next(new Error('Authentication error: Token expired'));
+                }
+                next(new Error('Authentication error: ' + error.message));
             }
         });
 

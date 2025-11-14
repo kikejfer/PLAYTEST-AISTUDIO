@@ -4,6 +4,38 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Get current user info (alias for /profile)
+router.get('/me', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT u.id, u.nickname, u.email, u.first_name, u.last_name, u.avatar_url, u.created_at
+      FROM users u
+      WHERE u.id = $1
+    `, [req.user.id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = result.rows[0];
+
+    res.json({
+      id: user.id,
+      nickname: user.nickname,
+      email: user.email,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      avatarUrl: user.avatar_url,
+      createdAt: user.created_at,
+      roles: req.user.roles || []
+    });
+
+  } catch (error) {
+    console.error('Error fetching current user:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Get user profile
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
