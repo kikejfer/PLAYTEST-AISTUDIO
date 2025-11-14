@@ -98,6 +98,68 @@ async function checkBlockMetadataColumns() {
 }
 
 /**
+ * Check if direct messaging tables exist
+ */
+async function checkDirectMessagingTables() {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT
+        EXISTS (
+          SELECT FROM information_schema.tables
+          WHERE table_schema = 'public' AND table_name = 'conversations'
+        ) as has_conversations,
+        EXISTS (
+          SELECT FROM information_schema.tables
+          WHERE table_schema = 'public' AND table_name = 'direct_messages'
+        ) as has_direct_messages
+    `);
+
+    const row = result.rows[0];
+    return row.has_conversations && row.has_direct_messages;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Apply direct messaging migration
+ */
+async function applyDirectMessagingMigration() {
+  const client = await pool.connect();
+  try {
+    console.log('📝 Applying direct messaging system migration...');
+
+    const migrationPath = path.join(__dirname, 'migrations', '001-add-direct-messaging.sql');
+
+    if (!fs.existsSync(migrationPath)) {
+      console.warn('⚠️  Direct messaging migration file not found, skipping...');
+      return false;
+    }
+
+    const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
+
+    await client.query(migrationSQL);
+
+    console.log('✅ Direct messaging system migration applied successfully');
+    return true;
+  } catch (error) {
+    // Ignore "already exists" errors
+    if (error.message.includes('already exists') ||
+        error.message.includes('ya existe') ||
+        error.code === '42P07') {
+      console.log('⚠️  Some direct messaging tables already exist (OK)');
+      return true;
+    }
+
+    console.error('❌ Error applying direct messaging migration:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
  * Create block_assignments table if it doesn't exist
  */
 async function createBlockAssignmentsTable() {
@@ -260,6 +322,18 @@ async function runMigrations() {
       await addBlockMetadataColumns();
     } else {
       console.log('✅ Block metadata columns already exist');
+    }
+
+    // Check and apply direct messaging migration if needed
+    const directMessagingTablesExist = await checkDirectMessagingTables();
+
+    if (!directMessagingTablesExist) {
+      console.log('⚠️  Direct messaging tables not found');
+      console.log('   - conversations table not found');
+      console.log('   - direct_messages table not found');
+      await applyDirectMessagingMigration();
+    } else {
+      console.log('✅ Direct messaging system already configured');
     }
 
     console.log('✨ Database schema is up to date');
