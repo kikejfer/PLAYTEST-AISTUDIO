@@ -98,7 +98,7 @@ async function checkBlockMetadataColumns() {
 }
 
 /**
- * Check if direct messaging tables exist
+ * Check if direct messaging tables and functions exist
  */
 async function checkDirectMessagingTables() {
   const client = await pool.connect();
@@ -112,11 +112,15 @@ async function checkDirectMessagingTables() {
         EXISTS (
           SELECT FROM information_schema.tables
           WHERE table_schema = 'public' AND table_name = 'direct_messages'
-        ) as has_direct_messages
+        ) as has_direct_messages,
+        EXISTS (
+          SELECT FROM pg_proc
+          WHERE proname = 'cleanup_expired_typing_status'
+        ) as has_cleanup_function
     `);
 
     const row = result.rows[0];
-    return row.has_conversations && row.has_direct_messages;
+    return row.has_conversations && row.has_direct_messages && row.has_cleanup_function;
   } finally {
     client.release();
   }
@@ -328,9 +332,8 @@ async function runMigrations() {
     const directMessagingTablesExist = await checkDirectMessagingTables();
 
     if (!directMessagingTablesExist) {
-      console.log('⚠️  Direct messaging tables not found');
-      console.log('   - conversations table not found');
-      console.log('   - direct_messages table not found');
+      console.log('⚠️  Direct messaging system not fully configured');
+      console.log('   - Checking for missing tables or functions...');
       await applyDirectMessagingMigration();
     } else {
       console.log('✅ Direct messaging system already configured');
