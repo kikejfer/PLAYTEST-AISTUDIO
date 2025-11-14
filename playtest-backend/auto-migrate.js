@@ -127,6 +127,68 @@ async function checkDirectMessagingTables() {
 }
 
 /**
+ * Check if teachers panel tables exist
+ */
+async function checkTeachersPanelTables() {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT
+        EXISTS (
+          SELECT FROM information_schema.tables
+          WHERE table_schema = 'public' AND table_name = 'teacher_classes'
+        ) as has_teacher_classes,
+        EXISTS (
+          SELECT FROM information_schema.tables
+          WHERE table_schema = 'public' AND table_name = 'class_enrollments'
+        ) as has_class_enrollments
+    `);
+
+    const row = result.rows[0];
+    return row.has_teacher_classes && row.has_class_enrollments;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Apply teachers panel schema
+ */
+async function applyTeachersPanelSchema() {
+  const client = await pool.connect();
+  try {
+    console.log('📝 Applying teachers panel schema...');
+
+    const schemaPath = path.join(__dirname, 'database-schema-teachers-panel.sql');
+
+    if (!fs.existsSync(schemaPath)) {
+      console.warn('⚠️  Teachers panel schema file not found, skipping...');
+      return false;
+    }
+
+    const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
+
+    await client.query(schemaSQL);
+
+    console.log('✅ Teachers panel schema applied successfully');
+    return true;
+  } catch (error) {
+    // Ignore "already exists" errors
+    if (error.message.includes('already exists') ||
+        error.message.includes('ya existe') ||
+        error.code === '42P07') {
+      console.log('⚠️  Some teachers panel tables already exist (OK)');
+      return true;
+    }
+
+    console.error('❌ Error applying teachers panel schema:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
  * Apply direct messaging migration
  */
 async function applyDirectMessagingMigration() {
@@ -326,6 +388,18 @@ async function runMigrations() {
       await addBlockMetadataColumns();
     } else {
       console.log('✅ Block metadata columns already exist');
+    }
+
+    // Check and apply teachers panel schema if needed
+    const teachersPanelTablesExist = await checkTeachersPanelTables();
+
+    if (!teachersPanelTablesExist) {
+      console.log('⚠️  Teachers panel tables not found');
+      console.log('   - teacher_classes table not found');
+      console.log('   - class_enrollments table not found');
+      await applyTeachersPanelSchema();
+    } else {
+      console.log('✅ Teachers panel already configured');
     }
 
     // Check and apply direct messaging migration if needed
