@@ -127,6 +127,47 @@ async function checkDirectMessagingTables() {
 }
 
 /**
+ * Check if users table has avatar_url column
+ */
+async function checkUsersAvatarColumn() {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.columns
+        WHERE table_name = 'users' AND column_name = 'avatar_url'
+      ) as has_avatar_url
+    `);
+    return result.rows[0].has_avatar_url;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Add avatar_url column to users table
+ */
+async function addUsersAvatarColumn() {
+  const client = await pool.connect();
+  try {
+    console.log('📝 Adding avatar_url column to users table...');
+
+    await client.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500);
+    `);
+
+    console.log('✅ avatar_url column added successfully');
+    return true;
+  } catch (error) {
+    console.error('❌ Error adding avatar_url column:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
  * Check if teachers panel tables exist
  */
 async function checkTeachersPanelTables() {
@@ -377,6 +418,16 @@ async function runMigrations() {
       await applyCommunicationSchema();
     } else {
       console.log('✅ Communication system already configured');
+    }
+
+    // Check and add avatar_url column to users table if needed
+    const avatarColumnExists = await checkUsersAvatarColumn();
+
+    if (!avatarColumnExists) {
+      console.log('⚠️  users.avatar_url column not found');
+      await addUsersAvatarColumn();
+    } else {
+      console.log('✅ users.avatar_url column already exists');
     }
 
     // Check and add block metadata columns if needed
