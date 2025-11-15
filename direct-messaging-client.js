@@ -146,13 +146,7 @@ class DirectMessagingClient {
     async loadConversations(searchQuery = '') {
         try {
             console.log('📋 Loading conversations...');
-            const response = await this.apiService.apiCall('/messages/conversations?limit=100');
-
-            if (!response.ok) {
-                throw new Error('Error loading conversations');
-            }
-
-            const data = await response.json();
+            const data = await this.apiService.apiCall('/messages/conversations?limit=100');
             this.conversations = data.conversations || [];
 
             console.log('✅ Loaded', this.conversations.length, 'conversations');
@@ -238,8 +232,7 @@ class DirectMessagingClient {
             this.currentConversation = conversation;
 
             // Cargar detalles completos de la conversación
-            const response = await this.apiService.apiCall(`/messages/conversations/${conversationId}`);
-            const convDetails = await response.json();
+            const convDetails = await this.apiService.apiCall(`/messages/conversations/${conversationId}`);
 
             // Unirse a la sala de WebSocket
             this.socket.emit('join_conversation', conversationId);
@@ -269,15 +262,9 @@ class DirectMessagingClient {
             const params = new URLSearchParams({ limit: 50 });
             if (beforeId) params.append('beforeId', beforeId);
 
-            const response = await this.apiService.apiCall(
+            const data = await this.apiService.apiCall(
                 `/messages/conversations/${conversationId}/messages?${params}`
             );
-
-            if (!response.ok) {
-                throw new Error('Error loading messages');
-            }
-
-            const data = await response.json();
             const messages = data.messages || [];
 
             console.log('✅ Loaded', messages.length, 'messages');
@@ -392,12 +379,7 @@ class DirectMessagingClient {
                 }
             );
 
-            if (!response.ok) {
-                throw new Error('Error sending message');
-            }
-
-            const data = await response.json();
-            console.log('✅ Message sent:', data);
+            console.log('✅ Message sent:', response);
 
             // Limpiar input
             const input = document.getElementById('message-input');
@@ -637,8 +619,7 @@ class DirectMessagingClient {
      */
     async updateUnreadCount() {
         try {
-            const response = await this.apiService.apiCall('/messages/unread-count');
-            const data = await response.json();
+            const data = await this.apiService.apiCall('/messages/unread-count');
 
             // Actualizar badge en el header
             const badge = document.getElementById('messages-unread-badge');

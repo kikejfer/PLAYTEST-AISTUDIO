@@ -137,8 +137,62 @@ router.get('/conversations', authenticateToken, async (req, res) => {
     const { limit = 50, offset = 0, includeArchived = false } = req.query;
 
     try {
+        // Query to get conversations with user details and last message info
         const result = await pool.query(
-            'SELECT * FROM get_user_conversations($1, $2, $3)',
+            `SELECT DISTINCT ON (c.id)
+                c.id,
+                c.user1_id,
+                c.user2_id,
+                c.context_type,
+                c.context_id,
+                c.is_active,
+                c.created_at,
+                c.updated_at,
+                c.is_archived_by_user1,
+                c.is_archived_by_user2,
+                -- Other user info
+                CASE
+                    WHEN c.user1_id = $1 THEN u2.id
+                    ELSE u1.id
+                END as other_user_id,
+                CASE
+                    WHEN c.user1_id = $1 THEN u2.nickname
+                    ELSE u1.nickname
+                END as other_user_nickname,
+                CASE
+                    WHEN c.user1_id = $1 THEN u2.avatar_url
+                    ELSE u1.avatar_url
+                END as other_user_avatar,
+                -- Last message info
+                lm.message_text as last_message_text,
+                lm.created_at as last_message_time,
+                lm.sender_id as last_message_sender_id,
+                -- Unread count
+                (SELECT COUNT(*) FROM direct_messages
+                 WHERE conversation_id = c.id
+                 AND recipient_id = $1
+                 AND is_read = false
+                 AND deleted_at IS NULL) as unread_count
+            FROM conversations c
+            JOIN users u1 ON c.user1_id = u1.id
+            JOIN users u2 ON c.user2_id = u2.id
+            LEFT JOIN LATERAL (
+                SELECT message_text, created_at, sender_id
+                FROM direct_messages
+                WHERE conversation_id = c.id
+                AND deleted_at IS NULL
+                ORDER BY created_at DESC
+                LIMIT 1
+            ) lm ON true
+            WHERE (c.user1_id = $1 OR c.user2_id = $1)
+            AND c.is_active = true
+            ${includeArchived === 'false' || !includeArchived ? `
+            AND NOT (
+                (c.user1_id = $1 AND c.is_archived_by_user1 = true)
+                OR (c.user2_id = $1 AND c.is_archived_by_user2 = true)
+            )` : ''}
+            ORDER BY c.id, lm.created_at DESC NULLS LAST
+            LIMIT $2 OFFSET $3`,
             [userId, parseInt(limit), parseInt(offset)]
         );
 
@@ -201,12 +255,40 @@ router.post('/conversations', authenticateToken, validateContextPermissions, asy
     }
 
     try {
-        const result = await pool.query(
-            'SELECT get_or_create_conversation($1, $2, $3, $4) as conversation_id',
+        // Check if conversation already exists (check both orderings)
+        const existingConv = await pool.query(
+            `SELECT id FROM conversations
+             WHERE (
+                 (user1_id = $1 AND user2_id = $2)
+                 OR (user1_id = $2 AND user2_id = $1)
+             )
+             AND context_type = $3
+             AND (
+                 ($4::INTEGER IS NULL AND context_id IS NULL)
+                 OR context_id = $4
+             )
+             AND is_active = true
+             LIMIT 1`,
             [userId, recipientId, contextType, contextId || null]
         );
 
-        const conversationId = result.rows[0].conversation_id;
+        let conversationId;
+
+        if (existingConv.rows.length > 0) {
+            // Conversation already exists
+            conversationId = existingConv.rows[0].id;
+        } else {
+            // Create new conversation (ensure user1_id < user2_id for consistency)
+            const [user1Id, user2Id] = userId < recipientId ? [userId, recipientId] : [recipientId, userId];
+
+            const newConv = await pool.query(
+                `INSERT INTO conversations (user1_id, user2_id, context_type, context_id)
+                 VALUES ($1, $2, $3, $4)
+                 RETURNING id`,
+                [user1Id, user2Id, contextType, contextId || null]
+            );
+            conversationId = newConv.rows[0].id;
+        }
 
         // Obtener detalles completos de la conversación
         const convDetails = await pool.query(
@@ -315,18 +397,34 @@ router.get('/conversations/:conversationId/messages', authenticateToken, validat
         if (beforeId) {
             // Paginación por cursor (mejor para scroll infinito)
             query = `
-                SELECT * FROM direct_messages_complete
-                WHERE conversation_id = $1 AND id < $2
-                ORDER BY created_at DESC
+                SELECT
+                    dm.*,
+                    u_sender.nickname as sender_nickname,
+                    u_sender.avatar_url as sender_avatar,
+                    u_recipient.nickname as recipient_nickname,
+                    u_recipient.avatar_url as recipient_avatar
+                FROM direct_messages dm
+                JOIN users u_sender ON dm.sender_id = u_sender.id
+                JOIN users u_recipient ON dm.recipient_id = u_recipient.id
+                WHERE dm.conversation_id = $1 AND dm.id < $2 AND dm.deleted_at IS NULL
+                ORDER BY dm.created_at DESC
                 LIMIT $3
             `;
             params = [conversationId, beforeId, parseInt(limit)];
         } else {
             // Paginación por offset
             query = `
-                SELECT * FROM direct_messages_complete
-                WHERE conversation_id = $1
-                ORDER BY created_at DESC
+                SELECT
+                    dm.*,
+                    u_sender.nickname as sender_nickname,
+                    u_sender.avatar_url as sender_avatar,
+                    u_recipient.nickname as recipient_nickname,
+                    u_recipient.avatar_url as recipient_avatar
+                FROM direct_messages dm
+                JOIN users u_sender ON dm.sender_id = u_sender.id
+                JOIN users u_recipient ON dm.recipient_id = u_recipient.id
+                WHERE dm.conversation_id = $1 AND dm.deleted_at IS NULL
+                ORDER BY dm.created_at DESC
                 LIMIT $2 OFFSET $3
             `;
             params = [conversationId, parseInt(limit), parseInt(offset)];
@@ -430,7 +528,16 @@ router.post('/conversations/:conversationId/messages',
 
             // Obtener mensaje completo con información de usuarios
             const completeMessage = await pool.query(
-                'SELECT * FROM direct_messages_complete WHERE id = $1',
+                `SELECT
+                    dm.*,
+                    u_sender.nickname as sender_nickname,
+                    u_sender.avatar_url as sender_avatar,
+                    u_recipient.nickname as recipient_nickname,
+                    u_recipient.avatar_url as recipient_avatar
+                FROM direct_messages dm
+                JOIN users u_sender ON dm.sender_id = u_sender.id
+                JOIN users u_recipient ON dm.recipient_id = u_recipient.id
+                WHERE dm.id = $1`,
                 [message.id]
             );
 
@@ -480,13 +587,17 @@ router.patch('/:messageId/read', authenticateToken, async (req, res) => {
     const userId = req.user.id;
 
     try {
+        // Update message as read only if the current user is the recipient
         const result = await pool.query(
-            'SELECT mark_message_as_read($1, $2) as success',
+            `UPDATE direct_messages
+             SET is_read = true, read_at = NOW()
+             WHERE id = $1 AND recipient_id = $2 AND is_read = false
+             RETURNING id`,
             [messageId, userId]
         );
 
-        if (!result.rows[0].success) {
-            return res.status(403).json({ error: 'No tienes permiso para marcar este mensaje' });
+        if (result.rows.length === 0) {
+            return res.status(403).json({ error: 'No tienes permiso para marcar este mensaje o ya está marcado' });
         }
 
         res.json({ message: 'Mensaje marcado como leído' });
@@ -506,14 +617,21 @@ router.patch('/conversations/:conversationId/read-all', authenticateToken, valid
     const userId = req.user.id;
 
     try {
+        // Mark all unread messages in this conversation as read
         const result = await pool.query(
-            'SELECT mark_conversation_as_read($1, $2) as count',
+            `UPDATE direct_messages
+             SET is_read = true, read_at = NOW()
+             WHERE conversation_id = $1
+             AND recipient_id = $2
+             AND is_read = false
+             AND deleted_at IS NULL
+             RETURNING id`,
             [conversationId, userId]
         );
 
         res.json({
-            message: `${result.rows[0].count} mensajes marcados como leídos`,
-            count: result.rows[0].count
+            message: `${result.rows.length} mensajes marcados como leídos`,
+            count: result.rows.length
         });
 
     } catch (error) {
