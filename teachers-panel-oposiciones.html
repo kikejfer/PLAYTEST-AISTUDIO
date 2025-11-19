@@ -12,6 +12,7 @@
     <script src="api-data-service.js"></script>
     <script src="navigation-service.js"></script>
     <script src="bloques-creados-component.js"></script>
+    <script src="bloques-manager-backup.js"></script>
     <script src="alumnos-manager.js"></script>
     <script src="estadisticas-manager.js"></script>
     <script src="torneos-manager.js"></script>
@@ -595,6 +596,9 @@
             <div id="tab-bloques" class="tab-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h2 style="color: #E0E1DD; font-size: 22px;">Bloques de Temas</h2>
+                    <button class="btn btn-primary" onclick="BloquesManager.openModalCrearBloque()" id="btn-crear-bloque" style="display: none;">
+                        ➕ Nuevo Bloque
+                    </button>
                 </div>
 
                 <div style="margin-bottom: 20px;">
@@ -1123,7 +1127,16 @@
 
         async function cargarBloques() {
             const oposicionId = document.getElementById('select-oposicion-bloques').value;
-            if (!oposicionId) return;
+            const btnCrearBloque = document.getElementById('btn-crear-bloque');
+
+            if (!oposicionId) {
+                // Ocultar botón si no hay oposición seleccionada
+                if (btnCrearBloque) btnCrearBloque.style.display = 'none';
+                return;
+            }
+
+            // Mostrar botón cuando hay oposición seleccionada
+            if (btnCrearBloque) btnCrearBloque.style.display = 'inline-flex';
 
             await BloquesManager.cargarBloques(oposicionId);
         }
