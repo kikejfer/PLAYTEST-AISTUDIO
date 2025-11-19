@@ -139,6 +139,9 @@ const BloquesManager = {
                             <span class="badge badge-info">Orden: ${bloque.orden}</span>
                         </div>
                         <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-primary btn-sm" onclick="PreguntasUploader.openModal(${bloque.id}, '${bloque.nombre.replace(/'/g, "\\'")}')">
+                                📤 Cargar Preguntas
+                            </button>
                             <button class="btn btn-secondary btn-sm" onclick="BloquesManager.openModalEditarBloque(${bloque.id})">
                                 ✏️ Editar
                             </button>
