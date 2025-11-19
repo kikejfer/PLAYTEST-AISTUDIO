@@ -3,13 +3,7 @@
  * Maneja inscripciones, clases y bloques asignados
  */
 
-const { Pool } = require('pg');
-
-// Configurar pool de conexiones
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
+const { pool } = require('../database/connection');
 
 /**
  * Obtener clases en las que el estudiante está inscrito
