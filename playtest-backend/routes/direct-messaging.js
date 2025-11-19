@@ -247,7 +247,8 @@ router.post('/conversations', authenticateToken, validateContextPermissions, asy
         return res.status(400).json({ error: 'recipientId es requerido' });
     }
 
-    if (!contextType || !['class', 'block', 'general'].includes(contextType)) {
+    const validContextTypes = ['class', 'block', 'general', 'teacher_student', 'creator_player', 'support'];
+    if (!contextType || !validContextTypes.includes(contextType)) {
         return res.status(400).json({ error: 'contextType inválido' });
     }
 
