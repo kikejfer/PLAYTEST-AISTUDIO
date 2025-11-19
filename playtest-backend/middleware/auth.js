@@ -20,9 +20,37 @@ const authenticateToken = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log('✅ Token verified successfully for userId:', decoded.userId);
 
-    // Verify user still exists and session is valid
+    // Verify user still exists and get roles from database
     const result = await pool.query(
-      'SELECT u.id, u.nickname FROM users u WHERE u.id = $1',
+      `SELECT u.id, u.nickname,
+        COALESCE(
+          (SELECT json_agg(json_build_object(
+            'code', CASE r.name
+              WHEN 'administrador_principal' THEN 'ADP'
+              WHEN 'administrador_secundario' THEN 'ADS'
+              WHEN 'profesor' THEN 'PRF'
+              WHEN 'creador' THEN 'CRD'
+              WHEN 'jugador' THEN 'PJG'
+              WHEN 'soporte_tecnico' THEN 'SPT'
+              ELSE r.name
+            END,
+            'name', r.name,
+            'panel', CASE r.name
+              WHEN 'administrador_principal' THEN 'PAP'
+              WHEN 'administrador_secundario' THEN 'PAS'
+              WHEN 'profesor' THEN 'PPF'
+              WHEN 'creador' THEN 'PCC'
+              WHEN 'jugador' THEN 'PJG'
+              WHEN 'soporte_tecnico' THEN 'PST'
+              ELSE 'PJG'
+            END
+          ))
+          FROM user_roles ur
+          JOIN roles r ON ur.role_id = r.id
+          WHERE ur.user_id = u.id
+          ), '[]'::json
+        ) as roles
+      FROM users u WHERE u.id = $1`,
       [decoded.userId]
     );
 
@@ -31,12 +59,12 @@ const authenticateToken = async (req, res, next) => {
       return res.status(401).json({ error: 'Invalid token' });
     }
 
-    console.log('✅ User found:', result.rows[0].nickname);
+    console.log('✅ User found:', result.rows[0].nickname, 'with roles:', result.rows[0].roles);
 
     req.user = {
       id: decoded.userId,
       nickname: result.rows[0].nickname,
-      roles: decoded.roles || []
+      roles: result.rows[0].roles || []
     };
 
     next();
