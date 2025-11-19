@@ -14,24 +14,21 @@ async function getMyClasses(studentId) {
     try {
         const query = `
             SELECT
-                tc.id,
-                tc.class_name,
-                tc.class_code,
-                tc.subject,
-                tc.grade_level,
-                tc.academic_year,
-                tc.semester,
-                tc.class_room,
+                o.id,
+                o.nombre_oposicion as class_name,
+                o.codigo_acceso as class_code,
+                o.descripcion as subject,
+                o.academic_year,
                 u.nickname as teacher_name,
                 ce.enrollment_date,
                 ce.enrollment_status
             FROM class_enrollments ce
-            JOIN teacher_classes tc ON ce.class_id = tc.id
-            JOIN users u ON tc.teacher_id = u.id
-            WHERE ce.student_id = $1
+            JOIN oposiciones o ON ce.oposicion_id = o.id
+            JOIN users u ON o.profesor_id = u.id
+            WHERE ce.alumno_id = $1
               AND ce.enrollment_status = 'active'
-              AND tc.is_active = true
-            ORDER BY tc.created_at DESC;
+              AND o.is_active = true
+            ORDER BY o.created_at DESC;
         `;
 
         const result = await pool.query(query, [studentId]);
@@ -54,11 +51,11 @@ async function enrollInClass(studentId, classCode) {
     try {
         await client.query('BEGIN');
 
-        // 1. Buscar la clase por código
+        // 1. Buscar la oposición por código
         const classQuery = `
-            SELECT id, class_name, max_students, teacher_id, end_date
-            FROM teacher_classes
-            WHERE class_code = $1
+            SELECT id, nombre_oposicion as class_name, profesor_id, end_date
+            FROM oposiciones
+            WHERE codigo_acceso = $1
               AND is_active = true
               AND (end_date IS NULL OR end_date >= CURRENT_DATE);
         `;
@@ -74,7 +71,7 @@ async function enrollInClass(studentId, classCode) {
         // 2. Verificar si ya está inscrito
         const enrollmentCheck = `
             SELECT id FROM class_enrollments
-            WHERE class_id = $1 AND student_id = $2;
+            WHERE oposicion_id = $1 AND alumno_id = $2;
         `;
 
         const existingEnrollment = await client.query(enrollmentCheck, [classData.id, studentId]);
@@ -83,49 +80,14 @@ async function enrollInClass(studentId, classCode) {
             throw new Error('Ya estás inscrito en esta clase');
         }
 
-        // 3. Verificar límite de estudiantes
-        if (classData.max_students) {
-            const countQuery = `
-                SELECT COUNT(*) as count
-                FROM class_enrollments
-                WHERE class_id = $1 AND enrollment_status = 'active';
-            `;
-
-            const countResult = await client.query(countQuery, [classData.id]);
-
-            if (parseInt(countResult.rows[0].count) >= classData.max_students) {
-                throw new Error('La clase ha alcanzado su capacidad máxima');
-            }
-        }
-
-        // 4. Crear inscripción
+        // 3. Crear inscripción
         const enrollQuery = `
-            INSERT INTO class_enrollments (class_id, student_id, enrollment_status, enrollment_date)
+            INSERT INTO class_enrollments (oposicion_id, alumno_id, enrollment_status, enrollment_date)
             VALUES ($1, $2, 'active', CURRENT_DATE)
             RETURNING id, enrollment_date;
         `;
 
         const enrollResult = await client.query(enrollQuery, [classData.id, studentId]);
-
-        // 5. Crear perfil académico del estudiante (opcional, se puede crear después)
-        // La tabla no tiene restricción UNIQUE, así que verificamos si ya existe
-        const checkProfileQuery = `
-            SELECT id FROM student_academic_profiles
-            WHERE student_id = $1 AND class_id = $2;
-        `;
-
-        const existingProfile = await client.query(checkProfileQuery, [studentId, classData.id]);
-
-        if (existingProfile.rows.length === 0) {
-            const profileQuery = `
-                INSERT INTO student_academic_profiles (
-                    student_id,
-                    class_id
-                )
-                VALUES ($1, $2);
-            `;
-            await client.query(profileQuery, [studentId, classData.id]);
-        }
 
         await client.query('COMMIT');
 
