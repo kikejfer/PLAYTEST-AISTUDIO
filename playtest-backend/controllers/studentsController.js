@@ -118,8 +118,8 @@ async function getAssignedBlocks(studentId) {
                 b.id as block_id,
                 b.name as block_name,
                 b.description as block_description,
-                tc.class_name,
-                tc.class_code,
+                o.nombre_oposicion as class_name,
+                o.codigo_acceso as class_code,
                 u.nickname as teacher_name,
                 ca.due_date,
                 ca.created_at as assigned_at,
@@ -136,9 +136,9 @@ async function getAssignedBlocks(studentId) {
                     ELSE 0
                 END as due_date_sort
             FROM content_assignments ca
-            JOIN teacher_classes tc ON ca.class_id = tc.id
-            JOIN users u ON tc.teacher_id = u.id
-            JOIN class_enrollments ce ON ce.class_id = tc.id AND ce.student_id = $1
+            JOIN oposiciones o ON ca.oposicion_id = o.id
+            JOIN users u ON o.profesor_id = u.id
+            JOIN class_enrollments ce ON ce.oposicion_id = o.id AND ce.alumno_id = $1
             CROSS JOIN LATERAL unnest(ca.block_ids) as block_id
             JOIN blocks b ON b.id = block_id
             LEFT JOIN user_loaded_blocks ulb ON ulb.user_id = $1 AND ulb.block_id = b.id
