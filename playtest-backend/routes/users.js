@@ -353,19 +353,38 @@ router.post('/blocks/:blockId', authenticateToken, async (req, res) => {
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT u.id, u.nickname, u.email, u.created_at, u.role,
-        up.loaded_blocks
+      SELECT u.id, u.nickname, u.email, u.created_at,
+        up.loaded_blocks,
+        (
+          SELECT r.name
+          FROM user_roles ur
+          JOIN roles r ON ur.role_id = r.id
+          WHERE ur.user_id = u.id
+          ORDER BY r.id ASC
+          LIMIT 1
+        ) as role_name
       FROM users u
       LEFT JOIN user_profiles up ON u.id = up.user_id
       WHERE u.id != $1
       ORDER BY u.nickname
     `, [req.user.id]);
 
+    // Mapear nombres de roles a códigos
+    const roleMap = {
+      'administrador_principal': 'ADP',
+      'administrador_secundario': 'ADS',
+      'profesor': 'PRF',
+      'creador': 'CRD',
+      'jugador': 'PJG',
+      'soporte_tecnico': 'SPT'
+    };
+
     const users = result.rows.map(user => ({
       id: user.id,
       nickname: user.nickname,
       email: user.email,
-      role: user.role || 'PJG',
+      role: roleMap[user.role_name] || 'PJG',
+      roleName: user.role_name,
       createdAt: user.created_at,
       loadedBlocks: user.loaded_blocks || []
     }));
