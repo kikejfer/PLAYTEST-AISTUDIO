@@ -78,8 +78,9 @@ async function validateContextPermissions(req, res, next) {
     const { recipientId, contextType, contextId } = req.body;
     const userId = req.user.id;
 
-    // Si es contexto general, permitir (cualquiera puede chatear con cualquiera)
-    if (contextType === 'general') {
+    // Si es contexto general, teacher_student, creator_player o support, permitir
+    if (contextType === 'general' || contextType === 'teacher_student' ||
+        contextType === 'creator_player' || contextType === 'support') {
         return next();
     }
 
