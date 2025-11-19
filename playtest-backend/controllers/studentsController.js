@@ -206,30 +206,31 @@ async function loadBlock(studentId, blockId) {
  * @param {number} classId - ID de la clase (opcional)
  * @returns {Promise<Array>} Progreso del estudiante
  */
-async function getStudentProgress(studentId, classId = null) {
+async function getStudentProgress(studentId, oposicionId = null) {
     try {
         const query = `
             SELECT
                 ap.id,
                 b.name as block_name,
-                tc.class_name,
+                o.nombre_oposicion as class_name,
                 ap.date_started,
                 ap.date_completed,
-                ap.time_spent_minutes,
+                ap.time_spent,
                 ap.percentage,
-                ap.status,
+                ap.grade as status,
                 ap.attempts_count,
-                ap.best_score
+                ap.score as best_score
             FROM academic_progress ap
             JOIN content_assignments ca ON ap.assignment_id = ca.id
-            JOIN blocks b ON ca.block_id = b.id
-            JOIN teacher_classes tc ON ap.class_id = tc.id
-            WHERE ap.student_id = $1
-              ${classId ? 'AND ap.class_id = $2' : ''}
+            JOIN oposiciones o ON ap.oposicion_id = o.id
+            CROSS JOIN LATERAL unnest(ca.block_ids) as block_id
+            JOIN blocks b ON b.id = block_id
+            WHERE ap.alumno_id = $1
+              ${oposicionId ? 'AND ap.oposicion_id = $2' : ''}
             ORDER BY ap.date_started DESC;
         `;
 
-        const params = classId ? [studentId, classId] : [studentId];
+        const params = oposicionId ? [studentId, oposicionId] : [studentId];
         const result = await pool.query(query, params);
         return result.rows;
     } catch (error) {
