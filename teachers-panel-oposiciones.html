@@ -13,6 +13,7 @@
     <script src="navigation-service.js"></script>
     <script src="bloques-creados-component.js"></script>
     <script src="bloques-manager-backup.js"></script>
+    <script src="preguntas-uploader.js"></script>
     <script src="alumnos-manager.js"></script>
     <script src="estadisticas-manager.js"></script>
     <script src="torneos-manager.js"></script>
@@ -532,6 +533,51 @@
         }
 
         /* ====================================
+           PREGUNTAS UPLOADER
+           ==================================== */
+        .upload-section {
+            background: rgba(13, 27, 42, 0.5);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #415A77;
+        }
+
+        .file-drop-zone {
+            border: 2px dashed #415A77;
+            border-radius: 8px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-drop-zone:hover {
+            border-color: #60A5FA;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .upload-status {
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        .btn-success {
+            background: #10B981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-success:disabled {
+            background: #415A77;
+            cursor: not-allowed;
+        }
+
+        /* ====================================
            RESPONSIVE
            ==================================== */
         @media (max-width: 768px) {
@@ -718,7 +764,7 @@
 
     <!-- MODAL: Crear Bloque -->
     <div id="modal-crear-bloque" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
                 <h2 class="modal-title">📦 Nuevo Bloque de Temas</h2>
                 <button class="close-modal" onclick="BloquesManager.closeModal('modal-crear-bloque')">&times;</button>
@@ -733,9 +779,46 @@
                     <textarea class="form-input" name="descripcion" placeholder="Descripción del bloque..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Tiempo Estimado (días)</label>
-                    <input type="number" class="form-input" name="tiempo_estimado_dias" placeholder="14" value="14" min="1" required>
+                    <label class="form-label">Observaciones</label>
+                    <textarea class="form-input" name="observaciones" placeholder="Observaciones adicionales..."></textarea>
                 </div>
+
+                <!-- Metadatos del bloque -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Bloque</label>
+                        <select class="form-input" name="tipo_id" id="select-tipo-bloque">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nivel Educativo</label>
+                        <select class="form-input" name="nivel_id" id="select-nivel-bloque">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Carácter</label>
+                        <select class="form-input" name="estado_id" id="select-estado-bloque">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Tiempo Estimado (días)</label>
+                        <input type="number" class="form-input" name="tiempo_estimado_dias" placeholder="14" value="14" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Visibilidad</label>
+                        <select class="form-input" name="is_public">
+                            <option value="true">🌐 Público</option>
+                            <option value="false">🔒 Privado</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
                     <button type="button" class="btn btn-secondary" onclick="BloquesManager.closeModal('modal-crear-bloque')">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Crear Bloque</button>
@@ -893,6 +976,22 @@
                     <div class="spinner"></div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Cargar Preguntas -->
+    <div id="modal-cargar-preguntas" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-preguntas-title">📤 Cargar Preguntas</h2>
+                <button class="close-modal" onclick="PreguntasUploader.closeModal()">&times;</button>
+            </div>
+
+            <div id="preguntas-upload-content">
+                <!-- Contenido dinámico renderizado por PreguntasUploader -->
+            </div>
+
+            <div id="preguntas-upload-status" class="upload-status"></div>
         </div>
     </div>
 
