@@ -718,7 +718,7 @@
 
     <!-- MODAL: Crear Bloque -->
     <div id="modal-crear-bloque" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
                 <h2 class="modal-title">📦 Nuevo Bloque de Temas</h2>
                 <button class="close-modal" onclick="BloquesManager.closeModal('modal-crear-bloque')">&times;</button>
@@ -733,9 +733,46 @@
                     <textarea class="form-input" name="descripcion" placeholder="Descripción del bloque..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Tiempo Estimado (días)</label>
-                    <input type="number" class="form-input" name="tiempo_estimado_dias" placeholder="14" value="14" min="1" required>
+                    <label class="form-label">Observaciones</label>
+                    <textarea class="form-input" name="observaciones" placeholder="Observaciones adicionales..."></textarea>
                 </div>
+
+                <!-- Metadatos del bloque -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Bloque</label>
+                        <select class="form-input" name="tipo_id" id="select-tipo-bloque">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nivel Educativo</label>
+                        <select class="form-input" name="nivel_id" id="select-nivel-bloque">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Carácter</label>
+                        <select class="form-input" name="estado_id" id="select-estado-bloque">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Tiempo Estimado (días)</label>
+                        <input type="number" class="form-input" name="tiempo_estimado_dias" placeholder="14" value="14" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Visibilidad</label>
+                        <select class="form-input" name="is_public">
+                            <option value="true">🌐 Público</option>
+                            <option value="false">🔒 Privado</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
                     <button type="button" class="btn btn-secondary" onclick="BloquesManager.closeModal('modal-crear-bloque')">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Crear Bloque</button>

@@ -11,7 +11,58 @@ function getTokenBloques() {
 const BloquesManager = {
     oposicionActual: null,
     bloques: [],
+    metadata: { types: [], levels: [], states: [] },
     API_URL: 'https://playtest-backend.onrender.com/api',
+
+    /**
+     * Cargar metadatos de bloques (tipos, niveles, estados)
+     */
+    async cargarMetadata() {
+        try {
+            const response = await fetch(`${this.API_URL}/blocks/metadata`, {
+                headers: {
+                    'Authorization': `Bearer ${getTokenBloques()}`
+                }
+            });
+
+            if (!response.ok) throw new Error('Error cargando metadatos');
+
+            this.metadata = await response.json();
+            console.log('✅ Metadatos cargados:', this.metadata);
+
+            // Poblar los selectores
+            this.poblarSelectoresMetadata();
+
+        } catch (error) {
+            console.error('Error cargando metadatos:', error);
+        }
+    },
+
+    /**
+     * Poblar los selectores de metadatos en el modal
+     */
+    poblarSelectoresMetadata() {
+        // Tipo de bloque
+        const selectTipo = document.getElementById('select-tipo-bloque');
+        if (selectTipo && this.metadata.types) {
+            selectTipo.innerHTML = '<option value="">Seleccionar...</option>' +
+                this.metadata.types.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+        }
+
+        // Nivel educativo
+        const selectNivel = document.getElementById('select-nivel-bloque');
+        if (selectNivel && this.metadata.levels) {
+            selectNivel.innerHTML = '<option value="">Seleccionar...</option>' +
+                this.metadata.levels.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+        }
+
+        // Carácter/Estado
+        const selectEstado = document.getElementById('select-estado-bloque');
+        if (selectEstado && this.metadata.states) {
+            selectEstado.innerHTML = '<option value="">Seleccionar...</option>' +
+                this.metadata.states.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        }
+    },
 
     /**
      * Cargar bloques de una oposición
@@ -166,7 +217,14 @@ const BloquesManager = {
     /**
      * Abrir modal para crear bloque
      */
-    openModalCrearBloque() {
+    async openModalCrearBloque() {
+        // Cargar metadatos si no están cargados
+        if (this.metadata.types.length === 0) {
+            await this.cargarMetadata();
+        } else {
+            this.poblarSelectoresMetadata();
+        }
+
         const modal = document.getElementById('modal-crear-bloque');
         modal.classList.add('active');
         document.getElementById('form-crear-bloque').reset();
@@ -183,7 +241,12 @@ const BloquesManager = {
         const data = {
             nombre: formData.get('nombre'),
             descripcion: formData.get('descripcion'),
-            tiempo_estimado_dias: parseInt(formData.get('tiempo_estimado_dias')) || 14
+            observaciones: formData.get('observaciones') || '',
+            tiempo_estimado_dias: parseInt(formData.get('tiempo_estimado_dias')) || 14,
+            tipo_id: formData.get('tipo_id') ? parseInt(formData.get('tipo_id')) : null,
+            nivel_id: formData.get('nivel_id') ? parseInt(formData.get('nivel_id')) : null,
+            estado_id: formData.get('estado_id') ? parseInt(formData.get('estado_id')) : null,
+            isPublic: formData.get('is_public') === 'true'
         };
 
         try {
