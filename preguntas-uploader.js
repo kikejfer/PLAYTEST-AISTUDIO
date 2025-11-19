@@ -96,7 +96,7 @@ const PreguntasUploader = {
     /**
      * Abrir modal de carga de preguntas
      */
-    openModal(bloqueId, bloqueName) {
+    openModal(bloqueId, bloqueName, temas = []) {
         this.currentBloqueId = bloqueId;
         this.resetState();
 
@@ -106,8 +106,12 @@ const PreguntasUploader = {
             titleEl.textContent = `📤 Cargar Preguntas - ${bloqueName}`;
         }
 
-        // Cargar temas del bloque
-        this.cargarTemasBloque(bloqueId);
+        // Poblar selector de temas con los temas recibidos
+        const select = document.getElementById('select-tema-preguntas');
+        if (select) {
+            select.innerHTML = '<option value="">Seleccionar tema...</option>' +
+                temas.map(t => `<option value="${t.id}" data-nombre="${t.nombre}">${t.nombre}</option>`).join('');
+        }
 
         // Mostrar modal
         const modal = document.getElementById('modal-cargar-preguntas');
@@ -146,34 +150,6 @@ const PreguntasUploader = {
 
         // Mostrar vista inicial
         this.renderInitialView();
-    },
-
-    /**
-     * Cargar temas del bloque actual
-     */
-    async cargarTemasBloque(bloqueId) {
-        try {
-            const response = await fetch(`${this.API_URL}/bloques/${bloqueId}/temas`, {
-                headers: {
-                    'Authorization': `Bearer ${getTokenPreguntas()}`
-                }
-            });
-
-            if (!response.ok) throw new Error('Error cargando temas');
-
-            const data = await response.json();
-            const temas = data.temas || [];
-
-            // Poblar selector de temas
-            const select = document.getElementById('select-tema-preguntas');
-            if (select) {
-                select.innerHTML = '<option value="">Seleccionar tema...</option>' +
-                    temas.map(t => `<option value="${t.id}" data-nombre="${t.nombre}">${t.nombre}</option>`).join('');
-            }
-
-        } catch (error) {
-            console.error('Error cargando temas:', error);
-        }
     },
 
     /**

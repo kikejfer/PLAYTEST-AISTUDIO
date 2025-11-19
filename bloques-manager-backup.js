@@ -139,7 +139,7 @@ const BloquesManager = {
                             <span class="badge badge-info">Orden: ${bloque.orden}</span>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn btn-primary btn-sm" onclick="PreguntasUploader.openModal(${bloque.id}, '${bloque.nombre.replace(/'/g, "\\'")}')">
+                            <button class="btn btn-primary btn-sm" onclick="PreguntasUploader.openModal(${bloque.id}, '${bloque.nombre.replace(/'/g, "\\'")}', ${JSON.stringify(temas).replace(/"/g, '&quot;')})">
                                 📤 Cargar Preguntas
                             </button>
                             <button class="btn btn-secondary btn-sm" onclick="BloquesManager.openModalEditarBloque(${bloque.id})">
@@ -284,7 +284,7 @@ const BloquesManager = {
         }
 
         try {
-            const response = await fetch(`${this.API_URL}/bloques/${bloqueId}`, {
+            const response = await fetch(`${this.API_URL}/oposiciones/bloques/${bloqueId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${getTokenBloques()}`
@@ -327,7 +327,7 @@ const BloquesManager = {
         };
 
         try {
-            const response = await fetch(`${this.API_URL}/bloques/${bloqueId}/temas`, {
+            const response = await fetch(`${this.API_URL}/oposiciones/bloques/${bloqueId}/temas`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -358,7 +358,7 @@ const BloquesManager = {
         }
 
         try {
-            const response = await fetch(`${this.API_URL}/temas/${temaId}`, {
+            const response = await fetch(`${this.API_URL}/oposiciones/temas/${temaId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${getTokenBloques()}`
