@@ -972,9 +972,9 @@
 
             // Filtrar por contexto/rol
             if (contextType === 'teacher_student') {
-                // Mostrar profesores si soy alumno, o alumnos si soy profesor
+                // Mostrar profesores y jugadores (alumnos)
                 filtered = filtered.filter(u =>
-                    u.role === 'PRF' || u.role === 'ALU'
+                    u.role === 'PRF' || u.role === 'PJG'
                 );
             } else if (contextType === 'creator_player') {
                 filtered = filtered.filter(u =>
