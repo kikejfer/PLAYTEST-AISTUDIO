@@ -974,13 +974,11 @@
             if (contextType === 'teacher_student') {
                 // Mostrar profesores si soy alumno, o alumnos si soy profesor
                 filtered = filtered.filter(u =>
-                    u.role === 'PRF' || u.role === 'ALU' ||
-                    (u.roles && (u.roles.includes('PRF') || u.roles.includes('ALU')))
+                    u.role === 'PRF' || u.role === 'ALU'
                 );
             } else if (contextType === 'creator_player') {
                 filtered = filtered.filter(u =>
-                    u.role === 'CRD' || u.role === 'PJG' ||
-                    (u.roles && (u.roles.includes('CRD') || u.roles.includes('PJG')))
+                    u.role === 'CRD' || u.role === 'PJG'
                 );
             }
 

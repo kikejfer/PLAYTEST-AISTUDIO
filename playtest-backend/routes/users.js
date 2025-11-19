@@ -354,11 +354,7 @@ router.get('/', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT u.id, u.nickname, u.email, u.created_at, u.role,
-        up.loaded_blocks,
-        COALESCE(
-          (SELECT array_agg(ur.role_code) FROM user_roles ur WHERE ur.user_id = u.id),
-          ARRAY[]::text[]
-        ) as roles
+        up.loaded_blocks
       FROM users u
       LEFT JOIN user_profiles up ON u.id = up.user_id
       WHERE u.id != $1
@@ -369,8 +365,7 @@ router.get('/', authenticateToken, async (req, res) => {
       id: user.id,
       nickname: user.nickname,
       email: user.email,
-      role: user.role,
-      roles: user.roles || [],
+      role: user.role || 'PJG',
       createdAt: user.created_at,
       loadedBlocks: user.loaded_blocks || []
     }));
