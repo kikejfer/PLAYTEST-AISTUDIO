@@ -32,13 +32,12 @@ const PreguntasUploader = {
      * Pregunta##Respuesta A##@@Respuesta Correcta##Respuesta C##Respuesta D
      * Siguiente línea: Explicación (opcional)
      *
-     * FORMATO 2 (Numerado con letras):
+     * FORMATO 2 (Numerado con letras y v para correcta):
      * ¿Pregunta?
      * A) Respuesta 1
      * B) Respuesta 2
-     * C) Respuesta 3
+     * vC) Respuesta correcta
      * D) Respuesta 4
-     * Correct: C (o Correcta: C)
      * Explicación (opcional)
      */
     parseQuestionsFromFile(text, tema) {
@@ -100,75 +99,69 @@ const PreguntasUploader = {
                     tema: cleanTema
                 });
             }
-            // FORMATO 2: Pregunta con respuestas A), B), C), D)
-            else if (line.length > 0 && !line.match(/^[A-Za-z]\)/)) {
+            // FORMATO 2: Pregunta con respuestas vA), A), B), vC), D)
+            else if (line.length > 0 && !line.match(/^v?[A-Za-z]\)/)) {
                 // Esta es una pregunta potencial
                 const questionText = line;
                 const answers = [];
                 let j = i + 1;
-                let correctLetter = null;
                 let explicacion = "";
 
-                // Recoger respuestas A), B), C), D), etc.
-                const answerPattern = /^([A-Za-z])\)\s*(.+)$/;
+                // Recoger respuestas A), B), vC), D), etc.
+                // Patrón: opcionalmente "v" + letra + ")" + texto
+                const answerPattern = /^(v?)([A-Za-z])\)\s*(.+)$/;
                 while (j < lines.length) {
                     const nextLine = lines[j].trim();
 
-                    // Verificar si es una respuesta con formato A), B), etc.
+                    // Verificar si es una respuesta con formato [v]A), [v]B), etc.
                     const answerMatch = nextLine.match(answerPattern);
                     if (answerMatch) {
-                        const letter = answerMatch[1].toUpperCase();
-                        const answerText = answerMatch[2].trim();
-                        answers.push({ letter, text: answerText });
+                        const hasV = answerMatch[1] === 'v';
+                        const letter = answerMatch[2].toUpperCase();
+                        const answerText = answerMatch[3].trim();
+                        answers.push({ letter, text: answerText, isCorrect: hasV });
                         j++;
                     }
-                    // Verificar si indica la respuesta correcta
-                    else if (nextLine.match(/^(Correct|Correcta|Respuesta correcta):\s*([A-Za-z])/i)) {
-                        const match = nextLine.match(/^(Correct|Correcta|Respuesta correcta):\s*([A-Za-z])/i);
-                        correctLetter = match[2].toUpperCase();
+                    // Línea vacía - puede ser fin de pregunta o antes de explicación
+                    else if (nextLine.length === 0) {
                         j++;
-
-                        // La siguiente línea podría ser la explicación
-                        if (j < lines.length) {
-                            const explLine = lines[j].trim();
-                            if (explLine.length > 0 && !explLine.match(answerPattern) && !explLine.match(/^(Correct|Correcta)/i)) {
-                                explicacion = explLine;
-                                j++;
-                            }
+                        // Si aún no tenemos suficientes respuestas, continuar
+                        if (answers.length < 2) {
+                            continue;
                         }
                         break;
                     }
-                    // Línea vacía o fin de pregunta
-                    else if (nextLine.length === 0) {
+                    // Línea no vacía que no es respuesta - es la explicación
+                    else if (answers.length >= 2) {
+                        explicacion = nextLine;
                         j++;
                         break;
                     }
+                    // No es respuesta y no tenemos suficientes respuestas - no es formato válido
                     else {
                         break;
                     }
                 }
 
-                // Validar que tenemos al menos 2 respuestas y una letra correcta
-                if (answers.length >= 2 && correctLetter) {
+                // Validar que tenemos al menos 2 respuestas y exactamente una correcta
+                const correctAnswers = answers.filter(a => a.isCorrect);
+                if (answers.length >= 2 && correctAnswers.length === 1) {
                     const respuestas = answers.map(ans => ({
                         textoRespuesta: ans.text,
-                        esCorrecta: ans.letter === correctLetter
+                        esCorrecta: ans.isCorrect
                     }));
 
-                    // Validar que la letra correcta existe en las respuestas
-                    if (respuestas.some(r => r.esCorrecta)) {
-                        questions.push({
-                            textoPregunta: questionText,
-                            dificultad: 1,
-                            respuestas: respuestas,
-                            explicacionRespuesta: explicacion,
-                            tema: cleanTema
-                        });
-                        i = j;
-                        continue;
-                    } else {
-                        console.warn(`⚠️ Letra correcta ${correctLetter} no coincide con las respuestas: "${questionText.substring(0, 50)}..."`);
-                    }
+                    questions.push({
+                        textoPregunta: questionText,
+                        dificultad: 1,
+                        respuestas: respuestas,
+                        explicacionRespuesta: explicacion,
+                        tema: cleanTema
+                    });
+                    i = j;
+                    continue;
+                } else if (answers.length >= 2 && correctAnswers.length !== 1) {
+                    console.warn(`⚠️ Pregunta debe tener exactamente una respuesta con 'v': "${questionText.substring(0, 50)}..."`);
                 }
             }
             i++;
@@ -671,16 +664,15 @@ const PreguntasUploader = {
                     <ul style="font-size: 13px; color: #778DA9; padding-left: 20px; line-height: 1.8;">
                         <li>Pregunta en la primera línea</li>
                         <li>Respuestas con formato <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">A)</code>, <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">B)</code>, <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">C)</code>, <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">D)</code></li>
-                        <li>Línea <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">Correct: X</code> o <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">Correcta: X</code></li>
+                        <li>Marca la respuesta correcta con <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">v</code> delante de la letra (ejemplo: <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">vC)</code>)</li>
                         <li>Explicación en línea siguiente (opcional)</li>
                     </ul>
                     <div style="background: #0D1B2A; padding: 10px; border-radius: 6px; margin-top: 8px; font-family: monospace; font-size: 12px; color: #E0E1DD;">
                         ¿Cuál es la capital de Francia?<br>
                         A) Londres<br>
                         B) Berlín<br>
-                        C) París<br>
+                        vC) París<br>
                         D) Madrid<br>
-                        Correct: C<br>
                         París es la capital y mayor ciudad de Francia.
                     </div>
                 </div>
