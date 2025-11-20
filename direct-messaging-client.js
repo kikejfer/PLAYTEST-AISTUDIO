@@ -221,27 +221,30 @@ class DirectMessagingClient {
      */
     async selectConversation(conversationId) {
         try {
-            console.log('🔍 Selecting conversation:', conversationId);
+            // Convert to number to ensure proper comparison
+            const convId = typeof conversationId === 'string' ? parseInt(conversationId, 10) : conversationId;
+            console.log('🔍 Selecting conversation:', convId);
 
             // Buscar conversación en la lista
-            const conversation = this.conversations.find(c => c.id === conversationId);
+            const conversation = this.conversations.find(c => c.id === convId);
             if (!conversation) {
+                console.error('❌ Conversation not found. Available conversations:', this.conversations.map(c => c.id));
                 throw new Error('Conversation not found');
             }
 
             this.currentConversation = conversation;
 
             // Cargar detalles completos de la conversación
-            const convDetails = await this.apiService.apiCall(`/messages/conversations/${conversationId}`);
+            const convDetails = await this.apiService.apiCall(`/messages/conversations/${convId}`);
 
             // Unirse a la sala de WebSocket
-            this.socket.emit('join_conversation', conversationId);
+            this.socket.emit('join_conversation', convId);
 
             // Cargar mensajes
-            await this.loadMessages(conversationId);
+            await this.loadMessages(convId);
 
             // Marcar como leída
-            await this.markConversationAsRead(conversationId);
+            await this.markConversationAsRead(convId);
 
             // Renderizar UI del chat
             this.renderChatArea(convDetails);
@@ -250,7 +253,20 @@ class DirectMessagingClient {
             this.renderConversationsList(this.conversations);
         } catch (error) {
             console.error('❌ Error selecting conversation:', error);
-            this.showError('Error al abrir la conversación');
+
+            // Provide more specific error messages
+            if (error.message === 'Conversation not found') {
+                this.showError('La conversación no existe o ha sido eliminada. Recarga la página para actualizar la lista.');
+            } else if (error.status === 403) {
+                this.showError('No tienes permiso para acceder a esta conversación.');
+            } else if (error.status === 404) {
+                this.showError('Conversación no encontrada en el servidor. Recarga la página.');
+            } else {
+                this.showError('Error al abrir la conversación. Verifica tu conexión e intenta nuevamente.');
+            }
+
+            // Reload conversations to sync with server
+            await this.loadConversations();
         }
     }
 
@@ -391,7 +407,24 @@ class DirectMessagingClient {
             // El mensaje se agregará vía WebSocket event 'new_message'
         } catch (error) {
             console.error('❌ Error sending message:', error);
-            this.showError('Error al enviar el mensaje');
+            console.error('Error details:', {
+                status: error.status,
+                message: error.message,
+                conversationId: conversationId,
+                currentConversation: this.currentConversation
+            });
+
+            // Provide more specific error messages
+            if (error.status === 403) {
+                this.showError('No tienes permiso para enviar mensajes en esta conversación.');
+            } else if (error.status === 404) {
+                this.showError('La conversación ya no existe. Recarga la página.');
+                await this.loadConversations();
+            } else if (error.status === 400) {
+                this.showError('El mensaje no es válido. Verifica que no esté vacío y que no sea demasiado largo.');
+            } else {
+                this.showError('Error al enviar el mensaje. Verifica tu conexión e intenta nuevamente.');
+            }
         }
     }
 
