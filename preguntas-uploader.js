@@ -25,8 +25,21 @@ const PreguntasUploader = {
 
     /**
      * Parsear preguntas desde texto de archivo
-     * Formato: Pregunta##Respuesta A##@@Respuesta Correcta##Respuesta C##Respuesta D
+     *
+     * Soporta DOS formatos:
+     *
+     * FORMATO 1 (Separador ##):
+     * Pregunta##Respuesta A##@@Respuesta Correcta##Respuesta C##Respuesta D
      * Siguiente línea: Explicación (opcional)
+     *
+     * FORMATO 2 (Numerado con letras):
+     * ¿Pregunta?
+     * A) Respuesta 1
+     * B) Respuesta 2
+     * C) Respuesta 3
+     * D) Respuesta 4
+     * Correct: C (o Correcta: C)
+     * Explicación (opcional)
      */
     parseQuestionsFromFile(text, tema) {
         if (!tema || tema.trim() === '') {
@@ -43,6 +56,7 @@ const PreguntasUploader = {
         while (i < lines.length) {
             const line = lines[i].trim();
 
+            // FORMATO 1: Pregunta##Respuesta##@@Correcta##Respuesta
             if (line.includes('##')) {
                 const parts = line.split('##');
                 const questionText = parts[0].trim();
@@ -85,6 +99,77 @@ const PreguntasUploader = {
                     explicacionRespuesta: explicacionRespuesta,
                     tema: cleanTema
                 });
+            }
+            // FORMATO 2: Pregunta con respuestas A), B), C), D)
+            else if (line.length > 0 && !line.match(/^[A-Za-z]\)/)) {
+                // Esta es una pregunta potencial
+                const questionText = line;
+                const answers = [];
+                let j = i + 1;
+                let correctLetter = null;
+                let explicacion = "";
+
+                // Recoger respuestas A), B), C), D), etc.
+                const answerPattern = /^([A-Za-z])\)\s*(.+)$/;
+                while (j < lines.length) {
+                    const nextLine = lines[j].trim();
+
+                    // Verificar si es una respuesta con formato A), B), etc.
+                    const answerMatch = nextLine.match(answerPattern);
+                    if (answerMatch) {
+                        const letter = answerMatch[1].toUpperCase();
+                        const answerText = answerMatch[2].trim();
+                        answers.push({ letter, text: answerText });
+                        j++;
+                    }
+                    // Verificar si indica la respuesta correcta
+                    else if (nextLine.match(/^(Correct|Correcta|Respuesta correcta):\s*([A-Za-z])/i)) {
+                        const match = nextLine.match(/^(Correct|Correcta|Respuesta correcta):\s*([A-Za-z])/i);
+                        correctLetter = match[2].toUpperCase();
+                        j++;
+
+                        // La siguiente línea podría ser la explicación
+                        if (j < lines.length) {
+                            const explLine = lines[j].trim();
+                            if (explLine.length > 0 && !explLine.match(answerPattern) && !explLine.match(/^(Correct|Correcta)/i)) {
+                                explicacion = explLine;
+                                j++;
+                            }
+                        }
+                        break;
+                    }
+                    // Línea vacía o fin de pregunta
+                    else if (nextLine.length === 0) {
+                        j++;
+                        break;
+                    }
+                    else {
+                        break;
+                    }
+                }
+
+                // Validar que tenemos al menos 2 respuestas y una letra correcta
+                if (answers.length >= 2 && correctLetter) {
+                    const respuestas = answers.map(ans => ({
+                        textoRespuesta: ans.text,
+                        esCorrecta: ans.letter === correctLetter
+                    }));
+
+                    // Validar que la letra correcta existe en las respuestas
+                    if (respuestas.some(r => r.esCorrecta)) {
+                        questions.push({
+                            textoPregunta: questionText,
+                            dificultad: 1,
+                            respuestas: respuestas,
+                            explicacionRespuesta: explicacion,
+                            tema: cleanTema
+                        });
+                        i = j;
+                        continue;
+                    } else {
+                        console.warn(`⚠️ Letra correcta ${correctLetter} no coincide con las respuestas: "${questionText.substring(0, 50)}..."`);
+                    }
+                }
             }
             i++;
         }
@@ -564,15 +649,40 @@ const PreguntasUploader = {
 
             <!-- Guía de formato -->
             <div style="background: rgba(65, 90, 119, 0.2); padding: 15px; border-radius: 8px; margin-top: 20px;">
-                <h5 style="color: #60A5FA; margin-bottom: 10px;">📋 Formato del archivo</h5>
-                <ul style="font-size: 13px; color: #778DA9; padding-left: 20px; line-height: 1.8;">
-                    <li>Cada pregunta y sus respuestas separadas por <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">##</code></li>
-                    <li>Marca la respuesta correcta con <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">@@</code></li>
-                    <li>La explicación va en la línea siguiente (opcional)</li>
-                </ul>
-                <div style="background: #0D1B2A; padding: 10px; border-radius: 6px; margin-top: 10px; font-family: monospace; font-size: 12px; color: #E0E1DD;">
-                    Pregunta##Respuesta A##@@Respuesta B##Respuesta C##Respuesta D<br>
-                    Esta es la explicación de la pregunta
+                <h5 style="color: #60A5FA; margin-bottom: 10px;">📋 Formatos soportados</h5>
+
+                <!-- Formato 1 -->
+                <div style="margin-bottom: 15px;">
+                    <h6 style="color: #E0E1DD; margin-bottom: 8px; font-size: 14px;">Formato 1 - Separador ##</h6>
+                    <ul style="font-size: 13px; color: #778DA9; padding-left: 20px; line-height: 1.8;">
+                        <li>Cada pregunta y sus respuestas separadas por <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">##</code></li>
+                        <li>Marca la respuesta correcta con <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">@@</code></li>
+                        <li>La explicación va en la línea siguiente (opcional)</li>
+                    </ul>
+                    <div style="background: #0D1B2A; padding: 10px; border-radius: 6px; margin-top: 8px; font-family: monospace; font-size: 12px; color: #E0E1DD;">
+                        Pregunta##Respuesta A##@@Respuesta B##Respuesta C##Respuesta D<br>
+                        Esta es la explicación de la pregunta
+                    </div>
+                </div>
+
+                <!-- Formato 2 -->
+                <div>
+                    <h6 style="color: #E0E1DD; margin-bottom: 8px; font-size: 14px;">Formato 2 - Numerado con letras</h6>
+                    <ul style="font-size: 13px; color: #778DA9; padding-left: 20px; line-height: 1.8;">
+                        <li>Pregunta en la primera línea</li>
+                        <li>Respuestas con formato <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">A)</code>, <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">B)</code>, <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">C)</code>, <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">D)</code></li>
+                        <li>Línea <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">Correct: X</code> o <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">Correcta: X</code></li>
+                        <li>Explicación en línea siguiente (opcional)</li>
+                    </ul>
+                    <div style="background: #0D1B2A; padding: 10px; border-radius: 6px; margin-top: 8px; font-family: monospace; font-size: 12px; color: #E0E1DD;">
+                        ¿Cuál es la capital de Francia?<br>
+                        A) Londres<br>
+                        B) Berlín<br>
+                        C) París<br>
+                        D) Madrid<br>
+                        Correct: C<br>
+                        París es la capital y mayor ciudad de Francia.
+                    </div>
                 </div>
             </div>
         `;
