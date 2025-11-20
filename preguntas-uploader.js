@@ -33,7 +33,7 @@ const PreguntasUploader = {
      * Siguiente línea: Explicación (opcional)
      *
      * FORMATO 2 (Numerado con letras y * para correcta):
-     * ¿Pregunta?
+     * 1. ¿Pregunta?
      * A) Respuesta 1
      * B) Respuesta 2
      * *C) Respuesta correcta
@@ -100,9 +100,16 @@ const PreguntasUploader = {
                 });
             }
             // FORMATO 2: Pregunta con respuestas *A), A), B), *C), D)
-            else if (line.length > 0 && !line.match(/^\*?[A-Za-z]\)/)) {
-                // Esta es una pregunta potencial
-                const questionText = line;
+            // La pregunta debe empezar con número seguido de punto (ej: "1. Pregunta")
+            else if (line.match(/^\d+\.\s+/)) {
+                // Extraer el texto de la pregunta sin el número
+                const questionMatch = line.match(/^\d+\.\s+(.+)$/);
+                if (!questionMatch) {
+                    i++;
+                    continue;
+                }
+
+                const questionText = questionMatch[1].trim();
                 const answers = [];
                 let j = i + 1;
                 let explicacion = "";
@@ -131,7 +138,11 @@ const PreguntasUploader = {
                         }
                         break;
                     }
-                    // Línea no vacía que no es respuesta - es la explicación
+                    // Si encontramos otra pregunta (número + punto), terminamos
+                    else if (nextLine.match(/^\d+\.\s+/)) {
+                        break;
+                    }
+                    // Línea no vacía que no es respuesta ni pregunta - es la explicación
                     else if (answers.length >= 2) {
                         explicacion = nextLine;
                         j++;
@@ -662,13 +673,14 @@ const PreguntasUploader = {
                 <div>
                     <h6 style="color: #E0E1DD; margin-bottom: 8px; font-size: 14px;">Formato 2 - Numerado con letras</h6>
                     <ul style="font-size: 13px; color: #778DA9; padding-left: 20px; line-height: 1.8;">
-                        <li>Pregunta en la primera línea</li>
+                        <li>Pregunta debe empezar con número seguido de punto: <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">1.</code>, <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">2.</code>, etc.</li>
                         <li>Respuestas con formato <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">A)</code>, <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">B)</code>, <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">C)</code>, <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">D)</code></li>
                         <li>Marca la respuesta correcta con <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">*</code> delante de la letra (ejemplo: <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">*C)</code>)</li>
                         <li>Explicación en línea siguiente (opcional)</li>
+                        <li>Líneas sin número + punto se ignoran (comentarios)</li>
                     </ul>
                     <div style="background: #0D1B2A; padding: 10px; border-radius: 6px; margin-top: 8px; font-family: monospace; font-size: 12px; color: #E0E1DD;">
-                        ¿Cuál es la capital de Francia?<br>
+                        1. ¿Cuál es la capital de Francia?<br>
                         A) Londres<br>
                         B) Berlín<br>
                         *C) París<br>
