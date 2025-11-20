@@ -32,11 +32,11 @@ const PreguntasUploader = {
      * Pregunta##Respuesta A##@@Respuesta Correcta##Respuesta C##Respuesta D
      * Siguiente línea: Explicación (opcional)
      *
-     * FORMATO 2 (Numerado con letras y v para correcta):
+     * FORMATO 2 (Numerado con letras y * para correcta):
      * ¿Pregunta?
      * A) Respuesta 1
      * B) Respuesta 2
-     * vC) Respuesta correcta
+     * *C) Respuesta correcta
      * D) Respuesta 4
      * Explicación (opcional)
      */
@@ -99,27 +99,27 @@ const PreguntasUploader = {
                     tema: cleanTema
                 });
             }
-            // FORMATO 2: Pregunta con respuestas vA), A), B), vC), D)
-            else if (line.length > 0 && !line.match(/^v?[A-Za-z]\)/)) {
+            // FORMATO 2: Pregunta con respuestas *A), A), B), *C), D)
+            else if (line.length > 0 && !line.match(/^\*?[A-Za-z]\)/)) {
                 // Esta es una pregunta potencial
                 const questionText = line;
                 const answers = [];
                 let j = i + 1;
                 let explicacion = "";
 
-                // Recoger respuestas A), B), vC), D), etc.
-                // Patrón: opcionalmente "v" + letra + ")" + texto
-                const answerPattern = /^(v?)([A-Za-z])\)\s*(.+)$/;
+                // Recoger respuestas A), B), *C), D), etc.
+                // Patrón: opcionalmente "*" + letra + ")" + texto
+                const answerPattern = /^(\*?)([A-Za-z])\)\s*(.+)$/;
                 while (j < lines.length) {
                     const nextLine = lines[j].trim();
 
-                    // Verificar si es una respuesta con formato [v]A), [v]B), etc.
+                    // Verificar si es una respuesta con formato [*]A), [*]B), etc.
                     const answerMatch = nextLine.match(answerPattern);
                     if (answerMatch) {
-                        const hasV = answerMatch[1] === 'v';
+                        const hasAsterisk = answerMatch[1] === '*';
                         const letter = answerMatch[2].toUpperCase();
                         const answerText = answerMatch[3].trim();
-                        answers.push({ letter, text: answerText, isCorrect: hasV });
+                        answers.push({ letter, text: answerText, isCorrect: hasAsterisk });
                         j++;
                     }
                     // Línea vacía - puede ser fin de pregunta o antes de explicación
@@ -161,7 +161,7 @@ const PreguntasUploader = {
                     i = j;
                     continue;
                 } else if (answers.length >= 2 && correctAnswers.length !== 1) {
-                    console.warn(`⚠️ Pregunta debe tener exactamente una respuesta con 'v': "${questionText.substring(0, 50)}..."`);
+                    console.warn(`⚠️ Pregunta debe tener exactamente una respuesta con '*': "${questionText.substring(0, 50)}..."`);
                 }
             }
             i++;
@@ -664,14 +664,14 @@ const PreguntasUploader = {
                     <ul style="font-size: 13px; color: #778DA9; padding-left: 20px; line-height: 1.8;">
                         <li>Pregunta en la primera línea</li>
                         <li>Respuestas con formato <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">A)</code>, <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">B)</code>, <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">C)</code>, <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">D)</code></li>
-                        <li>Marca la respuesta correcta con <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">v</code> delante de la letra (ejemplo: <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">vC)</code>)</li>
+                        <li>Marca la respuesta correcta con <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">*</code> delante de la letra (ejemplo: <code style="background: #0D1B2A; padding: 2px 6px; border-radius: 4px;">*C)</code>)</li>
                         <li>Explicación en línea siguiente (opcional)</li>
                     </ul>
                     <div style="background: #0D1B2A; padding: 10px; border-radius: 6px; margin-top: 8px; font-family: monospace; font-size: 12px; color: #E0E1DD;">
                         ¿Cuál es la capital de Francia?<br>
                         A) Londres<br>
                         B) Berlín<br>
-                        vC) París<br>
+                        *C) París<br>
                         D) Madrid<br>
                         París es la capital y mayor ciudad de Francia.
                     </div>
