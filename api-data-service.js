@@ -107,10 +107,15 @@ class APIDataService {
         }
       }
       console.log('🔍 roleHeader being sent:', roleHeader);
-      
+
+      // Check if body is FormData to avoid setting Content-Type
+      // (browser will set it automatically with correct boundary)
+      const isFormData = options.body instanceof FormData;
+
       const defaultOptions = {
         headers: {
-          'Content-Type': 'application/json',
+          // Only set Content-Type if NOT FormData
+          ...(!isFormData && { 'Content-Type': 'application/json' }),
           ...(token && { 'Authorization': `Bearer ${token}` }),
           ...(roleHeader && { 'X-Current-Role': roleHeader })
         }
@@ -126,7 +131,11 @@ class APIDataService {
       };
 
       try {
-        // Debug logging for authorization issues
+        // Debug logging for FormData and authorization issues
+        if (isFormData) {
+          console.log('📤 FormData detected - Content-Type will be set by browser');
+          console.log('📤 Endpoint:', endpoint);
+        }
         if (endpoint.includes('/games/') || endpoint.includes('/questions')) {
           console.log('🔍 API Debug - URL:', url);
           console.log('🔍 API Debug - Token used:', token ? token.substring(0, 50) + '...' : 'null');
