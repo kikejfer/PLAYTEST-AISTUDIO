@@ -323,7 +323,6 @@ const PreguntasUploader = {
             }
 
             this.reviewedQuestions = parsedQuestions;
-            this.renderReviewView();
             this.updateStatus(`✅ ${parsedQuestions.length} preguntas cargadas`, 'success');
 
         } catch (error) {
@@ -331,6 +330,7 @@ const PreguntasUploader = {
             this.updateStatus(`❌ ${error.message}`, 'error');
         } finally {
             this.isLoading = false;
+            this.renderReviewView();
         }
     },
 
@@ -373,7 +373,6 @@ const PreguntasUploader = {
             }
 
             this.reviewedQuestions = allQuestions;
-            this.renderReviewView();
             this.updateStatus(`✅ ${allQuestions.length} preguntas de ${totalFiles} archivos`, 'success');
 
         } catch (error) {
@@ -381,6 +380,7 @@ const PreguntasUploader = {
             this.updateStatus(`❌ ${error.message}`, 'error');
         } finally {
             this.isLoading = false;
+            this.renderReviewView();
         }
     },
 
