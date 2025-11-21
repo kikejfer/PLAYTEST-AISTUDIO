@@ -454,13 +454,16 @@ const PreguntasUploader = {
             explicacionRespuesta: q.explicacionRespuesta || null
         }));
 
-        const response = await fetch(`${this.API_URL}/blocks/${bloqueId}/questions/bulk`, {
+        const response = await fetch(`${this.API_URL}/questions/bulk`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${getTokenPreguntas()}`
             },
-            body: JSON.stringify({ questions: formattedQuestions })
+            body: JSON.stringify({
+                blockId: bloqueId,
+                questions: formattedQuestions
+            })
         });
 
         if (!response.ok) {
