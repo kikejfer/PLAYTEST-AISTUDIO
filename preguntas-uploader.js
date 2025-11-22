@@ -420,7 +420,12 @@ const PreguntasUploader = {
                     await this.saveQuestionsToBlock(originalName, questions);
                 }
             } else {
-                // Modo individual - guardar al bloque actual
+                // Modo individual - validar que tenemos un bloqueId
+                if (!this.currentBloqueId) {
+                    throw new Error('No se ha seleccionado un bloque. Por favor, cierra el modal y vuelve a intentarlo.');
+                }
+
+                console.log('📦 Guardando preguntas al bloque ID:', this.currentBloqueId);
                 await this.saveQuestionsToBlockById(this.currentBloqueId, questionsToSave);
             }
 
@@ -486,7 +491,13 @@ const PreguntasUploader = {
             console.error('❌ Error del backend:', errorData);
 
             // El backend puede enviar 'error' o 'message'
-            const errorMessage = errorData.error || errorData.message || 'Error guardando preguntas';
+            let errorMessage = errorData.error || errorData.message || 'Error guardando preguntas';
+
+            // Si el error es "Block not found", dar más contexto
+            if (errorMessage.includes('Block not found')) {
+                errorMessage = `El bloque con ID ${bloqueId} no existe en la base de datos. Por favor, verifica que el bloque esté creado correctamente.`;
+            }
+
             throw new Error(errorMessage);
         }
 
