@@ -1,4 +1,4 @@
-# PLAYTEST - FASE 1: BASE DE DATOS Y BACKEND CORE
+# LUMIQUIZ - FASE 1: BASE DE DATOS Y BACKEND CORE
 
 ## 🎯 OBJETIVO DE ESTA FASE
 
@@ -11,9 +11,9 @@ Generar la estructura fundamental del proyecto:
 
 ---
 
-## 📋 DESCRIPCIÓN GENERAL DEL PROYECTO PLAYTEST
+## 📋 DESCRIPCIÓN GENERAL DEL PROYECTO LUMIQUIZ
 
-**PLAYTEST (LUMIQUIZ)** es una plataforma educativa gamificada de aprendizaje mediante quizzes con:
+**LUMIQUIZ** es una plataforma educativa gamificada de aprendizaje mediante quizzes con:
 - 9 modalidades de juego
 - Sistema de roles jerárquico no excluyente (5 roles)
 - Moneda virtual "Luminarias"
@@ -33,8 +33,8 @@ Generar la estructura fundamental del proyecto:
 ## 1. ESTRUCTURA DE CARPETAS DEL PROYECTO
 
 ```
-PLAYTEST-AISTUDIO/
-├── playtest-backend/
+LUMIQUIZ-AISTUDIO/
+├── lumiquiz-backend/
 │   ├── server.js
 │   ├── package.json
 │   ├── .env.example
@@ -510,13 +510,13 @@ $$ LANGUAGE plpgsql;
 
 ### 3.1 package.json
 
-**Archivo: `playtest-backend/package.json`**
+**Archivo: `lumiquiz-backend/package.json`**
 
 ```json
 {
-  "name": "playtest-backend",
+  "name": "lumiquiz-backend",
   "version": "1.0.0",
-  "description": "Backend API for PlayTest application",
+  "description": "Backend API for Lumiquiz application",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -548,7 +548,7 @@ $$ LANGUAGE plpgsql;
 
 ### 3.2 .env.example
 
-**Archivo: `playtest-backend/.env.example`**
+**Archivo: `lumiquiz-backend/.env.example`**
 
 ```env
 # Base de datos
@@ -562,7 +562,7 @@ NODE_ENV=production
 PORT=3000
 
 # Frontend URL (para CORS)
-FRONTEND_URL=https://playtest-frontend.onrender.com
+FRONTEND_URL=https://lumiquiz-frontend.onrender.com
 
 # Luminarias
 LUMINARIAS_INITIAL_BALANCE=200
@@ -607,7 +607,7 @@ ca.pem
 
 ## 4. BACKEND - CONEXIÓN A BASE DE DATOS
 
-**Archivo: `playtest-backend/database/connection.js`**
+**Archivo: `lumiquiz-backend/database/connection.js`**
 
 ```javascript
 const { Pool } = require('pg');
@@ -653,7 +653,7 @@ module.exports = {
 
 ### 5.1 Middleware de JWT
 
-**Archivo: `playtest-backend/middleware/auth.js`**
+**Archivo: `lumiquiz-backend/middleware/auth.js`**
 
 ```javascript
 const jwt = require('jsonwebtoken');
@@ -681,7 +681,7 @@ module.exports = { authenticateToken };
 
 ### 5.2 Middleware de Roles
 
-**Archivo: `playtest-backend/middleware/roles.js`**
+**Archivo: `lumiquiz-backend/middleware/roles.js`**
 
 ```javascript
 const db = require('../database/connection');
@@ -726,7 +726,7 @@ module.exports = { requireRole };
 
 ## 6. BACKEND - RUTAS DE AUTENTICACIÓN
 
-**Archivo: `playtest-backend/routes/auth.js`**
+**Archivo: `lumiquiz-backend/routes/auth.js`**
 
 ```javascript
 const express = require('express');
@@ -874,7 +874,7 @@ module.exports = router;
 
 ## 7. BACKEND - SERVER PRINCIPAL
 
-**Archivo: `playtest-backend/server.js`**
+**Archivo: `lumiquiz-backend/server.js`**
 
 ```javascript
 const express = require('express');
@@ -964,7 +964,7 @@ app.listen(PORT, () => {
 
 ## 8. SCRIPT DE MIGRACIÓN
 
-**Archivo: `playtest-backend/scripts/migrate.js`**
+**Archivo: `lumiquiz-backend/scripts/migrate.js`**
 
 ```javascript
 const fs = require('fs');
@@ -1014,7 +1014,7 @@ migrate();
 **Archivo: `README.md`**
 
 ```markdown
-# PLAYTEST / LUMIQUIZ
+# LUMIQUIZ
 
 Plataforma educativa gamificada de aprendizaje mediante quizzes.
 
@@ -1031,7 +1031,7 @@ Esta fase incluye:
 ## Instalación
 
 ```bash
-cd playtest-backend
+cd lumiquiz-backend
 npm install
 ```
 
@@ -1077,14 +1077,14 @@ npm start
 ## ✅ CHECKLIST DE ARCHIVOS GENERADOS EN FASE 1
 
 - [ ] `database-schema.sql` - Schema completo de PostgreSQL
-- [ ] `playtest-backend/package.json` - Dependencias
-- [ ] `playtest-backend/.env.example` - Variables de entorno
-- [ ] `playtest-backend/server.js` - Servidor principal
-- [ ] `playtest-backend/database/connection.js` - Conexión DB
-- [ ] `playtest-backend/middleware/auth.js` - Middleware JWT
-- [ ] `playtest-backend/middleware/roles.js` - Middleware de roles
-- [ ] `playtest-backend/routes/auth.js` - Rutas de autenticación
-- [ ] `playtest-backend/scripts/migrate.js` - Script de migración
+- [ ] `lumiquiz-backend/package.json` - Dependencias
+- [ ] `lumiquiz-backend/.env.example` - Variables de entorno
+- [ ] `lumiquiz-backend/server.js` - Servidor principal
+- [ ] `lumiquiz-backend/database/connection.js` - Conexión DB
+- [ ] `lumiquiz-backend/middleware/auth.js` - Middleware JWT
+- [ ] `lumiquiz-backend/middleware/roles.js` - Middleware de roles
+- [ ] `lumiquiz-backend/routes/auth.js` - Rutas de autenticación
+- [ ] `lumiquiz-backend/scripts/migrate.js` - Script de migración
 - [ ] `.gitignore` - Archivos ignorados
 - [ ] `README.md` - Documentación
 
