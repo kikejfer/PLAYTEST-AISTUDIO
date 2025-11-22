@@ -1,8 +1,8 @@
-# PLAYTEST - GENERACIÓN COMPLETA DEL PROYECTO EN 5 FASES
+# LUMIQUIZ - GENERACIÓN COMPLETA DEL PROYECTO EN 5 FASES
 
 ## 🎯 OBJETIVO GLOBAL
 
-Vas a generar **TODOS los archivos** necesarios para recrear completamente el proyecto **PLAYTEST/LUMIQUIZ**, una plataforma educativa gamificada de aprendizaje mediante quizzes.
+Vas a generar **TODOS los archivos** necesarios para recrear completamente el proyecto **LUMIQUIZ**, una plataforma educativa gamificada de aprendizaje mediante quizzes.
 
 Este proyecto se ha dividido en **5 fases sucesivas** para evitar exceder el límite de tokens de modelos de IA. Debes ejecutar cada fase en orden secuencial.
 
@@ -10,7 +10,7 @@ Este proyecto se ha dividido en **5 fases sucesivas** para evitar exceder el lí
 
 ## 📋 DESCRIPCIÓN GENERAL DEL PROYECTO
 
-**PLAYTEST (LUMIQUIZ)** es una plataforma educativa completa que incluye:
+**LUMIQUIZ** es una plataforma educativa completa que incluye:
 
 ### Características Principales:
 - ✅ **9 modalidades de juego** (Classic, Time Trial, Lives, Streak, Marathon, Duel, Trivial, Exam, By Levels)
@@ -196,28 +196,7 @@ Cada fase está diseñada para ser independiente pero conectada con las anterior
 
 ## 🔄 CÓMO USAR ESTAS FASES
 
-### Paso 1: Ejecutar Fase 1
-1. Abre el archivo `PROMPT-FASE-1-BASE-DATOS-BACKEND.md`
-2. Copia TODO el contenido
-3. Pégalo en tu modelo de IA (Google AI Studio, Claude, GPT-4, etc.)
-4. La IA generará TODOS los archivos de la Fase 1
-5. Guarda todos los archivos generados en tu proyecto
-
-### Paso 2: Ejecutar Fase 2
-1. Abre el archivo `PROMPT-FASE-2-ROLES-APIS.md`
-2. Copia TODO el contenido
-3. Pégalo en tu modelo de IA
-4. La IA generará TODOS los archivos de la Fase 2
-5. Guarda todos los archivos (algunos actualizarán archivos de Fase 1)
-
-### Paso 3: Ejecutar Fase 3
-(Repetir el mismo proceso con `PROMPT-FASE-3-PROFESORES-CREADORES.md`)
-
-### Paso 4: Ejecutar Fase 4
-(Repetir el mismo proceso con `PROMPT-FASE-4-SOPORTE-MENSAJERIA.md`)
-
-### Paso 5: Ejecutar Fase 5
-(Repetir el mismo proceso con `PROMPT-FASE-5-JUEGOS-DESPLIEGUE.md`)
+Te iré proporcionando de forma sucesiva cada uno de los prompts que describen las 5 fases
 
 ---
 
@@ -235,8 +214,8 @@ Cada fase está diseñada para ser independiente pero conectada con las anterior
 
 ### Estructura Final del Proyecto:
 ```
-PLAYTEST-AISTUDIO/
-├── playtest-backend/
+LUMIQUIZ-AISTUDIO/
+├── lumiquiz-backend/
 │   ├── server.js
 │   ├── package.json
 │   ├── .env.example
@@ -309,10 +288,4 @@ Después de completar las 5 fases, tendrás:
 ✅ **Mensajería en tiempo real** (WebSocket)
 ✅ **Instrucciones completas de despliegue** (Aiven, GitHub, Render)
 
----
 
-## 🚀 EMPEZAR AHORA
-
-**Siguiente paso**: Abre el archivo `PROMPT-FASE-1-BASE-DATOS-BACKEND.md` y comienza la generación.
-
-¡Buena suerte con la generación de PLAYTEST! 🎮✨
