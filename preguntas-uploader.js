@@ -454,21 +454,40 @@ const PreguntasUploader = {
             explicacionRespuesta: q.explicacionRespuesta || null
         }));
 
+        const payload = {
+            blockId: bloqueId,
+            questions: formattedQuestions
+        };
+
+        // Debug logging
+        console.log('🔍 Enviando al backend:', {
+            endpoint: `${this.API_URL}/questions/bulk`,
+            blockId: bloqueId,
+            questionCount: formattedQuestions.length,
+            sampleQuestion: formattedQuestions[0] ? {
+                textoPregunta: formattedQuestions[0].textoPregunta?.substring(0, 50),
+                tema: formattedQuestions[0].tema,
+                respuestasCount: formattedQuestions[0].respuestas?.length,
+                difficulty: formattedQuestions[0].difficulty
+            } : null
+        });
+
         const response = await fetch(`${this.API_URL}/questions/bulk`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${getTokenPreguntas()}`
             },
-            body: JSON.stringify({
-                blockId: bloqueId,
-                questions: formattedQuestions
-            })
+            body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Error guardando preguntas');
+            const errorData = await response.json();
+            console.error('❌ Error del backend:', errorData);
+
+            // El backend puede enviar 'error' o 'message'
+            const errorMessage = errorData.error || errorData.message || 'Error guardando preguntas';
+            throw new Error(errorMessage);
         }
 
         return await response.json();
