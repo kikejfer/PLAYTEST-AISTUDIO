@@ -206,20 +206,32 @@ router.post('/bulk', authenticateToken, async (req, res) => {
     });
 
     if (!blockId || !questions || !Array.isArray(questions) || questions.length === 0) {
-      return res.status(400).json({ 
-        error: 'Block ID and questions array are required' 
+      return res.status(400).json({
+        error: 'Block ID and questions array are required'
       });
     }
 
-    // Check if user owns the block
-    const blockCheck = await client.query(`
-      SELECT b.id, ur.user_id 
-      FROM blocks b
-      LEFT JOIN user_roles ur ON b.user_role_id = ur.id
-      WHERE b.id = $1
+    // Check if user owns the block (support both oposiciones blocks and regular blocks)
+    // First try oposiciones blocks (bloques_temas)
+    let blockCheck = await client.query(`
+      SELECT bt.id, o.profesor_id as user_id
+      FROM bloques_temas bt
+      JOIN oposiciones o ON bt.oposicion_id = o.id
+      WHERE bt.id = $1
     `, [blockId]);
 
+    // If not found in oposiciones, try regular blocks
     if (blockCheck.rows.length === 0) {
+      blockCheck = await client.query(`
+        SELECT b.id, ur.user_id
+        FROM blocks b
+        LEFT JOIN user_roles ur ON b.user_role_id = ur.id
+        WHERE b.id = $1
+      `, [blockId]);
+    }
+
+    if (blockCheck.rows.length === 0) {
+      console.error(`❌ Block ${blockId} not found in bloques_temas or blocks tables`);
       return res.status(404).json({ error: 'Block not found' });
     }
 
