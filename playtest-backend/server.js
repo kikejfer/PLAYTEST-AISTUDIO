@@ -120,6 +120,11 @@ const teachersPanelRoutes = require('./routes/teachers-panel');
 const oposicionesRoutes = require('./routes/oposiciones');
 const gamificacionRoutes = require('./routes/gamificacion');
 const directMessagingRoutes = require('./routes/direct-messaging');
+const luminariasRoutes = require('./routes/luminarias');
+const dailyQuestsRoutes = require('./routes/daily-quests');
+const pushNotificationsRoutes = require('./routes/push-notifications');
+const spacedRepetitionRoutes = require('./routes/spaced-repetition');
+const adaptiveDifficultyRoutes = require('./routes/adaptive-difficulty');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -146,6 +151,11 @@ app.use('/api/teachers-panel', teachersPanelRoutes);
 app.use('/api/oposiciones', oposicionesRoutes);
 app.use('/api/gamificacion', gamificacionRoutes);
 app.use('/api/messages', directMessagingRoutes);
+app.use('/api/luminarias', luminariasRoutes);
+app.use('/api/daily-quests', dailyQuestsRoutes);
+app.use('/api/push-notifications', pushNotificationsRoutes);
+app.use('/api/spaced-repetition', spacedRepetitionRoutes);
+app.use('/api/adaptive-difficulty', adaptiveDifficultyRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -188,6 +198,14 @@ app.use('*', (req, res) => {
 const EscalationScheduler = require('./setup-cron');
 const escalationScheduler = new EscalationScheduler();
 
+// Initialize daily quests scheduler
+const DailyQuestsScheduler = require('./cron-jobs/daily-quests-scheduler');
+const dailyQuestsScheduler = new DailyQuestsScheduler();
+
+// Initialize push notifications scheduler
+const PushNotificationScheduler = require('./cron-jobs/push-notification-scheduler');
+const pushNotificationScheduler = new PushNotificationScheduler();
+
 // Initialize support automation system (DISABLED - causing SQL errors)
 // const supportAutomation = require('./support-automation');
 
@@ -223,6 +241,7 @@ const compatibilityLayer = new RoutesCompatibilityLayer();
 
 // Make schedulers globally accessible for API routes
 global.escalationScheduler = escalationScheduler;
+global.dailyQuestsScheduler = dailyQuestsScheduler;
 // global.supportAutomation = supportAutomation;
 global.realTimeEvents = realTimeEvents;
 global.compatibilityLayer = compatibilityLayer;
@@ -281,6 +300,12 @@ server.listen(PORT, async () => {
   
   // Start escalation scheduler
   escalationScheduler.start();
+
+  // Start daily quests scheduler
+  dailyQuestsScheduler.start();
+
+  // Start push notifications scheduler
+  pushNotificationScheduler.start();
   
   // Start support automation system (DISABLED - causing SQL errors)
   // supportAutomation.start().then(() => {
