@@ -20,9 +20,9 @@ CREATE TABLE IF NOT EXISTS historial_respuestas (
 
     -- Referencias principales
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    question_id INTEGER NOT NULL REFERENCES questions(question_id) ON DELETE CASCADE,
-    answer_id INTEGER REFERENCES answers(answer_id) ON DELETE SET NULL,
-    block_id INTEGER NOT NULL REFERENCES blocks(block_id) ON DELETE CASCADE,
+    question_id INTEGER NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+    answer_id INTEGER REFERENCES answers(id) ON DELETE SET NULL,
+    block_id INTEGER NOT NULL REFERENCES blocks(id) ON DELETE CASCADE,
     game_id INTEGER REFERENCES games(id) ON DELETE SET NULL,
 
     -- Resultado de la respuesta
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS evolucion_bloque (
 
     -- Referencias
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    block_id INTEGER NOT NULL REFERENCES blocks(block_id) ON DELETE CASCADE,
+    block_id INTEGER NOT NULL REFERENCES blocks(id) ON DELETE CASCADE,
 
     -- Métricas de maestría
     maestria DECIMAL(5, 2) DEFAULT 0.00, -- Porcentaje 0-100
@@ -166,8 +166,8 @@ COMMENT ON TABLE evolucion_bloque IS
 CREATE TABLE IF NOT EXISTS block_prerequisites (
     id SERIAL PRIMARY KEY,
 
-    block_id INTEGER NOT NULL REFERENCES blocks(block_id) ON DELETE CASCADE,
-    prerequisite_block_id INTEGER NOT NULL REFERENCES blocks(block_id) ON DELETE CASCADE,
+    block_id INTEGER NOT NULL REFERENCES blocks(id) ON DELETE CASCADE,
+    prerequisite_block_id INTEGER NOT NULL REFERENCES blocks(id) ON DELETE CASCADE,
 
     -- Condiciones para desbloqueo
     maestria_minima DECIMAL(5,2) DEFAULT 80.00,
@@ -318,7 +318,7 @@ RETURNS TABLE (
 BEGIN
     RETURN QUERY
     SELECT
-        q.question_id,
+        q.id,
         q.text_question,
         q.topic,
         q.difficulty,
@@ -331,10 +331,10 @@ BEGIN
         ) as tasa_fallo,
         MAX(hr.fecha_respuesta) as ultimo_intento
     FROM questions q
-    JOIN historial_respuestas hr ON q.question_id = hr.question_id
+    JOIN historial_respuestas hr ON q.id = hr.question_id
     WHERE hr.user_id = p_user_id
         AND (p_block_id IS NULL OR q.block_id = p_block_id)
-    GROUP BY q.question_id, q.text_question, q.topic, q.difficulty
+    GROUP BY q.id, q.text_question, q.topic, q.difficulty
     HAVING COUNT(hr.historial_id) >= 2 -- al menos 2 intentos
         AND (COUNT(*) FILTER (WHERE NOT hr.fue_correcta)::FLOAT /
              COUNT(hr.historial_id)) > 0.4 -- más de 40% de fallos
@@ -467,7 +467,7 @@ SELECT
     RANK() OVER (PARTITION BY eb.block_id ORDER BY eb.maestria DESC) as ranking,
     eb.updated_at
 FROM evolucion_bloque eb
-JOIN blocks b ON eb.block_id = b.block_id
+JOIN blocks b ON eb.block_id = b.id
 JOIN users u ON eb.user_id = u.id
 WHERE eb.estado != 'no_iniciado'
 ORDER BY eb.block_id, eb.maestria DESC;
@@ -481,7 +481,7 @@ CREATE INDEX IF NOT EXISTS idx_mv_ranking_block
 -- Vista materializada: Estadísticas globales de bloques
 CREATE MATERIALIZED VIEW IF NOT EXISTS mv_estadisticas_bloques AS
 SELECT
-    b.block_id,
+    b.id as block_id,
     b.name as block_name,
     COUNT(DISTINCT eb.user_id) as total_usuarios,
     COUNT(*) FILTER (WHERE eb.estado = 'completado' OR eb.estado = 'maestro') as usuarios_completaron,
@@ -491,10 +491,10 @@ SELECT
     ROUND(AVG(CASE WHEN hr.fue_correcta THEN 100.0 ELSE 0.0 END), 2) as tasa_acierto_global,
     MAX(eb.updated_at) as ultima_actividad
 FROM blocks b
-LEFT JOIN evolucion_bloque eb ON b.block_id = eb.block_id
-LEFT JOIN historial_respuestas hr ON b.block_id = hr.block_id
+LEFT JOIN evolucion_bloque eb ON b.id = eb.block_id
+LEFT JOIN historial_respuestas hr ON b.id = hr.block_id
 WHERE eb.estado != 'no_iniciado' OR eb.estado IS NULL
-GROUP BY b.block_id, b.name;
+GROUP BY b.id, b.name;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_mv_stats_block
     ON mv_estadisticas_bloques(block_id);
@@ -689,7 +689,7 @@ BEGIN
             FROM obtener_preguntas_dificiles(p_user_id, eb.block_id, 5) pd
         ) as preguntas_dificiles
     FROM evolucion_bloque eb
-    JOIN blocks b ON eb.block_id = b.block_id
+    JOIN blocks b ON eb.block_id = b.id
     WHERE eb.user_id = p_user_id
     ORDER BY eb.maestria DESC, eb.ultima_interaccion DESC;
 END;
