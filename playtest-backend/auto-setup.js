@@ -1,4 +1,4 @@
-const pool = require('./database/connection');
+const { pool } = require('./database/connection');
 const bcrypt = require('bcrypt');
 
 /**
@@ -135,17 +135,17 @@ class AutoSetup {
 
     async ensureTeachersSchemaExists() {
         try {
-            // Verificar si teacher_classes existe
+            // Verificar si oposiciones existe (la base de datos usa el modelo oposiciones, no teacher_classes)
             const tableCheck = await pool.query(`
                 SELECT EXISTS (
                     SELECT FROM information_schema.tables
                     WHERE table_schema = 'public'
-                    AND table_name = 'teacher_classes'
+                    AND table_name = 'oposiciones'
                 );
             `);
 
             if (!tableCheck.rows[0].exists) {
-                console.log('🎓 Esquema de Panel de Profesores no existe. Ejecutando migración...');
+                console.log('🎓 Esquema de Panel de Profesores (oposiciones) no existe. Ejecutando migración...');
 
                 // Ejecutar script de migración
                 const updateTeachersSchema = require('./update-teachers-schema');
@@ -153,7 +153,7 @@ class AutoSetup {
 
                 console.log('✅ Esquema de Panel de Profesores creado exitosamente');
             } else {
-                console.log('✅ Esquema de Panel de Profesores ya existe');
+                console.log('✅ Esquema de Panel de Profesores (oposiciones) ya existe');
             }
 
         } catch (error) {

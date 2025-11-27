@@ -1,4 +1,4 @@
-const pool = require('./database/connection');
+const { pool } = require('./database/connection');
 const fs = require('fs');
 const path = require('path');
 
@@ -30,9 +30,10 @@ async function updateTeachersSchema() {
         console.log('✅ Esquema del Panel de Profesores actualizado exitosamente');
         
         // Verificar que las tablas principales fueron creadas
+        // Note: La base de datos usa el modelo 'oposiciones' en lugar de 'teacher_classes'
         const tables = [
-            'teacher_classes',
-            'class_enrollments', 
+            'oposiciones',  // Tabla principal (antes teacher_classes)
+            'class_enrollments',
             'student_academic_profiles',
             'attendance_tracking',
             'academic_schedules',
