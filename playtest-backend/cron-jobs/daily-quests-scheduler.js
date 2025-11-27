@@ -1,5 +1,5 @@
 const cron = require('node-cron');
-const pool = require('../config/database');
+const { pool } = require('../database/connection');
 
 // =====================================================
 // CRON JOBS PARA SISTEMA DE MISIONES DIARIAS

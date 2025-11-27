@@ -1,4 +1,4 @@
-const pool = require('../config/database');
+const { pool } = require('../database/connection');
 
 // =====================================================
 // SISTEMA DE DIFICULTAD ADAPTATIVA AUTOMÁTICA

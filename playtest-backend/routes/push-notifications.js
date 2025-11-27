@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../config/database');
+const { pool } = require('../database/connection');
 const { authenticateToken } = require('../middleware/auth');
 const pushService = require('../services/push-notifications');
 
