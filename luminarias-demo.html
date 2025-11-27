@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🪙 Demo Sistema de Luminarias - PLAYTEST</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0D1B2A 0%, #1B263B 100%);
+            color: #E0E1DD;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: #1B263B;
+            padding: 1.5rem 2rem;
+            border-radius: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #3B82F6, #2563EB);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .balance-display {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 215, 0, 0.1);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #FFD700;
+        }
+
+        .luminarias-icon {
+            width: 2rem;
+            height: 2rem;
+        }
+
+        .balance-amount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        h1 {
+            color: #3B82F6;
+            margin-bottom: 1rem;
+        }
+
+        .demo-section {
+            background: #1B263B;
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .control-group {
+            background: #0D1B2A;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #778DA9;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 0.75rem;
+            background: #415A77;
+            border: 1px solid #778DA9;
+            border-radius: 0.375rem;
+            color: #E0E1DD;
+            font-size: 1rem;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #3B82F6;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3B82F6, #2563EB);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .results {
+            background: #0D1B2A;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #415A77;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #778DA9;
+        }
+
+        .result-value {
+            font-weight: bold;
+            color: #E0E1DD;
+        }
+
+        .result-value.highlight {
+            color: #FFD700;
+            font-size: 1.25rem;
+        }
+
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3B82F6;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.25rem;
+        }
+
+        .reward-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .reward-table th,
+        .reward-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #415A77;
+        }
+
+        .reward-table th {
+            background: #0D1B2A;
+            color: #3B82F6;
+            font-weight: 600;
+        }
+
+        .reward-table tr:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Estilos de la notificación (copiados del gestor) */
+        .luminarias-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 10000;
+            animation: luminarias-pop 2s ease-out forwards;
+        }
+
+        @keyframes luminarias-pop {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            10% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+            20% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            80% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -100vh) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        .luminarias-notification-content {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border-radius: 1rem;
+            padding: 2rem 3rem;
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            border: 3px solid #FFE55C;
+        }
+
+        .luminarias-icon-big {
+            width: 4rem;
+            height: 4rem;
+            animation: luminarias-spin 1s ease-in-out;
+        }
+
+        @keyframes luminarias-spin {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(360deg); }
+        }
+
+        .luminarias-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .luminarias-amount {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #1B263B;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .luminarias-label {
+            font-size: 1rem;
+            color: #415A77;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header con balance -->
+        <header>
+            <div class="logo-section">
+                <div class="logo">🪙</div>
+                <div>
+                    <h2>Sistema de Luminarias</h2>
+                    <p style="font-size: 0.875rem; color: #778DA9;">Demo Interactiva - PLAYTEST</p>
+                </div>
+            </div>
+            <div class="balance-display">
+                <svg class="luminarias-icon" viewBox="0 0 24 24" fill="currentColor" style="color: #FFD700;">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                <span class="balance-amount" id="balance">1000</span>
+                <span style="color: #778DA9; font-size: 0.875rem;">LUM</span>
+            </div>
+        </header>
+
+        <!-- Sección de prueba -->
+        <div class="demo-section">
+            <h1>🎮 Simulador de Recompensas</h1>
+            <p style="color: #778DA9; margin-bottom: 2rem;">
+                Configura los parámetros de una partida y observa cómo se calculan las Luminarias
+            </p>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Modo de Juego</label>
+                    <select id="gameMode">
+                        <option value="classic">Clásico (×1.0)</option>
+                        <option value="trivial">Trivial (×1.1)</option>
+                        <option value="time_trial">Contrarreloj (×1.2)</option>
+                        <option value="lives">Vidas (×1.3)</option>
+                        <option value="by_levels">Por Niveles (×1.3)</option>
+                        <option value="exam">Examen (×1.4)</option>
+                        <option value="streak">Racha (×1.4)</option>
+                        <option value="duel">Duelo (×1.5)</option>
+                        <option value="marathon">Maratón (×1.6)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Respuestas Correctas</label>
+                    <input type="number" id="correctAnswers" min="0" max="20" value="8">
+                </div>
+
+                <div class="control-group">
+                    <label>Total de Preguntas</label>
+                    <input type="number" id="totalQuestions" min="1" max="20" value="10">
+                </div>
+
+                <div class="control-group">
+                    <label>¿Ganaste? (solo Duelo)</label>
+                    <select id="victory">
+                        <option value="false">No</option>
+                        <option value="true">Sí (+10 bonus)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="calculateReward()">
+                    🧮 Calcular Recompensa
+                </button>
+                <button class="btn btn-success" onclick="simulateGameEnd()">
+                    🎯 Simular Fin de Partida
+                </button>
+            </div>
+
+            <div class="results" id="results" style="display: none;">
+                <!-- Los resultados se mostrarán aquí -->
+            </div>
+        </div>
+
+        <!-- Tabla de recompensas -->
+        <div class="demo-section">
+            <h2>📊 Tabla de Recompensas Base</h2>
+            <table class="reward-table">
+                <thead>
+                    <tr>
+                        <th>% Aciertos</th>
+                        <th>Luminarias Base</th>
+                        <th>Descripción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>90-100%</td>
+                        <td style="color: #FFD700; font-weight: bold;">25 LUM</td>
+                        <td>🏆 Excelente</td>
+                    </tr>
+                    <tr>
+                        <td>75-89%</td>
+                        <td style="color: #FFD700; font-weight: bold;">20 LUM</td>
+                        <td>⭐ Muy bien</td>
+                    </tr>
+                    <tr>
+                        <td>60-74%</td>
+                        <td style="color: #FFD700; font-weight: bold;">15 LUM</td>
+                        <td>✓ Bien</td>
+                    </tr>
+                    <tr>
+                        <td>40-59%</td>
+                        <td style="color: #FFD700; font-weight: bold;">10 LUM</td>
+                        <td>Regular</td>
+                    </tr>
+                    <tr>
+                        <td>0-39%</td>
+                        <td style="color: #FFD700; font-weight: bold;">5 LUM</td>
+                        <td>Participación</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info-box" style="margin-top: 1.5rem;">
+                <strong>📌 Bonus Adicionales:</strong>
+                <ul style="margin-top: 0.5rem; margin-left: 1.5rem; color: #778DA9;">
+                    <li>Partida Perfecta (100%): <strong style="color: #FFD700;">+15 Luminarias</strong></li>
+                    <li>Victoria en Duelo: <strong style="color: #FFD700;">+10 Luminarias</strong></li>
+                    <li>Rango Final: <strong style="color: #FFD700;">5-50 Luminarias</strong></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulador del gestor de Luminarias
+        class LuminariasSimulator {
+            constructor() {
+                this.balance = 1000;
+            }
+
+            calculateGameReward(gameData) {
+                const { correctAnswers, totalQuestions, gameMode, victory } = gameData;
+
+                if (totalQuestions === 0) return 0;
+
+                const percentage = (correctAnswers / totalQuestions) * 100;
+
+                // Recompensa base según porcentaje
+                let baseLuminarias = 0;
+                if (percentage >= 90) {
+                    baseLuminarias = 25;
+                } else if (percentage >= 75) {
+                    baseLuminarias = 20;
+                } else if (percentage >= 60) {
+                    baseLuminarias = 15;
+                } else if (percentage >= 40) {
+                    baseLuminarias = 10;
+                } else {
+                    baseLuminarias = 5;
+                }
+
+                // Multiplicador según modo
+                const multipliers = {
+                    'classic': 1.0,
+                    'time_trial': 1.2,
+                    'lives': 1.3,
+                    'exam': 1.4,
+                    'duel': 1.5,
+                    'marathon': 1.6,
+                    'streak': 1.4,
+                    'trivial': 1.1,
+                    'by_levels': 1.3
+                };
+                const modeMultiplier = multipliers[gameMode] || 1.0;
+                let finalAmount = Math.floor(baseLuminarias * modeMultiplier);
+
+                // Bonus por victoria
+                if (victory) {
+                    finalAmount += 10;
+                }
+
+                // Bonus por partida perfecta
+                if (percentage === 100) {
+                    finalAmount += 15;
+                }
+
+                return Math.max(5, Math.min(finalAmount, 50));
+            }
+
+            showRewardNotification(amount) {
+                const notification = document.createElement('div');
+                notification.className = 'luminarias-notification';
+                notification.innerHTML = `
+                    <div class="luminarias-notification-content">
+                        <svg class="luminarias-icon-big" viewBox="0 0 24 24" fill="currentColor" style="color: #1B263B;">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                        <div class="luminarias-text">
+                            <span class="luminarias-amount">+${amount}</span>
+                            <span class="luminarias-label">Luminarias</span>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.remove();
+                    // Actualizar balance en header
+                    this.balance += amount;
+                    document.getElementById('balance').textContent = this.balance;
+                }, 2000);
+
+                // Sonido
+                this.playSound();
+            }
+
+            playSound() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    oscillator.frequency.value = 800;
+                    oscillator.type = 'sine';
+
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                } catch (error) {
+                    // Silenciar errores de audio
+                }
+            }
+        }
+
+        const simulator = new LuminariasSimulator();
+
+        function calculateReward() {
+            const gameMode = document.getElementById('gameMode').value;
+            const correctAnswers = parseInt(document.getElementById('correctAnswers').value);
+            const totalQuestions = parseInt(document.getElementById('totalQuestions').value);
+            const victory = document.getElementById('victory').value === 'true';
+
+            const percentage = (correctAnswers / totalQuestions) * 100;
+            const luminarias = simulator.calculateGameReward({
+                gameMode,
+                correctAnswers,
+                totalQuestions,
+                victory
+            });
+
+            // Mostrar resultados
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = `
+                <h3 style="color: #3B82F6; margin-bottom: 1rem;">Resultados del Cálculo</h3>
+                <div class="result-item">
+                    <span class="result-label">Modo de Juego:</span>
+                    <span class="result-value">${getGameModeName(gameMode)}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Respuestas Correctas:</span>
+                    <span class="result-value">${correctAnswers} / ${totalQuestions}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Porcentaje:</span>
+                    <span class="result-value">${percentage.toFixed(1)}%</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Victoria (Duelo):</span>
+                    <span class="result-value">${victory ? 'Sí (+10)' : 'No'}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Partida Perfecta:</span>
+                    <span class="result-value">${percentage === 100 ? 'Sí (+15)' : 'No'}</span>
+                </div>
+                <div class="result-item" style="background: rgba(255, 215, 0, 0.1); padding: 1rem; border-radius: 0.5rem; margin-top: 1rem;">
+                    <span class="result-label" style="font-size: 1.125rem;">💰 Luminarias Ganadas:</span>
+                    <span class="result-value highlight">${luminarias} LUM</span>
+                </div>
+            `;
+        }
+
+        function simulateGameEnd() {
+            calculateReward();
+
+            // Pequeño delay para que el usuario vea los resultados
+            setTimeout(() => {
+                const gameMode = document.getElementById('gameMode').value;
+                const correctAnswers = parseInt(document.getElementById('correctAnswers').value);
+                const totalQuestions = parseInt(document.getElementById('totalQuestions').value);
+                const victory = document.getElementById('victory').value === 'true';
+
+                const luminarias = simulator.calculateGameReward({
+                    gameMode,
+                    correctAnswers,
+                    totalQuestions,
+                    victory
+                });
+
+                simulator.showRewardNotification(luminarias);
+            }, 500);
+        }
+
+        function getGameModeName(mode) {
+            const names = {
+                'classic': 'Clásico',
+                'time_trial': 'Contrarreloj',
+                'lives': 'Vidas',
+                'exam': 'Examen',
+                'duel': 'Duelo',
+                'marathon': 'Maratón',
+                'streak': 'Racha',
+                'trivial': 'Trivial',
+                'by_levels': 'Por Niveles'
+            };
+            return names[mode] || 'Desconocido';
+        }
+
+        // Calcular al cargar
+        window.addEventListener('load', () => {
+            calculateReward();
+        });
+    </script>
+</body>
+</html>
