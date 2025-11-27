@@ -858,27 +858,8 @@
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('🚀 Initializing Direct Messaging...');
 
-            // Cargar header (usar el rol activo del localStorage)
-            const activeRole = localStorage.getItem('activeRole') || 'PJG';
-            const panelType = activeRole;
-
-            try {
-                const apiService = new APIDataService();
-                const userData = await apiService.getCurrentUser();
-
-                if (typeof loadHeader === 'function') {
-                    await loadHeader(panelType, 'header-container', {
-                        name: userData.nickname || userData.username,
-                        firstName: userData.nombre || '',
-                        lastName: userData.apellidos || '',
-                        luminarias: userData.luminarias || 0,
-                        roles: userData.roles || [],
-                        activeRole: activeRole
-                    });
-                }
-            } catch (error) {
-                console.error('Error loading header:', error);
-            }
+            // Note: Header is now handled automatically by header-loader.js
+            // No need to call loadHeader() manually here
 
             // Inicializar cliente de mensajería
             window.messagingClient = new DirectMessagingClient();
