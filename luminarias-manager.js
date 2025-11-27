@@ -258,7 +258,7 @@ class LuminariasManager {
         notification.className = 'luminarias-notification';
         notification.innerHTML = `
             <div class="luminarias-notification-content">
-                <img src="Imagenes/1lum.png" alt="Luminarias" class="luminarias-icon">
+                <img src="Imagenes/1lum.png" alt="Luminarias" class="luminarias-icon-big">
                 <div class="luminarias-text">
                     <span class="luminarias-amount">+${amount}</span>
                     <span class="luminarias-label">Luminarias</span>
