@@ -177,8 +177,8 @@ async function checkTeachersPanelTables() {
       SELECT
         EXISTS (
           SELECT FROM information_schema.tables
-          WHERE table_schema = 'public' AND table_name = 'teacher_classes'
-        ) as has_teacher_classes,
+          WHERE table_schema = 'public' AND table_name = 'oposiciones'
+        ) as has_oposiciones,
         EXISTS (
           SELECT FROM information_schema.tables
           WHERE table_schema = 'public' AND table_name = 'class_enrollments'
@@ -186,7 +186,7 @@ async function checkTeachersPanelTables() {
     `);
 
     const row = result.rows[0];
-    return row.has_teacher_classes && row.has_class_enrollments;
+    return row.has_oposiciones && row.has_class_enrollments;
   } finally {
     client.release();
   }
@@ -446,7 +446,7 @@ async function runMigrations() {
 
     if (!teachersPanelTablesExist) {
       console.log('⚠️  Teachers panel tables not found');
-      console.log('   - teacher_classes table not found');
+      console.log('   - oposiciones table not found');
       console.log('   - class_enrollments table not found');
       await applyTeachersPanelSchema();
     } else {
