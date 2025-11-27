@@ -12,13 +12,39 @@ class PushNotificationScheduler {
         this.jobs = [];
     }
 
-    start() {
+    /**
+     * Verifica si las tablas necesarias existen en la base de datos
+     */
+    async checkTablesExist() {
+        try {
+            const result = await pool.query(`
+                SELECT COUNT(*) as count
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                AND table_name IN ('user_push_tokens', 'user_daily_quests')
+            `);
+            return parseInt(result.rows[0].count) === 2;
+        } catch (error) {
+            console.error('Error verificando tablas:', error.message);
+            return false;
+        }
+    }
+
+    async start() {
         if (!pushService.enabled) {
             console.log('📵 Notificaciones push deshabilitadas, scheduler no iniciado');
             return;
         }
 
         console.log('📲 Iniciando sistema de notificaciones push automáticas...');
+
+        // Verificar si las tablas necesarias existen
+        const tablesExist = await this.checkTablesExist();
+        if (!tablesExist) {
+            console.warn('⚠️  Push notifications deshabilitadas: ejecuta las migraciones SQL primero');
+            console.warn('   Ver: MIGRACION_COMPLETA_NUEVAS_FEATURES.sql');
+            return;
+        }
 
         // Job 1: Recordatorios de racha (22:00 todos los días)
         const streakReminderJob = cron.schedule('0 22 * * *', async () => {
