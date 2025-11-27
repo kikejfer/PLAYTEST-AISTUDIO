@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Test Sistema de Progreso Académico - PlayTest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0D1B2A 0%, #1B263B 100%);
+            min-height: 100vh;
+            color: #E0E1DD;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #4ECDC4, #44A08D);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #778DA9;
+            font-size: 1.1em;
+        }
+
+        .auth-info {
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid #4ECDC4;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .auth-info.error {
+            background: rgba(239, 71, 111, 0.1);
+            border-color: #EF476F;
+        }
+
+        .tests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .test-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .test-card:hover {
+            border-color: #4ECDC4;
+            box-shadow: 0 5px 20px rgba(78, 205, 196, 0.2);
+        }
+
+        .test-card h3 {
+            color: #4ECDC4;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .test-card p {
+            color: #778DA9;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .test-button {
+            width: 100%;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #4ECDC4, #44A08D);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .test-button:disabled {
+            background: #778DA9;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .results-section h2 {
+            color: #4ECDC4;
+            margin-bottom: 20px;
+        }
+
+        .console-output {
+            background: #0D1B2A;
+            border: 1px solid #415A77;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .console-output::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .console-output::-webkit-scrollbar-track {
+            background: #1B263B;
+        }
+
+        .console-output::-webkit-scrollbar-thumb {
+            background: #4ECDC4;
+            border-radius: 4px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status-badge.success {
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ECDC4;
+            border: 1px solid #4ECDC4;
+        }
+
+        .status-badge.error {
+            background: rgba(239, 71, 111, 0.2);
+            color: #EF476F;
+            border: 1px solid #EF476F;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(78, 205, 196, 0.3);
+            border-top-color: #4ECDC4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .clear-button {
+            padding: 10px 20px;
+            background: #415A77;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .clear-button:hover {
+            background: #778DA9;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            color: #4ECDC4;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #E0E1DD;
+            font-size: 1em;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #4ECDC4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Sistema de Progreso Académico</h1>
+            <p>Prueba completa del sistema de progreso/evolución de estudiantes</p>
+        </div>
+
+        <div id="authInfo" class="auth-info"></div>
+
+        <div class="tests-grid">
+            <!-- Test 1: Progreso Completo -->
+            <div class="test-card">
+                <h3>📊 Test 1: Mi Progreso Completo</h3>
+                <p>Obtiene todo el progreso del estudiante en todos los bloques asignados, incluyendo tiempo dedicado, porcentaje de avance, intentos y mejor puntuación.</p>
+                <button class="test-button" onclick="testProgresoCompleto()">
+                    Ejecutar Test 1
+                </button>
+            </div>
+
+            <!-- Test 2: Progreso por Oposición -->
+            <div class="test-card">
+                <h3>🎓 Test 2: Progreso por Oposición</h3>
+                <p>Filtra el progreso solo de una oposición específica. Útil para ver el avance en una materia concreta.</p>
+                <div class="input-group">
+                    <label for="oposicionId">ID de Oposición:</label>
+                    <input type="number" id="oposicionId" placeholder="Ej: 1" min="1">
+                </div>
+                <button class="test-button" onclick="testProgresoPorOposicion()">
+                    Ejecutar Test 2
+                </button>
+            </div>
+
+            <!-- Test 3: Verificación Completa -->
+            <div class="test-card">
+                <h3>🧪 Test 3: Verificación Completa</h3>
+                <p>Ejecuta una verificación completa del sistema: Mis Clases, Bloques Asignados y Progreso Académico. Muestra estadísticas consolidadas.</p>
+                <button class="test-button" onclick="testVerificacionCompleta()">
+                    Ejecutar Test 3
+                </button>
+            </div>
+
+            <!-- Test 4: Mis Oposiciones -->
+            <div class="test-card">
+                <h3>📚 Test 4: Mis Oposiciones</h3>
+                <p>Lista todas las oposiciones en las que estás inscrito con información de cronograma y progreso.</p>
+                <button class="test-button" onclick="testMisOposiciones()">
+                    Ejecutar Test 4
+                </button>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <h2>📋 Resultados de Pruebas</h2>
+            <button class="clear-button" onclick="clearConsole()">Limpiar Consola</button>
+            <div id="consoleOutput" class="console-output">Esperando ejecución de pruebas...</div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'https://playtest-backend.onrender.com';
+        let consoleOutput = document.getElementById('consoleOutput');
+
+        // Funciones de utilidad
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = {
+                'info': '📝',
+                'success': '✅',
+                'error': '❌',
+                'warning': '⚠️',
+                'test': '🧪'
+            }[type] || '📝';
+
+            consoleOutput.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        function logSeparator() {
+            consoleOutput.textContent += '\n' + '='.repeat(80) + '\n\n';
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        function clearConsole() {
+            consoleOutput.textContent = 'Consola limpiada. Esperando nuevas pruebas...\n';
+        }
+
+        // Verificar autenticación al cargar
+        function checkAuth() {
+            const token = localStorage.getItem('playtest_auth_token');
+            const authInfo = document.getElementById('authInfo');
+
+            if (!token) {
+                authInfo.className = 'auth-info error';
+                authInfo.innerHTML = '❌ <strong>No autenticado:</strong> Debes iniciar sesión como estudiante/jugador primero';
+                document.querySelectorAll('.test-button').forEach(btn => btn.disabled = true);
+                return false;
+            } else {
+                authInfo.className = 'auth-info';
+                authInfo.innerHTML = '✅ <strong>Autenticado:</strong> Token encontrado. Listo para ejecutar pruebas.';
+                return true;
+            }
+        }
+
+        // Función auxiliar para hacer peticiones
+        async function fetchAPI(endpoint, options = {}) {
+            const token = localStorage.getItem('playtest_auth_token');
+            const response = await fetch(BASE_URL + endpoint, {
+                ...options,
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+
+            log(`Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+
+            const data = await response.json();
+            return { response, data };
+        }
+
+        // TEST 1: Progreso Completo
+        async function testProgresoCompleto() {
+            try {
+                logSeparator();
+                log('=== TEST 1: PROGRESO ACADÉMICO COMPLETO ===', 'test');
+
+                const { response, data } = await fetchAPI('/api/students/progress');
+
+                log(`\nRespuesta completa: ${JSON.stringify(data, null, 2)}`, 'info');
+
+                if (data.success && data.progress) {
+                    log(`\n📊 RESUMEN DE PROGRESO:`, 'success');
+                    log(`Total de bloques en progreso: ${data.progress.length}`, 'info');
+
+                    if (data.progress.length > 0) {
+                        log(`\n📚 DETALLES POR BLOQUE:\n`, 'success');
+                        data.progress.forEach((item, index) => {
+                            log(`${index + 1}. ${item.block_name}`, 'info');
+                            log(`   📖 Oposición: ${item.class_name}`, 'info');
+                            log(`   📅 Iniciado: ${item.date_started || 'No iniciado'}`, 'info');
+                            log(`   ✅ Completado: ${item.date_completed || 'En progreso'}`, 'info');
+                            log(`   ⏱️ Tiempo dedicado: ${item.time_spent || 0} minutos`, 'info');
+                            log(`   📊 Progreso: ${item.percentage || 0}%`, 'info');
+                            log(`   🎯 Estado: ${item.status || 'Sin calificar'}`, 'info');
+                            log(`   🔄 Intentos: ${item.attempts_count || 0}`, 'info');
+                            log(`   ⭐ Mejor puntuación: ${item.best_score || 'N/A'}`, 'info');
+                            log('', 'info');
+                        });
+                    } else {
+                        log('⚠️ No tienes progreso registrado en ningún bloque aún', 'warning');
+                    }
+                } else {
+                    log('❌ Error en la respuesta', 'error');
+                    log(JSON.stringify(data, null, 2), 'error');
+                }
+
+                log('\n✅ Test 1 completado', 'success');
+
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error('Error completo:', error);
+            }
+        }
+
+        // TEST 2: Progreso por Oposición
+        async function testProgresoPorOposicion() {
+            try {
+                const oposicionId = document.getElementById('oposicionId').value;
+
+                if (!oposicionId) {
+                    alert('Por favor ingresa un ID de oposición');
+                    return;
+                }
+
+                logSeparator();
+                log('=== TEST 2: PROGRESO POR OPOSICIÓN ===', 'test');
+
+                const { response, data } = await fetchAPI(`/api/students/progress?classId=${oposicionId}`);
+
+                log(`\nRespuesta: ${JSON.stringify(data, null, 2)}`, 'info');
+
+                if (data.success && data.progress) {
+                    log(`\n📊 Progreso en Oposición ID: ${oposicionId}`, 'success');
+                    log(`Bloques: ${data.progress.length}`, 'info');
+
+                    if (data.progress.length > 0) {
+                        log('\n📚 BLOQUES EN ESTA OPOSICIÓN:\n', 'success');
+                        data.progress.forEach(item => {
+                            log(`- ${item.block_name} (${item.percentage || 0}% completado)`, 'info');
+                            log(`  Estado: ${item.status || 'Sin calificar'}`, 'info');
+                            log(`  Tiempo: ${item.time_spent || 0} minutos`, 'info');
+                            log('', 'info');
+                        });
+                    } else {
+                        log('⚠️ No tienes progreso en esta oposición', 'warning');
+                    }
+                } else {
+                    log('❌ Error en la respuesta', 'error');
+                    log(JSON.stringify(data, null, 2), 'error');
+                }
+
+                log('\n✅ Test 2 completado', 'success');
+
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error('Error completo:', error);
+            }
+        }
+
+        // TEST 3: Verificación Completa
+        async function testVerificacionCompleta() {
+            try {
+                logSeparator();
+                log('=== TEST 3: VERIFICACIÓN COMPLETA DEL SISTEMA ===', 'test');
+
+                // Test 1: Mis Clases
+                log('\n1️⃣ Test: Mis Clases (Oposiciones)', 'test');
+                try {
+                    const { response: r1, data: d1 } = await fetchAPI('/api/students/my-classes');
+                    log(`   📚 Oposiciones inscritas: ${d1.classes?.length || 0}`, 'success');
+                    if (d1.classes?.length > 0) {
+                        d1.classes.forEach(c => {
+                            log(`      - ${c.class_name} (${c.class_code})`, 'info');
+                        });
+                    }
+                } catch (e) {
+                    log(`   ❌ Error: ${e.message}`, 'error');
+                }
+
+                // Test 2: Bloques Asignados
+                log('\n2️⃣ Test: Bloques Asignados', 'test');
+                try {
+                    const { response: r2, data: d2 } = await fetchAPI('/api/students/assigned-blocks');
+                    log(`   📦 Bloques asignados: ${d2.blocks?.length || 0}`, 'success');
+                    if (d2.blocks?.length > 0) {
+                        d2.blocks.forEach(b => {
+                            log(`      - ${b.block_name} (${b.class_name})`, 'info');
+                        });
+                    }
+                } catch (e) {
+                    log(`   ❌ Error: ${e.message}`, 'error');
+                }
+
+                // Test 3: Progreso Académico
+                log('\n3️⃣ Test: Progreso Académico', 'test');
+                try {
+                    const { response: r3, data: d3 } = await fetchAPI('/api/students/progress');
+                    log(`   📊 Registros de progreso: ${d3.progress?.length || 0}`, 'success');
+
+                    if (d3.progress?.length > 0) {
+                        const completados = d3.progress.filter(p => p.percentage === 100).length;
+                        const enProgreso = d3.progress.filter(p => p.percentage > 0 && p.percentage < 100).length;
+                        const sinIniciar = d3.progress.filter(p => !p.percentage || p.percentage === 0).length;
+
+                        log(`      ✅ Completados: ${completados}`, 'success');
+                        log(`      🔄 En progreso: ${enProgreso}`, 'info');
+                        log(`      ⏸️ Sin iniciar: ${sinIniciar}`, 'warning');
+
+                        const tiempoTotal = d3.progress.reduce((sum, p) => sum + (p.time_spent || 0), 0);
+                        log(`      ⏱️ Tiempo total dedicado: ${tiempoTotal} minutos`, 'info');
+                    }
+                } catch (e) {
+                    log(`   ❌ Error: ${e.message}`, 'error');
+                }
+
+                log('\n✅ Verificación completa finalizada', 'success');
+
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error('Error completo:', error);
+            }
+        }
+
+        // TEST 4: Mis Oposiciones
+        async function testMisOposiciones() {
+            try {
+                logSeparator();
+                log('=== TEST 4: MIS OPOSICIONES ===', 'test');
+
+                const { response, data } = await fetchAPI('/api/students/my-oposiciones');
+
+                log(`\nRespuesta completa: ${JSON.stringify(data, null, 2)}`, 'info');
+
+                if (data.success && data.oposiciones) {
+                    log(`\n📚 OPOSICIONES INSCRITAS: ${data.oposiciones.length}`, 'success');
+
+                    if (data.oposiciones.length > 0) {
+                        data.oposiciones.forEach((opo, index) => {
+                            log(`\n${index + 1}. ${opo.nombre_oposicion}`, 'success');
+                            log(`   📖 Descripción: ${opo.descripcion || 'N/A'}`, 'info');
+                            log(`   🎯 Código: ${opo.codigo_acceso}`, 'info');
+                            log(`   📅 Fecha examen: ${opo.fecha_examen || 'No definida'}`, 'info');
+                            log(`   📊 Progreso: ${opo.porcentaje_progreso || 0}%`, 'info');
+                            log(`   ✅ Estado: ${opo.estado || 'N/A'}`, 'info');
+                            log(`   🎓 Preguntas dominadas: ${opo.preguntas_dominadas || 0}/${opo.total_preguntas_oposicion || 0}`, 'info');
+                            log(`   📆 Inscrito: ${opo.enrolled_at || 'N/A'}`, 'info');
+                        });
+                    } else {
+                        log('⚠️ No estás inscrito en ninguna oposición aún', 'warning');
+                    }
+                } else {
+                    log('❌ Error en la respuesta', 'error');
+                    log(JSON.stringify(data, null, 2), 'error');
+                }
+
+                log('\n✅ Test 4 completado', 'success');
+
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error('Error completo:', error);
+            }
+        }
+
+        // Verificar autenticación al cargar la página
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            log('Sistema de pruebas cargado correctamente', 'success');
+            log('Selecciona un test para comenzar...', 'info');
+        });
+    </script>
+</body>
+</html>
