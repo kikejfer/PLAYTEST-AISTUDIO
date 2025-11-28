@@ -728,6 +728,11 @@
             date_to: ''
         };
 
+        // Detectar URL del backend (producción vs desarrollo)
+        const API_BASE_URL = window.location.hostname.includes('onrender.com')
+            ? 'https://playtest-backend.onrender.com/api'
+            : '/api';
+
         // Inicialización
         document.addEventListener('DOMContentLoaded', async function() {
             await checkAuthentication();
@@ -737,7 +742,7 @@
         });
 
         async function checkAuthentication() {
-            const token = localStorage.getItem('authToken');
+            const token = localStorage.getItem('playtest_auth_token');
             if (!token) {
                 window.location.href = 'index.html';
                 return;
@@ -746,9 +751,9 @@
 
         async function loadBalance() {
             try {
-                const response = await fetch('/api/luminarias/balance', {
+                const response = await fetch(`${API_BASE_URL}/luminarias/balance`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${localStorage.getItem('playtest_auth_token')}`
                     }
                 });
 
@@ -778,9 +783,9 @@
                     }
                 });
 
-                const response = await fetch(`/api/luminarias/transactions?${params}`, {
+                const response = await fetch(`${API_BASE_URL}/luminarias/transactions?${params}`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${localStorage.getItem('playtest_auth_token')}`
                     }
                 });
 
