@@ -943,7 +943,7 @@
                             <div class="meta-value">${transaction.reference_type} #${transaction.reference_id}</div>
                         </div>
                         ` : ''}
-                        ${transaction.metadata && Object.keys(JSON.parse(transaction.metadata)).length > 0 ? `
+                        ${transaction.metadata && typeof transaction.metadata === 'object' && Object.keys(transaction.metadata).length > 0 ? `
                         <div class="meta-item">
                             <div class="meta-label">Detalles</div>
                             <div class="meta-value">${renderMetadata(transaction.metadata)}</div>
@@ -973,7 +973,8 @@
 
         function renderMetadata(metadataJson) {
             try {
-                const metadata = JSON.parse(metadataJson);
+                // Si ya es un objeto, usarlo directamente; si es string, parsearlo
+                const metadata = typeof metadataJson === 'object' ? metadataJson : JSON.parse(metadataJson);
                 return Object.entries(metadata)
                     .map(([key, value]) => `${key}: ${value}`)
                     .join(', ');
