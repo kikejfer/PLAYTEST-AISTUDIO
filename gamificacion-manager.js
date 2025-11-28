@@ -3,6 +3,11 @@
  * Gestión de badges, rankings, torneos y estadísticas de gamificación
  */
 
+// Helper function to get authentication token
+function getTokenGamif() {
+    return localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken') || localStorage.getItem('token');
+}
+
 const GamificacionManager = {
     oposicion: null,
     misBadges: [],
@@ -53,7 +58,7 @@ const GamificacionManager = {
                 `https://playtest-backend.onrender.com/api/gamificacion/mi-posicion/${this.oposicion.id}`,
                 {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${getTokenGamif()}`
                     }
                 }
             );
@@ -70,7 +75,7 @@ const GamificacionManager = {
                 await fetch('https://playtest-backend.onrender.com/api/gamificacion/actualizar-puntos', {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Authorization': `Bearer ${getTokenGamif()}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ oposicion_id: this.oposicion.id })
@@ -81,7 +86,7 @@ const GamificacionManager = {
                     `https://playtest-backend.onrender.com/api/gamificacion/mi-posicion/${this.oposicion.id}`,
                     {
                         headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            'Authorization': `Bearer ${getTokenGamif()}`
                         }
                     }
                 );
@@ -104,7 +109,7 @@ const GamificacionManager = {
                 `https://playtest-backend.onrender.com/api/gamificacion/mis-badges?oposicion_id=${this.oposicion.id}`,
                 {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${getTokenGamif()}`
                     }
                 }
             );
@@ -127,7 +132,7 @@ const GamificacionManager = {
                 `https://playtest-backend.onrender.com/api/gamificacion/ranking/${this.oposicion.id}?limite=10`,
                 {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${getTokenGamif()}`
                     }
                 }
             );
@@ -150,7 +155,7 @@ const GamificacionManager = {
                 `https://playtest-backend.onrender.com/api/gamificacion/torneos/${this.oposicion.id}`,
                 {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${getTokenGamif()}`
                     }
                 }
             );
@@ -173,7 +178,7 @@ const GamificacionManager = {
                 `https://playtest-backend.onrender.com/api/gamificacion/mi-racha/${this.oposicion.id}`,
                 {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${getTokenGamif()}`
                     }
                 }
             );
@@ -540,7 +545,7 @@ const GamificacionManager = {
                 `https://playtest-backend.onrender.com/api/gamificacion/torneos/detalle/${torneoId}`,
                 {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${getTokenGamif()}`
                     }
                 }
             );
@@ -654,7 +659,7 @@ const GamificacionManager = {
                 {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${getTokenGamif()}`
                     }
                 }
             );
@@ -709,7 +714,7 @@ const GamificacionManager = {
                 {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${getTokenGamif()}`
                     }
                 }
             );
@@ -909,7 +914,7 @@ const GamificacionManager = {
                 {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Authorization': `Bearer ${getTokenGamif()}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({

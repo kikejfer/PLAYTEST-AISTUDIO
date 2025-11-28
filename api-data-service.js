@@ -107,10 +107,15 @@ class APIDataService {
         }
       }
       console.log('🔍 roleHeader being sent:', roleHeader);
-      
+
+      // Check if body is FormData to avoid setting Content-Type
+      // (browser will set it automatically with correct boundary)
+      const isFormData = options.body instanceof FormData;
+
       const defaultOptions = {
         headers: {
-          'Content-Type': 'application/json',
+          // Only set Content-Type if NOT FormData
+          ...(!isFormData && { 'Content-Type': 'application/json' }),
           ...(token && { 'Authorization': `Bearer ${token}` }),
           ...(roleHeader && { 'X-Current-Role': roleHeader })
         }
@@ -126,7 +131,11 @@ class APIDataService {
       };
 
       try {
-        // Debug logging for authorization issues
+        // Debug logging for FormData and authorization issues
+        if (isFormData) {
+          console.log('📤 FormData detected - Content-Type will be set by browser');
+          console.log('📤 Endpoint:', endpoint);
+        }
         if (endpoint.includes('/games/') || endpoint.includes('/questions')) {
           console.log('🔍 API Debug - URL:', url);
           console.log('🔍 API Debug - Token used:', token ? token.substring(0, 50) + '...' : 'null');
@@ -849,6 +858,54 @@ class APIDataService {
       return session.userId || 1;
     } catch {
       return 1;
+    }
+  }
+
+  async getCurrentUser() {
+    try {
+      const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+      if (session && session.id) {
+        return {
+          id: session.id || session.userId,
+          userId: session.id || session.userId,
+          nickname: session.nickname || session.username || 'Usuario',
+          email: session.email || '',
+          roles: session.roles || [],
+          ...session
+        };
+      }
+
+      // If no session, try to fetch from API
+      try {
+        const userData = await this.apiCall('/users/me');
+        return {
+          id: userData.id,
+          userId: userData.id,
+          nickname: userData.nickname || userData.username,
+          email: userData.email,
+          roles: userData.roles || [],
+          ...userData
+        };
+      } catch (apiError) {
+        console.warn('⚠️ Could not fetch user from API:', apiError);
+        // Return minimal fallback
+        return {
+          id: session.userId || 1,
+          userId: session.userId || 1,
+          nickname: 'Usuario',
+          email: '',
+          roles: []
+        };
+      }
+    } catch (error) {
+      console.error('❌ Error getting current user:', error);
+      return {
+        id: 1,
+        userId: 1,
+        nickname: 'Usuario',
+        email: '',
+        roles: []
+      };
     }
   }
 

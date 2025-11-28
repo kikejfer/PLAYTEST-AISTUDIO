@@ -206,20 +206,32 @@ router.post('/bulk', authenticateToken, async (req, res) => {
     });
 
     if (!blockId || !questions || !Array.isArray(questions) || questions.length === 0) {
-      return res.status(400).json({ 
-        error: 'Block ID and questions array are required' 
+      return res.status(400).json({
+        error: 'Block ID and questions array are required'
       });
     }
 
-    // Check if user owns the block
-    const blockCheck = await client.query(`
-      SELECT b.id, ur.user_id 
-      FROM blocks b
-      LEFT JOIN user_roles ur ON b.user_role_id = ur.id
-      WHERE b.id = $1
+    // Check if user owns the block (support both oposiciones blocks and regular blocks)
+    // First try oposiciones blocks (bloques_temas)
+    let blockCheck = await client.query(`
+      SELECT bt.id, o.profesor_id as user_id
+      FROM bloques_temas bt
+      JOIN oposiciones o ON bt.oposicion_id = o.id
+      WHERE bt.id = $1
     `, [blockId]);
 
+    // If not found in oposiciones, try regular blocks
     if (blockCheck.rows.length === 0) {
+      blockCheck = await client.query(`
+        SELECT b.id, ur.user_id
+        FROM blocks b
+        LEFT JOIN user_roles ur ON b.user_role_id = ur.id
+        WHERE b.id = $1
+      `, [blockId]);
+    }
+
+    if (blockCheck.rows.length === 0) {
+      console.error(`❌ Block ${blockId} not found in bloques_temas or blocks tables`);
       return res.status(404).json({ error: 'Block not found' });
     }
 
@@ -229,6 +241,16 @@ router.post('/bulk', authenticateToken, async (req, res) => {
 
     const createdQuestions = [];
     const topicCounts = {};
+    const temaIds = {}; // Map tema names to IDs for oposiciones
+
+    // Determine if this is an oposiciones block
+    const isOposicionesCheck = await client.query(
+      'SELECT 1 FROM bloques_temas WHERE id = $1',
+      [blockId]
+    );
+    const isOposicionesBlock = isOposicionesCheck.rows.length > 0;
+
+    console.log(`📦 Block ${blockId} is ${isOposicionesBlock ? 'OPOSICIONES' : 'REGULAR'} block`);
 
     // Process each question
     for (const questionData of questions) {
@@ -237,23 +259,67 @@ router.post('/bulk', authenticateToken, async (req, res) => {
       // CRITICAL: Validate that tema is preserved (topic separation protection)
       if (!tema || tema.trim() === '' || tema === 'General') {
         console.error('🚨 CRITICAL: Question received with invalid/missing tema:', { tema, blockId, question: textoPregunta?.substring(0, 30) });
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: 'CRITICAL: Topic (tema) is required and cannot be empty or \"General\". Topic separation functionality compromised.',
           receivedTema: tema
         });
       }
 
       if (!textoPregunta || !respuestas || respuestas.length < 2) {
-        return res.status(400).json({ 
-          error: 'Question text and at least 2 answers are required for each question' 
+        return res.status(400).json({
+          error: 'Question text and at least 2 answers are required for each question'
         });
       }
 
-      // Create question
-      const questionResult = await client.query(
-        'INSERT INTO questions (block_id, text_question, topic, difficulty, explanation) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-        [blockId, textoPregunta, tema, difficulty, explicacionRespuesta]
-      );
+      let questionResult;
+
+      // For oposiciones blocks, find or create tema and use tema_id
+      if (isOposicionesBlock) {
+        let temaId;
+
+        // Check if we already processed this tema
+        if (temaIds[tema]) {
+          temaId = temaIds[tema];
+        } else {
+          // Find or create tema
+          let temaResult = await client.query(
+            'SELECT id FROM temas WHERE bloque_id = $1 AND nombre = $2',
+            [blockId, tema]
+          );
+
+          if (temaResult.rows.length === 0) {
+            // Create new tema
+            const maxOrdenResult = await client.query(
+              'SELECT COALESCE(MAX(orden), 0) + 1 as next_orden FROM temas WHERE bloque_id = $1',
+              [blockId]
+            );
+            const nextOrden = maxOrdenResult.rows[0].next_orden;
+
+            const newTemaResult = await client.query(
+              'INSERT INTO temas (bloque_id, nombre, orden) VALUES ($1, $2, $3) RETURNING id',
+              [blockId, tema, nextOrden]
+            );
+            temaId = newTemaResult.rows[0].id;
+            console.log(`✨ Created new tema: "${tema}" (ID: ${temaId}) in block ${blockId}`);
+          } else {
+            temaId = temaResult.rows[0].id;
+          }
+
+          temaIds[tema] = temaId;
+        }
+
+        // Insert question with tema_id (block_id NULL for oposiciones)
+        questionResult = await client.query(
+          'INSERT INTO questions (tema_id, text_question, topic, difficulty, explanation) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+          [temaId, textoPregunta, tema, difficulty, explicacionRespuesta]
+        );
+      } else {
+        // For regular blocks, use block_id as before
+        questionResult = await client.query(
+          'INSERT INTO questions (block_id, text_question, topic, difficulty, explanation) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+          [blockId, textoPregunta, tema, difficulty, explicacionRespuesta]
+        );
+      }
 
       const questionId = questionResult.rows[0].id;
       createdQuestions.push(questionId);
@@ -272,30 +338,49 @@ router.post('/bulk', authenticateToken, async (req, res) => {
 
     // Update statistics tables in bulk
     console.log('📊 Updating statistics tables for bulk operation...');
-    
-    // Update block_answers (total questions per block)
-    await client.query(`
-      INSERT INTO block_answers (block_id, total_questions) 
-      VALUES ($1, $2) 
-      ON CONFLICT (block_id) 
-      DO UPDATE SET 
-        total_questions = block_answers.total_questions + $2,
-        updated_at = CURRENT_TIMESTAMP
-    `, [blockId, questions.length]);
 
-    // Update topic_answers (total questions per topic in block)
-    for (const [topic, count] of Object.entries(topicCounts)) {
+    if (isOposicionesBlock) {
+      // For oposiciones: Update temas num_preguntas
+      for (const [tema, temaId] of Object.entries(temaIds)) {
+        const questionCount = topicCounts[tema] || 0;
+        await client.query(
+          'UPDATE temas SET num_preguntas = num_preguntas + $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+          [questionCount, temaId]
+        );
+      }
+
+      // Update bloques_temas total_preguntas
+      await client.query(
+        'UPDATE bloques_temas SET total_preguntas = total_preguntas + $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+        [questions.length, blockId]
+      );
+
+      console.log(`✅ Oposiciones statistics updated - Block ${blockId}, ${questions.length} questions, Temas: ${Object.keys(temaIds).join(', ')}`);
+    } else {
+      // For regular blocks: Update block_answers and topic_answers
       await client.query(`
-        INSERT INTO topic_answers (block_id, topic, total_questions) 
-        VALUES ($1, $2, $3) 
-        ON CONFLICT (block_id, topic) 
-        DO UPDATE SET 
-          total_questions = topic_answers.total_questions + $3,
+        INSERT INTO block_answers (block_id, total_questions)
+        VALUES ($1, $2)
+        ON CONFLICT (block_id)
+        DO UPDATE SET
+          total_questions = block_answers.total_questions + $2,
           updated_at = CURRENT_TIMESTAMP
-      `, [blockId, topic, count]);
-    }
+      `, [blockId, questions.length]);
 
-    console.log(`✅ Bulk statistics updated - Block ${blockId}, ${questions.length} questions, Topics: ${Object.keys(topicCounts).join(', ')}`);
+      // Update topic_answers (total questions per topic in block)
+      for (const [topic, count] of Object.entries(topicCounts)) {
+        await client.query(`
+          INSERT INTO topic_answers (block_id, topic, total_questions)
+          VALUES ($1, $2, $3)
+          ON CONFLICT (block_id, topic)
+          DO UPDATE SET
+            total_questions = topic_answers.total_questions + $3,
+            updated_at = CURRENT_TIMESTAMP
+        `, [blockId, topic, count]);
+      }
+
+      console.log(`✅ Regular block statistics updated - Block ${blockId}, ${questions.length} questions, Topics: ${Object.keys(topicCounts).join(', ')}`);
+    }
 
     await client.query('COMMIT');
 

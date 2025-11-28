@@ -3,6 +3,11 @@
  * Funcionalidad para la Pestaña 4 del Panel de Profesor
  */
 
+// Helper function to get authentication token
+function getTokenEstadisticas() {
+    return localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken') || localStorage.getItem('token');
+}
+
 const EstadisticasManager = {
     oposicionActual: null,
     API_URL: 'https://playtest-backend.onrender.com/api',
@@ -19,7 +24,7 @@ const EstadisticasManager = {
             // Obtener cronogramas de todos los alumnos
             const cronogramasResponse = await fetch(`${this.API_URL}/oposiciones/${oposicionId}/cronogramas`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getTokenEstadisticas()}`
                 }
             });
 
@@ -31,7 +36,7 @@ const EstadisticasManager = {
             // Obtener detalle de oposición
             const oposicionResponse = await fetch(`${this.API_URL}/oposiciones/${oposicionId}`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${getTokenEstadisticas()}`
                 }
             });
 

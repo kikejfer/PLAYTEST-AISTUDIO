@@ -119,9 +119,9 @@ class NavigationService {
                 { text: 'Jugadores', url: '/creators-panel-players.html' }
             ],
             'PPF': [
-                // 'Estudiantes' navigation removed - now integrated as subtab in teachers-panel-schedules.html
+                // 'Estudiantes' navigation removed - now integrated as subtab in teachers-panel-oposiciones.html
                 { text: 'Grupos', url: '/teachers-panel-groups.html' },
-                { text: 'Horarios', url: '/teachers-panel-schedules.html' },
+                { text: 'Oposiciones', url: '/teachers-panel-oposiciones.html' },
                 { text: 'Funcionalidades', url: '/profesores-panel-funcionalidades.html' }
             ],
             'JGD': [
@@ -187,7 +187,7 @@ class NavigationService {
             'PST': 'support-dashboard.html',
             'SPT': 'support-dashboard.html',
             'PCC': 'creators-panel-content.html',
-            'PPF': 'teachers-panel-schedules.html',
+            'PPF': 'teachers-panel-oposiciones.html',
             'PJG': 'jugadores-panel-gaming.html',
             'JGD': 'jugadores-panel-gaming.html'
         };

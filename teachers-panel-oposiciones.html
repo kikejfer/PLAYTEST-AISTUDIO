@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="panel-type" content="PPF">
+    <meta name="header-container" content="header-container">
     <title>Panel de Profesor - Oposiciones | PLAYTEST</title>
+    <link rel="stylesheet" href="header-styles.css">
+    <script src="header-loader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="api-data-service.js"></script>
     <script src="navigation-service.js"></script>
-    <script src="bloques-manager.js"></script>
+    <script src="bloques-creados-component.js"></script>
+    <script src="bloques-manager-backup.js"></script>
+    <script src="preguntas-uploader.js"></script>
     <script src="alumnos-manager.js"></script>
     <script src="estadisticas-manager.js"></script>
     <script src="torneos-manager.js"></script>
@@ -23,135 +29,7 @@
             background: #0D1B2A;
             min-height: 100vh;
             color: #E0E1DD;
-            padding-top: 100px;
-        }
-
-        /* ====================================
-           USER HEADER - Fixed Top
-           ==================================== */
-        .user-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(135deg, #0D1B2A 0%, #1B263B 100%);
-            border-bottom: 2px solid #415A77;
-            padding: 8px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            height: 60px;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .playtest-logo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .playtest-logo img {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-        }
-
-        .playtest-logo span {
-            font-size: 18px;
-            font-weight: 700;
-            background: linear-gradient(45deg, #3B82F6, #60A5FA);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .dashboard-btn {
-            background: #415A77;
-            color: #E0E1DD;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .dashboard-btn:hover {
-            background: #4F6B8A;
-            transform: translateY(-1px);
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(65, 90, 119, 0.3);
-            padding: 4px 10px;
-            border-radius: 8px;
-            border: 1px solid rgba(65, 90, 119, 0.5);
-        }
-
-        .user-avatar {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #3B82F6, #60A5FA);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            color: white;
-            font-size: 12px;
-        }
-
-        .user-details h4 {
-            margin: 0;
-            font-size: 13px;
-            color: #E0E1DD;
-            font-weight: 500;
-        }
-
-        .user-details p {
-            margin: 0;
-            font-size: 11px;
-            color: #778DA9;
-        }
-
-        .logout-btn {
-            background: linear-gradient(45deg, #EF4444, #F87171);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .logout-btn:hover {
-            background: linear-gradient(45deg, #DC2626, #EF4444);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+            padding-top: 80px;
         }
 
         /* ====================================
@@ -655,6 +533,51 @@
         }
 
         /* ====================================
+           PREGUNTAS UPLOADER
+           ==================================== */
+        .upload-section {
+            background: rgba(13, 27, 42, 0.5);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #415A77;
+        }
+
+        .file-drop-zone {
+            border: 2px dashed #415A77;
+            border-radius: 8px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-drop-zone:hover {
+            border-color: #60A5FA;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .upload-status {
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        .btn-success {
+            background: #10B981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-success:disabled {
+            background: #415A77;
+            cursor: not-allowed;
+        }
+
+        /* ====================================
            RESPONSIVE
            ==================================== */
         @media (max-width: 768px) {
@@ -677,28 +600,8 @@
     </style>
 </head>
 <body>
-    <!-- User Header -->
-    <div class="user-header">
-        <div class="header-left">
-            <a href="dashboard.html" class="playtest-logo">
-                <img src="assets/playtest-logo.png" alt="PLAYTEST" onerror="this.style.display='none'">
-                <span>PLAYTEST</span>
-            </a>
-        </div>
-        <div class="header-actions">
-            <a href="dashboard.html" class="dashboard-btn">
-                📊 Dashboard
-            </a>
-            <div class="user-info">
-                <div class="user-avatar" id="userAvatar">P</div>
-                <div class="user-details">
-                    <h4 id="userName">Profesor</h4>
-                    <p id="userRole">Profesor</p>
-                </div>
-            </div>
-            <button class="logout-btn" onclick="handleLogout()">Cerrar Sesión</button>
-        </div>
-    </div>
+    <!-- Dynamic Header Container -->
+    <div id="header-container"></div>
 
     <!-- Main Container -->
     <div class="container">
@@ -739,6 +642,9 @@
             <div id="tab-bloques" class="tab-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h2 style="color: #E0E1DD; font-size: 22px;">Bloques de Temas</h2>
+                    <button class="btn btn-primary" onclick="BloquesManager.openModalCrearBloque()" id="btn-crear-bloque" style="display: none;">
+                        ➕ Nuevo Bloque
+                    </button>
                 </div>
 
                 <div style="margin-bottom: 20px;">
@@ -858,7 +764,7 @@
 
     <!-- MODAL: Crear Bloque -->
     <div id="modal-crear-bloque" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
                 <h2 class="modal-title">📦 Nuevo Bloque de Temas</h2>
                 <button class="close-modal" onclick="BloquesManager.closeModal('modal-crear-bloque')">&times;</button>
@@ -873,9 +779,46 @@
                     <textarea class="form-input" name="descripcion" placeholder="Descripción del bloque..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Tiempo Estimado (días)</label>
-                    <input type="number" class="form-input" name="tiempo_estimado_dias" placeholder="14" value="14" min="1" required>
+                    <label class="form-label">Observaciones</label>
+                    <textarea class="form-input" name="observaciones" placeholder="Observaciones adicionales..."></textarea>
                 </div>
+
+                <!-- Metadatos del bloque -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Bloque</label>
+                        <select class="form-input" name="tipo_id" id="select-tipo-bloque">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nivel Educativo</label>
+                        <select class="form-input" name="nivel_id" id="select-nivel-bloque">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Carácter</label>
+                        <select class="form-input" name="estado_id" id="select-estado-bloque">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Tiempo Estimado (días)</label>
+                        <input type="number" class="form-input" name="tiempo_estimado_dias" placeholder="14" value="14" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Visibilidad</label>
+                        <select class="form-input" name="is_public">
+                            <option value="true">🌐 Público</option>
+                            <option value="false">🔒 Privado</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
                     <button type="button" class="btn btn-secondary" onclick="BloquesManager.closeModal('modal-crear-bloque')">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Crear Bloque</button>
@@ -1036,6 +979,22 @@
         </div>
     </div>
 
+    <!-- MODAL: Cargar Preguntas -->
+    <div id="modal-cargar-preguntas" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-preguntas-title">📤 Cargar Preguntas</h2>
+                <button class="close-modal" onclick="PreguntasUploader.closeModal()">&times;</button>
+            </div>
+
+            <div id="preguntas-upload-content">
+                <!-- Contenido dinámico renderizado por PreguntasUploader -->
+            </div>
+
+            <div id="preguntas-upload-status" class="upload-status"></div>
+        </div>
+    </div>
+
     <script>
         // ====================================
         // GLOBAL STATE
@@ -1048,21 +1007,27 @@
         // AUTHENTICATION
         // ====================================
         function getToken() {
-            return localStorage.getItem('token');
+            return localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken') || localStorage.getItem('token');
         }
 
         function checkAuth() {
             const token = getToken();
             if (!token) {
+                console.error('❌ No authentication token found');
                 window.location.href = 'index.html';
                 return false;
             }
+            console.log('✅ Authentication token found');
             return true;
         }
 
         function handleLogout() {
+            localStorage.removeItem('playtest_auth_token');
+            localStorage.removeItem('authToken');
             localStorage.removeItem('token');
             localStorage.removeItem('nickname');
+            localStorage.removeItem('playtest_session');
+            localStorage.removeItem('gameSession');
             window.location.href = 'index.html';
         }
 
@@ -1261,7 +1226,16 @@
 
         async function cargarBloques() {
             const oposicionId = document.getElementById('select-oposicion-bloques').value;
-            if (!oposicionId) return;
+            const btnCrearBloque = document.getElementById('btn-crear-bloque');
+
+            if (!oposicionId) {
+                // Ocultar botón si no hay oposición seleccionada
+                if (btnCrearBloque) btnCrearBloque.style.display = 'none';
+                return;
+            }
+
+            // Mostrar botón cuando hay oposición seleccionada
+            if (btnCrearBloque) btnCrearBloque.style.display = 'inline-flex';
 
             await BloquesManager.cargarBloques(oposicionId);
         }
@@ -1293,10 +1267,8 @@
         document.addEventListener('DOMContentLoaded', async () => {
             if (!checkAuth()) return;
 
-            // Set user info
-            const nickname = localStorage.getItem('nickname') || 'Profesor';
-            document.getElementById('userName').textContent = nickname;
-            document.getElementById('userAvatar').textContent = nickname.charAt(0).toUpperCase();
+            // Note: User info (name, avatar) is now handled by header-loader.js
+            // No need to set it manually here
 
             // Load initial data
             await cargarOposiciones();

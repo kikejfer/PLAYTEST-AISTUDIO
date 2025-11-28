@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico - Panel Profesor</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #2a2a2a;
+            border: 1px solid #00ff00;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .test-title {
+            color: #00ffff;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .success { color: #00ff00; }
+        .error { color: #ff0000; }
+        .warning { color: #ffaa00; }
+        .info { color: #00aaff; }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background: #00aa00;
+        }
+        pre {
+            background: #000;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnóstico del Panel de Profesor</h1>
+
+    <div class="test-section">
+        <div class="test-title">1️⃣ Verificación de Autenticación</div>
+        <div id="auth-result"></div>
+        <button onclick="testAuth()">Ejecutar Test</button>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">2️⃣ Verificación del Backend</div>
+        <div id="backend-result"></div>
+        <button onclick="testBackend()">Ejecutar Test</button>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">3️⃣ Test del Endpoint /api/oposiciones</div>
+        <div id="oposiciones-result"></div>
+        <button onclick="testOposiciones()">Ejecutar Test</button>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">4️⃣ Verificación del Rol de Usuario</div>
+        <div id="role-result"></div>
+        <button onclick="testRole()">Ejecutar Test</button>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">5️⃣ Test del Backend Local</div>
+        <div id="local-result"></div>
+        <button onclick="testLocalBackend()">Ejecutar Test</button>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">🎯 Acciones Rápidas</div>
+        <button onclick="window.location.href='index.html'">Ir a Login</button>
+        <button onclick="clearAuthAndRedirect()">Limpiar Auth y Reintentar</button>
+        <button onclick="window.location.href='teachers-panel-oposiciones.html'">Ir al Panel de Profesor</button>
+    </div>
+
+    <script>
+        const API_URL_REMOTE = 'https://playtest-backend.onrender.com/api';
+        const API_URL_LOCAL = 'http://localhost:3000/api';
+
+        function log(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const className = type === 'success' ? 'success' :
+                            type === 'error' ? 'error' :
+                            type === 'warning' ? 'warning' : 'info';
+            container.innerHTML += `<div class="${className}">➜ ${message}</div>`;
+        }
+
+        function clearLog(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        // TEST 1: Autenticación
+        function testAuth() {
+            clearLog('auth-result');
+            const token = localStorage.getItem('token');
+            const nickname = localStorage.getItem('nickname');
+            const role = localStorage.getItem('role');
+
+            if (!token) {
+                log('auth-result', '❌ NO HAY TOKEN guardado en localStorage', 'error');
+                log('auth-result', '💡 Necesitas iniciar sesión primero', 'warning');
+                return;
+            }
+
+            log('auth-result', '✅ Token encontrado', 'success');
+            log('auth-result', `Token: ${token.substring(0, 30)}...`, 'info');
+            log('auth-result', `Nickname: ${nickname || 'No definido'}`, 'info');
+            log('auth-result', `Role: ${role || 'No definido'}`, role === 'teacher' ? 'success' : 'warning');
+
+            if (role !== 'teacher') {
+                log('auth-result', '⚠️ Tu rol NO es "teacher" - El panel de profesor requiere rol de teacher', 'error');
+            }
+
+            // Intentar decodificar el token
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                log('auth-result', '📦 Payload del token:', 'info');
+                log('auth-result', JSON.stringify(payload, null, 2), 'info');
+            } catch (e) {
+                log('auth-result', '⚠️ No se pudo decodificar el token', 'warning');
+            }
+        }
+
+        // TEST 2: Backend Remote
+        async function testBackend() {
+            clearLog('backend-result');
+            log('backend-result', `Testing: ${API_URL_REMOTE}`, 'info');
+
+            try {
+                const response = await fetch(`${API_URL_REMOTE}/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    log('backend-result', '✅ Backend REMOTO está activo', 'success');
+                    log('backend-result', JSON.stringify(data, null, 2), 'info');
+                } else {
+                    log('backend-result', `⚠️ Backend respondió con status: ${response.status}`, 'warning');
+                }
+            } catch (error) {
+                log('backend-result', `❌ Error conectando al backend remoto: ${error.message}`, 'error');
+                log('backend-result', '💡 ¿Está el backend corriendo?', 'warning');
+            }
+        }
+
+        // TEST 3: Endpoint Oposiciones
+        async function testOposiciones() {
+            clearLog('oposiciones-result');
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                log('oposiciones-result', '❌ No hay token - Ejecuta el Test 1 primero', 'error');
+                return;
+            }
+
+            log('oposiciones-result', `Llamando a: ${API_URL_REMOTE}/oposiciones`, 'info');
+            log('oposiciones-result', `Con token: ${token.substring(0, 30)}...`, 'info');
+
+            try {
+                const response = await fetch(`${API_URL_REMOTE}/oposiciones`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                log('oposiciones-result', `Status: ${response.status} ${response.statusText}`,
+                    response.ok ? 'success' : 'error');
+
+                const text = await response.text();
+                log('oposiciones-result', 'Respuesta:', 'info');
+
+                try {
+                    const data = JSON.parse(text);
+                    log('oposiciones-result', JSON.stringify(data, null, 2),
+                        response.ok ? 'success' : 'error');
+
+                    if (response.ok && data.oposiciones) {
+                        log('oposiciones-result',
+                            `✅ Se obtuvieron ${data.oposiciones.length} oposiciones`, 'success');
+                    }
+                } catch (e) {
+                    log('oposiciones-result', text, 'error');
+                }
+
+            } catch (error) {
+                log('oposiciones-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // TEST 4: Verificar Rol
+        async function testRole() {
+            clearLog('role-result');
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                log('role-result', '❌ No hay token - Inicia sesión primero', 'error');
+                return;
+            }
+
+            log('role-result', 'Verificando rol con el backend...', 'info');
+
+            try {
+                const response = await fetch(`${API_URL_REMOTE}/users/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    log('role-result', '✅ Datos del usuario:', 'success');
+                    log('role-result', JSON.stringify(data, null, 2), 'info');
+
+                    if (data.user && data.user.role) {
+                        if (data.user.role === 'teacher') {
+                            log('role-result', '✅ Tu rol es TEACHER - Puedes acceder al panel de profesor', 'success');
+                        } else {
+                            log('role-result', `❌ Tu rol es "${data.user.role}" - NO puedes acceder al panel de profesor`, 'error');
+                            log('role-result', '💡 Necesitas una cuenta con rol "teacher"', 'warning');
+                        }
+                    }
+                } else {
+                    log('role-result', `❌ Error ${response.status}: ${await response.text()}`, 'error');
+                }
+            } catch (error) {
+                log('role-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // TEST 5: Backend Local
+        async function testLocalBackend() {
+            clearLog('local-result');
+            log('local-result', `Testing: ${API_URL_LOCAL}`, 'info');
+
+            try {
+                const response = await fetch(`${API_URL_LOCAL}/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    log('local-result', '✅ Backend LOCAL está activo', 'success');
+                    log('local-result', JSON.stringify(data, null, 2), 'info');
+                    log('local-result', '💡 Puedes usar el backend local cambiando API_URL en teachers-panel-oposiciones.html', 'warning');
+                } else {
+                    log('local-result', `⚠️ Backend respondió con status: ${response.status}`, 'warning');
+                }
+            } catch (error) {
+                log('local-result', `❌ Backend local NO está corriendo: ${error.message}`, 'error');
+                log('local-result', '💡 Para iniciar el backend local:', 'info');
+                log('local-result', '   cd playtest-backend && npm start', 'info');
+            }
+        }
+
+        function clearAuthAndRedirect() {
+            if (confirm('¿Limpiar datos de autenticación y volver al login?')) {
+                localStorage.clear();
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Auto-ejecutar test de autenticación al cargar
+        window.onload = () => {
+            testAuth();
+        };
+    </script>
+</body>
+</html>

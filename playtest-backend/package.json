@@ -11,7 +11,10 @@
     "deploy": "node deploy.js",
     "init-db": "node init-render-db.js",
     "build": "npm install",
-    "postbuild": "npm run init-db"
+    "postbuild": "npm run init-db",
+    "docs:schema": "node scripts/generate-schema-docs-from-sql.js",
+    "docs:schema:live": "node scripts/extract-database-schema.js",
+    "analyze:schema": "node scripts/analyze-schema.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

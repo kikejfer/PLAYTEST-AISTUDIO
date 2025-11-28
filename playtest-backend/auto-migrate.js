@@ -98,6 +98,175 @@ async function checkBlockMetadataColumns() {
 }
 
 /**
+ * Check if direct messaging tables and functions exist
+ */
+async function checkDirectMessagingTables() {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT
+        EXISTS (
+          SELECT FROM information_schema.tables
+          WHERE table_schema = 'public' AND table_name = 'conversations'
+        ) as has_conversations,
+        EXISTS (
+          SELECT FROM information_schema.tables
+          WHERE table_schema = 'public' AND table_name = 'direct_messages'
+        ) as has_direct_messages,
+        EXISTS (
+          SELECT FROM pg_proc
+          WHERE proname = 'cleanup_expired_typing_status'
+        ) as has_cleanup_function
+    `);
+
+    const row = result.rows[0];
+    return row.has_conversations && row.has_direct_messages && row.has_cleanup_function;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Check if users table has avatar_url column
+ */
+async function checkUsersAvatarColumn() {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.columns
+        WHERE table_name = 'users' AND column_name = 'avatar_url'
+      ) as has_avatar_url
+    `);
+    return result.rows[0].has_avatar_url;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Add avatar_url column to users table
+ */
+async function addUsersAvatarColumn() {
+  const client = await pool.connect();
+  try {
+    console.log('📝 Adding avatar_url column to users table...');
+
+    await client.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500);
+    `);
+
+    console.log('✅ avatar_url column added successfully');
+    return true;
+  } catch (error) {
+    console.error('❌ Error adding avatar_url column:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Check if teachers panel tables exist
+ */
+async function checkTeachersPanelTables() {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT
+        EXISTS (
+          SELECT FROM information_schema.tables
+          WHERE table_schema = 'public' AND table_name = 'oposiciones'
+        ) as has_oposiciones,
+        EXISTS (
+          SELECT FROM information_schema.tables
+          WHERE table_schema = 'public' AND table_name = 'class_enrollments'
+        ) as has_class_enrollments
+    `);
+
+    const row = result.rows[0];
+    return row.has_oposiciones && row.has_class_enrollments;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Apply teachers panel schema
+ */
+async function applyTeachersPanelSchema() {
+  const client = await pool.connect();
+  try {
+    console.log('📝 Applying teachers panel schema...');
+
+    const schemaPath = path.join(__dirname, 'database-schema-teachers-panel.sql');
+
+    if (!fs.existsSync(schemaPath)) {
+      console.warn('⚠️  Teachers panel schema file not found, skipping...');
+      return false;
+    }
+
+    const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
+
+    await client.query(schemaSQL);
+
+    console.log('✅ Teachers panel schema applied successfully');
+    return true;
+  } catch (error) {
+    // Ignore "already exists" errors
+    if (error.message.includes('already exists') ||
+        error.message.includes('ya existe') ||
+        error.code === '42P07') {
+      console.log('⚠️  Some teachers panel tables already exist (OK)');
+      return true;
+    }
+
+    console.error('❌ Error applying teachers panel schema:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Apply direct messaging migration
+ */
+async function applyDirectMessagingMigration() {
+  const client = await pool.connect();
+  try {
+    console.log('📝 Applying direct messaging system migration...');
+
+    const migrationPath = path.join(__dirname, 'migrations', '001-add-direct-messaging.sql');
+
+    if (!fs.existsSync(migrationPath)) {
+      console.warn('⚠️  Direct messaging migration file not found, skipping...');
+      return false;
+    }
+
+    const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
+
+    await client.query(migrationSQL);
+
+    console.log('✅ Direct messaging system migration applied successfully');
+    return true;
+  } catch (error) {
+    // Ignore "already exists" errors
+    if (error.message.includes('already exists') ||
+        error.message.includes('ya existe') ||
+        error.code === '42P07') {
+      console.log('⚠️  Some direct messaging tables already exist (OK)');
+      return true;
+    }
+
+    console.error('❌ Error applying direct messaging migration:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
  * Create block_assignments table if it doesn't exist
  */
 async function createBlockAssignmentsTable() {
@@ -251,6 +420,16 @@ async function runMigrations() {
       console.log('✅ Communication system already configured');
     }
 
+    // Check and add avatar_url column to users table if needed
+    const avatarColumnExists = await checkUsersAvatarColumn();
+
+    if (!avatarColumnExists) {
+      console.log('⚠️  users.avatar_url column not found');
+      await addUsersAvatarColumn();
+    } else {
+      console.log('✅ users.avatar_url column already exists');
+    }
+
     // Check and add block metadata columns if needed
     const metadataColumnsExist = await checkBlockMetadataColumns();
 
@@ -260,6 +439,29 @@ async function runMigrations() {
       await addBlockMetadataColumns();
     } else {
       console.log('✅ Block metadata columns already exist');
+    }
+
+    // Check and apply teachers panel schema if needed
+    const teachersPanelTablesExist = await checkTeachersPanelTables();
+
+    if (!teachersPanelTablesExist) {
+      console.log('⚠️  Teachers panel tables not found');
+      console.log('   - oposiciones table not found');
+      console.log('   - class_enrollments table not found');
+      await applyTeachersPanelSchema();
+    } else {
+      console.log('✅ Teachers panel already configured');
+    }
+
+    // Check and apply direct messaging migration if needed
+    const directMessagingTablesExist = await checkDirectMessagingTables();
+
+    if (!directMessagingTablesExist) {
+      console.log('⚠️  Direct messaging system not fully configured');
+      console.log('   - Checking for missing tables or functions...');
+      await applyDirectMessagingMigration();
+    } else {
+      console.log('✅ Direct messaging system already configured');
     }
 
     console.log('✨ Database schema is up to date');

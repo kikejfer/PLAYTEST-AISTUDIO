@@ -356,7 +356,7 @@ async function enhanceExistingHeader() {
                 { code: 'PAS', name: 'Administrador Secundario', panel: 'admin-secundario-panel.html' },
                 { code: 'PST', name: 'Soporte Técnico', panel: 'support-dashboard.html' },
                 { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
-                { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-schedules.html' },
+                { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-oposiciones.html' },
                 { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' }
             ];
             
@@ -585,7 +585,7 @@ function getUserRolesFromSystem(profile, session) {
         'creador': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
         'creador_contenido': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
         'profesor_creador': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
-        'profesor': { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-schedules.html' },        
+        'profesor': { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-oposiciones.html' },
         'jugador': { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' }
     };
     
@@ -2173,3 +2173,89 @@ window.closeUserDropdown = function() {
 };
 
 console.log('✅ Modal functions defined globally at script level');
+
+// ============================================================================
+// FUNCIONES DE MENSAJERÍA DIRECTA
+// ============================================================================
+
+/**
+ * Actualizar contador de mensajes no leídos en el header
+ */
+window.updateMessagesUnreadCount = async function() {
+    try {
+        const API_BASE_URL = window.location.hostname.includes('onrender.com')
+            ? 'https://playtest-backend.onrender.com/api'
+            : 'http://localhost:3002/api';
+
+        const token = localStorage.getItem('playtest_auth_token') || localStorage.getItem('authToken');
+        if (!token) {
+            console.log('⚠️ No auth token, skipping unread count update');
+            return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/messages/unread-count`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            // Si falla, no es crítico, simplemente no mostramos el contador
+            console.log('⚠️ Could not fetch unread messages count');
+            return;
+        }
+
+        const data = await response.json();
+        const badge = document.getElementById('messages-unread-badge');
+
+        if (badge) {
+            const unreadCount = parseInt(data.total_unread) || 0;
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+            console.log('📬 Updated messages unread count:', unreadCount);
+        }
+    } catch (error) {
+        console.error('❌ Error updating messages unread count:', error);
+        // No mostramos error al usuario, es un feature no crítico
+    }
+};
+
+/**
+ * Iniciar polling del contador de mensajes no leídos
+ */
+window.startMessagesUnreadPolling = function() {
+    // Actualizar inmediatamente
+    window.updateMessagesUnreadCount();
+
+    // Luego cada 30 segundos
+    setInterval(() => {
+        window.updateMessagesUnreadCount();
+    }, 30000);
+
+    console.log('📬 Messages unread count polling started');
+};
+
+// Iniciar polling cuando se carga el header
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        // Esperar un poco para asegurar que el header esté cargado
+        setTimeout(() => {
+            if (typeof window.startMessagesUnreadPolling === 'function') {
+                window.startMessagesUnreadPolling();
+            }
+        }, 1000);
+    });
+} else {
+    // El DOM ya está listo
+    setTimeout(() => {
+        if (typeof window.startMessagesUnreadPolling === 'function') {
+            window.startMessagesUnreadPolling();
+        }
+    }, 1000);
+}
