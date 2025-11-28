@@ -53,10 +53,10 @@ async function runCriticalMigrations() {
     // 3. Apply teachers panel schema
     console.log('\n📝 Step 3: Applying teachers panel schema...');
     const schemaPath = path.join(__dirname, 'database-schema-teachers-panel.sql');
-    
+
     if (fs.existsSync(schemaPath)) {
       const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
-      
+
       try {
         await client.query(schemaSQL);
         console.log('✅ Teachers panel schema applied successfully');
@@ -72,14 +72,59 @@ async function runCriticalMigrations() {
       console.error('❌ Schema file not found:', schemaPath);
     }
 
-    // 4. Verify tables exist
+    // 4. Apply Luminarias schema
+    console.log('\n📝 Step 4: Applying Luminarias system schema...');
+    const luminariasSchemaPath = path.join(__dirname, '..', 'database-schema-luminarias.sql');
+
+    if (fs.existsSync(luminariasSchemaPath)) {
+      const luminariasSQL = fs.readFileSync(luminariasSchemaPath, 'utf8');
+
+      try {
+        await client.query(luminariasSQL);
+        console.log('✅ Luminarias schema applied successfully');
+
+        // Create initial Luminarias accounts for existing users
+        console.log('👥 Creating Luminarias accounts for existing users...');
+        await client.query(`
+          INSERT INTO user_luminarias (user_id, current_balance, total_earned, lifetime_earnings)
+          SELECT
+            u.id,
+            200,  -- Initial balance
+            200,  -- Total earned
+            200   -- Lifetime earnings
+          FROM users u
+          LEFT JOIN user_luminarias ul ON u.id = ul.user_id
+          WHERE ul.user_id IS NULL
+          ON CONFLICT (user_id) DO NOTHING;
+        `);
+
+        const usersWithLuminarias = await client.query('SELECT COUNT(*) as count FROM user_luminarias');
+        console.log(`✅ ${usersWithLuminarias.rows[0].count} users have Luminarias accounts`);
+
+      } catch (error) {
+        if (error.message.includes('already exists') || error.code === '42P07') {
+          console.log('⚠️  Luminarias tables already exist (OK)');
+        } else {
+          console.error('❌ Error applying Luminarias schema:', error.message);
+          console.error('Error details:', error);
+          // Don't throw - continue with other migrations
+        }
+      }
+    } else {
+      console.log('⚠️  Luminarias schema file not found (will skip):', luminariasSchemaPath);
+    }
+
+    // 5. Verify tables exist
     console.log('\n🔍 Verifying tables...');
     const verifications = [
       { name: 'users.avatar_url', query: "SELECT column_name FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'avatar_url'" },
       { name: 'conversations', query: "SELECT tablename FROM pg_tables WHERE tablename = 'conversations'" },
       { name: 'direct_messages', query: "SELECT tablename FROM pg_tables WHERE tablename = 'direct_messages'" },
       { name: 'teacher_classes', query: "SELECT tablename FROM pg_tables WHERE tablename = 'teacher_classes'" },
-      { name: 'class_enrollments', query: "SELECT tablename FROM pg_tables WHERE tablename = 'class_enrollments'" }
+      { name: 'class_enrollments', query: "SELECT tablename FROM pg_tables WHERE tablename = 'class_enrollments'" },
+      { name: 'user_luminarias', query: "SELECT tablename FROM pg_tables WHERE tablename = 'user_luminarias'" },
+      { name: 'luminarias_transactions', query: "SELECT tablename FROM pg_tables WHERE tablename = 'luminarias_transactions'" },
+      { name: 'luminarias_config', query: "SELECT tablename FROM pg_tables WHERE tablename = 'luminarias_config'" }
     ];
 
     for (const check of verifications) {
