@@ -7,7 +7,11 @@
 class LuminariasManager {
     constructor() {
         this.currentBalance = 0;
-        this.API_BASE = '/api/luminarias';
+        // Detectar si estamos en producción (Render) o desarrollo
+        const API_BASE_URL = window.location.hostname.includes('onrender.com')
+            ? 'https://playtest-backend.onrender.com/api'
+            : '/api';
+        this.API_BASE = `${API_BASE_URL}/luminarias`;
         this.listeners = [];
         this.isInitialized = false;
     }
