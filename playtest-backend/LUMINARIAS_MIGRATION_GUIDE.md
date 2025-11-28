@@ -7,8 +7,11 @@ Al jugar en modo clásico en producción, se presentaban dos errores:
 1. **Error 404 en `/api/luminarias/transaction`**
    - ✅ **RESUELTO**: Se corrigió `luminarias-manager.js` para usar la URL correcta del backend en producción
 
-2. **Error 500 en `/api/luminarias/balance` y `/api/games/:id/scores`**
-   - ❌ **PENDIENTE**: Las tablas y funciones de Luminarias no existen en la base de datos de producción
+2. **Error 500 en `/api/luminarias/balance`**
+   - ✅ **RESUELTO**: Las tablas y funciones de Luminarias fueron creadas correctamente
+
+3. **Error 500 en `/api/games/:id/scores`**
+   - ✅ **RESUELTO**: Se corrigieron las columnas faltantes en `game_scores` y `user_profiles`
 
 ## Solución
 
@@ -31,6 +34,8 @@ Este script ejecutará automáticamente:
 - ✅ Creación de funciones de base de datos (`get_user_luminarias_stats`, `process_luminarias_transaction`)
 - ✅ Configuración inicial de valores
 - ✅ Creación de cuentas de Luminarias para usuarios existentes (200 Luminarias iniciales)
+- ✅ Corrección de columnas en `game_scores` (agregar `user_id` y `score`)
+- ✅ Corrección de columnas en `user_profiles` (agregar `last_activity`)
 
 #### Opción B: Ejecutar localmente contra producción
 
@@ -54,6 +59,9 @@ Después de ejecutar la migración, verifica que todo esté correcto:
 ✅ user_luminarias exists
 ✅ luminarias_transactions exists
 ✅ luminarias_config exists
+✅ game_scores.user_id exists
+✅ game_scores.score exists
+✅ user_profiles.last_activity exists
 ```
 
 ### Paso 3: Reiniciar el Servidor
@@ -103,20 +111,41 @@ ERROR: permission denied for table user_luminarias
 
 **Solución**: Verifica que el usuario de la base de datos tenga permisos suficientes.
 
+### Error: "column does not exist" en game_scores
+
+```
+ERROR: column "user_id" of relation "game_scores" does not exist
+ERROR: column "score" of relation "game_scores" does not exist
+```
+
+**Solución**: Ejecuta el script de migraciones críticas que incluye el fix de columnas.
+
+### Error: "column does not exist" en user_profiles
+
+```
+ERROR: column "last_activity" of relation "user_profiles" does not exist
+```
+
+**Solución**: Ejecuta el script de migraciones críticas que incluye el fix de columnas.
+
 ## Archivos Relacionados
 
-- `database-schema-luminarias.sql` - Esquema completo del sistema
-- `playtest-backend/run-critical-migrations.js` - Script de migración
+- `database-schema-luminarias.sql` - Esquema completo del sistema de Luminarias
+- `playtest-backend/run-critical-migrations.js` - Script maestro de migración
 - `playtest-backend/update-luminarias-schema.js` - Script específico de Luminarias
-- `playtest-backend/routes/luminarias.js` - Endpoints de la API
-- `luminarias-manager.js` - Cliente JavaScript
+- `playtest-backend/migrations/002-fix-game-scores-columns.sql` - Fix de columnas de game_scores
+- `playtest-backend/routes/luminarias.js` - Endpoints de la API de Luminarias
+- `playtest-backend/routes/games.js` - Endpoints de la API de juegos (scores)
+- `luminarias-manager.js` - Cliente JavaScript del frontend
 
 ## Estado Actual
 
 - ✅ Frontend corregido para usar URL correcta en producción
-- ✅ Script de migración actualizado
-- ⏳ Pendiente: Ejecutar migración en Render.com
-- ⏳ Pendiente: Verificar funcionamiento en producción
+- ✅ Script de migración actualizado con todas las correcciones
+- ✅ Funciones SQL de Luminarias corregidas (ambigüedad de columnas)
+- ✅ Columnas faltantes en `game_scores` y `user_profiles` agregadas
+- ⏳ Pendiente: Ejecutar migración completa en Render.com
+- ⏳ Pendiente: Verificar funcionamiento completo en producción
 
 ## Testing Después de la Migración
 

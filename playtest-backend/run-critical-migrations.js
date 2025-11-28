@@ -114,8 +114,30 @@ async function runCriticalMigrations() {
       console.log('⚠️  Luminarias schema file not found (will skip):', luminariasSchemaPath);
     }
 
-    // 5. Verify tables exist
-    console.log('\n🔍 Verifying tables...');
+    // 5. Apply game_scores columns fix
+    console.log('\n📝 Step 5: Fixing game_scores and user_profiles columns...');
+    const gameScoresFixPath = path.join(__dirname, 'migrations', '002-fix-game-scores-columns.sql');
+
+    if (fs.existsSync(gameScoresFixPath)) {
+      const gameScoresFixSQL = fs.readFileSync(gameScoresFixPath, 'utf8');
+
+      try {
+        await client.query(gameScoresFixSQL);
+        console.log('✅ game_scores and user_profiles columns fixed successfully');
+      } catch (error) {
+        if (error.message.includes('already exists') || error.code === '42701') {
+          console.log('⚠️  Columns already exist (OK)');
+        } else {
+          console.error('❌ Error fixing columns:', error.message);
+          // Don't throw - continue with other migrations
+        }
+      }
+    } else {
+      console.log('⚠️  game_scores fix file not found (will skip):', gameScoresFixPath);
+    }
+
+    // 6. Verify tables and columns exist
+    console.log('\n🔍 Verifying tables and columns...');
     const verifications = [
       { name: 'users.avatar_url', query: "SELECT column_name FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'avatar_url'" },
       { name: 'conversations', query: "SELECT tablename FROM pg_tables WHERE tablename = 'conversations'" },
@@ -124,7 +146,10 @@ async function runCriticalMigrations() {
       { name: 'class_enrollments', query: "SELECT tablename FROM pg_tables WHERE tablename = 'class_enrollments'" },
       { name: 'user_luminarias', query: "SELECT tablename FROM pg_tables WHERE tablename = 'user_luminarias'" },
       { name: 'luminarias_transactions', query: "SELECT tablename FROM pg_tables WHERE tablename = 'luminarias_transactions'" },
-      { name: 'luminarias_config', query: "SELECT tablename FROM pg_tables WHERE tablename = 'luminarias_config'" }
+      { name: 'luminarias_config', query: "SELECT tablename FROM pg_tables WHERE tablename = 'luminarias_config'" },
+      { name: 'game_scores.user_id', query: "SELECT column_name FROM information_schema.columns WHERE table_name = 'game_scores' AND column_name = 'user_id'" },
+      { name: 'game_scores.score', query: "SELECT column_name FROM information_schema.columns WHERE table_name = 'game_scores' AND column_name = 'score'" },
+      { name: 'user_profiles.last_activity', query: "SELECT column_name FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'last_activity'" }
     ];
 
     for (const check of verifications) {
