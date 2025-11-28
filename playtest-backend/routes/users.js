@@ -48,9 +48,11 @@ router.get('/profile', authenticateToken, async (req, res) => {
 
     const result = await pool.query(`
       SELECT u.id, u.nickname, u.email, u.first_name, u.last_name, u.created_at,
-        up.answer_history, up.stats, up.preferences, up.loaded_blocks
+        up.answer_history, up.stats, up.preferences, up.loaded_blocks,
+        COALESCE(ul.current_balance, 0) as luminarias
       FROM users u
       LEFT JOIN user_profiles up ON u.id = up.user_id
+      LEFT JOIN user_luminarias ul ON u.id = ul.user_id
       WHERE u.id = $1
     `, [req.user.id]);
 
@@ -94,7 +96,8 @@ router.get('/profile', authenticateToken, async (req, res) => {
       answerHistory: user.answer_history || [],
       stats: user.stats || {},
       preferences: user.preferences || {},
-      loadedBlocks: user.loaded_blocks || []
+      loadedBlocks: user.loaded_blocks || [],
+      luminarias: user.luminarias || 0
     };
 
     // DEBUG: Log final response
