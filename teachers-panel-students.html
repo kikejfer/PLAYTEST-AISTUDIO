@@ -699,6 +699,289 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* ===== MODAL DE PROGRESO DEL ESTUDIANTE ===== */
+
+        .progress-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .progress-modal-overlay.active {
+            display: flex;
+        }
+
+        .progress-modal {
+            background: #1B263B;
+            border: 1px solid #415A77;
+            border-radius: 15px;
+            max-width: 1200px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-modal-title {
+            color: white;
+            font-size: 1.8em;
+            margin: 0;
+        }
+
+        .progress-modal-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .progress-modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .progress-modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .progress-modal-body {
+            padding: 25px;
+        }
+
+        .student-progress-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .summary-card.warning {
+            background: rgba(251, 191, 36, 0.1);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+
+        .summary-card.danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .summary-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #4ECDC4;
+        }
+
+        .summary-card.warning .summary-value {
+            color: #FBBF24;
+        }
+
+        .summary-card.danger .summary-value {
+            color: #EF4444;
+        }
+
+        .summary-label {
+            color: #778DA9;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .progress-timeline {
+            margin-bottom: 30px;
+        }
+
+        .progress-timeline h3 {
+            color: #4ECDC4;
+            margin-bottom: 15px;
+        }
+
+        .timeline-block {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid #4ECDC4;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-block:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateX(5px);
+        }
+
+        .timeline-block.completed {
+            border-left-color: #10B981;
+        }
+
+        .timeline-block.in-progress {
+            border-left-color: #3B82F6;
+        }
+
+        .timeline-block.not-started {
+            border-left-color: #778DA9;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .timeline-title {
+            color: #E0E1DD;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .timeline-oposicion {
+            color: #778DA9;
+            font-size: 0.85em;
+            margin-top: 3px;
+        }
+
+        .timeline-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .timeline-badge.completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+        }
+
+        .timeline-badge.in-progress {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3B82F6;
+        }
+
+        .timeline-badge.not-started {
+            background: rgba(119, 141, 169, 0.2);
+            color: #778DA9;
+        }
+
+        .timeline-progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            height: 8px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .timeline-progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .timeline-progress-fill.completed {
+            background: linear-gradient(90deg, #10B981, #059669);
+        }
+
+        .timeline-progress-fill.in-progress {
+            background: linear-gradient(90deg, #3B82F6, #2563EB);
+        }
+
+        .timeline-progress-fill.not-started {
+            background: linear-gradient(90deg, #778DA9, #415A77);
+        }
+
+        .timeline-metrics {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9em;
+            color: #778DA9;
+            flex-wrap: wrap;
+        }
+
+        .timeline-metric {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .export-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .export-btn {
+            background: linear-gradient(45deg, #4ECDC4, #44A08D);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .empty-progress {
+            text-align: center;
+            padding: 60px 20px;
+            color: #778DA9;
+        }
+
+        .empty-progress h3 {
+            color: #E0E1DD;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
