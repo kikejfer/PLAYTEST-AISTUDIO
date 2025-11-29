@@ -3196,7 +3196,8 @@ Esto hará que:
                 const tbody = document.getElementById('luminarias-config-tbody');
                 tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;"><div class="loading">Cargando configuración de Luminarias...</div></td></tr>';
 
-                const response = await fetch('/api/luminarias/config', {
+                // Llamar directamente al endpoint admin que devuelve el array completo
+                const response = await fetch('/api/luminarias/admin/config', {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -3208,36 +3209,7 @@ Esto hará que:
                     throw new Error(`Error ${response.status}: ${response.statusText}`);
                 }
 
-                // El endpoint devuelve datos organizados por categorías
-                const rawData = await response.json();
-
-                // Necesitamos obtener los datos en formato de array para la tabla
-                const response2 = await fetch('/api/luminarias/admin/config', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response2.ok) {
-                    luminariasConfigData = await response2.json();
-                } else {
-                    // Fallback: convertir datos organizados en array
-                    luminariasConfigData = [];
-                    for (const [category, subcategories] of Object.entries(rawData)) {
-                        for (const [subcategory, actions] of Object.entries(subcategories)) {
-                            for (const [action_type, data] of Object.entries(actions)) {
-                                luminariasConfigData.push({
-                                    category,
-                                    subcategory,
-                                    action_type,
-                                    ...data
-                                });
-                            }
-                        }
-                    }
-                }
+                luminariasConfigData = await response.json();
 
                 renderLuminariasTable();
 
@@ -3481,7 +3453,7 @@ Esto hará que:
                     };
 
                     try {
-                        const response = await fetch(`/api/luminarias/config/${item.id}`, {
+                        const response = await fetch(`/api/luminarias/admin/config/${item.id}`, {
                             method: 'PUT',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
