@@ -679,7 +679,7 @@ router.post('/:id/scores', authenticateToken, async (req, res) => {
     // Update last activity in class_enrollments (optional - for teacher panel)
     try {
       await pool.query(
-        'UPDATE class_enrollments SET last_activity = CURRENT_TIMESTAMP WHERE student_id = $1',
+        'UPDATE class_enrollments SET last_activity = CURRENT_TIMESTAMP WHERE alumno_id = $1',
         [req.user.id]
       );
     } catch (enrollmentError) {
