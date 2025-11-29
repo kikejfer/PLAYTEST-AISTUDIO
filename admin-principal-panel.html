@@ -3196,8 +3196,13 @@ Esto hará que:
                 const tbody = document.getElementById('luminarias-config-tbody');
                 tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;"><div class="loading">Cargando configuración de Luminarias...</div></td></tr>';
 
+                // Detectar entorno y configurar URL base correcta
+                const API_BASE_URL = window.location.hostname.includes('onrender.com')
+                    ? 'https://playtest-backend.onrender.com'
+                    : '';
+
                 // Llamar directamente al endpoint admin que devuelve el array completo
-                const response = await fetch('/api/luminarias/admin/config', {
+                const response = await fetch(`${API_BASE_URL}/api/luminarias/admin/config`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -3431,6 +3436,11 @@ Esto hará que:
                 saveBtn.disabled = true;
                 saveBtn.textContent = '⏳ Guardando...';
 
+                // Detectar entorno y configurar URL base correcta
+                const API_BASE_URL = window.location.hostname.includes('onrender.com')
+                    ? 'https://playtest-backend.onrender.com'
+                    : '';
+
                 let successCount = 0;
                 let errorCount = 0;
 
@@ -3453,7 +3463,7 @@ Esto hará que:
                     };
 
                     try {
-                        const response = await fetch(`/api/luminarias/admin/config/${item.id}`, {
+                        const response = await fetch(`${API_BASE_URL}/api/luminarias/admin/config/${item.id}`, {
                             method: 'PUT',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
