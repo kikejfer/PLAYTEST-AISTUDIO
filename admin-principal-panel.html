@@ -568,6 +568,10 @@
                     <span class="tab-icon">⚙️</span>
                     <span>Configuración Aplicación</span>
                 </button>
+                <button class="tab-button" onclick="switchTab('luminarias')">
+                    <span class="tab-icon">💡</span>
+                    <span>Configuración Luminarias</span>
+                </button>
             </div>
         </div>
 
@@ -828,6 +832,72 @@
             </div>
         </div>
 
+        <!-- Contenido de la pestaña Configuración de Luminarias -->
+        <div id="luminarias-tab" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <span>💡 Configuración de Montos de Luminarias</span>
+                    <div class="section-actions">
+                        <input type="text" id="luminarias-search" placeholder="Buscar..." style="padding: 8px 12px; border: 1px solid #415A77; border-radius: 5px; background: #1B263B; color: #E0E1DD; font-size: 14px; min-width: 250px;">
+                        <select id="luminarias-category-filter" style="padding: 8px 12px; border: 1px solid #415A77; border-radius: 5px; background: #1B263B; color: #E0E1DD; font-size: 14px;">
+                            <option value="">Todas las categorías</option>
+                            <option value="user_earning">👤 Usuarios - Ganancias</option>
+                            <option value="user_spending">👤 Usuarios - Gastos</option>
+                            <option value="creator_earning">🎨 Creadores - Ganancias</option>
+                            <option value="creator_spending">🎨 Creadores - Gastos</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="saveAllLuminariasChanges()" id="save-luminarias-btn" style="display: none;">
+                            💾 Guardar Cambios
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadLuminariasConfig()" style="background: #415A77; border: 1px solid #778DA9;">
+                            🔄 Recargar
+                        </button>
+                    </div>
+                </div>
+                <div class="section-content">
+                    <div style="background: #415A77; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <p style="color: #E0E1DD; margin-bottom: 10px;">
+                            <strong>ℹ️ Información:</strong> Aquí puedes configurar los montos mínimos y máximos de Luminarias para cada acción en el sistema.
+                        </p>
+                        <ul style="color: #778DA9; margin-left: 20px; line-height: 1.8;">
+                            <li><strong>Usuarios - Ganancias:</strong> Luminarias que ganan los jugadores por actividades (completar sesiones, duelos, etc.)</li>
+                            <li><strong>Usuarios - Gastos:</strong> Luminarias que cuestan items en la tienda (avatares, pistas, revivir, etc.)</li>
+                            <li><strong>Creadores - Ganancias:</strong> Luminarias que ganan profesores/creadores por crear contenido</li>
+                            <li><strong>Creadores - Gastos:</strong> Luminarias que cuestan herramientas y servicios para creadores</li>
+                        </ul>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="luminarias-config-table">
+                            <thead>
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Subcategoría</th>
+                                    <th>Acción</th>
+                                    <th>Descripción</th>
+                                    <th style="text-align: center;">Mínimo <img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 16px; width: 16px; vertical-align: middle;"></th>
+                                    <th style="text-align: center;">Máximo <img src="./Imagenes/1lum.png" alt="Luminarias" style="height: 16px; width: 16px; vertical-align: middle;"></th>
+                                    <th style="text-align: center;">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="luminarias-config-tbody">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; padding: 40px;">
+                                        <div class="loading">Cargando configuración de Luminarias...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="luminarias-changes-summary" style="display: none; background: #415A77; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                        <h3 style="color: #F59E0B; margin-bottom: 10px;">⚠️ Cambios Pendientes</h3>
+                        <div id="luminarias-changes-list" style="color: #E0E1DD;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script src="api-data-service.js"></script>
@@ -988,6 +1058,12 @@
             if (tabName === 'app-config') {
                 console.log('⚙️ Tab de configuración de app seleccionada. Cargando flags...');
                 loadFeatureFlags();
+            }
+
+            // Cargar configuración de Luminarias si se selecciona la pestaña de Luminarias
+            if (tabName === 'luminarias') {
+                console.log('💡 Tab de configuración de Luminarias seleccionada. Cargando configuración...');
+                loadLuminariasConfig();
             }
         }
 
@@ -3099,6 +3175,376 @@ Esto hará que:
                     document.getElementById('creadores-section').innerHTML = '<div style="color: #EF4444; padding: 20px;">Módulo genérico no cargado</div>';
                 }
             }, 2000); // Aumentado a 2 segundos
+        });
+
+        // ========== FUNCIONES PARA GESTIÓN DE CONFIGURACIÓN DE LUMINARIAS ==========
+
+        let luminariasConfigData = [];
+        let luminariasChanges = {};
+
+        /**
+         * Cargar configuración de Luminarias desde el backend
+         */
+        async function loadLuminariasConfig() {
+            try {
+                const token = localStorage.getItem('playtest_auth_token');
+                if (!token) {
+                    alert('No hay token de autenticación');
+                    return;
+                }
+
+                const tbody = document.getElementById('luminarias-config-tbody');
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;"><div class="loading">Cargando configuración de Luminarias...</div></td></tr>';
+
+                const response = await fetch('/api/luminarias/config', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+
+                // El endpoint devuelve datos organizados por categorías
+                const rawData = await response.json();
+
+                // Necesitamos obtener los datos en formato de array para la tabla
+                const response2 = await fetch('/api/luminarias/admin/config', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response2.ok) {
+                    luminariasConfigData = await response2.json();
+                } else {
+                    // Fallback: convertir datos organizados en array
+                    luminariasConfigData = [];
+                    for (const [category, subcategories] of Object.entries(rawData)) {
+                        for (const [subcategory, actions] of Object.entries(subcategories)) {
+                            for (const [action_type, data] of Object.entries(actions)) {
+                                luminariasConfigData.push({
+                                    category,
+                                    subcategory,
+                                    action_type,
+                                    ...data
+                                });
+                            }
+                        }
+                    }
+                }
+
+                renderLuminariasTable();
+
+                // Limpiar cambios pendientes
+                luminariasChanges = {};
+                updateLuminariasChangesSummary();
+
+                console.log('✅ Configuración de Luminarias cargada:', luminariasConfigData.length, 'items');
+            } catch (error) {
+                console.error('❌ Error cargando configuración de Luminarias:', error);
+                const tbody = document.getElementById('luminarias-config-tbody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: #EF4444;">
+                            <strong>Error al cargar configuración:</strong><br>
+                            ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        /**
+         * Renderizar tabla de configuración de Luminarias
+         */
+        function renderLuminariasTable() {
+            const tbody = document.getElementById('luminarias-config-tbody');
+            const searchTerm = document.getElementById('luminarias-search').value.toLowerCase();
+            const categoryFilter = document.getElementById('luminarias-category-filter').value;
+
+            if (!luminariasConfigData || luminariasConfigData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #778DA9;">No hay configuraciones disponibles</td></tr>';
+                return;
+            }
+
+            // Filtrar datos
+            let filteredData = luminariasConfigData.filter(item => {
+                const matchesSearch = !searchTerm ||
+                    item.category.toLowerCase().includes(searchTerm) ||
+                    item.subcategory.toLowerCase().includes(searchTerm) ||
+                    item.action_type.toLowerCase().includes(searchTerm) ||
+                    (item.description && item.description.toLowerCase().includes(searchTerm));
+
+                const matchesCategory = !categoryFilter || item.category === categoryFilter;
+
+                return matchesSearch && matchesCategory;
+            });
+
+            if (filteredData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #778DA9;">No se encontraron resultados</td></tr>';
+                return;
+            }
+
+            // Agrupar por categoría
+            const groupedData = {};
+            filteredData.forEach(item => {
+                if (!groupedData[item.category]) {
+                    groupedData[item.category] = [];
+                }
+                groupedData[item.category].push(item);
+            });
+
+            // Generar HTML
+            let html = '';
+            const categoryIcons = {
+                'user_earning': '👤 💰',
+                'user_spending': '👤 💸',
+                'creator_earning': '🎨 💰',
+                'creator_spending': '🎨 💸'
+            };
+
+            const categoryNames = {
+                'user_earning': 'Usuarios - Ganancias',
+                'user_spending': 'Usuarios - Gastos',
+                'creator_earning': 'Creadores - Ganancias',
+                'creator_spending': 'Creadores - Gastos'
+            };
+
+            for (const [category, items] of Object.entries(groupedData)) {
+                items.forEach((item, index) => {
+                    const isFirstInCategory = index === 0;
+                    const rowspan = isFirstInCategory ? items.length : 0;
+                    const configId = item.id || `${item.category}-${item.subcategory}-${item.action_type}`;
+
+                    const currentMin = luminariasChanges[configId]?.min_amount ?? item.min_amount;
+                    const currentMax = luminariasChanges[configId]?.max_amount ?? item.max_amount;
+                    const hasChanges = luminariasChanges[configId] !== undefined;
+
+                    html += `<tr style="${hasChanges ? 'background: rgba(251, 191, 36, 0.1);' : ''}">`;
+
+                    if (isFirstInCategory) {
+                        html += `
+                            <td rowspan="${rowspan}" style="background: #415A77; font-weight: bold; vertical-align: top; padding-top: 15px;">
+                                ${categoryIcons[category] || ''}<br>
+                                <small>${categoryNames[category] || category}</small>
+                            </td>
+                        `;
+                    }
+
+                    html += `
+                        <td><small style="color: #778DA9;">${item.subcategory || '-'}</small></td>
+                        <td><strong>${item.action_type || '-'}</strong></td>
+                        <td><small style="color: #778DA9;">${item.description || '-'}</small></td>
+                        <td style="text-align: center;">
+                            <input type="number"
+                                   value="${currentMin}"
+                                   min="0"
+                                   data-config-id="${configId}"
+                                   data-field="min_amount"
+                                   onchange="updateLuminariasValue(this)"
+                                   style="width: 80px; padding: 6px; border: 1px solid ${hasChanges ? '#F59E0B' : '#415A77'}; border-radius: 4px; background: #1B263B; color: #E0E1DD; text-align: center; font-weight: bold;">
+                        </td>
+                        <td style="text-align: center;">
+                            <input type="number"
+                                   value="${currentMax}"
+                                   min="0"
+                                   data-config-id="${configId}"
+                                   data-field="max_amount"
+                                   onchange="updateLuminariasValue(this)"
+                                   style="width: 80px; padding: 6px; border: 1px solid ${hasChanges ? '#F59E0B' : '#415A77'}; border-radius: 4px; background: #1B263B; color: #E0E1DD; text-align: center; font-weight: bold;">
+                        </td>
+                        <td style="text-align: center;">
+                            ${hasChanges ? '<span style="color: #F59E0B;">⚠️ Modificado</span>' : '<span style="color: #10B981;">✓ Guardado</span>'}
+                        </td>
+                    </tr>`;
+                });
+            }
+
+            tbody.innerHTML = html;
+        }
+
+        /**
+         * Actualizar valor de configuración (temporal, no guarda aún)
+         */
+        function updateLuminariasValue(input) {
+            const configId = input.dataset.configId;
+            const field = input.dataset.field;
+            const value = parseInt(input.value);
+
+            if (!luminariasChanges[configId]) {
+                luminariasChanges[configId] = {};
+            }
+
+            luminariasChanges[configId][field] = value;
+
+            // Validar que min < max
+            if (luminariasChanges[configId].min_amount !== undefined &&
+                luminariasChanges[configId].max_amount !== undefined) {
+                if (luminariasChanges[configId].min_amount >= luminariasChanges[configId].max_amount) {
+                    alert('El valor mínimo debe ser menor que el máximo');
+                    input.value = field === 'min_amount' ?
+                        luminariasChanges[configId].max_amount - 1 :
+                        luminariasChanges[configId].min_amount + 1;
+                    luminariasChanges[configId][field] = parseInt(input.value);
+                }
+            }
+
+            // Mostrar botón de guardar y resumen de cambios
+            updateLuminariasChangesSummary();
+            renderLuminariasTable();
+        }
+
+        /**
+         * Actualizar resumen de cambios pendientes
+         */
+        function updateLuminariasChangesSummary() {
+            const changeCount = Object.keys(luminariasChanges).length;
+            const saveBtn = document.getElementById('save-luminarias-btn');
+            const summary = document.getElementById('luminarias-changes-summary');
+            const changesList = document.getElementById('luminarias-changes-list');
+
+            if (changeCount > 0) {
+                saveBtn.style.display = 'inline-block';
+                summary.style.display = 'block';
+
+                let html = `<p style="margin-bottom: 10px;">Tienes <strong>${changeCount}</strong> configuración(es) modificada(s):</p><ul style="margin-left: 20px;">`;
+
+                for (const [configId, changes] of Object.entries(luminariasChanges)) {
+                    const item = luminariasConfigData.find(i =>
+                        (i.id || `${i.category}-${i.subcategory}-${i.action_type}`) === configId
+                    );
+                    if (item) {
+                        html += `<li>${item.action_type}: `;
+                        if (changes.min_amount !== undefined) html += `Min: ${changes.min_amount} `;
+                        if (changes.max_amount !== undefined) html += `Max: ${changes.max_amount}`;
+                        html += `</li>`;
+                    }
+                }
+
+                html += '</ul>';
+                changesList.innerHTML = html;
+            } else {
+                saveBtn.style.display = 'none';
+                summary.style.display = 'none';
+            }
+        }
+
+        /**
+         * Guardar todos los cambios en el backend
+         */
+        async function saveAllLuminariasChanges() {
+            if (Object.keys(luminariasChanges).length === 0) {
+                alert('No hay cambios pendientes para guardar');
+                return;
+            }
+
+            if (!confirm(`¿Estás seguro de que quieres guardar ${Object.keys(luminariasChanges).length} cambio(s)?`)) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('playtest_auth_token');
+                if (!token) {
+                    alert('No hay token de autenticación');
+                    return;
+                }
+
+                const saveBtn = document.getElementById('save-luminarias-btn');
+                saveBtn.disabled = true;
+                saveBtn.textContent = '⏳ Guardando...';
+
+                let successCount = 0;
+                let errorCount = 0;
+
+                for (const [configId, changes] of Object.entries(luminariasChanges)) {
+                    const item = luminariasConfigData.find(i =>
+                        (i.id || `${i.category}-${i.subcategory}-${i.action_type}`) === configId
+                    );
+
+                    if (!item || !item.id) {
+                        console.warn('No se encontró ID para:', configId);
+                        errorCount++;
+                        continue;
+                    }
+
+                    const updateData = {
+                        min_amount: changes.min_amount ?? item.min_amount,
+                        max_amount: changes.max_amount ?? item.max_amount,
+                        description: item.description,
+                        is_active: item.is_active ?? true
+                    };
+
+                    try {
+                        const response = await fetch(`/api/luminarias/config/${item.id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(updateData)
+                        });
+
+                        if (response.ok) {
+                            successCount++;
+                            // Actualizar datos locales
+                            const index = luminariasConfigData.findIndex(i => i.id === item.id);
+                            if (index !== -1) {
+                                luminariasConfigData[index].min_amount = updateData.min_amount;
+                                luminariasConfigData[index].max_amount = updateData.max_amount;
+                            }
+                        } else {
+                            console.error('Error al guardar:', configId, await response.text());
+                            errorCount++;
+                        }
+                    } catch (err) {
+                        console.error('Error en petición:', configId, err);
+                        errorCount++;
+                    }
+                }
+
+                saveBtn.disabled = false;
+                saveBtn.textContent = '💾 Guardar Cambios';
+
+                if (errorCount === 0) {
+                    alert(`✅ Se guardaron ${successCount} cambio(s) exitosamente`);
+                    luminariasChanges = {};
+                    updateLuminariasChangesSummary();
+                    renderLuminariasTable();
+                } else {
+                    alert(`⚠️ Se guardaron ${successCount} cambio(s), pero ${errorCount} fallaron. Revisa la consola para más detalles.`);
+                }
+
+            } catch (error) {
+                console.error('❌ Error guardando cambios:', error);
+                alert('Error al guardar cambios: ' + error.message);
+                const saveBtn = document.getElementById('save-luminarias-btn');
+                saveBtn.disabled = false;
+                saveBtn.textContent = '💾 Guardar Cambios';
+            }
+        }
+
+        // Event listeners para filtros de Luminarias
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('luminarias-search');
+            const categoryFilter = document.getElementById('luminarias-category-filter');
+
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    renderLuminariasTable();
+                });
+            }
+
+            if (categoryFilter) {
+                categoryFilter.addEventListener('change', () => {
+                    renderLuminariasTable();
+                });
+            }
         });
 
     </script>
