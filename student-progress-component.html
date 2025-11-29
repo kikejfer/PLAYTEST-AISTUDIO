@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Componente: Mi Progreso Académico</title>
+    <style>
+        /* Este archivo contiene el componente reutilizable de progreso académico */
+        /* Para usar en jugadores-panel-gaming.html */
+
+        .academic-progress-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .progress-header h2 {
+            color: #4ECDC4;
+            font-size: 1.8em;
+            margin: 0;
+        }
+
+        .progress-filters {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .progress-filter-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #E0E1DD;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+
+        .progress-filter-select:focus {
+            outline: none;
+            border-color: #4ECDC4;
+        }
+
+        .progress-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .progress-stat-card {
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(68, 160, 141, 0.1));
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .progress-stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #4ECDC4;
+            margin: 0;
+        }
+
+        .progress-stat-label {
+            color: #778DA9;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .progress-blocks-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .progress-block-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .progress-block-card:hover {
+            border-color: #4ECDC4;
+            box-shadow: 0 5px 20px rgba(78, 205, 196, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .progress-block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .progress-block-title {
+            color: #E0E1DD;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .progress-block-class {
+            color: #778DA9;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .progress-status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .progress-status-completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            border: 1px solid #10B981;
+        }
+
+        .progress-status-in-progress {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3B82F6;
+            border: 1px solid #3B82F6;
+        }
+
+        .progress-status-not-started {
+            background: rgba(119, 141, 169, 0.2);
+            color: #778DA9;
+            border: 1px solid #778DA9;
+        }
+
+        .progress-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .progress-metric {
+            text-align: center;
+        }
+
+        .progress-metric-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4ECDC4;
+        }
+
+        .progress-metric-label {
+            color: #778DA9;
+            font-size: 0.85em;
+            margin-top: 3px;
+        }
+
+        .progress-bar-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+            margin-top: 15px;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            background: linear-gradient(90deg, #4ECDC4, #44A08D);
+        }
+
+        .progress-bar-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.75em;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .progress-dates {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #778DA9;
+        }
+
+        .progress-empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #778DA9;
+        }
+
+        .progress-empty-state img {
+            width: 120px;
+            opacity: 0.5;
+            margin-bottom: 20px;
+        }
+
+        .progress-empty-state h3 {
+            color: #E0E1DD;
+            margin-bottom: 10px;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(45deg, #4ECDC4, #44A08D);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Este es un componente para integrar en jugadores-panel-gaming.html -->
+
+    <div id="academic-progress-root" class="academic-progress-section">
+        <!-- El contenido se carga dinámicamente -->
+    </div>
+
+    <script>
+        /**
+         * Componente de Progreso Académico para Estudiantes
+         * Para integrar en jugadores-panel-gaming.html
+         */
+
+        class AcademicProgressComponent {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                this.progressData = [];
+                this.selectedOposicionId = null;
+                this.BASE_URL = 'https://playtest-backend.onrender.com';
+            }
+
+            async init() {
+                await this.loadProgress();
+                this.render();
+            }
+
+            async loadProgress(oposicionId = null) {
+                try {
+                    const token = localStorage.getItem('playtest_auth_token');
+
+                    if (!token) {
+                        this.renderNotAuthenticated();
+                        return;
+                    }
+
+                    const url = oposicionId
+                        ? `${this.BASE_URL}/api/students/progress?classId=${oposicionId}`
+                        : `${this.BASE_URL}/api/students/progress`;
+
+                    const response = await fetch(url, {
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.progressData = data.progress || [];
+                        this.render();
+                    } else {
+                        console.error('Error al cargar progreso:', data);
+                        this.renderError();
+                    }
+                } catch (error) {
+                    console.error('Error al cargar progreso:', error);
+                    this.renderError();
+                }
+            }
+
+            async loadOposiciones() {
+                try {
+                    const token = localStorage.getItem('playtest_auth_token');
+                    const response = await fetch(`${this.BASE_URL}/api/students/my-classes`, {
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        }
+                    });
+
+                    const data = await response.json();
+                    return data.success ? data.classes : [];
+                } catch (error) {
+                    console.error('Error cargando oposiciones:', error);
+                    return [];
+                }
+            }
+
+            getStatusClass(percentage) {
+                if (percentage === 100) return 'completed';
+                if (percentage > 0) return 'in-progress';
+                return 'not-started';
+            }
+
+            getStatusText(percentage, status) {
+                if (percentage === 100) return status || 'Completado';
+                if (percentage > 0) return 'En Progreso';
+                return 'Sin Iniciar';
+            }
+
+            calculateStats() {
+                const total = this.progressData.length;
+                const completed = this.progressData.filter(p => p.percentage === 100).length;
+                const inProgress = this.progressData.filter(p => p.percentage > 0 && p.percentage < 100).length;
+                const totalTime = this.progressData.reduce((sum, p) => sum + (p.time_spent || 0), 0);
+                const avgScore = this.progressData.length > 0
+                    ? this.progressData.reduce((sum, p) => sum + (p.best_score || 0), 0) / this.progressData.length
+                    : 0;
+
+                return { total, completed, inProgress, totalTime, avgScore };
+            }
+
+            async render() {
+                const stats = this.calculateStats();
+                const oposiciones = await this.loadOposiciones();
+
+                this.container.innerHTML = `
+                    <div class="progress-header">
+                        <h2>📊 Mi Progreso Académico</h2>
+                        <div class="progress-filters">
+                            <select class="progress-filter-select" id="oposicion-filter">
+                                <option value="">Todas las Oposiciones</option>
+                                ${oposiciones.map(opo => `
+                                    <option value="${opo.id}">${opo.class_name}</option>
+                                `).join('')}
+                            </select>
+                            <button class="refresh-btn" onclick="academicProgress.init()">
+                                🔄 Actualizar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="progress-stats-grid">
+                        <div class="progress-stat-card">
+                            <div class="progress-stat-value">${stats.total}</div>
+                            <div class="progress-stat-label">Bloques Totales</div>
+                        </div>
+                        <div class="progress-stat-card">
+                            <div class="progress-stat-value">${stats.completed}</div>
+                            <div class="progress-stat-label">Completados</div>
+                        </div>
+                        <div class="progress-stat-card">
+                            <div class="progress-stat-value">${stats.inProgress}</div>
+                            <div class="progress-stat-label">En Progreso</div>
+                        </div>
+                        <div class="progress-stat-card">
+                            <div class="progress-stat-value">${stats.totalTime}</div>
+                            <div class="progress-stat-label">Minutos Totales</div>
+                        </div>
+                        <div class="progress-stat-card">
+                            <div class="progress-stat-value">${stats.avgScore.toFixed(1)}</div>
+                            <div class="progress-stat-label">Puntuación Media</div>
+                        </div>
+                    </div>
+
+                    ${this.progressData.length === 0 ? this.renderEmptyState() : this.renderProgressBlocks()}
+                `;
+
+                // Event listener para filtro
+                const filter = document.getElementById('oposicion-filter');
+                if (filter) {
+                    filter.addEventListener('change', (e) => {
+                        const opoId = e.target.value;
+                        this.loadProgress(opoId || null);
+                    });
+                }
+            }
+
+            renderProgressBlocks() {
+                return `
+                    <div class="progress-blocks-grid">
+                        ${this.progressData.map(block => `
+                            <div class="progress-block-card">
+                                <div class="progress-block-header">
+                                    <div>
+                                        <h3 class="progress-block-title">${block.block_name}</h3>
+                                        <p class="progress-block-class">📚 ${block.class_name}</p>
+                                    </div>
+                                    <span class="progress-status-badge progress-status-${this.getStatusClass(block.percentage)}">
+                                        ${this.getStatusText(block.percentage, block.status)}
+                                    </span>
+                                </div>
+
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" style="width: ${block.percentage || 0}%"></div>
+                                    <div class="progress-bar-label">${block.percentage || 0}%</div>
+                                </div>
+
+                                <div class="progress-metrics-grid">
+                                    <div class="progress-metric">
+                                        <div class="progress-metric-value">⏱️ ${block.time_spent || 0}</div>
+                                        <div class="progress-metric-label">Minutos</div>
+                                    </div>
+                                    <div class="progress-metric">
+                                        <div class="progress-metric-value">🔄 ${block.attempts_count || 0}</div>
+                                        <div class="progress-metric-label">Intentos</div>
+                                    </div>
+                                    <div class="progress-metric">
+                                        <div class="progress-metric-value">⭐ ${block.best_score || 'N/A'}</div>
+                                        <div class="progress-metric-label">Mejor Nota</div>
+                                    </div>
+                                </div>
+
+                                <div class="progress-dates">
+                                    <span>📅 Iniciado: ${block.date_started || 'No iniciado'}</span>
+                                    <span>✅ Completado: ${block.date_completed || 'En curso'}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            renderEmptyState() {
+                return `
+                    <div class="progress-empty-state">
+                        <h3>📭 No tienes progreso registrado aún</h3>
+                        <p>Comienza a estudiar bloques asignados para ver tu progreso aquí.</p>
+                    </div>
+                `;
+            }
+
+            renderNotAuthenticated() {
+                this.container.innerHTML = `
+                    <div class="progress-empty-state">
+                        <h3>🔒 Debes iniciar sesión</h3>
+                        <p>Inicia sesión como estudiante para ver tu progreso académico.</p>
+                    </div>
+                `;
+            }
+
+            renderError() {
+                this.container.innerHTML = `
+                    <div class="progress-empty-state">
+                        <h3>❌ Error al cargar progreso</h3>
+                        <p>Hubo un problema al cargar tu progreso. Intenta de nuevo.</p>
+                        <button class="refresh-btn" onclick="academicProgress.init()">
+                            🔄 Reintentar
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Instancia global
+        let academicProgress;
+
+        // Inicializar cuando se cargue la página
+        document.addEventListener('DOMContentLoaded', () => {
+            academicProgress = new AcademicProgressComponent('academic-progress-root');
+            academicProgress.init();
+        });
+    </script>
+</body>
+</html>
