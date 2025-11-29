@@ -564,7 +564,7 @@
             </div>
             <div class="balance-summary">
                 <div class="balance-main">
-                    <span id="current-balance">0</span> <img src="Imagenes/1lum.png" alt="Luminaria" style="width: 32px; height: 32px; vertical-align: middle;">
+                    <span id="current-balance">0</span> <img src="Imagenes/1lum.png" alt="Luminaria" style="height: 1em; vertical-align: middle;">
                 </div>
                 <div class="balance-stats">
                     <div class="stat-item">
@@ -918,7 +918,7 @@
                         </div>
                         <div class="transaction-amount">
                             <div class="amount-value ${isPositive ? 'amount-positive' : 'amount-negative'}">
-                                ${isPositive ? '+' : ''}${Math.abs(transaction.amount).toLocaleString()} <img src="Imagenes/1lum.png" alt="Luminaria" style="width: 24px; height: 24px; vertical-align: middle;">
+                                ${isPositive ? '+' : ''}${Math.abs(transaction.amount).toLocaleString()} <img src="Imagenes/1lum.png" alt="Luminaria" style="height: 1em; vertical-align: middle;">
                             </div>
                             <div class="balance-change">
                                 Balance: ${transaction.balance_before.toLocaleString()} → ${transaction.balance_after.toLocaleString()}
