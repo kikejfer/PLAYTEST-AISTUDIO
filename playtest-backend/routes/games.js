@@ -666,32 +666,42 @@ router.post('/:id/scores', authenticateToken, async (req, res) => {
       ['completed', gameId]
     );
 
-    // Update user's last activity timestamp in user_profiles
-    await pool.query(
-      'UPDATE user_profiles SET last_activity = CURRENT_TIMESTAMP WHERE user_id = $1',
-      [req.user.id]
-    );
+    // Update user's last activity timestamp in user_profiles (optional)
+    try {
+      await pool.query(
+        'UPDATE user_profiles SET last_activity = CURRENT_TIMESTAMP WHERE user_id = $1',
+        [req.user.id]
+      );
+    } catch (profileError) {
+      console.log(`⚠️ Could not update user_profiles: ${profileError.message}`);
+    }
 
-    // Update last activity in class_enrollments (for teacher panel)
-    await pool.query(
-      'UPDATE class_enrollments SET last_activity = CURRENT_TIMESTAMP WHERE student_id = $1',
-      [req.user.id]
-    );
+    // Update last activity in class_enrollments (optional - for teacher panel)
+    try {
+      await pool.query(
+        'UPDATE class_enrollments SET last_activity = CURRENT_TIMESTAMP WHERE student_id = $1',
+        [req.user.id]
+      );
+    } catch (enrollmentError) {
+      console.log(`⚠️ Could not update class_enrollments: ${enrollmentError.message}`);
+    }
 
-    // Increment total games played counter
-    await pool.query(`
-      UPDATE user_profiles
-      SET preferences = jsonb_set(
-        COALESCE(preferences, '{}'::jsonb),
-        '{total_games_played}',
-        (COALESCE(preferences->>'total_games_played', '0')::int + 1)::text::jsonb
-      )
-      WHERE user_id = $1
-    `, [req.user.id]);
+    // Increment total games played counter (optional)
+    try {
+      await pool.query(`
+        UPDATE user_profiles
+        SET preferences = jsonb_set(
+          COALESCE(preferences, '{}'::jsonb),
+          '{total_games_played}',
+          (COALESCE(preferences->>'total_games_played', '0')::int + 1)::text::jsonb
+        )
+        WHERE user_id = $1
+      `, [req.user.id]);
+    } catch (preferencesError) {
+      console.log(`⚠️ Could not update game counter: ${preferencesError.message}`);
+    }
 
-    console.log(`✅ Updated activity and stats for user ${req.user.id} after completing game ${gameId}`);
     console.log(`✅ Score saved successfully for game ${gameId}`);
-
     res.status(201).json({ message: 'Score saved and game completed successfully' });
 
   } catch (error) {
