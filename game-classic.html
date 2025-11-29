@@ -9,7 +9,7 @@
       content="width=device-width, initial-scale=1.0"
     />
     <title>PLAYTEST - Classic Mode</title>
-    <link rel="icon" type="image/png" href="Imagenes/Playtest.png">
+    <link rel="icon" type="image/png" href="Imagenes/Lumi.png">
 
     <!-- Embedded Global Stylesheet -->
     <style>
@@ -230,7 +230,7 @@
         useEffect(() => { const handleClickOutside = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setIsDropdownOpen(false); }; document.addEventListener("mousedown", handleClickOutside); return () => document.removeEventListener("mousedown", handleClickOutside); }, [dropdownRef]);
         return (
           <header className="bg-brand-secondary shadow-lg"><div className="container mx-auto px-4 sm:px-6 lg:px-8"><div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-3"><img src="./Imagenes/Playtest.png" alt="Playtest Logo" className="h-16 w-16" /><h1 className="text-xl md:text-2xl font-bold tracking-wider text-brand-light">{t('header_title')} <span className="font-light text-brand-accent hidden sm:inline">{t('header_subtitle')}</span></h1></div>
+              <div className="flex items-center space-x-3"><img src="./Imagenes/Lumi.png" alt="Playtest Logo" className="h-16 w-16" /><h1 className="text-xl md:text-2xl font-bold tracking-wider text-brand-light">{t('header_title')} <span className="font-light text-brand-accent hidden sm:inline">{t('header_subtitle')}</span></h1></div>
               <div className="relative" ref={dropdownRef}><button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center gap-2 text-brand-accent hover:text-brand-light transition-colors p-2 rounded-md"><span className="font-semibold">{language.toUpperCase()}</span><ChevronUpDownIcon className="h-5 w-5" /></button>
                 {isDropdownOpen && (<div className="absolute right-0 mt-2 w-32 bg-brand-primary rounded-md shadow-lg z-20 ring-1 ring-black ring-opacity-5"><div className="py-1"><a href="#" onClick={(e)=>{e.preventDefault();setLanguage('es');setIsDropdownOpen(false);}} className="block px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">{t('spanish')}</a><a href="#" onClick={(e)=>{e.preventDefault();setLanguage('en');setIsDropdownOpen(false);}} className="block px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">{t('english')}</a></div></div>)}
               </div>
