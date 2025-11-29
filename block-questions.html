@@ -8,7 +8,7 @@
       content="width=device-width, initial-scale=1.0"
     />
     <title>PLAYTEST - Block Questions</title>
-    <link rel="icon" type="image/png" href="Imagenes/Playtest.png">
+    <link rel="icon" type="image/png" href="Imagenes/Lumi.png">
 
     <!-- Embedded Global Stylesheet -->
     <style>
@@ -256,7 +256,7 @@
                 />
             )}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 border-b border-brand-tertiary pb-4 gap-4">
-              <div className="flex items-center gap-4"> <button onClick={onReturn} className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold py-2 px-4 rounded-lg transition-colors" aria-label="Return to previous page"> <ArrowLeftIcon className="h-5 w-5" /> <span>{t('all_blocks_return')}</span> </button> <div className="flex items-center gap-4"> <img src="./Imagenes/Playtest.png" alt={block.name} className="h-12 w-20 rounded-lg object-cover" /> <div> <h2 className="text-2xl font-bold text-brand-light">{block.name}</h2> <p className="text-sm text-brand-accent">{block.description}</p> </div> </div> </div>
+              <div className="flex items-center gap-4"> <button onClick={onReturn} className="flex items-center gap-2 bg-brand-tertiary hover:bg-brand-accent text-brand-light font-semibold py-2 px-4 rounded-lg transition-colors" aria-label="Return to previous page"> <ArrowLeftIcon className="h-5 w-5" /> <span>{t('all_blocks_return')}</span> </button> <div className="flex items-center gap-4"> <img src="./Imagenes/Lumi.png" alt={block.name} className="h-12 w-20 rounded-lg object-cover" /> <div> <h2 className="text-2xl font-bold text-brand-light">{block.name}</h2> <p className="text-sm text-brand-accent">{block.description}</p> </div> </div> </div>
               <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2"> <select value={topicFilter} onChange={(e) => setTopicFilter(e.target.value)} className="w-full sm:w-48 bg-brand-primary border border-brand-tertiary rounded-lg px-3 py-2 text-brand-light focus:ring-2 focus:ring-brand-cta focus:outline-none" aria-label={t('block_questions_filter_topic')}> {uniqueTopics.map(topic => ( <option key={topic} value={topic}>{topic === 'all' ? t('block_questions_all_topics') : topic}</option> ))} </select> <span className="text-sm text-center font-medium text-brand-accent bg-brand-primary px-3 py-2 rounded-lg">{t('block_questions_count', {count: filteredQuestions.length})}</span> </div>
             </div>
             <div className="space-y-4">
@@ -288,7 +288,7 @@
         useEffect(() => { const handleClickOutside = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setIsDropdownOpen(false); }; document.addEventListener("mousedown", handleClickOutside); return () => document.removeEventListener("mousedown", handleClickOutside); }, [dropdownRef]);
         return (
           <header className="bg-brand-secondary shadow-lg"><div className="container mx-auto px-4 sm:px-6 lg:px-8"><div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-3"><img src="./Imagenes/Playtest.png" alt="Playtest Logo" className="h-16 w-16" /><h1 className="text-xl md:text-2xl font-bold tracking-wider text-brand-light">{t('header_title')} <span className="font-light text-brand-accent hidden sm:inline">{t('header_subtitle')}</span></h1></div>
+              <div className="flex items-center space-x-3"><img src="./Imagenes/Lumi.png" alt="Playtest Logo" className="h-16 w-16" /><h1 className="text-xl md:text-2xl font-bold tracking-wider text-brand-light">{t('header_title')} <span className="font-light text-brand-accent hidden sm:inline">{t('header_subtitle')}</span></h1></div>
               <div className="relative" ref={dropdownRef}><button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center gap-2 text-brand-accent hover:text-brand-light transition-colors p-2 rounded-md"><span className="font-semibold">{language.toUpperCase()}</span><ChevronUpDownIcon className="h-5 w-5" /></button>
                 {isDropdownOpen && (<div className="absolute right-0 mt-2 w-32 bg-brand-primary rounded-md shadow-lg z-20 ring-1 ring-black ring-opacity-5"><div className="py-1"><a href="#" onClick={(e)=>{e.preventDefault();setLanguage('es');setIsDropdownOpen(false);}} className="block px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">{t('spanish')}</a><a href="#" onClick={(e)=>{e.preventDefault();setLanguage('en');setIsDropdownOpen(false);}} className="block px-4 py-2 text-sm text-brand-light hover:bg-brand-tertiary">{t('english')}</a></div></div>)}
               </div>
