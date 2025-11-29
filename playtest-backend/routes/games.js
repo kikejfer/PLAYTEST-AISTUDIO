@@ -654,10 +654,10 @@ router.post('/:id/scores', authenticateToken, async (req, res) => {
 
     console.log(`📊 Inserting score: gameId=${gameId}, userId=${req.user.id}, gameType=${gameType}, score=${numericScore}`);
 
-    // Save the score (user_id is obtained through game_players JOIN)
+    // Save the score with user_id
     await pool.query(
-      'INSERT INTO game_scores (game_id, game_type, score, score_data) VALUES ($1, $2, $3, $4)',
-      [gameId, gameType, numericScore, scoreDataJson]
+      'INSERT INTO game_scores (game_id, user_id, game_type, score, score_data) VALUES ($1, $2, $3, $4, $5)',
+      [gameId, req.user.id, gameType, numericScore, scoreDataJson]
     );
 
     // Mark game as completed
