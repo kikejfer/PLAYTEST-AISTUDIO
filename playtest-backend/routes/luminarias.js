@@ -360,7 +360,82 @@ router.get('/config', authenticateToken, async (req, res) => {
     }
 });
 
-// Actualizar configuración (solo admins)
+// Obtener configuraciones del sistema (admin) - DEBE IR ANTES de /config/:id
+router.get('/admin/config', authenticateToken, async (req, res) => {
+    try {
+        // Verificar que es administrador
+        const userRoles = await pool.query(`
+            SELECT r.name
+            FROM user_roles ur
+            JOIN roles r ON ur.role_id = r.id
+            WHERE ur.user_id = $1
+            AND r.name IN ('administrador_principal', 'administrador_secundario')
+        `, [req.user.id]);
+
+        if (userRoles.rows.length === 0) {
+            return res.status(403).json({ error: 'Solo los administradores pueden ver la configuración' });
+        }
+
+        const result = await pool.query(`
+            SELECT * FROM luminarias_config
+            ORDER BY category, subcategory, action_type
+        `);
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error obteniendo configuraciones:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// Actualizar configuración específica (admin) - DEBE IR DESPUÉS de /admin/config
+router.put('/admin/config/:id', authenticateToken, async (req, res) => {
+    try {
+        // Verificar que es administrador
+        const userRoles = await pool.query(`
+            SELECT r.name
+            FROM user_roles ur
+            JOIN roles r ON ur.role_id = r.id
+            WHERE ur.user_id = $1
+            AND r.name IN ('administrador_principal', 'administrador_secundario')
+        `, [req.user.id]);
+
+        if (userRoles.rows.length === 0) {
+            return res.status(403).json({ error: 'Solo los administradores pueden actualizar la configuración' });
+        }
+
+        const { id } = req.params;
+        const { min_amount, max_amount } = req.body;
+
+        if (min_amount < 0 || max_amount < 0 || min_amount >= max_amount) {
+            return res.status(400).json({
+                error: 'Valores inválidos. El mínimo debe ser menor que el máximo y ambos positivos.'
+            });
+        }
+
+        const result = await pool.query(`
+            UPDATE luminarias_config
+            SET min_amount = $1, max_amount = $2, updated_at = NOW()
+            WHERE id = $3
+            RETURNING *
+        `, [min_amount, max_amount, id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Configuración no encontrada' });
+        }
+
+        res.json({
+            success: true,
+            message: 'Configuración actualizada exitosamente',
+            config: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Error actualizando configuración:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// Actualizar configuración (solo admins) - Endpoint legacy
 router.put('/config/:id', authenticateToken, async (req, res) => {
     try {
         // Verificar que es administrador
@@ -1670,65 +1745,6 @@ router.get('/admin/stats', authenticateToken, async (req, res) => {
         res.json(statsResult.rows[0]);
     } catch (error) {
         console.error('Error obteniendo estadísticas admin:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-    }
-});
-
-// Obtener configuraciones del sistema (admin)
-router.get('/admin/config', authenticateToken, async (req, res) => {
-    try {
-        // Verificar permisos de administrador
-        if (!req.user.role || !['admin', 'super_admin'].includes(req.user.role)) {
-            return res.status(403).json({ error: 'Acceso denegado' });
-        }
-        
-        const result = await pool.query(`
-            SELECT * FROM luminarias_config 
-            ORDER BY target_role, category, subcategory
-        `);
-        
-        res.json(result.rows);
-    } catch (error) {
-        console.error('Error obteniendo configuraciones:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-    }
-});
-
-// Actualizar configuración específica (admin)
-router.put('/admin/config/:id', authenticateToken, async (req, res) => {
-    try {
-        // Verificar permisos de administrador
-        if (!req.user.role || !['admin', 'super_admin'].includes(req.user.role)) {
-            return res.status(403).json({ error: 'Acceso denegado' });
-        }
-        
-        const { id } = req.params;
-        const { min_value, max_value } = req.body;
-        
-        if (min_value < 0 || max_value < 0 || min_value >= max_value) {
-            return res.status(400).json({ 
-                error: 'Valores inválidos. El mínimo debe ser menor que el máximo y ambos positivos.' 
-            });
-        }
-        
-        const result = await pool.query(`
-            UPDATE luminarias_config 
-            SET min_value = $1, max_value = $2, updated_at = NOW()
-            WHERE id = $3
-            RETURNING *
-        `, [min_value, max_value, id]);
-        
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Configuración no encontrada' });
-        }
-        
-        res.json({
-            success: true,
-            message: 'Configuración actualizada exitosamente',
-            config: result.rows[0]
-        });
-    } catch (error) {
-        console.error('Error actualizando configuración:', error);
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 });

@@ -596,6 +596,143 @@ FOR EACH ROW
 EXECUTE FUNCTION recalcular_progreso_cronograma();
 
 -- =====================================================
+-- 6. SISTEMA DE MÉTRICAS DE ACTIVIDAD DE USUARIOS
+-- =====================================================
+
+-- Tabla principal de métricas de actividad
+CREATE TABLE IF NOT EXISTS user_activity_metrics (
+    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    last_activity TIMESTAMP DEFAULT NOW(),
+    last_login TIMESTAMP,
+    total_sessions INTEGER DEFAULT 0,
+    total_questions_answered INTEGER DEFAULT 0,
+    total_time_spent_minutes INTEGER DEFAULT 0,
+    current_streak_days INTEGER DEFAULT 0,
+    longest_streak_days INTEGER DEFAULT 0,
+    last_streak_date DATE,
+    total_logins INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Índices para optimizar consultas
+CREATE INDEX IF NOT EXISTS idx_user_activity_last_activity
+    ON user_activity_metrics(last_activity);
+
+CREATE INDEX IF NOT EXISTS idx_user_activity_current_streak
+    ON user_activity_metrics(current_streak_days DESC);
+
+CREATE INDEX IF NOT EXISTS idx_user_activity_last_login
+    ON user_activity_metrics(last_login);
+
+-- Función: Actualizar actividad de usuario
+CREATE OR REPLACE FUNCTION update_user_activity(p_user_id INTEGER)
+RETURNS void AS $$
+BEGIN
+    INSERT INTO user_activity_metrics (
+        user_id,
+        last_activity,
+        total_sessions
+    ) VALUES (
+        p_user_id,
+        NOW(),
+        1
+    )
+    ON CONFLICT (user_id) DO UPDATE SET
+        last_activity = NOW(),
+        total_sessions = user_activity_metrics.total_sessions + 1,
+        updated_at = NOW();
+END;
+$$ LANGUAGE plpgsql;
+
+-- Función: Registrar login de usuario
+CREATE OR REPLACE FUNCTION record_user_login(p_user_id INTEGER)
+RETURNS void AS $$
+DECLARE
+    v_last_streak_date DATE;
+    v_current_streak INTEGER;
+BEGIN
+    SELECT last_streak_date, current_streak_days
+    INTO v_last_streak_date, v_current_streak
+    FROM user_activity_metrics
+    WHERE user_id = p_user_id;
+
+    IF v_last_streak_date IS NULL THEN
+        INSERT INTO user_activity_metrics (
+            user_id, last_login, last_activity, total_logins,
+            current_streak_days, longest_streak_days, last_streak_date
+        ) VALUES (
+            p_user_id, NOW(), NOW(), 1, 1, 1, CURRENT_DATE
+        );
+        RETURN;
+    END IF;
+
+    IF v_last_streak_date = CURRENT_DATE THEN
+        v_current_streak := v_current_streak;
+    ELSIF v_last_streak_date = CURRENT_DATE - INTERVAL '1 day' THEN
+        v_current_streak := v_current_streak + 1;
+    ELSE
+        v_current_streak := 1;
+    END IF;
+
+    UPDATE user_activity_metrics SET
+        last_login = NOW(),
+        last_activity = NOW(),
+        total_logins = total_logins + 1,
+        current_streak_days = v_current_streak,
+        longest_streak_days = GREATEST(longest_streak_days, v_current_streak),
+        last_streak_date = CURRENT_DATE,
+        updated_at = NOW()
+    WHERE user_id = p_user_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Función: Incrementar preguntas respondidas
+CREATE OR REPLACE FUNCTION increment_questions_answered(
+    p_user_id INTEGER,
+    p_questions_count INTEGER DEFAULT 1
+)
+RETURNS void AS $$
+BEGIN
+    INSERT INTO user_activity_metrics (
+        user_id, total_questions_answered, last_activity
+    ) VALUES (
+        p_user_id, p_questions_count, NOW()
+    )
+    ON CONFLICT (user_id) DO UPDATE SET
+        total_questions_answered = user_activity_metrics.total_questions_answered + p_questions_count,
+        last_activity = NOW(),
+        updated_at = NOW();
+END;
+$$ LANGUAGE plpgsql;
+
+-- Función: Incrementar tiempo de estudio
+CREATE OR REPLACE FUNCTION increment_study_time(
+    p_user_id INTEGER,
+    p_minutes INTEGER
+)
+RETURNS void AS $$
+BEGIN
+    INSERT INTO user_activity_metrics (
+        user_id, total_time_spent_minutes, last_activity
+    ) VALUES (
+        p_user_id, p_minutes, NOW()
+    )
+    ON CONFLICT (user_id) DO UPDATE SET
+        total_time_spent_minutes = user_activity_metrics.total_time_spent_minutes + p_minutes,
+        last_activity = NOW(),
+        updated_at = NOW();
+END;
+$$ LANGUAGE plpgsql;
+
+-- Inicializar métricas para usuarios existentes
+INSERT INTO user_activity_metrics (user_id, last_activity, total_sessions)
+SELECT id, NOW(), 0
+FROM users
+WHERE id NOT IN (SELECT user_id FROM user_activity_metrics)
+ON CONFLICT (user_id) DO NOTHING;
+
+-- =====================================================
 -- VERIFICACIÓN FINAL
 -- =====================================================
 
@@ -607,9 +744,10 @@ BEGIN
     RAISE NOTICE '  - Notificaciones Push: 3 tablas';
     RAISE NOTICE '  - Repetición Espaciada: 4 tablas';
     RAISE NOTICE '  - Dificultad Adaptativa: 2 tablas';
-    RAISE NOTICE '  - Triggers: 2 triggers automáticos';
+    RAISE NOTICE '  - Métricas de Actividad: 1 tabla';
+    RAISE NOTICE '  - Auto-unlock de bloques: 3 triggers';
     RAISE NOTICE '';
-    RAISE NOTICE '🚀 Total: 13 tablas nuevas + 7 funciones + 2 triggers';
+    RAISE NOTICE '🚀 Total: 14 tablas nuevas + 11 funciones + 3 triggers';
     RAISE NOTICE '';
     RAISE NOTICE '⚠️  Recuerda reiniciar el servidor para activar las nuevas rutas';
 END $$;

@@ -65,6 +65,10 @@
   }
 }
 </script>
+
+    <!-- Gestor de Luminarias -->
+    <script src="luminarias-manager.js"></script>
+
   </head>
   <body class="bg-brand-primary text-brand-light">
     <div id="root"></div>
@@ -330,6 +334,46 @@
                   } catch (error) {
                       console.error("Failed to update user stats:", error);
                   }
+
+                  // ============================================
+                  // 🪙 RECOMPENSA DE LUMINARIAS
+                  // ============================================
+                  try {
+                      const correctAnswers = answersForStats.filter(a => a.result === 'ACIERTO').length;
+                      const totalQuestions = examQuestions.length;
+                      const calculatedScore = totalQuestions > 0 ? ((correctAnswers / totalQuestions) * 10).toFixed(2) : 0;
+
+                      // Preparar datos para la recompensa de Luminarias
+                      const luminariasGameData = {
+                          gameMode: 'exam',                         // Modo de juego
+                          correctAnswers: correctAnswers,           // Respuestas correctas
+                          totalQuestions: totalQuestions,           // Total de preguntas
+                          score: parseFloat(calculatedScore) * 100, // Puntuación (0-1000)
+                          victory: false                            // No aplica para modo examen
+                      };
+
+                      console.log('🪙 Procesando recompensa de Luminarias:', luminariasGameData);
+
+                      // Otorgar Luminarias (esto mostrará la notificación animada automáticamente)
+                      if (window.luminariasManager) {
+                          const luminariasResult = await window.luminariasManager.rewardGameCompletion(luminariasGameData);
+
+                          if (luminariasResult.success) {
+                              console.log(`✅ Ganaste ${luminariasResult.amount} Luminarias!`);
+                              console.log('🎯 Nuevo balance:', window.luminariasManager.getBalance());
+                          } else {
+                              console.error('❌ Error al otorgar Luminarias:', luminariasResult.error);
+                          }
+                      } else {
+                          console.warn('⚠️ Luminarias Manager no disponible');
+                      }
+                  } catch (luminariasError) {
+                      console.error('❌ Error en recompensa de Luminarias:', luminariasError);
+                      // No bloquear el flujo del juego si falla la recompensa
+                  }
+                  // ============================================
+                  // FIN RECOMPENSA DE LUMINARIAS
+                  // ============================================
               }
           }, [currentUser, game.id, game.mode, examQuestions, userAnswers, examSettings]);
 

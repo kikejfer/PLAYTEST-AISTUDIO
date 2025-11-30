@@ -564,7 +564,7 @@
             </div>
             <div class="balance-summary">
                 <div class="balance-main">
-                    <span id="current-balance">0</span> 🌟
+                    <span id="current-balance">0</span> <img src="Imagenes/1lum.png" alt="Luminaria" style="height: 1em; vertical-align: middle;">
                 </div>
                 <div class="balance-stats">
                     <div class="stat-item">
@@ -728,6 +728,11 @@
             date_to: ''
         };
 
+        // Detectar URL del backend (producción vs desarrollo)
+        const API_BASE_URL = window.location.hostname.includes('onrender.com')
+            ? 'https://playtest-backend.onrender.com/api'
+            : '/api';
+
         // Inicialización
         document.addEventListener('DOMContentLoaded', async function() {
             await checkAuthentication();
@@ -737,7 +742,7 @@
         });
 
         async function checkAuthentication() {
-            const token = localStorage.getItem('authToken');
+            const token = localStorage.getItem('playtest_auth_token');
             if (!token) {
                 window.location.href = 'index.html';
                 return;
@@ -746,9 +751,9 @@
 
         async function loadBalance() {
             try {
-                const response = await fetch('/api/luminarias/balance', {
+                const response = await fetch(`${API_BASE_URL}/luminarias/balance`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${localStorage.getItem('playtest_auth_token')}`
                     }
                 });
 
@@ -778,9 +783,9 @@
                     }
                 });
 
-                const response = await fetch(`/api/luminarias/transactions?${params}`, {
+                const response = await fetch(`${API_BASE_URL}/luminarias/transactions?${params}`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${localStorage.getItem('playtest_auth_token')}`
                     }
                 });
 
@@ -913,7 +918,7 @@
                         </div>
                         <div class="transaction-amount">
                             <div class="amount-value ${isPositive ? 'amount-positive' : 'amount-negative'}">
-                                ${isPositive ? '+' : ''}${Math.abs(transaction.amount).toLocaleString()} 🌟
+                                ${isPositive ? '+' : ''}${Math.abs(transaction.amount).toLocaleString()} <img src="Imagenes/1lum.png" alt="Luminaria" style="height: 1em; vertical-align: middle;">
                             </div>
                             <div class="balance-change">
                                 Balance: ${transaction.balance_before.toLocaleString()} → ${transaction.balance_after.toLocaleString()}
@@ -938,7 +943,7 @@
                             <div class="meta-value">${transaction.reference_type} #${transaction.reference_id}</div>
                         </div>
                         ` : ''}
-                        ${transaction.metadata && Object.keys(JSON.parse(transaction.metadata)).length > 0 ? `
+                        ${transaction.metadata && typeof transaction.metadata === 'object' && Object.keys(transaction.metadata).length > 0 ? `
                         <div class="meta-item">
                             <div class="meta-label">Detalles</div>
                             <div class="meta-value">${renderMetadata(transaction.metadata)}</div>
@@ -968,7 +973,8 @@
 
         function renderMetadata(metadataJson) {
             try {
-                const metadata = JSON.parse(metadataJson);
+                // Si ya es un objeto, usarlo directamente; si es string, parsearlo
+                const metadata = typeof metadataJson === 'object' ? metadataJson : JSON.parse(metadataJson);
                 return Object.entries(metadata)
                     .map(([key, value]) => `${key}: ${value}`)
                     .join(', ');

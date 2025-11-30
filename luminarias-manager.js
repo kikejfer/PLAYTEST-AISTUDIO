@@ -7,7 +7,11 @@
 class LuminariasManager {
     constructor() {
         this.currentBalance = 0;
-        this.API_BASE = '/api/luminarias';
+        // Detectar si estamos en producción (Render) o desarrollo
+        const API_BASE_URL = window.location.hostname.includes('onrender.com')
+            ? 'https://playtest-backend.onrender.com/api'
+            : '/api';
+        this.API_BASE = `${API_BASE_URL}/luminarias`;
         this.listeners = [];
         this.isInitialized = false;
     }
@@ -253,18 +257,21 @@ class LuminariasManager {
      * @param {Object} gameData - Datos del juego
      */
     showRewardNotification(amount, gameData) {
-        // Crear elemento de notificación
-        const notification = document.createElement('div');
-        notification.className = 'luminarias-notification';
-        notification.innerHTML = `
-            <div class="luminarias-notification-content">
-                <img src="Imagenes/1lum.png" alt="Luminarias" class="luminarias-icon">
-                <div class="luminarias-text">
-                    <span class="luminarias-amount">+${amount}</span>
-                    <span class="luminarias-label">Luminarias</span>
+        // Agregar un pequeño delay para asegurar que el DOM esté estable
+        // Especialmente importante cuando se llama desde useEffect al cambiar gameState
+        setTimeout(() => {
+            // Crear elemento de notificación
+            const notification = document.createElement('div');
+            notification.className = 'luminarias-notification';
+            notification.innerHTML = `
+                <div class="luminarias-notification-content">
+                    <img src="Imagenes/1lum.png" alt="Luminarias" class="luminarias-icon-big">
+                    <div class="luminarias-text">
+                        <span class="luminarias-amount">+${amount}</span>
+                        <span class="luminarias-label">Luminarias</span>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
 
         // Agregar estilos si no existen
         if (!document.getElementById('luminarias-notification-styles')) {
@@ -348,16 +355,17 @@ class LuminariasManager {
             document.head.appendChild(styles);
         }
 
-        // Agregar al DOM
-        document.body.appendChild(notification);
+            // Agregar al DOM
+            document.body.appendChild(notification);
 
-        // Remover después de la animación
-        setTimeout(() => {
-            notification.remove();
-        }, 2000);
+            // Remover después de la animación
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
 
-        // Reproducir sonido (opcional)
-        this.playRewardSound();
+            // Reproducir sonido (opcional)
+            this.playRewardSound();
+        }, 500); // Delay de 500ms para asegurar que el DOM esté estable
     }
 
     /**

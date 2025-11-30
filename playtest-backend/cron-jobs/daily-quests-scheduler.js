@@ -12,10 +12,36 @@ class DailyQuestsScheduler {
     }
 
     /**
+     * Verifica si las tablas necesarias existen en la base de datos
+     */
+    async checkTablesExist() {
+        try {
+            const result = await pool.query(`
+                SELECT COUNT(*) as count
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                AND table_name IN ('daily_quest_templates', 'user_daily_quests')
+            `);
+            return parseInt(result.rows[0].count) === 2;
+        } catch (error) {
+            console.error('Error verificando tablas:', error.message);
+            return false;
+        }
+    }
+
+    /**
      * Inicia todos los cron jobs del sistema de misiones diarias
      */
-    start() {
+    async start() {
         console.log('🎯 Iniciando sistema de misiones diarias...');
+
+        // Verificar si las tablas necesarias existen
+        const tablesExist = await this.checkTablesExist();
+        if (!tablesExist) {
+            console.warn('⚠️  Misiones diarias deshabilitadas: ejecuta las migraciones SQL primero');
+            console.warn('   Ver: MIGRACION_COMPLETA_NUEVAS_FEATURES.sql');
+            return;
+        }
 
         // Job 1: Generar misiones diarias a las 00:01 todos los días
         const generateQuestsJob = cron.schedule('1 0 * * *', async () => {
@@ -68,7 +94,9 @@ class DailyQuestsScheduler {
         console.log('   - Verificación horaria de progreso');
 
         // Ejecutar generación inicial si es necesario
-        this.checkAndGenerateInitialQuests();
+        this.checkAndGenerateInitialQuests().catch(err => {
+            console.error('Error en verificación inicial:', err.message);
+        });
     }
 
     /**

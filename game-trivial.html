@@ -143,6 +143,9 @@
     <!-- API Data Service -->
     <script src="./api-data-service.js"></script>
 
+    <!-- Gestor de Luminarias -->
+    <script src="luminarias-manager.js"></script>
+
     <!-- Babel Standalone for in-browser transpilation of TSX/JSX -->
     <script>
       // Suppress Babel development warning
@@ -717,6 +720,56 @@
                               const gameResults = { answers: answersForStats };
                               await apiDataService.updateUserStats(player.userId, game.id, gameResults, "Trivial");
                           }
+
+                          // ============================================
+                          // 🪙 RECOMPENSA DE LUMINARIAS (AMBOS JUGADORES)
+                          // ============================================
+                          try {
+                              console.log('🪙 Procesando recompensas de Luminarias para Trivial');
+
+                              const winner = game.players.find((p, idx) => game.playerWedges[idx].length === displayTopics.length);
+
+                              for (const [playerIndex, player] of game.players.entries()) {
+                                  // Extraer respuestas de este jugador
+                                  const playerAnswers = gameAnswers.filter(a => a.player === playerIndex);
+                                  const correctAnswers = playerAnswers.filter(a => a.isCorrect).length;
+                                  const totalQuestions = playerAnswers.length;
+                                  const calculatedScore = totalQuestions > 0 ? ((correctAnswers / totalQuestions) * 10).toFixed(2) : 0;
+
+                                  // Determinar si este jugador ganó
+                                  const isWinner = winner && player.userId === winner.userId;
+
+                                  // Preparar datos para la recompensa de Luminarias
+                                  const luminariasGameData = {
+                                      gameMode: 'trivial',                       // Modo de juego
+                                      correctAnswers: correctAnswers,            // Respuestas correctas
+                                      totalQuestions: totalQuestions,            // Total de preguntas
+                                      score: parseFloat(calculatedScore) * 100,  // Puntuación (0-1000)
+                                      victory: isWinner                          // Si ganó el trivial
+                                  };
+
+                                  console.log(`🪙 Recompensa para ${player.nickname}:`, luminariasGameData);
+
+                                  // IMPORTANTE: Solo recompensar al jugador actual (currentUser)
+                                  // El otro jugador recibirá su recompensa cuando abra su sesión
+                                  if (player.userId === currentUser.id && window.luminariasManager) {
+                                      const luminariasResult = await window.luminariasManager.rewardGameCompletion(luminariasGameData);
+
+                                      if (luminariasResult.success) {
+                                          console.log(`✅ ${player.nickname} ganó ${luminariasResult.amount} Luminarias!`);
+                                          console.log('🎯 Nuevo balance:', window.luminariasManager.getBalance());
+                                      } else {
+                                          console.error(`❌ Error al otorgar Luminarias a ${player.nickname}:`, luminariasResult.error);
+                                      }
+                                  }
+                              }
+                          } catch (luminariasError) {
+                              console.error('❌ Error en recompensa de Luminarias:', luminariasError);
+                              // No bloquear el flujo del juego si falla la recompensa
+                          }
+                          // ============================================
+                          // FIN RECOMPENSA DE LUMINARIAS
+                          // ============================================
                       } catch (error) {
                           console.error("Failed to finish trivial game:", error);
                       }

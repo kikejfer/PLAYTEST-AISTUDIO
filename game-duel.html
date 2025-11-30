@@ -64,6 +64,9 @@
       <!-- Sistema Persistente PLAYTEST -->
     <script type="module" src="persistent-system-init.js"></script>
 
+    <!-- Gestor de Luminarias -->
+    <script src="luminarias-manager.js"></script>
+
 </head>
   <body class="bg-brand-primary text-brand-light">
     <div id="root"></div>
@@ -409,6 +412,61 @@
                                 await apiDataService.updateUserStats(player.userId, game.id, gameResults, game.mode);
                             }
                         }
+
+                        // Don't delete the game - keep it in history
+                        // await apiDataService.deleteGame(game.id);
+
+                        // ============================================
+                        // 🪙 RECOMPENSA DE LUMINARIAS (AMBOS JUGADORES)
+                        // ============================================
+                        try {
+                            console.log('🪙 Procesando recompensas de Luminarias para duelo');
+
+                            const isDraw = playerScores[0] === playerScores[1];
+                            const winnerId = !isDraw ? (playerScores[0] > playerScores[1] ? game.players[0].userId : game.players[1].userId) : null;
+
+                            for (const [playerIndex, player] of game.players.entries()) {
+                                // Extraer respuestas de este jugador
+                                const playerKey = playerIndex === 0 ? 'p1Answer' : 'p2Answer';
+                                const playerAnswers = allRoundsHistory.map(roundEntry => roundEntry[playerKey]);
+                                const correctAnswers = playerAnswers.filter(a => a.result === 'ACIERTO').length;
+                                const totalQuestions = allRoundsHistory.length;
+                                const calculatedScore = totalQuestions > 0 ? ((correctAnswers / totalQuestions) * 10).toFixed(2) : 0;
+
+                                // Determinar si este jugador ganó
+                                const isWinner = !isDraw && player.userId === winnerId;
+
+                                // Preparar datos para la recompensa de Luminarias
+                                const luminariasGameData = {
+                                    gameMode: 'duel',                         // Modo de juego
+                                    correctAnswers: correctAnswers,           // Respuestas correctas
+                                    totalQuestions: totalQuestions,           // Total de preguntas
+                                    score: parseFloat(calculatedScore) * 100, // Puntuación (0-1000)
+                                    victory: isWinner                         // Si ganó el duelo
+                                };
+
+                                console.log(`🪙 Recompensa para ${player.nickname}:`, luminariasGameData);
+
+                                // IMPORTANTE: Solo recompensar al jugador actual (currentUser)
+                                // El otro jugador recibirá su recompensa cuando abra su sesión
+                                if (player.userId === currentUser.id && window.luminariasManager) {
+                                    const luminariasResult = await window.luminariasManager.rewardGameCompletion(luminariasGameData);
+
+                                    if (luminariasResult.success) {
+                                        console.log(`✅ ${player.nickname} ganó ${luminariasResult.amount} Luminarias!`);
+                                        console.log('🎯 Nuevo balance:', window.luminariasManager.getBalance());
+                                    } else {
+                                        console.error(`❌ Error al otorgar Luminarias a ${player.nickname}:`, luminariasResult.error);
+                                    }
+                                }
+                            }
+                        } catch (luminariasError) {
+                            console.error('❌ Error en recompensa de Luminarias:', luminariasError);
+                            // No bloquear el flujo del juego si falla la recompensa
+                        }
+                        // ============================================
+                        // FIN RECOMPENSA DE LUMINARIAS
+                        // ============================================
 
                         // Don't delete the game - keep it in history
                         // await apiDataService.deleteGame(game.id);

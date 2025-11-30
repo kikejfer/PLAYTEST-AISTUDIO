@@ -330,20 +330,20 @@ CREATE INDEX IF NOT EXISTS idx_luminarias_conversions_status ON luminarias_conve
 CREATE OR REPLACE FUNCTION get_user_luminarias_balance(p_user_id INTEGER)
 RETURNS INTEGER AS $$
 DECLARE
-    current_balance INTEGER;
+    v_current_balance INTEGER;
 BEGIN
-    SELECT COALESCE(current_balance, 0) INTO current_balance
-    FROM user_luminarias
-    WHERE user_id = p_user_id;
-    
-    IF current_balance IS NULL THEN
+    SELECT COALESCE(ul.current_balance, 0) INTO v_current_balance
+    FROM user_luminarias ul
+    WHERE ul.user_id = p_user_id;
+
+    IF v_current_balance IS NULL THEN
         -- Crear registro inicial si no existe
         INSERT INTO user_luminarias (user_id, current_balance, total_earned, lifetime_earnings)
         VALUES (p_user_id, 200, 200, 200);
         RETURN 200;
     END IF;
-    
-    RETURN current_balance;
+
+    RETURN v_current_balance;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -363,55 +363,55 @@ CREATE OR REPLACE FUNCTION process_luminarias_transaction(
 )
 RETURNS INTEGER AS $$
 DECLARE
-    current_balance INTEGER;
-    new_balance INTEGER;
-    transaction_id INTEGER;
+    v_current_balance INTEGER;
+    v_new_balance INTEGER;
+    v_transaction_id INTEGER;
 BEGIN
     -- Obtener balance actual
-    current_balance := get_user_luminarias_balance(p_user_id);
-    
+    v_current_balance := get_user_luminarias_balance(p_user_id);
+
     -- Validar que hay suficiente saldo para gastos
-    IF p_transaction_type IN ('spend', 'transfer_out') AND current_balance < ABS(p_amount) THEN
-        RAISE EXCEPTION 'Saldo insuficiente. Balance actual: %, Cantidad requerida: %', current_balance, ABS(p_amount);
+    IF p_transaction_type IN ('spend', 'transfer_out') AND v_current_balance < ABS(p_amount) THEN
+        RAISE EXCEPTION 'Saldo insuficiente. Balance actual: %, Cantidad requerida: %', v_current_balance, ABS(p_amount);
     END IF;
-    
+
     -- Calcular nuevo balance
     IF p_transaction_type IN ('earn', 'transfer_in') THEN
-        new_balance := current_balance + ABS(p_amount);
+        v_new_balance := v_current_balance + ABS(p_amount);
     ELSE -- spend, transfer_out, conversion
-        new_balance := current_balance - ABS(p_amount);
+        v_new_balance := v_current_balance - ABS(p_amount);
         p_amount := -ABS(p_amount); -- Asegurar que gastos sean negativos
     END IF;
-    
+
     -- Insertar transacción
     INSERT INTO luminarias_transactions (
         user_id, transaction_type, amount, balance_before, balance_after,
         user_role, category, subcategory, action_type, description,
         reference_id, reference_type, metadata
     ) VALUES (
-        p_user_id, p_transaction_type, p_amount, current_balance, new_balance,
+        p_user_id, p_transaction_type, p_amount, v_current_balance, v_new_balance,
         p_user_role, p_category, p_subcategory, p_action_type, p_description,
         p_reference_id, p_reference_type, p_metadata
-    ) RETURNING id INTO transaction_id;
-    
+    ) RETURNING id INTO v_transaction_id;
+
     -- Actualizar balance del usuario
     INSERT INTO user_luminarias (user_id, current_balance, total_earned, total_spent, lifetime_earnings)
     VALUES (
-        p_user_id, 
-        new_balance, 
+        p_user_id,
+        v_new_balance,
         CASE WHEN p_amount > 0 THEN ABS(p_amount) ELSE 0 END,
         CASE WHEN p_amount < 0 THEN ABS(p_amount) ELSE 0 END,
         CASE WHEN p_amount > 0 THEN ABS(p_amount) ELSE 0 END
     )
     ON CONFLICT (user_id) DO UPDATE SET
-        current_balance = new_balance,
+        current_balance = v_new_balance,
         total_earned = user_luminarias.total_earned + CASE WHEN p_amount > 0 THEN ABS(p_amount) ELSE 0 END,
         total_spent = user_luminarias.total_spent + CASE WHEN p_amount < 0 THEN ABS(p_amount) ELSE 0 END,
         lifetime_earnings = user_luminarias.lifetime_earnings + CASE WHEN p_amount > 0 THEN ABS(p_amount) ELSE 0 END,
         last_activity = CURRENT_TIMESTAMP,
         updated_at = CURRENT_TIMESTAMP;
-    
-    RETURN transaction_id;
+
+    RETURN v_transaction_id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -427,7 +427,7 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
+    SELECT
         ul.current_balance,
         ul.total_earned,
         ul.total_spent,
@@ -436,13 +436,13 @@ BEGIN
         ul.last_activity
     FROM user_luminarias ul
     LEFT JOIN (
-        SELECT user_id, COUNT(*) as transaction_count
-        FROM luminarias_transactions
-        WHERE user_id = p_user_id
-        GROUP BY user_id
+        SELECT lt.user_id, COUNT(*) as transaction_count
+        FROM luminarias_transactions lt
+        WHERE lt.user_id = p_user_id
+        GROUP BY lt.user_id
     ) t ON ul.user_id = t.user_id
     WHERE ul.user_id = p_user_id;
-    
+
     -- Si no existe registro, crear uno inicial
     IF NOT FOUND THEN
         INSERT INTO user_luminarias (user_id) VALUES (p_user_id);
