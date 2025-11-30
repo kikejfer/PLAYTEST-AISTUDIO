@@ -701,6 +701,124 @@ router.post('/:id/scores', authenticateToken, async (req, res) => {
       console.log(`⚠️ Could not update game counter: ${preferencesError.message}`);
     }
 
+    // 🎯 NEW: Update academic_progress for this game
+    try {
+      console.log(`🎓 Starting academic progress update for game ${gameId}...`);
+
+      // Get game config to extract block_id
+      const gameConfig = await pool.query(
+        'SELECT config FROM games WHERE id = $1',
+        [gameId]
+      );
+
+      if (gameConfig.rows.length > 0) {
+        const config = gameConfig.rows[0].config;
+        console.log(`📝 Game config:`, config);
+
+        // Extract block_id from config (it's usually a key in the config object)
+        const blockIds = Object.keys(config || {}).map(id => parseInt(id)).filter(id => !isNaN(id));
+
+        if (blockIds.length > 0) {
+          const blockId = blockIds[0]; // Take first block for now
+          console.log(`📚 Block ID extracted: ${blockId}`);
+
+          // Find the corresponding content_assignment for this student and block
+          const assignment = await pool.query(`
+            SELECT ca.id as assignment_id, ca.oposicion_id, ca.block_ids
+            FROM content_assignments ca
+            JOIN class_enrollments ce ON ce.oposicion_id = ca.oposicion_id
+            WHERE ce.alumno_id = $1
+              AND ca.is_active = true
+              AND $2 = ANY(ca.block_ids)
+            LIMIT 1
+          `, [req.user.id, blockId]);
+
+          if (assignment.rows.length > 0) {
+            const { assignment_id, oposicion_id } = assignment.rows[0];
+            console.log(`📋 Assignment found: ${assignment_id}, Oposición: ${oposicion_id}`);
+
+            // Calculate percentage (0-100)
+            const percentage = Math.round((correct / totalQuestions) * 100);
+
+            // Determine grade based on percentage
+            let grade = 'F';
+            if (percentage >= 90) grade = 'A';
+            else if (percentage >= 80) grade = 'B';
+            else if (percentage >= 70) grade = 'C';
+            else if (percentage >= 60) grade = 'D';
+
+            // Check if academic_progress record exists
+            const existing = await pool.query(`
+              SELECT id, attempts_count, score, percentage as prev_percentage
+              FROM academic_progress
+              WHERE alumno_id = $1
+                AND oposicion_id = $2
+                AND assignment_id = $3
+            `, [req.user.id, oposicion_id, assignment_id]);
+
+            if (existing.rows.length > 0) {
+              // Update existing record
+              const record = existing.rows[0];
+              const newAttempts = (record.attempts_count || 0) + 1;
+              const bestScore = Math.max(record.score || 0, numericScore);
+              const bestPercentage = Math.max(record.prev_percentage || 0, percentage);
+
+              console.log(`🔄 Updating existing progress record #${record.id}`);
+              console.log(`   Previous: ${record.prev_percentage}%, Score: ${record.score}`);
+              console.log(`   Current: ${percentage}%, Score: ${numericScore}`);
+              console.log(`   Best: ${bestPercentage}%, Score: ${bestScore}, Attempts: ${newAttempts}`);
+
+              await pool.query(`
+                UPDATE academic_progress
+                SET
+                  attempts_count = $1,
+                  score = $2,
+                  percentage = $3,
+                  grade = $4,
+                  date_completed = CASE WHEN $3 >= 100 THEN CURRENT_TIMESTAMP ELSE date_completed END,
+                  time_spent = COALESCE(time_spent, 0) + 1
+                WHERE id = $5
+              `, [newAttempts, bestScore, bestPercentage, grade, record.id]);
+
+              console.log(`✅ Academic progress updated!`);
+
+            } else {
+              // Create new record
+              console.log(`🆕 Creating new academic progress record`);
+              console.log(`   Student: ${req.user.id}, Oposición: ${oposicion_id}, Assignment: ${assignment_id}`);
+              console.log(`   Score: ${numericScore}, Percentage: ${percentage}%, Grade: ${grade}`);
+
+              await pool.query(`
+                INSERT INTO academic_progress (
+                  alumno_id, oposicion_id, assignment_id,
+                  date_started, date_completed,
+                  time_spent, attempts_count,
+                  score, max_possible_score, percentage, grade
+                ) VALUES (
+                  $1, $2, $3,
+                  CURRENT_TIMESTAMP,
+                  CASE WHEN $4 >= 100 THEN CURRENT_TIMESTAMP ELSE NULL END,
+                  1, 1,
+                  $5, 10, $4, $6
+                )
+              `, [req.user.id, oposicion_id, assignment_id, percentage, numericScore, grade]);
+
+              console.log(`✅ New academic progress record created!`);
+            }
+          } else {
+            console.log(`⚠️ No active assignment found for student ${req.user.id} and block ${blockId}`);
+          }
+        } else {
+          console.log(`⚠️ No block ID found in game config`);
+        }
+      }
+    } catch (progressError) {
+      // Don't fail the whole request if academic progress update fails
+      console.error(`⚠️ Error updating academic progress (non-fatal):`, progressError.message);
+      console.error(progressError.stack);
+    }
+
+    console.log(`✅ Updated activity and stats for user ${req.user.id} after completing game ${gameId}`);
     console.log(`✅ Score saved successfully for game ${gameId}`);
     res.status(201).json({ message: 'Score saved and game completed successfully' });
 
