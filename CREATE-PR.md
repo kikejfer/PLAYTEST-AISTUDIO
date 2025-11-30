@@ -24,9 +24,11 @@ Este PR integra completamente el Sistema de Progreso Académico en los paneles d
 - ✅ Badges de estado color-coded
 - ✅ Actualización en tiempo real
 
-### 👨‍🏫 Panel de Profesores (\`teachers-panel-students.html\`)
+### 👨‍🏫 Panel de Profesores (\`teachers-panel-oposiciones.html\`)
 
-**Modal de progreso del estudiante (botón \"📊 Progreso\" ahora funcional)**
+**NOTA:** El panel `teachers-panel-students.html` ha sido movido a Papelera por duplicación. Toda la funcionalidad se consolida en `teachers-panel-oposiciones.html`.
+
+**Modal de progreso del estudiante (pendiente de integración)**
 
 - ✅ Resumen estadístico con 6 métricas
 - ✅ Timeline detallada por bloque
@@ -58,7 +60,8 @@ Este PR integra completamente el Sistema de Progreso Académico en los paneles d
 ## 📁 Archivos Modificados
 
 - \`jugadores-panel-gaming.html\` (+600 líneas)
-- \`teachers-panel-students.html\` (+520 líneas)
+- \`teachers-panel-oposiciones.html\` (pendiente de integración)
+- \`teachers-panel-students.html\` (movido a Papelera)
 - \`test-progress-system.html\` (nuevo)
 - \`student-progress-component.html\` (nuevo)
 - \`teacher-student-progress-modal.html\` (nuevo)

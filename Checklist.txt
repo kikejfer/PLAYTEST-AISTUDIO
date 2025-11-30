@@ -69,7 +69,7 @@ Este documento proporciona un checklist detallado de todas las funcionalidades i
 
 | Funcionalidad | Archivos Clave | Estado | Tiempo Estimado (Implementación) | Sub-funcionalidades a Comprobar |
 |---|---|---|---|---|
-| **Gestión de Alumnos y Clases** | `teachers-panel-students.html` | ✅ | 8 horas | - Crear y editar clases.<br>- Generar y usar códigos de inscripción.<br>- Ver y editar perfiles académicos de alumnos. |
+| **Gestión de Alumnos y Clases** | `teachers-panel-oposiciones.html` (antes: `teachers-panel-students.html` - movido a Papelera) | ✅ | 8 horas | - Gestión de oposiciones y bloques.<br>- Seguimiento de alumnos.<br>- Torneos y estadísticas. |
 | **Cronogramas Académicos** | `teachers-panel-schedules.html` | ✅ | 7 horas | - Crear cronogramas con fechas y objetivos.<br>- Asignar contenido del temario al cronograma.<br>- Planificar evaluaciones. |
 | **Suite de Paneles (Analytics, etc.)**| `teachers-panel-*.html` | ✅ | 5 horas | - Navegación correcta a los paneles de Analytics, Intervenciones y Recursos.<br>- Carga de datos inicial en cada panel. |
 

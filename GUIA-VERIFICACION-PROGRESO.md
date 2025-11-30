@@ -195,7 +195,8 @@ Antes de empezar, asegúrate de tener:
 
 13. **Abrir el panel de profesores**
     ```
-    Archivo: teachers-panel-students.html
+    Archivo: teachers-panel-oposiciones.html
+    NOTA: El archivo teachers-panel-students.html ha sido movido a Papelera por duplicación
     ```
 
 14. **Iniciar sesión como profesor**
@@ -204,10 +205,10 @@ Antes de empezar, asegúrate de tener:
 
 ### Paso 2: Localizar Sección de Estudiantes
 
-15. **Ir a la sección "📊 Rendimiento Académico"**
+15. **Ir a la sección "👥 Seguimiento de Alumnos"**
 
-    - Scroll hacia abajo en la página
-    - Buscar la sección con título "📊 Rendimiento Académico"
+    - Click en la pestaña "👥 Seguimiento de Alumnos"
+    - Seleccionar una oposición del dropdown
     - Debe aparecer una lista de estudiantes
 
 ### Paso 3: Verificar Botón "📊 Progreso"

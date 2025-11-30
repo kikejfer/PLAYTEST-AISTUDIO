@@ -131,16 +131,16 @@
 
 ### 👨‍🏫 PROFESORES/CREADORES
 
-**Panel actual:** `teachers-panel-students.html`
+**Panel actual:** `teachers-panel-oposiciones.html` (antes: `teachers-panel-students.html` - movido a Papelera)
 
 **Estado:**
-- ⚠️ **Parcialmente integrado** - Botón existe pero función no
+- ℹ️ **Sistema de progreso académico** - Pendiente de integración
 - ✅ **Componente listo** - `teacher-student-progress-modal.html`
-- ❌ **Falta:** Implementar función `viewStudentProgress()`
+- ❌ **Falta:** Agregar funcionalidad de seguimiento de progreso en pestaña "👥 Seguimiento de Alumnos"
 
-**Acceso temporal:**
-- ✅ Botón "📊 Progreso" visible (línea 1270)
-- ❌ No hace nada al hacer clic
+**Nota:**
+- El panel `teachers-panel-students.html` ha sido movido a Papelera por duplicación
+- Toda la funcionalidad debe consolidarse en `teachers-panel-oposiciones.html`
 
 ---
 
@@ -154,9 +154,9 @@
 3. Configurar inicialización automática
 
 **Para Profesores:**
-1. Incluir modal en `teachers-panel-students.html`
-2. Implementar función `viewStudentProgress()`
-3. Conectar con botón existente
+1. Incluir modal en `teachers-panel-oposiciones.html`
+2. Implementar función `viewStudentProgress()` en pestaña "👥 Seguimiento de Alumnos"
+3. Crear botón para ver progreso de estudiantes
 
 **Ventajas:**
 - ✅ Acceso integrado en los paneles principales
