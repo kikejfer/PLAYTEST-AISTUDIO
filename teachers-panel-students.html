@@ -699,6 +699,289 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* ===== MODAL DE PROGRESO DEL ESTUDIANTE ===== */
+
+        .progress-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .progress-modal-overlay.active {
+            display: flex;
+        }
+
+        .progress-modal {
+            background: #1B263B;
+            border: 1px solid #415A77;
+            border-radius: 15px;
+            max-width: 1200px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-modal-title {
+            color: white;
+            font-size: 1.8em;
+            margin: 0;
+        }
+
+        .progress-modal-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .progress-modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .progress-modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .progress-modal-body {
+            padding: 25px;
+        }
+
+        .student-progress-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .summary-card.warning {
+            background: rgba(251, 191, 36, 0.1);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+
+        .summary-card.danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .summary-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #4ECDC4;
+        }
+
+        .summary-card.warning .summary-value {
+            color: #FBBF24;
+        }
+
+        .summary-card.danger .summary-value {
+            color: #EF4444;
+        }
+
+        .summary-label {
+            color: #778DA9;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .progress-timeline {
+            margin-bottom: 30px;
+        }
+
+        .progress-timeline h3 {
+            color: #4ECDC4;
+            margin-bottom: 15px;
+        }
+
+        .timeline-block {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid #4ECDC4;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-block:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateX(5px);
+        }
+
+        .timeline-block.completed {
+            border-left-color: #10B981;
+        }
+
+        .timeline-block.in-progress {
+            border-left-color: #3B82F6;
+        }
+
+        .timeline-block.not-started {
+            border-left-color: #778DA9;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .timeline-title {
+            color: #E0E1DD;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .timeline-oposicion {
+            color: #778DA9;
+            font-size: 0.85em;
+            margin-top: 3px;
+        }
+
+        .timeline-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .timeline-badge.completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+        }
+
+        .timeline-badge.in-progress {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3B82F6;
+        }
+
+        .timeline-badge.not-started {
+            background: rgba(119, 141, 169, 0.2);
+            color: #778DA9;
+        }
+
+        .timeline-progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            height: 8px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .timeline-progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .timeline-progress-fill.completed {
+            background: linear-gradient(90deg, #10B981, #059669);
+        }
+
+        .timeline-progress-fill.in-progress {
+            background: linear-gradient(90deg, #3B82F6, #2563EB);
+        }
+
+        .timeline-progress-fill.not-started {
+            background: linear-gradient(90deg, #778DA9, #415A77);
+        }
+
+        .timeline-metrics {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9em;
+            color: #778DA9;
+            flex-wrap: wrap;
+        }
+
+        .timeline-metric {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .export-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .export-btn {
+            background: linear-gradient(45deg, #4ECDC4, #44A08D);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .empty-progress {
+            text-align: center;
+            padding: 60px 20px;
+            color: #778DA9;
+        }
+
+        .empty-progress h3 {
+            color: #E0E1DD;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -1613,6 +1896,243 @@
             
             window.location.href = 'index.html';
         }
+
+        // ===== MODAL DE PROGRESO DEL ESTUDIANTE =====
+
+        const BASE_URL = 'https://playtest-backend.onrender.com';
+
+        async function viewStudentProgress(studentId) {
+            const modal = document.getElementById('studentProgressModal');
+            modal.classList.add('active');
+
+            try {
+                const token = localStorage.getItem('playtest_auth_token');
+
+                // Obtener progreso del estudiante
+                const progressData = await fetchStudentProgress(studentId, token);
+
+                // Renderizar modal
+                renderStudentProgressModal(studentId, progressData);
+
+            } catch (error) {
+                console.error('Error cargando progreso:', error);
+                renderModalError();
+            }
+        }
+
+        function closeStudentProgressModal() {
+            const modal = document.getElementById('studentProgressModal');
+            modal.classList.remove('active');
+        }
+
+        async function fetchStudentProgress(studentId, token) {
+            try {
+                const response = await fetch(`${BASE_URL}/api/students/progress`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+
+                const data = await response.json();
+                return data.success ? data.progress : [];
+            } catch (error) {
+                console.error('Error:', error);
+                return [];
+            }
+        }
+
+        function renderStudentProgressModal(studentId, progressData) {
+            document.getElementById('modalStudentName').textContent =
+                `📊 Progreso del Estudiante #${studentId}`;
+            document.getElementById('modalStudentInfo').textContent =
+                `${progressData.length} bloques asignados`;
+
+            const stats = calculateProgressStats(progressData);
+
+            const content = progressData.length > 0
+                ? renderProgressContent(progressData, stats)
+                : renderEmptyProgress();
+
+            document.getElementById('modalProgressContent').innerHTML = content;
+        }
+
+        function calculateProgressStats(progressData) {
+            const total = progressData.length;
+            const completed = progressData.filter(p => p.percentage === 100).length;
+            const inProgress = progressData.filter(p => p.percentage > 0 && p.percentage < 100).length;
+            const notStarted = progressData.filter(p => !p.percentage || p.percentage === 0).length;
+            const totalTime = progressData.reduce((sum, p) => sum + (p.time_spent || 0), 0);
+            const avgScore = total > 0
+                ? progressData.reduce((sum, p) => sum + (p.best_score || 0), 0) / total
+                : 0;
+            const avgCompletion = total > 0
+                ? progressData.reduce((sum, p) => sum + (p.percentage || 0), 0) / total
+                : 0;
+
+            return {
+                total,
+                completed,
+                inProgress,
+                notStarted,
+                totalTime,
+                avgScore: avgScore.toFixed(1),
+                avgCompletion: avgCompletion.toFixed(1)
+            };
+        }
+
+        function renderProgressContent(progressData, stats) {
+            return `
+                <div class="student-progress-summary">
+                    <div class="summary-card">
+                        <div class="summary-value">${stats.total}</div>
+                        <div class="summary-label">Bloques Totales</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value">${stats.completed}</div>
+                        <div class="summary-label">✅ Completados</div>
+                    </div>
+                    <div class="summary-card warning">
+                        <div class="summary-value">${stats.inProgress}</div>
+                        <div class="summary-label">🔄 En Progreso</div>
+                    </div>
+                    <div class="summary-card ${stats.notStarted > 0 ? 'danger' : ''}">
+                        <div class="summary-value">${stats.notStarted}</div>
+                        <div class="summary-label">⏸️ Sin Iniciar</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value">${stats.totalTime}</div>
+                        <div class="summary-label">⏱️ Minutos Totales</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value">${stats.avgScore}</div>
+                        <div class="summary-label">⭐ Puntuación Media</div>
+                    </div>
+                </div>
+
+                <div class="progress-timeline">
+                    <h3>📚 Progreso por Bloque</h3>
+                    ${progressData.map(block => renderTimelineBlock(block)).join('')}
+                </div>
+
+                <div class="export-actions">
+                    <button class="export-btn" onclick="alert('Exportación PDF en desarrollo')">
+                        📄 Exportar PDF
+                    </button>
+                    <button class="export-btn" onclick="alert('Exportación CSV en desarrollo')">
+                        📊 Exportar CSV
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderTimelineBlock(block) {
+            const status = getBlockStatus(block.percentage);
+            const percentage = block.percentage || 0;
+
+            return `
+                <div class="timeline-block ${status}">
+                    <div class="timeline-header">
+                        <div>
+                            <h4 class="timeline-title">${block.block_name}</h4>
+                            <p class="timeline-oposicion">📚 ${block.class_name}</p>
+                        </div>
+                        <span class="timeline-badge ${status}">
+                            ${getStatusText(status)}
+                        </span>
+                    </div>
+
+                    <div class="timeline-progress-bar">
+                        <div class="timeline-progress-fill ${status}" style="width: ${percentage}%"></div>
+                    </div>
+
+                    <div class="timeline-metrics">
+                        <span class="timeline-metric">
+                            📊 ${percentage}% completado
+                        </span>
+                        <span class="timeline-metric">
+                            ⏱️ ${block.time_spent || 0} minutos
+                        </span>
+                        <span class="timeline-metric">
+                            🔄 ${block.attempts_count || 0} intentos
+                        </span>
+                        <span class="timeline-metric">
+                            ⭐ ${block.best_score || 'N/A'}
+                        </span>
+                    </div>
+
+                    ${block.date_started ? `
+                        <div class="timeline-metrics" style="margin-top: 10px;">
+                            <span class="timeline-metric">
+                                📅 Iniciado: ${block.date_started}
+                            </span>
+                            ${block.date_completed ? `
+                                <span class="timeline-metric">
+                                    ✅ Completado: ${block.date_completed}
+                                </span>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function getBlockStatus(percentage) {
+            if (percentage === 100) return 'completed';
+            if (percentage > 0) return 'in-progress';
+            return 'not-started';
+        }
+
+        function getStatusText(status) {
+            const texts = {
+                'completed': 'Completado',
+                'in-progress': 'En Progreso',
+                'not-started': 'Sin Iniciar'
+            };
+            return texts[status] || 'Desconocido';
+        }
+
+        function renderEmptyProgress() {
+            return `
+                <div class="empty-progress">
+                    <h3>📭 Sin progreso registrado</h3>
+                    <p>Este estudiante aún no ha iniciado ningún bloque asignado.</p>
+                </div>
+            `;
+        }
+
+        function renderModalError() {
+            document.getElementById('modalProgressContent').innerHTML = `
+                <div class="empty-progress">
+                    <h3>❌ Error al cargar datos</h3>
+                    <p>No se pudo cargar el progreso del estudiante.</p>
+                </div>
+            `;
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'studentProgressModal') {
+                closeStudentProgressModal();
+            }
+        });
     </script>
+
+    <!-- Modal de Progreso del Estudiante -->
+    <div id="studentProgressModal" class="progress-modal-overlay">
+        <div class="progress-modal">
+            <div class="progress-modal-header">
+                <div>
+                    <h2 class="progress-modal-title" id="modalStudentName">Cargando...</h2>
+                    <p class="progress-modal-subtitle" id="modalStudentInfo"></p>
+                </div>
+                <button class="progress-modal-close" onclick="closeStudentProgressModal()">&times;</button>
+            </div>
+            <div class="progress-modal-body" id="modalProgressContent">
+                <div class="empty-progress">
+                    <h3>🔄 Cargando progreso...</h3>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
