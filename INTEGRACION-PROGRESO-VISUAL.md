@@ -114,17 +114,17 @@ Los estudiantes verán:
 
 ### Ubicación Actual
 
-**Panel:** `teachers-panel-students.html`
+**Panel:** `teachers-panel-oposiciones.html` (antes: `teachers-panel-students.html` - movido a Papelera)
 
 **Estado actual:**
-- ✅ Existe botón "📊 Progreso" (línea 1270)
-- ❌ La función `viewStudentProgress()` no está implementada
+- ✅ Panel principal de profesor para gestión de oposiciones
+- ℹ️ Sistema de progreso académico a integrar
 
 ### ✅ Solución: Implementar Modal de Progreso
 
 #### Paso 1: Incluir el modal en el HTML
 
-Al final de `teachers-panel-students.html`, antes de `</body>`:
+Al final de `teachers-panel-oposiciones.html`, antes de `</body>`:
 
 ```html
 <!-- Modal de Progreso del Estudiante -->
@@ -135,7 +135,7 @@ Al final de `teachers-panel-students.html`, antes de `</body>`:
 
 #### Paso 2: Incluir estilos del modal
 
-En la sección `<style>` de `teachers-panel-students.html`:
+En la sección `<style>` de `teachers-panel-oposiciones.html`:
 
 ```html
 <style>
@@ -148,7 +148,7 @@ En la sección `<style>` de `teachers-panel-students.html`:
 
 #### Paso 3: Incluir funciones JavaScript
 
-En la sección `<script>` de `teachers-panel-students.html`:
+En la sección `<script>` de `teachers-panel-oposiciones.html`:
 
 ```javascript
 /**
@@ -240,8 +240,8 @@ Al hacer clic en "📊 Progreso", los profesores verán:
 ```
 🏠 index.html
   → Cambiar rol a "Profesor"
-  → teachers-panel-students.html
-    → Sección "📊 Rendimiento Académico"
+  → teachers-panel-oposiciones.html
+    → Sección "👥 Seguimiento de Alumnos"
       → Lista de estudiantes
         → Click en "📊 Progreso" de un estudiante
           → Modal con progreso detallado

@@ -410,7 +410,7 @@ cron.schedule('0 3 * * *', async () => {
 5. Notificaciones de logros
 
 ### Fase 4: Frontend Profesor 🔨 PENDIENTE
-1. Pestaña "Evolución" en `teachers-panel-students.html`
+1. Pestaña "Evolución" en `teachers-panel-oposiciones.html` (antes: `teachers-panel-students.html` - movido a Papelera)
 2. Dashboard de progreso por estudiante
 3. Lista de preguntas difíciles
 4. Botón "Desbloquear bloque"
