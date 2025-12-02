@@ -7,11 +7,12 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "migrate": "node scripts/migrate.js",
+    "seed": "node scripts/seed.js",
     "create-admin": "node create-admin-principal.js",
     "deploy": "node deploy.js",
     "init-db": "node init-render-db.js",
     "build": "npm install",
-    "postbuild": "npm run init-db",
+    "postbuild": "npm run init-db && npm run seed",
     "docs:schema": "node scripts/generate-schema-docs-from-sql.js",
     "docs:schema:live": "node scripts/extract-database-schema.js",
     "analyze:schema": "node scripts/analyze-schema.js"
