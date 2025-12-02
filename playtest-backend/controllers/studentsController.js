@@ -51,7 +51,6 @@ async function enrollInClass(studentId, classCode) {
     try {
         await client.query('BEGIN');
 
-        // 1. Buscar la oposición por código
         const classQuery = `
             SELECT id, nombre_oposicion as class_name, profesor_id, end_date
             FROM oposiciones
@@ -59,34 +58,28 @@ async function enrollInClass(studentId, classCode) {
               AND is_active = true
               AND (end_date IS NULL OR end_date >= CURRENT_DATE);
         `;
-
         const classResult = await client.query(classQuery, [classCode.toUpperCase()]);
 
         if (classResult.rows.length === 0) {
             throw new Error('Código de clase inválido o clase no activa');
         }
-
         const classData = classResult.rows[0];
 
-        // 2. Verificar si ya está inscrito
         const enrollmentCheck = `
             SELECT id FROM class_enrollments
             WHERE oposicion_id = $1 AND alumno_id = $2;
         `;
-
         const existingEnrollment = await client.query(enrollmentCheck, [classData.id, studentId]);
 
         if (existingEnrollment.rows.length > 0) {
             throw new Error('Ya estás inscrito en esta clase');
         }
 
-        // 3. Crear inscripción
         const enrollQuery = `
             INSERT INTO class_enrollments (oposicion_id, alumno_id, enrollment_status, enrollment_date)
             VALUES ($1, $2, 'active', CURRENT_DATE)
             RETURNING id, enrollment_date;
         `;
-
         const enrollResult = await client.query(enrollQuery, [classData.id, studentId]);
 
         await client.query('COMMIT');
@@ -166,18 +159,13 @@ async function getAssignedBlocks(studentId) {
  */
 async function loadBlock(studentId, blockId) {
     try {
-        // 1. Verificar que el bloque existe
-        const blockCheck = `
-            SELECT id, name FROM blocks WHERE id = $1;
-        `;
-
+        const blockCheck = `SELECT id, name FROM blocks WHERE id = $1;`;
         const blockResult = await pool.query(blockCheck, [blockId]);
 
         if (blockResult.rows.length === 0) {
             throw new Error('Bloque no encontrado');
         }
 
-        // 2. Insertar en user_loaded_blocks (o no hacer nada si ya existe)
         const loadQuery = `
             INSERT INTO user_loaded_blocks (user_id, block_id, loaded_at)
             VALUES ($1, $2, NOW())
@@ -185,7 +173,6 @@ async function loadBlock(studentId, blockId) {
             SET loaded_at = NOW()
             RETURNING id, loaded_at;
         `;
-
         const loadResult = await pool.query(loadQuery, [studentId, blockId]);
 
         return {
@@ -201,43 +188,109 @@ async function loadBlock(studentId, blockId) {
 }
 
 /**
- * Obtener progreso del estudiante en bloques asignados
+ * Obtener progreso unificado del estudiante (formal y personal)
  * @param {number} studentId - ID del estudiante
- * @param {number} classId - ID de la clase (opcional)
- * @returns {Promise<Array>} Progreso del estudiante
+ * @param {number} oposicionId - ID de la clase (opcional)
+ * @returns {Promise<Array>} Progreso del estudiante unificado
  */
 async function getStudentProgress(studentId, oposicionId = null) {
+    const client = await pool.connect();
     try {
-        const query = `
-            SELECT
-                ap.id,
-                b.name as block_name,
-                o.nombre_oposicion as class_name,
-                ap.date_started,
-                ap.date_completed,
-                ap.time_spent,
-                ap.percentage,
-                ap.grade as status,
-                ap.attempts_count,
-                ap.score as best_score
-            FROM academic_progress ap
-            JOIN content_assignments ca ON ap.assignment_id = ca.id
-            JOIN oposiciones o ON ap.oposicion_id = o.id
-            CROSS JOIN LATERAL unnest(ca.block_ids) as block_id
-            JOIN blocks b ON b.id = block_id
-            WHERE ap.alumno_id = $1
-              ${oposicionId ? 'AND ap.oposicion_id = $2' : ''}
-            ORDER BY ap.date_started DESC;
-        `;
+        let query;
+        let params;
 
-        const params = oposicionId ? [studentId, oposicionId] : [studentId];
-        const result = await pool.query(query, params);
+        if (oposicionId) {
+            // Caso específico: solo progreso para una oposición/clase concreta.
+            query = `
+                SELECT
+                    ap.id::varchar,
+                    b.id as block_id,
+                    b.name as block_name,
+                    o.nombre_oposicion as class_name,
+                    'asignado' as progress_type,
+                    ap.date_started,
+                    ap.date_completed,
+                    ap.time_spent,
+                    ap.percentage,
+                    ap.grade as status,
+                    ap.attempts_count,
+                    ap.score as best_score
+                FROM academic_progress ap
+                JOIN blocks b ON ap.block_id = b.id
+                JOIN oposiciones o ON ap.oposicion_id = o.id
+                WHERE ap.alumno_id = $1 AND ap.oposicion_id = $2
+                ORDER BY ap.date_started DESC;
+            `;
+            params = [studentId, oposicionId];
+        } else {
+            // Caso general: vista unificada de todo el progreso del estudiante.
+            query = `
+                SELECT * FROM (
+                    -- PARTE 1: Progreso formal de bloques asignados a clases
+                    SELECT
+                        ap.id::varchar,
+                        b.id as block_id,
+                        b.name as block_name,
+                        o.nombre_oposicion as class_name,
+                        'asignado' as progress_type,
+                        ap.date_started,
+                        ap.date_completed,
+                        ap.time_spent,
+                        ap.percentage,
+                        ap.grade as status,
+                        ap.attempts_count,
+                        ap.score as best_score
+                    FROM academic_progress ap
+                    JOIN blocks b ON ap.block_id = b.id
+                    JOIN oposiciones o ON ap.oposicion_id = o.id
+                    WHERE ap.alumno_id = $1
+
+                    UNION ALL
+
+                    -- PARTE 2: Progreso personal inferido del historial de partidas (práctica libre)
+                    SELECT
+                        ('personal_' || b.id)::varchar as id,
+                        b.id as block_id,
+                        b.name as block_name,
+                        'Práctica Libre' as class_name,
+                        'personal' as progress_type,
+                        MIN(g.created_at) as date_started,
+                        MAX(g.created_at) as date_completed,
+                        COALESCE(SUM(ga.response_time)::integer, 0) as time_spent,
+                        CASE
+                            WHEN COUNT(ga.id) > 0 THEN ROUND(SUM(CASE WHEN ga.result = 'ACIERTO' THEN 1 ELSE 0 END) * 100.0 / COUNT(ga.id))
+                            ELSE 0
+                        END as percentage,
+                        'completado' as status,
+                        COUNT(DISTINCT g.id) as attempts_count,
+                        MAX(gs.score) as best_score
+                    FROM games g
+                    JOIN game_scores gs ON g.id = gs.game_id
+                    JOIN game_answers ga ON gs.id = ga.score_id
+                    JOIN blocks b ON ga.block_id = b.id
+                    WHERE g.user_id = $1
+                      AND ga.block_id IS NOT NULL
+                      AND NOT EXISTS (
+                          SELECT 1 FROM academic_progress ap
+                          WHERE ap.alumno_id = g.user_id AND ap.block_id = ga.block_id
+                      )
+                    GROUP BY b.id, b.name
+                ) as unified_progress
+                ORDER BY date_started DESC;
+            `;
+            params = [studentId];
+        }
+
+        const result = await client.query(query, params);
         return result.rows;
     } catch (error) {
-        console.error('Error obteniendo progreso del estudiante:', error);
+        console.error('Error obteniendo el progreso unificado del estudiante:', error);
         throw error;
+    } finally {
+        client.release();
     }
 }
+
 
 module.exports = {
     getMyClasses,

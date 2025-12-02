@@ -1,0 +1,119 @@
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Primeros Pasos - PlayTest</title>
+    <link rel="icon" type="image/png" href="Imagenes/Lumi.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #0D1B2A;
+            color: #E0E1DD;
+        }
+        .cta-card {
+            background-color: #1B263B;
+            border: 1px solid #415A77;
+            transition: all 0.3s ease;
+        }
+        .cta-card:hover {
+            transform: translateY(-5px);
+            border-color: #4ECDC4;
+            box-shadow: 0 10px 20px rgba(78, 205, 196, 0.2);
+        }
+        .cta-card h3 {
+            color: #4ECDC4;
+        }
+        .animate-fade-in { animation: fadeIn 0.8s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl text-center animate-fade-in">
+        <img src="/Imagenes/Lumi.png" alt="Lumi Saludando" class="w-32 h-32 mx-auto mb-4">
+        <h1 class="text-4xl font-bold mb-2">¡Bienvenido a PlayTest!</h1>
+        <p class="text-lg text-gray-400 mb-10">Tu aventura comienza ahora. ¿Qué te gustaría hacer primero?</p>
+
+        <!-- Sección para Estudiantes -->
+        <div id="student-first-steps" class="hidden">
+            <h2 class="text-2xl font-semibold mb-6">Como Estudiante, puedes:</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <a href="all-blocks.html" class="cta-card rounded-lg p-6">
+                    <h3 class="text-xl font-bold mb-2">🚀 Explorar Bloques Públicos</h3>
+                    <p class="text-gray-400">Descubre y carga bloques de estudio creados por la comunidad para empezar a jugar.</p>
+                </a>
+                <a href="students-panel-oposiciones.html" class="cta-card rounded-lg p-6">
+                    <h3 class="text-xl font-bold mb-2">➕ Unirme a una Clase</h3>
+                    <p class="text-gray-400">Introduce el código que te dio tu profesor para acceder a contenido exclusivo.</p>
+                </a>
+                <a href="game-classic.html?emergency=true" class="cta-card rounded-lg p-6">
+                    <h3 class="text-xl font-bold mb-2">🎮 Jugar una Partida Rápida</h3>
+                    <p class="text-gray-400">Prueba el modo de juego clásico con preguntas de demostración para ver cómo funciona.</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Sección para Profesores -->
+        <div id="teacher-first-steps" class="hidden">
+            <h2 class="text-2xl font-semibold mb-6">Como Profesor, puedes:</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <a href="teachers-panel-groups.html" class="cta-card rounded-lg p-6">
+                    <h3 class="text-xl font-bold mb-2">👥 Crear un Grupo</h3>
+                    <p class="text-gray-400">Organiza a tus alumnos en clases para asignarles contenido y seguir su progreso.</p>
+                </a>
+                <a href="creators-panel-content.html" class="cta-card rounded-lg p-6">
+                    <h3 class="text-xl font-bold mb-2">📝 Diseñar un Bloque</h3>
+                    <p class="text-gray-400">Usa el panel de creador para construir tus propios bloques de preguntas desde cero.</p>
+                </a>
+                <a href="teachers-panel-assign-block.html" class="cta-card rounded-lg p-6">
+                    <h3 class="text-xl font-bold mb-2">📚 Asignar Contenido</h3>
+                    <p class="text-gray-400">Asigna bloques de estudio a tus grupos y establece fechas para las entregas.</p>
+                </a>
+            </div>
+        </div>
+        
+        <div class="mt-12">
+            <button id="skip-to-dashboard" class="text-gray-400 hover:text-white transition-colors">Saltar e ir a mi panel principal &rarr;</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
+            const userRole = session.role;
+
+            const studentSection = document.getElementById('student-first-steps');
+            const teacherSection = document.getElementById('teacher-first-steps');
+            const skipButton = document.getElementById('skip-to-dashboard');
+
+            if (userRole === 'student' || userRole === 'player') {
+                studentSection.classList.remove('hidden');
+            } else if (userRole === 'teacher' || userRole === 'creator') {
+                teacherSection.classList.remove('hidden');
+            } else {
+                // Por defecto, para admins u otros roles, mostramos la guía de estudiante
+                studentSection.classList.remove('hidden');
+            }
+
+            skipButton.addEventListener('click', () => {
+                localStorage.setItem('playtest_first_steps_completed', 'true');
+                
+                let dashboardUrl = 'jugadores-panel-gaming.html'; // Panel por defecto
+                if (userRole === 'teacher' || userRole === 'creator') {
+                    dashboardUrl = 'teachers-panel-main.html';
+                } else if (session.is_admin_principal) {
+                     dashboardUrl = 'admin-principal-panel.html';
+                } else if (session.is_admin_secundario) {
+                     dashboardUrl = 'admin-secundario-panel.html';
+                }
+                window.location.href = dashboardUrl;
+            });
+        });
+    </script>
+
+</body>
+</html>
