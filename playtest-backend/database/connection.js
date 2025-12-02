@@ -31,7 +31,4 @@ pool.connect((err, client, release) => {
   }
 });
 
-module.exports = {
-  pool,
-  query: (text, params) => pool.query(text, params),
-};
+module.exports = pool;
