@@ -1,5 +1,5 @@
 const pool = require('../database/connection');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 // User Registration
