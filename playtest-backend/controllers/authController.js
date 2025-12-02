@@ -54,15 +54,15 @@ const registerUser = async (req, res) => {
 
         } catch (error) {
             await client.query('ROLLBACK');
-            console.error('Error during registration transaction:', error);
-            res.status(500).json({ error: 'Server error during registration' });
+            console.error('Error during registration transaction:', error); // Enhanced logging
+            res.status(500).json({ error: 'Server error during registration', details: error.message }); // Send error details
         } finally {
             client.release();
         }
 
     } catch (error) {
-        console.error('Error in registerUser:', error);
-        res.status(500).json({ error: 'Server error' });
+        console.error('Error in registerUser (outer catch): ', error); // Enhanced logging
+        res.status(500).json({ error: 'Server error', details: error.message }); // Send error details
     }
 };
 
