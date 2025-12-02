@@ -1,27 +1,20 @@
-
 const express = require('express');
 const router = express.Router();
-// const authController = require('../controllers/authController'); // Temporarily removed
+const { registerUser, loginUser } = require('../controllers/authController');
 const { authenticateToken } = require('../middleware/auth');
 
 // User registration
-router.post('/register', (req, res) => {
-  // Mock registration logic
-  console.log('Registration attempt:', req.body);
-  // Simulate successful registration
-  res.redirect(302, '/first-steps.html');
-});
+router.post('/register', registerUser);
 
-// User login - Temporarily simplified to avoid dependency error
-router.post('/login', (req, res) => {
-    res.status(501).send('Login not implemented');
-});
+// User login
+router.post('/login', loginUser);
 
-// Verify token
+// Verify token route - protected
 router.get('/verify', authenticateToken, (req, res) => {
+  // If authenticateToken middleware succeeds, the user is valid.
   res.status(200).json({
     message: 'Token is valid',
-    user: req.user
+    user: req.user // req.user is populated by the middleware
   });
 });
 
