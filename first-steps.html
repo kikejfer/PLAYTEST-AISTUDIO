@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -50,9 +48,9 @@
                     <h3 class="text-xl font-bold mb-2">➕ Unirme a una Clase</h3>
                     <p class="text-gray-400">Introduce el código que te dio tu profesor para acceder a contenido exclusivo.</p>
                 </a>
-                <a href="game-classic.html?emergency=true" class="cta-card rounded-lg p-6">
-                    <h3 class="text-xl font-bold mb-2">🎮 Jugar una Partida Rápida</h3>
-                    <p class="text-gray-400">Prueba el modo de juego clásico con preguntas de demostración para ver cómo funciona.</p>
+                <a href="jugadores-panel-gaming.html" class="cta-card rounded-lg p-6">
+                    <h3 class="text-xl font-bold mb-2">🎮 Ir a mi Panel de Juego</h3>
+                    <p class="text-gray-400">Configura partidas, gestiona tus bloques y revisa tu progreso.</p>
                 </a>
             </div>
         </div>
@@ -83,33 +81,105 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const session = JSON.parse(localStorage.getItem('playtest_session') || '{}');
-            const userRole = session.role;
+            // 1. Prioritize getting token from URL for post-login flow
+            const urlParams = new URLSearchParams(window.location.search);
+            const tokenFromUrl = urlParams.get('token');
+            let session = {};
+            let userRole = null;
+
+            if (tokenFromUrl) {
+                console.log('Token found in URL. Initializing session.');
+                try {
+                    // Decode JWT payload to get user info
+                    const payload = JSON.parse(atob(tokenFromUrl.split('.')[1]));
+                    
+                    // Store the token
+                    localStorage.setItem('playtest_auth_token', tokenFromUrl);
+                    localStorage.setItem('authToken', tokenFromUrl); // For compatibility
+
+                    // Create and store the session object
+                    session = {
+                        userId: payload.userId,
+                        nickname: payload.nickname,
+                        roles: payload.roles || [],
+                        token: tokenFromUrl,
+                        is_admin_principal: payload.roles?.includes('administrador_principal'),
+                        is_admin_secundario: payload.roles?.includes('administrador_secundario')
+                    };
+                    localStorage.setItem('playtest_session', JSON.stringify(session));
+                    
+                    console.log('Session initialized and stored:', session);
+
+                    // Clean the token from the URL for security and aesthetics
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } catch (e) {
+                    console.error('Failed to parse token from URL:', e);
+                    // If token is invalid, clear storage and redirect to login
+                    localStorage.clear();
+                    window.location.href = 'index.html?error=invalid_token';
+                    return;
+                }
+            } else {
+                // 2. If no token in URL, try to load from localStorage
+                console.log('No token in URL, trying to load from localStorage.');
+                const storedSession = localStorage.getItem('playtest_session');
+                if (storedSession) {
+                    session = JSON.parse(storedSession);
+                } else {
+                    // 3. If no session anywhere, user is not authenticated.
+                    console.error('No session found. Redirecting to login.');
+                    window.location.href = 'index.html?error=unauthenticated';
+                    return; // Stop execution
+                }
+            }
+
+            // At this point, we should have a valid session object.
+            
+            // Determine primary user role from the array of roles
+            const getPrimaryRole = (roles = []) => {
+                const priority = ['administrador_principal', 'administrador_secundario', 'profesor', 'creador', 'jugador'];
+                for (const p of priority) {
+                    if (roles.includes(p)) {
+                        return p;
+                    }
+                }
+                return 'jugador'; // Default fallback
+            };
+            
+            userRole = getPrimaryRole(session.roles);
+
+            console.log('User roles:', session.roles, '-> Primary role determined:', userRole);
 
             const studentSection = document.getElementById('student-first-steps');
             const teacherSection = document.getElementById('teacher-first-steps');
             const skipButton = document.getElementById('skip-to-dashboard');
 
-            if (userRole === 'student' || userRole === 'player') {
+            // Show the relevant section based on the determined primary role
+            if (userRole === 'jugador') {
                 studentSection.classList.remove('hidden');
-            } else if (userRole === 'teacher' || userRole === 'creator') {
+            } else if (userRole === 'profesor' || userRole === 'creador') {
                 teacherSection.classList.remove('hidden');
             } else {
-                // Por defecto, para admins u otros roles, mostramos la guía de estudiante
+                // Default for admins or other complex roles: show the student view as a fallback.
                 studentSection.classList.remove('hidden');
             }
 
+            // Set up the main dashboard navigation button
             skipButton.addEventListener('click', () => {
                 localStorage.setItem('playtest_first_steps_completed', 'true');
                 
-                let dashboardUrl = 'jugadores-panel-gaming.html'; // Panel por defecto
-                if (userRole === 'teacher' || userRole === 'creator') {
+                let dashboardUrl = 'jugadores-panel-gaming.html'; // Default panel
+                const primaryRole = getPrimaryRole(session.roles);
+
+                if (primaryRole === 'profesor' || primaryRole === 'creador') {
                     dashboardUrl = 'teachers-panel-main.html';
-                } else if (session.is_admin_principal) {
+                } else if (primaryRole === 'administrador_principal') {
                      dashboardUrl = 'admin-principal-panel.html';
-                } else if (session.is_admin_secundario) {
+                } else if (primaryRole === 'administrador_secundario') {
                      dashboardUrl = 'admin-secundario-panel.html';
                 }
+                
+                console.log(`Redirecting to primary dashboard: ${dashboardUrl}`);
                 window.location.href = dashboardUrl;
             });
         });
