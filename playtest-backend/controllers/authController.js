@@ -34,12 +34,15 @@ const registerUser = async (req, res) => {
             );
             const newUserId = newUser.rows[0].id;
 
-            // Get default role 'jugador'
-            const role = await client.query('SELECT id FROM roles WHERE name = $1', ['jugador']);
-            if (role.rows.length === 0) {
-                throw new Error('Default role "jugador" not found.');
+            // Get default role 'usuario'
+            const roleResult = await client.query('SELECT id FROM roles WHERE name = $1', ['usuario']);
+            
+            if (roleResult.rows.length === 0) {
+                const errorMessage = 'FATAL: Default role \'usuario\' not found in the roles table. Cannot assign a role to the new user.';
+                console.error(errorMessage);
+                throw new Error(errorMessage);
             }
-            const roleId = role.rows[0].id;
+            const roleId = roleResult.rows[0].id;
 
             // Assign role to user
             await client.query(
@@ -54,15 +57,15 @@ const registerUser = async (req, res) => {
 
         } catch (error) {
             await client.query('ROLLBACK');
-            console.error('Error during registration transaction:', error); // Enhanced logging
-            res.status(500).json({ error: 'Server error during registration', details: error.message }); // Send error details
+            console.error('Error during registration transaction:', error);
+            res.status(500).json({ error: 'Server error during registration', details: error.message });
         } finally {
             client.release();
         }
 
     } catch (error) {
-        console.error('Error in registerUser (outer catch): ', error); // Enhanced logging
-        res.status(500).json({ error: 'Server error', details: error.message }); // Send error details
+        console.error('Error in registerUser (outer catch): ', error);
+        res.status(500).json({ error: 'Server error', details: error.message });
     }
 };
 
