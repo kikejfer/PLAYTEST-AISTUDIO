@@ -34,11 +34,11 @@ const registerUser = async (req, res) => {
             );
             const newUserId = newUser.rows[0].id;
 
-            // Get default role 'usuario'
-            const roleResult = await client.query('SELECT id FROM roles WHERE name = $1', ['usuario']);
-            
+            // Get default role 'jugador'
+            const roleResult = await client.query('SELECT id FROM roles WHERE name = $1', ['jugador']);
+
             if (roleResult.rows.length === 0) {
-                const errorMessage = 'FATAL: Default role \'usuario\' not found in the roles table. Cannot assign a role to the new user.';
+                const errorMessage = 'FATAL: Default role \'jugador\' not found in the roles table. Cannot assign a role to the new user.';
                 console.error(errorMessage);
                 throw new Error(errorMessage);
             }
