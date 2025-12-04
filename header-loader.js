@@ -593,8 +593,12 @@ function getUserRolesFromSystem(profile, session) {
     // Agregar roles detectados
     if (tokenRoles && tokenRoles.length > 0) {
         tokenRoles.forEach(role => {
-            if (roleMapping[role]) {
-                roles.push(roleMapping[role]);
+            // Si role es un objeto {code, name, panel}, extraer el nombre
+            // Si role es un string, usarlo directamente
+            const roleName = typeof role === 'object' && role.name ? role.name : role;
+
+            if (roleMapping[roleName]) {
+                roles.push(roleMapping[roleName]);
             }
         });
     }
@@ -619,16 +623,22 @@ function getUserRolesFromSystem(profile, session) {
 function detectRoleFromToken() {
     const tokenRoles = window.getRolesFromToken ? window.getRolesFromToken() : getRolesFromTokenLocal();
     if (tokenRoles.length === 0) return null;
-    
+
+    // Convertir roles a array de nombres si son objetos
+    const roleNames = tokenRoles.map(role =>
+        typeof role === 'object' && role.name ? role.name : role
+    );
+
     // Prioridad de roles para detección automática (roles administrativos tienen prioridad)
     const rolePriority = ['administrador_principal', 'admin_principal', 'administrador_secundario', 'admin_secundario', 'soporte_tecnico', 'creador', 'creador_contenido', 'profesor_creador', 'profesor', 'usuario', 'jugador'];
-    
+
     // DEBUG: Log para troubleshoot
     console.log('🔍 DEBUG Role Detection - Token roles:', tokenRoles);
+    console.log('🔍 DEBUG Role Detection - Role names:', roleNames);
     console.log('🔍 DEBUG Role Detection - Priority order:', rolePriority);
-    
+
     for (const priorityRole of rolePriority) {
-        if (tokenRoles.includes(priorityRole)) {
+        if (roleNames.includes(priorityRole)) {
             const roleMapping = {
                 'administrador_principal': 'PAP',
                 'admin_principal': 'PAP',
