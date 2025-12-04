@@ -34,11 +34,11 @@ const registerUser = async (req, res) => {
             );
             const newUserId = newUser.rows[0].id;
 
-            // Get default role 'usuario'
-            const roleResult = await client.query('SELECT id FROM roles WHERE name = $1', ['usuario']);
-            
+            // Get default role 'jugador'
+            const roleResult = await client.query('SELECT id FROM roles WHERE name = $1', ['jugador']);
+
             if (roleResult.rows.length === 0) {
-                const errorMessage = 'FATAL: Default role \'usuario\' not found in the roles table. Cannot assign a role to the new user.';
+                const errorMessage = 'FATAL: Default role \'jugador\' not found in the roles table. Cannot assign a role to the new user.';
                 console.error(errorMessage);
                 throw new Error(errorMessage);
             }
@@ -96,7 +96,7 @@ const loginUser = async (req, res) => {
 
         // Get user roles (using a similar query to the middleware for consistency)
         const rolesResult = await pool.query(
-          `SELECT 
+          `SELECT
             COALESCE(
               (SELECT json_agg(json_build_object(
                 'code', CASE r.name
@@ -104,6 +104,7 @@ const loginUser = async (req, res) => {
                   WHEN 'administrador_secundario' THEN 'ADS'
                   WHEN 'profesor' THEN 'PRF'
                   WHEN 'creador' THEN 'CRD'
+                  WHEN 'usuario' THEN 'PJG'
                   WHEN 'jugador' THEN 'PJG'
                   WHEN 'soporte_tecnico' THEN 'SPT'
                   ELSE r.name
@@ -114,6 +115,7 @@ const loginUser = async (req, res) => {
                   WHEN 'administrador_secundario' THEN 'PAS'
                   WHEN 'profesor' THEN 'PPF'
                   WHEN 'creador' THEN 'PCC'
+                  WHEN 'usuario' THEN 'PJG'
                   WHEN 'jugador' THEN 'PJG'
                   WHEN 'soporte_tecnico' THEN 'PST'
                   ELSE 'PJG'

@@ -6,8 +6,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "serve -s . -p $PORT",
-    "serve": "serve -s . -p 3000"
+    "start": "serve . -p $PORT",
+    "serve": "serve . -p 3000"
   },
   "dependencies": {
     "@playwright/test": "^1.57.0",
