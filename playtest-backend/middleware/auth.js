@@ -30,6 +30,7 @@ const authenticateToken = async (req, res, next) => {
               WHEN 'administrador_secundario' THEN 'ADS'
               WHEN 'profesor' THEN 'PRF'
               WHEN 'creador' THEN 'CRD'
+              WHEN 'usuario' THEN 'PJG'
               WHEN 'jugador' THEN 'PJG'
               WHEN 'soporte_tecnico' THEN 'SPT'
               ELSE r.name
@@ -40,6 +41,7 @@ const authenticateToken = async (req, res, next) => {
               WHEN 'administrador_secundario' THEN 'PAS'
               WHEN 'profesor' THEN 'PPF'
               WHEN 'creador' THEN 'PCC'
+              WHEN 'usuario' THEN 'PJG'
               WHEN 'jugador' THEN 'PJG'
               WHEN 'soporte_tecnico' THEN 'PST'
               ELSE 'PJG'
