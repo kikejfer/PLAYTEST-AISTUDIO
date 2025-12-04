@@ -586,7 +586,8 @@ function getUserRolesFromSystem(profile, session) {
         'creador_contenido': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
         'profesor_creador': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
         'profesor': { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-oposiciones.html' },
-        'jugador': { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' }
+        'usuario': { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' },
+        'jugador': { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' } // alias para compatibilidad
     };
     
     // Agregar roles detectados
@@ -620,7 +621,7 @@ function detectRoleFromToken() {
     if (tokenRoles.length === 0) return null;
     
     // Prioridad de roles para detección automática (roles administrativos tienen prioridad)
-    const rolePriority = ['administrador_principal', 'admin_principal', 'administrador_secundario', 'admin_secundario', 'soporte_tecnico', 'creador', 'creador_contenido', 'profesor_creador', 'profesor', 'jugador'];
+    const rolePriority = ['administrador_principal', 'admin_principal', 'administrador_secundario', 'admin_secundario', 'soporte_tecnico', 'creador', 'creador_contenido', 'profesor_creador', 'profesor', 'usuario', 'jugador'];
     
     // DEBUG: Log para troubleshoot
     console.log('🔍 DEBUG Role Detection - Token roles:', tokenRoles);
@@ -638,6 +639,7 @@ function detectRoleFromToken() {
                 'creador_contenido': 'PCC',
                 'profesor_creador': 'PCC',
                 'profesor': 'PPF',
+                'usuario': 'PJG',
                 'jugador': 'PJG'
             };
             console.log(`✅ DEBUG Role Detection - Selected role: ${priorityRole} -> ${roleMapping[priorityRole]}`);
