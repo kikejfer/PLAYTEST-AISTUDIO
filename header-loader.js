@@ -329,6 +329,12 @@ async function initializeHeader() {
             console.log('📦 Loading header...');
             await loadHeader(panelType, containerId, userData);
             console.log('✅ Header loaded successfully');
+
+            // Disparar evento sessionReady para notificar que la sesión está lista
+            console.log('📡 Dispatching sessionReady event');
+            document.dispatchEvent(new CustomEvent('sessionReady', {
+                detail: { userData }
+            }));
         } catch (error) {
             console.error('❌ Error initializing header:', error);
             console.error('Stack trace:', error.stack);
@@ -375,7 +381,13 @@ async function enhanceExistingHeader() {
         }
         
         console.info('✅ Header existente mejorado correctamente');
-        
+
+        // Disparar evento sessionReady para notificar que la sesión está lista
+        console.log('📡 Dispatching sessionReady event (existing header mode)');
+        document.dispatchEvent(new CustomEvent('sessionReady', {
+            detail: { userData }
+        }));
+
     } catch (error) {
         console.warn('⚠️ Error mejorando header existente:', error);
     }
