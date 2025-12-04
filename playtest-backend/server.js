@@ -88,12 +88,16 @@ const io = new Server(server, {
   allowEIO3: true
 });
 
-// Apply compatibility middlewares before routes
-// (This will be configured after compatibility layer is created)
-
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Routes compatibility layer for unified tables
+const RoutesCompatibilityLayer = require('./routes-compatibility-layer');
+const compatibilityLayer = new RoutesCompatibilityLayer();
+
+// Apply compatibility middlewares BEFORE defining the routes that depend on it
+compatibilityLayer.applyCompatibilityMiddlewares(app);
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -237,10 +241,6 @@ cron.schedule('* * * * *', cleanupExpiredTypingStatus);
 app.set('io', io);
 app.set('messagingHandler', messagingHandler);
 
-// Routes compatibility layer for unified tables
-const RoutesCompatibilityLayer = require('./routes-compatibility-layer');
-const compatibilityLayer = new RoutesCompatibilityLayer();
-
 // Make schedulers globally accessible for API routes
 global.escalationScheduler = escalationScheduler;
 global.dailyQuestsScheduler = dailyQuestsScheduler;
@@ -252,9 +252,6 @@ server.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📱 Environment: ${process.env.NODE_ENV}`);
   console.log(`🔌 WebSocket server enabled`);
-  
-  // Apply compatibility middlewares after all systems are initialized
-  compatibilityLayer.applyCompatibilityMiddlewares(app);
   
   // Check migration status
   const migrationStatus = await compatibilityLayer.checkMigrationStatus();
