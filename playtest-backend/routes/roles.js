@@ -221,7 +221,7 @@ router.get('/admin-principal-panel', authenticateToken, requireAdminRole, async 
       LEFT JOIN admin_assignments aa ON u.id = aa.assigned_user_id
       LEFT JOIN users aa_admin ON aa.admin_id = aa_admin.id
       LEFT JOIN user_luminarias ul ON u.id = ul.user_id
-      WHERE r.name = 'jugador'
+      WHERE r.name = 'usuario'
       GROUP BY u.id, u.nickname, u.email, up.loaded_blocks, aa_admin.nickname, aa.admin_id, ul.actuales, ul.ganadas, ul.gastadas, ul.abonadas, ul.compradas
       ORDER BY luminarias_actuales DESC
     `);
@@ -274,7 +274,7 @@ router.get('/admin-secundario-panel', authenticateToken, requireAdminRole, async
       JOIN user_roles ur ON u.id = ur.user_id
       JOIN roles r ON ur.role_id = r.id
       LEFT JOIN user_profiles up ON u.id = up.user_id
-      WHERE aa.admin_id = $1 AND r.name = 'jugador'
+      WHERE aa.admin_id = $1 AND r.name = 'usuario'
       GROUP BY u.id, u.nickname, u.email, up.loaded_blocks
       ORDER BY u.nickname
     `, [req.user.id]);

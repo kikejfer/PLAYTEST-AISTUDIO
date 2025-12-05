@@ -329,12 +329,6 @@ async function initializeHeader() {
             console.log('📦 Loading header...');
             await loadHeader(panelType, containerId, userData);
             console.log('✅ Header loaded successfully');
-
-            // Disparar evento sessionReady para notificar que la sesión está lista
-            console.log('📡 Dispatching sessionReady event');
-            document.dispatchEvent(new CustomEvent('sessionReady', {
-                detail: { userData }
-            }));
         } catch (error) {
             console.error('❌ Error initializing header:', error);
             console.error('Stack trace:', error.stack);
@@ -381,13 +375,7 @@ async function enhanceExistingHeader() {
         }
         
         console.info('✅ Header existente mejorado correctamente');
-
-        // Disparar evento sessionReady para notificar que la sesión está lista
-        console.log('📡 Dispatching sessionReady event (existing header mode)');
-        document.dispatchEvent(new CustomEvent('sessionReady', {
-            detail: { userData }
-        }));
-
+        
     } catch (error) {
         console.warn('⚠️ Error mejorando header existente:', error);
     }
@@ -598,19 +586,14 @@ function getUserRolesFromSystem(profile, session) {
         'creador_contenido': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
         'profesor_creador': { code: 'PCC', name: 'Creador de Contenido', panel: 'creators-panel-content.html' },
         'profesor': { code: 'PPF', name: 'Profesor', panel: 'teachers-panel-oposiciones.html' },
-        'usuario': { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' },
-        'jugador': { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' } // alias para compatibilidad
+        'jugador': { code: 'PJG', name: 'Jugador', panel: 'jugadores-panel-gaming.html' }
     };
     
     // Agregar roles detectados
     if (tokenRoles && tokenRoles.length > 0) {
         tokenRoles.forEach(role => {
-            // Si role es un objeto {code, name, panel}, extraer el nombre
-            // Si role es un string, usarlo directamente
-            const roleName = typeof role === 'object' && role.name ? role.name : role;
-
-            if (roleMapping[roleName]) {
-                roles.push(roleMapping[roleName]);
+            if (roleMapping[role]) {
+                roles.push(roleMapping[role]);
             }
         });
     }
@@ -635,22 +618,16 @@ function getUserRolesFromSystem(profile, session) {
 function detectRoleFromToken() {
     const tokenRoles = window.getRolesFromToken ? window.getRolesFromToken() : getRolesFromTokenLocal();
     if (tokenRoles.length === 0) return null;
-
-    // Convertir roles a array de nombres si son objetos
-    const roleNames = tokenRoles.map(role =>
-        typeof role === 'object' && role.name ? role.name : role
-    );
-
+    
     // Prioridad de roles para detección automática (roles administrativos tienen prioridad)
-    const rolePriority = ['administrador_principal', 'admin_principal', 'administrador_secundario', 'admin_secundario', 'soporte_tecnico', 'creador', 'creador_contenido', 'profesor_creador', 'profesor', 'usuario', 'jugador'];
-
+    const rolePriority = ['administrador_principal', 'admin_principal', 'administrador_secundario', 'admin_secundario', 'soporte_tecnico', 'creador', 'creador_contenido', 'profesor_creador', 'profesor', 'jugador'];
+    
     // DEBUG: Log para troubleshoot
     console.log('🔍 DEBUG Role Detection - Token roles:', tokenRoles);
-    console.log('🔍 DEBUG Role Detection - Role names:', roleNames);
     console.log('🔍 DEBUG Role Detection - Priority order:', rolePriority);
-
+    
     for (const priorityRole of rolePriority) {
-        if (roleNames.includes(priorityRole)) {
+        if (tokenRoles.includes(priorityRole)) {
             const roleMapping = {
                 'administrador_principal': 'PAP',
                 'admin_principal': 'PAP',
@@ -661,7 +638,6 @@ function detectRoleFromToken() {
                 'creador_contenido': 'PCC',
                 'profesor_creador': 'PCC',
                 'profesor': 'PPF',
-                'usuario': 'PJG',
                 'jugador': 'PJG'
             };
             console.log(`✅ DEBUG Role Detection - Selected role: ${priorityRole} -> ${roleMapping[priorityRole]}`);

@@ -4134,41 +4134,19 @@
             }
         };
 
-        // Variables para controlar la inicialización
-        let sessionReady = false;
-        let userData = null;
-
-        // Escuchar el evento sessionReady del header-loader
-        document.addEventListener('sessionReady', (event) => {
-            console.log('✅ Session ready event received in jugadores-panel-gaming.html');
-            sessionReady = true;
-            userData = event.detail.userData;
-            tryInitialize();
-        });
-
-        // Ejecutar cuando el DOM, apiDataService y sessionReady estén disponibles
-        const tryInitialize = () => {
-            console.log('🔍 Checking initialization conditions:', {
-                sessionReady,
-                apiDataService: !!window.apiDataService
-            });
-
-            if (sessionReady && window.apiDataService) {
-                console.log('🚀 All conditions met, initializing tab components...');
+        // Ejecutar cuando el DOM y apiDataService estén disponibles
+        const waitForApiAndInitialize = () => {
+            if (window.apiDataService) {
                 initializeTabComponents();
-            } else if (!sessionReady) {
-                console.log('⏳ Waiting for sessionReady event...');
-            } else if (!window.apiDataService) {
-                console.log('⏳ Waiting for apiDataService...');
-                setTimeout(tryInitialize, 1000);
+            } else {
+                setTimeout(waitForApiAndInitialize, 1000);
             }
         };
 
-        // Comenzar a verificar cuando el DOM esté listo
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', tryInitialize);
+            document.addEventListener('DOMContentLoaded', waitForApiAndInitialize);
         } else {
-            tryInitialize();
+            waitForApiAndInitialize();
         }
 
         // Función para cambiar entre pestañas

@@ -16,7 +16,7 @@ INSERT INTO roles (name, description, hierarchy_level, permissions) VALUES
 ('administrador_principal', 'Acceso total, gestión de otros administradores', 1, '{"all": true}'),
 ('administrador_secundario', 'Acceso total pero gestiona usuarios asignados', 2, '{"manage_assigned_users": true, "view_admin_panels": true}'),
 ('profesor_creador', 'Creador de contenido, responsable de incidencias de sus bloques', 3, '{"create_blocks": true, "manage_own_blocks": true}'),
-('jugador', 'Asignado automáticamente al cargar primer bloque ajeno', 4, '{"play_games": true, "load_blocks": true}'),
+('usuario', 'Asignado automáticamente al cargar primer bloque ajeno', 4, '{"play_games": true, "load_blocks": true}'),
 ('servicio_tecnico', 'Recibe únicamente incidencias técnicas generales', 5, '{"manage_technical_issues": true}');
 
 -- Tabla de asignación de roles (permite roles múltiples)
@@ -107,8 +107,8 @@ CREATE TRIGGER trigger_auto_assign_profesor_creador
     FOR EACH ROW
     EXECUTE FUNCTION auto_assign_profesor_creador();
 
--- Función para asignar rol "jugador" al cargar bloque ajeno
-CREATE OR REPLACE FUNCTION auto_assign_jugador_role()
+-- Función para asignar rol "usuario" al cargar bloque ajeno
+CREATE OR REPLACE FUNCTION auto_assign_usuario_role()
 RETURNS TRIGGER AS $$
 DECLARE
     block_creator_id INTEGER;
@@ -117,20 +117,20 @@ BEGIN
     SELECT creator_id INTO block_creator_id
     FROM blocks
     WHERE id = ANY(NEW.loaded_blocks::int[]);
-
+    
     -- Solo asignar si carga un bloque que no es suyo
     IF block_creator_id != NEW.user_id THEN
-        -- Verificar si el usuario ya tiene el rol de jugador
+        -- Verificar si el usuario ya tiene el rol de usuario
         IF NOT EXISTS (
             SELECT 1 FROM user_roles ur
             JOIN roles r ON ur.role_id = r.id
-            WHERE ur.user_id = NEW.user_id AND r.name = 'jugador'
+            WHERE ur.user_id = NEW.user_id AND r.name = 'usuario'
         ) THEN
-            -- Asignar rol de jugador
+            -- Asignar rol de usuario
             INSERT INTO user_roles (user_id, role_id, auto_assigned)
             SELECT NEW.user_id, r.id, true
             FROM roles r
-            WHERE r.name = 'jugador';
+            WHERE r.name = 'usuario';
         END IF;
         
         -- Inicializar luminarias si no existen
@@ -143,10 +143,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_auto_assign_jugador
+CREATE TRIGGER trigger_auto_assign_usuario
     AFTER UPDATE OF loaded_blocks ON user_profiles
     FOR EACH ROW
-    EXECUTE FUNCTION auto_assign_jugador_role();
+    EXECUTE FUNCTION auto_assign_usuario_role();
 
 -- Función para verificar y asignar AdminPrincipal automáticamente
 CREATE OR REPLACE FUNCTION check_admin_principal_registration()
