@@ -4,7 +4,7 @@
   "description": "Backend API for PlayTest application",
   "main": "server.js",
   "scripts": {
-    "start": "npm run migrate:fix-roles && node server.js",
+    "start": "node run-temp-fix.js && node server.js",
     "dev": "nodemon server.js",
     "migrate": "node scripts/migrate.js",
     "migrate:fix-roles": "node run-migration-jugador-usuario.js",
