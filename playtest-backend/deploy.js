@@ -1,4 +1,5 @@
 const fs = require('fs').promises;
+const path = require('path');
 const { Pool } = require('pg');
 const createAdminPrincipal = require('./create-admin-principal');
 require('dotenv').config();
@@ -33,14 +34,15 @@ async function deploy() {
     try {
         console.log('🚀 Desplegando esquemas PLAYTEST...');
         
-        // Crear directorios
-        await fs.mkdir('./uploads/tickets', { recursive: true });
-        console.log('✅ Directorios creados');
+        // Crear directorios usando rutas absolutas para robustez
+        const uploadsDir = path.resolve(__dirname, '../uploads/tickets');
+        await fs.mkdir(uploadsDir, { recursive: true });
+        console.log(`✅ Directorio asegurado en: ${uploadsDir}`);
         
-        // Aplicar esquemas en orden
-        await applySchema('../database-schema.sql', 'Esquema Base');
-        await applySchema('../database-schema-roles.sql', 'Sistema de Roles');  
-        await applySchema('../database-schema-communication.sql', 'Sistema de Comunicación');
+        // Aplicar esquemas usando rutas absolutas
+        await applySchema(path.resolve(__dirname, '../database-schema.sql'), 'Esquema Base');
+        await applySchema(path.resolve(__dirname, '../database-schema-roles.sql'), 'Sistema de Roles');  
+        await applySchema(path.resolve(__dirname, '../database-schema-communication.sql'), 'Sistema de Comunicación');
         
         // Verificar despliegue
         const tablesResult = await pool.query(`
