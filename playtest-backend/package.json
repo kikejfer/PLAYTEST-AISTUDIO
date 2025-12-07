@@ -10,7 +10,7 @@
     "seed": "node scripts/seed.js",
     "create-admin": "node create-admin-principal.js",
     "deploy": "node deploy.js",
-    "init-db": "node init-render-db.js",
+    "init-db": "node deploy.js",
     "build": "npm install",
     "postbuild": "npm run init-db && npm run seed",
     "docs:schema": "node scripts/generate-schema-docs-from-sql.js",
