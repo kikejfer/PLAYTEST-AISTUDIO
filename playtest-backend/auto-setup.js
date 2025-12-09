@@ -1,128 +1,87 @@
 const bcrypt = require('bcrypt');
-let pool;
+// PASO 1: Importar el *método* para obtener la conexión, no la conexión en sí.
+const { getPool } = require('./database/connection');
 
 class AutoSetup {
     constructor() {
         this.setupCompleted = false;
-        this.pool = null;
     }
 
-    initialize(dbPool) {
-        if (!dbPool) {
-            throw new Error("El pool de la base de datos es necesario para inicializar AutoSetup");
-        }
-        this.pool = dbPool;
-        pool = dbPool; 
-        console.log('🔧 AutoSetup inicializado con el pool de la base de datos.');
-    }
-
-    _getPool() {
-        if (!this.pool) {
-            throw new Error("AutoSetup no ha sido inicializado. El servidor debe llamar a .initialize(pool) antes de usarlo.");
-        }
-        return this.pool;
-    }
+    // ELIMINADO: El método initialize() ya no es necesario.
 
     async ensureAdminPrincipalExists() {
-        const currentPool = this._getPool();
+        // PASO 2: Obtener la conexión oficial justo cuando se necesita.
+        const pool = getPool();
         try {
-            const existingUser = await currentPool.query(
-                'SELECT id, nickname FROM users WHERE nickname = $1',
+            const existingUser = await pool.query(
+                'SELECT id FROM users WHERE nickname = $1',
                 ['AdminPrincipal']
             );
             
             let userId;
             if (existingUser.rows.length > 0) {
-                console.log('✅ AdminPrincipal ya existe (ID:', existingUser.rows[0].id, ')');
+                console.log('✅ AdminPrincipal user already exists.');
                 userId = existingUser.rows[0].id;
             } else {
-                console.log('🔧 AdminPrincipal no existe. Creando automáticamente...');
-                const passwordHash = await bcrypt.hash('kikejfer', 10);
-                const result = await currentPool.query(
-                    'INSERT INTO users (nickname, email, password_hash) VALUES ($1, $2, $3) RETURNING id, nickname',
+                console.log('🔧 AdminPrincipal user not found. Creating...');
+                const passwordHash = await bcrypt.hash(process.env.ADMIN_DEFAULT_PASSWORD || 'kikejfer', 12);
+                const result = await pool.query(
+                    'INSERT INTO users (nickname, email, password_hash) VALUES ($1, $2, $3) RETURNING id',
                     ['AdminPrincipal', 'admin@playtest.com', passwordHash]
                 );
                 userId = result.rows[0].id;
-                console.log('✅ AdminPrincipal creado con ID:', userId);
+                console.log(`✅ AdminPrincipal user created with ID: ${userId}`);
             }
             
-            try {
-                const profileCheck = await currentPool.query(
-                    'SELECT id FROM user_profiles WHERE user_id = $1',
-                    [userId]
-                );
-                if (profileCheck.rows.length === 0) {
-                    await currentPool.query(
-                        'INSERT INTO user_profiles (user_id) VALUES ($1)',
-                        [userId]
-                    );
-                    console.log('✅ Perfil creado para AdminPrincipal');
-                }
-            } catch (profileError) {
-                console.warn('⚠️ Error con perfil (no crítico):', profileError.message);
+            // Asegurar que el perfil de usuario existe
+            const profileCheck = await pool.query('SELECT id FROM user_profiles WHERE user_id = $1', [userId]);
+            if (profileCheck.rows.length === 0) {
+                await pool.query('INSERT INTO user_profiles (user_id) VALUES ($1)', [userId]);
+                console.log(`✅ User profile created for AdminPrincipal.`);
             }
-            
+
             await this.ensureAdminPrincipalRole(userId);
-            return { id: userId, nickname: 'AdminPrincipal' };
-            
+
         } catch (error) {
-            console.error('❌ Error en auto-setup de AdminPrincipal:', error.message);
-            return null;
+            console.error('❌ Error during AdminPrincipal setup:', error.message);
+            // No relanzamos el error para no detener el arranque por completo si esto falla.
         }
     }
 
     async ensureAdminPrincipalRole(userId) {
-        const currentPool = this._getPool();
+        const pool = getPool();
         try {
-            let adminRoleResult = await currentPool.query('SELECT id FROM roles WHERE name = $1', ['administrador_principal']);
+            const roleResult = await pool.query('SELECT id FROM roles WHERE name = $1', ['administrador_principal']);
             let adminRoleId;
-            if (adminRoleResult.rows.length === 0) {
-                const newRoleResult = await currentPool.query('INSERT INTO roles (name, description) VALUES ($1, $2) RETURNING id', ['administrador_principal', 'Administrador Principal del Sistema']);
-                adminRoleId = newRoleResult.rows[0].id;
+
+            if (roleResult.rows.length === 0) {
+                const newRole = await pool.query('INSERT INTO roles (name, description) VALUES ($1, $2) RETURNING id', ['administrador_principal', 'Full system access']);
+                adminRoleId = newRole.rows[0].id;
             } else {
-                adminRoleId = adminRoleResult.rows[0].id;
+                adminRoleId = roleResult.rows[0].id;
             }
             
-            const existingRoleAssignment = await currentPool.query('SELECT id FROM user_roles WHERE user_id = $1 AND role_id = $2', [userId, adminRoleId]);
-            if (existingRoleAssignment.rows.length === 0) {
-                await currentPool.query('INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)', [userId, adminRoleId]);
-                console.log('✅ Rol administrador_principal asignado a AdminPrincipal');
+            const assignmentCheck = await pool.query('SELECT id FROM user_roles WHERE user_id = $1 AND role_id = $2', [userId, adminRoleId]);
+            if (assignmentCheck.rows.length === 0) {
+                await pool.query('INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)', [userId, adminRoleId]);
+                console.log('✅ AdminPrincipal role assigned.');
             }
         } catch (error) {
-            console.warn('⚠️ Error configurando rol de AdminPrincipal:', error.message);
+            console.warn('⚠️ Warning during AdminPrincipal role setup:', error.message);
         }
     }
 
     async runAutoSetup() {
-        if (this.setupCompleted) return;
-        const currentPool = this._getPool();
-
-        try {
-            console.log('🚀 Ejecutando configuración automática (Lazy Loaded)...');
-            await currentPool.query('SELECT 1');
-            await this.ensureAdminPrincipalExists();
-            this.setupCompleted = true;
-            console.log('✅ Configuración automática completada');
-        } catch (error) {
-            console.error('❌ Error en configuración automática:', error.message);
+        if (this.setupCompleted) {
+            return;
         }
-    }
-
-    async checkStatus() {
-        const currentPool = this._getPool();
-        try {
-            const adminCheck = await currentPool.query('SELECT id FROM users WHERE nickname = $1', ['AdminPrincipal']);
-            let hasAdminRole = false;
-            if (adminCheck.rows.length > 0) {
-                const roleCheck = await currentPool.query(`SELECT ur.id FROM user_roles ur JOIN roles r ON ur.role_id = r.id WHERE ur.user_id = $1 AND r.name = 'administrador_principal'`, [adminCheck.rows[0].id]);
-                hasAdminRole = roleCheck.rows.length > 0;
-            }
-            return { adminPrincipalExists: adminCheck.rows.length > 0, hasAdminRole: hasAdminRole, setupCompleted: this.setupCompleted };
-        } catch (error) {
-            return { error: error.message };
-        }
+        console.log('🚀 Running AutoSetup...');
+        await this.ensureAdminPrincipalExists();
+        this.setupCompleted = true;
+        console.log('✅ AutoSetup finished.');
     }
 }
 
+// Exportar una única instancia (singleton)
 const autoSetup = new AutoSetup();
 module.exports = autoSetup;
