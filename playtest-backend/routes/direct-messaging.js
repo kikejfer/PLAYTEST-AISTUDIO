@@ -1,11 +1,8 @@
 const express = require('express');
 const router = express.Router();
-// CORRECT: Get the function to retrieve the pool.
 const { getPool } = require('../database/connection');
 const { authenticateToken } = require('../middleware/auth');
-const multer = require('multer');
 
-// Middleware to inject the database pool into the request.
 const getDBPool = (req, res, next) => {
     try {
         req.pool = getPool();
@@ -16,12 +13,9 @@ const getDBPool = (req, res, next) => {
     }
 };
 
-// Apply the middleware to all routes in this file.
 router.use(getDBPool);
+router.use(authenticateToken);
 
-// ============================================================================
-// VALIDATION MIDDLEWARE (NOW USING req.pool)
-// ============================================================================
 
 async function validateConversationAccess(req, res, next) {
     const conversationId = req.params.conversationId || req.body.conversationId;
@@ -41,11 +35,23 @@ async function validateConversationAccess(req, res, next) {
     }
 }
 
-// ============================================================================
-// CONVERSATION ROUTES (NOW USING req.pool)
-// ============================================================================
+// FIX: Add route for getting unread messages count.
+router.get('/unread-count', async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const result = await req.pool.query(
+            'SELECT COUNT(*) as unread_count FROM direct_messages WHERE recipient_id = $1 AND is_read = false',
+            [userId]
+        );
+        const unreadCount = parseInt(result.rows[0].unread_count, 10);
+        res.json({ unreadCount });
+    } catch (error) {
+        console.error('Error fetching unread messages count:', error);
+        res.status(500).json({ error: 'Error al obtener el número de mensajes no leídos' });
+    }
+});
 
-router.get('/conversations', authenticateToken, async (req, res) => {
+router.get('/conversations', async (req, res) => {
     const userId = req.user.id;
     try {
         const result = await req.pool.query(
@@ -63,11 +69,10 @@ router.get('/conversations', authenticateToken, async (req, res) => {
     }
 });
 
-router.post('/conversations', authenticateToken, async (req, res) => {
+router.post('/conversations', async (req, res) => {
     const userId = req.user.id;
     const { recipientId } = req.body;
     try {
-        // Simplified logic for creating/getting a conversation
         const [user1Id, user2Id] = userId < recipientId ? [userId, recipientId] : [recipientId, userId];
         let conv = await req.pool.query('SELECT id FROM conversations WHERE user1_id = $1 AND user2_id = $2', [user1Id, user2Id]);
         if (conv.rows.length === 0) {
@@ -80,11 +85,7 @@ router.post('/conversations', authenticateToken, async (req, res) => {
     }
 });
 
-// ============================================================================
-// MESSAGE ROUTES (NOW USING req.pool)
-// ============================================================================
-
-router.get('/conversations/:conversationId/messages', authenticateToken, validateConversationAccess, async (req, res) => {
+router.get('/conversations/:conversationId/messages', validateConversationAccess, async (req, res) => {
     const conversationId = req.params.conversationId;
     try {
         const result = await req.pool.query(
@@ -101,7 +102,7 @@ router.get('/conversations/:conversationId/messages', authenticateToken, validat
     }
 });
 
-router.post('/conversations/:conversationId/messages', authenticateToken, validateConversationAccess, /* upload.array('attachments'), */ async (req, res) => {
+router.post('/conversations/:conversationId/messages', validateConversationAccess, async (req, res) => {
     const conversationId = req.params.conversationId;
     const senderId = req.user.id;
     const { messageText } = req.body;
@@ -118,6 +119,5 @@ router.post('/conversations/:conversationId/messages', authenticateToken, valida
         res.status(500).json({ error: 'Error enviando mensaje' });
     }
 });
-
 
 module.exports = router;
