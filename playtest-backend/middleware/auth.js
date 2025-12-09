@@ -1,12 +1,11 @@
 const jwt = require('jsonwebtoken');
-const pool = require('../database/connection');
+// FIX: Importar el método para obtener el pool, no el pool directamente.
+const { getPool } = require('../database/connection');
 
 const authenticateToken = async (req, res, next) => {
   console.log('🔐 authenticateToken called for:', req.method, req.path);
 
   const authHeader = req.headers['authorization'];
-  console.log('🔑 Authorization header present:', !!authHeader);
-
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
   if (!token) {
@@ -14,13 +13,22 @@ const authenticateToken = async (req, res, next) => {
     return res.status(401).json({ error: 'Access token required' });
   }
 
-  console.log('🔑 Token present, length:', token.length);
-
   try {
+    // FIX: Obtener el pool inicializado dentro de la función.
+    const pool = getPool();
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('✅ Token verified successfully for userId:', decoded.userId);
 
-    // Verify user still exists and get roles from database
+    // FIX: Usar `decoded.id` que es el estándar en esta aplicación, en lugar de `decoded.userId`.
+    const userId = decoded.id;
+
+    if (!userId) {
+      console.log('❌ No ID found in JWT payload', decoded);
+      return res.status(403).json({ error: 'Invalid token payload' });
+    }
+    
+    console.log('✅ Token verified successfully for userId:', userId);
+
+    // Verificar que el usuario todavía existe y obtener sus roles.
     const result = await pool.query(
       `SELECT u.id, u.nickname,
         COALESCE(
@@ -51,25 +59,24 @@ const authenticateToken = async (req, res, next) => {
           ), '[]'::json
         ) as roles
       FROM users u WHERE u.id = $1`,
-      [decoded.userId]
+      [userId]
     );
 
     if (result.rows.length === 0) {
-      console.log('❌ User not found in database for userId:', decoded.userId);
-      return res.status(401).json({ error: 'Invalid token' });
+      console.log('❌ User not found in database for userId:', userId);
+      return res.status(401).json({ error: 'Invalid token: User does not exist' });
     }
 
     console.log('✅ User found:', result.rows[0].nickname, 'with roles:', result.rows[0].roles);
 
     req.user = {
-      id: decoded.userId,
+      id: userId,
       nickname: result.rows[0].nickname,
       roles: result.rows[0].roles || []
     };
 
     next();
   } catch (error) {
-    // Handle token expiration specifically
     if (error.name === 'TokenExpiredError') {
       console.log('⏰ Token expired for:', req.path);
       return res.status(401).json({
@@ -79,7 +86,6 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
-    // Handle other JWT errors
     console.error('❌ Auth error:', error.name, error.message);
     return res.status(403).json({ error: 'Invalid token' });
   }

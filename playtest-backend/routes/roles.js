@@ -1,11 +1,13 @@
 const express = require('express');
-const pool = require('../database/connection');
+// FIX: Importar el método para obtener el pool, no el pool directamente.
+const { getPool } = require('../database/connection');
 const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Middleware para verificar rol de administrador
 const requireAdminRole = async (req, res, next) => {
+  const pool = getPool();
   try {
     const result = await pool.query(`
       SELECT r.name, r.hierarchy_level
@@ -26,8 +28,8 @@ const requireAdminRole = async (req, res, next) => {
   }
 };
 
-// Obtener roles del usuario actual
 router.get('/my-roles', authenticateToken, async (req, res) => {
+  const pool = getPool();
   try {
     const result = await pool.query(`
       SELECT r.name, r.description, r.hierarchy_level, ur.assigned_at, ur.auto_assigned
@@ -44,10 +46,9 @@ router.get('/my-roles', authenticateToken, async (req, res) => {
   }
 });
 
-// Asignar rol de administrador secundario (solo AdminPrincipal)
 router.post('/assign-admin-secundario', authenticateToken, requireAdminRole, async (req, res) => {
+  const pool = getPool();
   try {
-    // Solo el administrador principal puede asignar admin secundarios
     if (req.adminRole.name !== 'administrador_principal') {
       return res.status(403).json({ error: 'Solo el Administrador Principal puede asignar Administradores Secundarios' });
     }
@@ -57,7 +58,6 @@ router.post('/assign-admin-secundario', authenticateToken, requireAdminRole, asy
       return res.status(400).json({ error: 'Se requiere el nickname del usuario' });
     }
 
-    // Verificar que el usuario existe
     const userResult = await pool.query('SELECT id FROM users WHERE nickname = $1', [nickname]);
     if (userResult.rows.length === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -65,12 +65,10 @@ router.post('/assign-admin-secundario', authenticateToken, requireAdminRole, asy
 
     const userId = userResult.rows[0].id;
 
-    // Verificar que no sea el mismo AdminPrincipal
     if (userId === req.user.id) {
       return res.status(400).json({ error: 'No puedes asignarte el rol a ti mismo' });
     }
 
-    // Verificar que no tenga ya el rol
     const existingRole = await pool.query(`
       SELECT 1 FROM user_roles ur
       JOIN roles r ON ur.role_id = r.id
@@ -81,21 +79,18 @@ router.post('/assign-admin-secundario', authenticateToken, requireAdminRole, asy
       return res.status(400).json({ error: 'El usuario ya tiene el rol de Administrador Secundario' });
     }
 
-    // Asignar el rol
     const roleResult = await pool.query('SELECT id FROM roles WHERE name = $1', ['administrador_secundario']);
     await pool.query(
       'INSERT INTO user_roles (user_id, role_id, assigned_by) VALUES ($1, $2, $3)',
       [userId, roleResult.rows[0].id, req.user.id]
     );
 
-    // Inicializar luminarias si no existen
     await pool.query(`
       INSERT INTO user_luminarias (user_id)
       VALUES ($1)
       ON CONFLICT (user_id) DO NOTHING
     `, [userId]);
 
-    // Ejecutar redistribución automática
     await redistributeUsersToAdmins();
 
     res.json({ message: 'Administrador Secundario asignado exitosamente' });
@@ -106,8 +101,8 @@ router.post('/assign-admin-secundario', authenticateToken, requireAdminRole, asy
   }
 });
 
-// Reasignar usuario a otro administrador secundario
 router.post('/reassign-user', authenticateToken, requireAdminRole, async (req, res) => {
+  const pool = getPool();
   try {
     const { userId, newAdminId } = req.body;
 
@@ -115,12 +110,10 @@ router.post('/reassign-user', authenticateToken, requireAdminRole, async (req, r
       return res.status(400).json({ error: 'Se requieren userId y newAdminId' });
     }
 
-    // Solo AdminPrincipal puede hacer reasignaciones
     if (req.adminRole.name !== 'administrador_principal') {
       return res.status(403).json({ error: 'Solo el Administrador Principal puede reasignar usuarios' });
     }
 
-    // Verificar que el nuevo admin es realmente un admin secundario
     const adminCheck = await pool.query(`
       SELECT 1 FROM user_roles ur
       JOIN roles r ON ur.role_id = r.id
@@ -131,7 +124,6 @@ router.post('/reassign-user', authenticateToken, requireAdminRole, async (req, r
       return res.status(400).json({ error: 'El usuario especificado no es un Administrador Secundario' });
     }
 
-    // Actualizar o insertar asignación
     await pool.query(`
       INSERT INTO admin_assignments (admin_id, assigned_user_id, assigned_by)
       VALUES ($1, $2, $3)
@@ -147,14 +139,13 @@ router.post('/reassign-user', authenticateToken, requireAdminRole, async (req, r
   }
 });
 
-// Obtener panel del administrador principal
 router.get('/admin-principal-panel', authenticateToken, requireAdminRole, async (req, res) => {
+  const pool = getPool();
   try {
     if (req.adminRole.name !== 'administrador_principal') {
       return res.status(403).json({ error: 'Solo el Administrador Principal puede acceder a este panel' });
     }
 
-    // Sección 1: Administradores Secundarios
     const adminsSecundarios = await pool.query(`
       SELECT 
         u.id, u.nickname, u.email,
@@ -174,7 +165,6 @@ router.get('/admin-principal-panel', authenticateToken, requireAdminRole, async 
       ORDER BY luminarias DESC
     `);
 
-    // Sección 2: Profesores/Creadores
     const profesoresCreadores = await pool.query(`
       SELECT 
         u.id, u.nickname, u.email,
@@ -202,7 +192,6 @@ router.get('/admin-principal-panel', authenticateToken, requireAdminRole, async 
       ORDER BY luminarias_actuales DESC
     `);
 
-    // Sección 3: Usuarios (Jugadores)
     const usuarios = await pool.query(`
       SELECT 
         u.id, u.nickname, u.email,
@@ -238,14 +227,13 @@ router.get('/admin-principal-panel', authenticateToken, requireAdminRole, async 
   }
 });
 
-// Obtener panel del administrador secundario
 router.get('/admin-secundario-panel', authenticateToken, requireAdminRole, async (req, res) => {
+  const pool = getPool();
   try {
     if (req.adminRole.name !== 'administrador_secundario') {
       return res.status(403).json({ error: 'Solo los Administradores Secundarios pueden acceder a este panel' });
     }
 
-    // Sección 1: Profesores/Creadores asignados (SIN luminarias)
     const profesoresAsignados = await pool.query(`
       SELECT 
         u.id, u.nickname, u.email,
@@ -264,7 +252,6 @@ router.get('/admin-secundario-panel', authenticateToken, requireAdminRole, async
       ORDER BY u.nickname
     `, [req.user.id]);
 
-    // Sección 2: Usuarios asignados (SIN luminarias, SIN reasignación)
     const usuariosAsignados = await pool.query(`
       SELECT 
         u.id, u.nickname, u.email,
@@ -290,17 +277,15 @@ router.get('/admin-secundario-panel', authenticateToken, requireAdminRole, async
   }
 });
 
-// Obtener detalles expandibles de bloques para un profesor
 router.get('/profesor-blocks/:profesorId', authenticateToken, requireAdminRole, async (req, res) => {
+  const pool = getPool();
   try {
     const profesorId = parseInt(req.params.profesorId);
     
-    // Verificar acceso según el tipo de administrador
     let hasAccess = false;
     if (req.adminRole.name === 'administrador_principal') {
       hasAccess = true;
     } else if (req.adminRole.name === 'administrador_secundario') {
-      // Verificar que el profesor esté asignado a este admin
       const assignmentCheck = await pool.query(
         'SELECT 1 FROM admin_assignments WHERE admin_id = $1 AND assigned_user_id = $2',
         [req.user.id, profesorId]
@@ -334,8 +319,8 @@ router.get('/profesor-blocks/:profesorId', authenticateToken, requireAdminRole, 
   }
 });
 
-// Obtener temas de un bloque específico
 router.get('/block-topics/:blockId', authenticateToken, requireAdminRole, async (req, res) => {
+  const pool = getPool();
   try {
     const blockId = parseInt(req.params.blockId);
 
@@ -357,8 +342,8 @@ router.get('/block-topics/:blockId', authenticateToken, requireAdminRole, async 
   }
 });
 
-// Obtener preguntas de un tema específico
 router.get('/topic-questions/:blockId/:topic', authenticateToken, requireAdminRole, async (req, res) => {
+  const pool = getPool();
   try {
     const blockId = parseInt(req.params.blockId);
     const topic = req.params.topic;
@@ -388,10 +373,9 @@ router.get('/topic-questions/:blockId/:topic', authenticateToken, requireAdminRo
   }
 });
 
-// Función auxiliar para redistribuir usuarios entre administradores secundarios
 async function redistributeUsersToAdmins() {
+  const pool = getPool();
   try {
-    // Obtener todos los administradores secundarios
     const adminsResult = await pool.query(`
       SELECT u.id
       FROM users u
@@ -404,7 +388,6 @@ async function redistributeUsersToAdmins() {
 
     const adminIds = adminsResult.rows.map(row => row.id);
 
-    // Obtener todos los usuarios que necesitan ser asignados (profesores y usuarios sin asignar)
     const usersToAssignResult = await pool.query(`
       SELECT DISTINCT u.id
       FROM users u
@@ -426,7 +409,6 @@ async function redistributeUsersToAdmins() {
 
     const usersToAssign = usersToAssignResult.rows.map(row => row.id);
 
-    // Distribuir usuarios de forma equitativa
     for (let i = 0; i < usersToAssign.length; i++) {
       const adminIndex = i % adminIds.length;
       const adminId = adminIds[adminIndex];
