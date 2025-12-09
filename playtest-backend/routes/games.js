@@ -19,6 +19,17 @@ const getDBPool = (req, res, next) => {
 // Apply the middleware to all routes in this file.
 router.use(getDBPool);
 
+// FIX: Add the missing /configurations route.
+router.get('/configurations', authenticateToken, async (req, res) => {
+    try {
+        const result = await req.pool.query('SELECT * FROM game_configurations');
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching game configurations:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // Create a new game
 router.post('/', authenticateToken, async (req, res) => {
     const client = await req.pool.connect();
