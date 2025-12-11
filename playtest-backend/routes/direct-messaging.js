@@ -24,12 +24,12 @@
 
           try {
               const pool = req.pool;
-              const query = 'SELECT COUNT(*) as unreadCount FROM direct_messages WHERE recipient_id = ? AND is_read = 0';
-              const [rows] = await pool.query(query, [userId]);
-              const unreadCount = rows[0].unreadCount;
+              const query = 'SELECT COUNT(*) as unreadCount FROM direct_messages WHERE recipient_id = $1 AND is_read = false';
+              const result = await pool.query(query, [userId]);
+              const unreadCount = result.rows[0].unreadcount; // .rows[0].unreadcount (PostgreSQL often returns lowercase)
               
               console.log(`Unread count for user ${userId} is ${unreadCount}`);
-              res.json({ unreadCount });
+              res.json({ unreadCount: Number(unreadCount) }); // Ensure it's a number
           } catch (error) {
               console.error('Error fetching unread messages count:', error);
               res.status(500).json({ error: 'Could not fetch unread messages count' });

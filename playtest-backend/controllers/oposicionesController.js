@@ -1,4 +1,4 @@
-const { pool } = require('../database/connection');
+const { getPool } = require('../database/connection');
 
 /**
  * CONTROLADOR: Oposiciones
@@ -9,6 +9,7 @@ const { pool } = require('../database/connection');
  * Crear nueva oposición
  */
 async function crearOposicion(profesorId, data) {
+    const pool = getPool();
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -64,6 +65,7 @@ async function crearOposicion(profesorId, data) {
  * Obtener oposiciones del profesor
  */
 async function obtenerMisOposiciones(profesorId, filters = {}) {
+    const pool = getPool();
     try {
         const { is_active = true } = filters;
 
@@ -104,6 +106,7 @@ async function obtenerMisOposiciones(profesorId, filters = {}) {
  * Obtener detalles de una oposición específica
  */
 async function obtenerDetalleOposicion(profesorId, oposicionId) {
+    const pool = getPool();
     try {
         const query = `
             SELECT
@@ -150,6 +153,7 @@ async function obtenerDetalleOposicion(profesorId, oposicionId) {
  * Actualizar oposición
  */
 async function actualizarOposicion(profesorId, oposicionId, data) {
+    const pool = getPool();
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -210,6 +214,7 @@ async function actualizarOposicion(profesorId, oposicionId, data) {
  * Desactivar oposición (soft delete)
  */
 async function desactivarOposicion(profesorId, oposicionId) {
+    const pool = getPool();
     try {
         const query = `
             UPDATE oposiciones
@@ -241,6 +246,7 @@ async function desactivarOposicion(profesorId, oposicionId) {
  * Inscribir alumno en oposición usando código de acceso
  */
 async function inscribirAlumno(alumnoId, codigoAcceso) {
+    const pool = getPool();
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -308,6 +314,7 @@ async function inscribirAlumno(alumnoId, codigoAcceso) {
  * Obtener alumnos de una oposición
  */
 async function obtenerAlumnosOposicion(profesorId, oposicionId, filters = {}) {
+    const pool = getPool();
     try {
         // Verificar permisos del profesor
         const checkOwnership = await pool.query(
