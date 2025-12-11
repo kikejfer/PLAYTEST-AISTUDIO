@@ -183,11 +183,11 @@ async function actualizarBloque(profesorId, bloqueId, data) {
         await client.query('BEGIN');
 
         // Verificar permisos
-        const checkOwnership = await client.query(\`
+        const checkOwnership = await client.query(`
             SELECT bt.id FROM bloques_temas bt
             JOIN oposiciones o ON bt.oposicion_id = o.id
             WHERE bt.id = $1 AND o.profesor_id = $2
-        \`, [bloqueId, profesorId]);
+        `, [bloqueId, profesorId]);
 
         if (checkOwnership.rows.length === 0) {
             return {
@@ -196,7 +196,7 @@ async function actualizarBloque(profesorId, bloqueId, data) {
             };
         }
 
-        const updateQuery = \`
+        const updateQuery = `
             UPDATE bloques_temas SET
                 nombre = COALESCE($1, nombre),
                 descripcion = COALESCE($2, descripcion),
@@ -205,7 +205,7 @@ async function actualizarBloque(profesorId, bloqueId, data) {
                 updated_at = NOW()
             WHERE id = $5
             RETURNING *
-        \`;
+        `;
 
         const values = [
             data.nombre || null,
@@ -242,11 +242,11 @@ async function eliminarBloque(profesorId, bloqueId) {
         await client.query('BEGIN');
 
         // Verificar permisos
-        const checkOwnership = await client.query(\`
+        const checkOwnership = await client.query(`
             SELECT bt.id FROM bloques_temas bt
             JOIN oposiciones o ON bt.oposicion_id = o.id
             WHERE bt.id = $1 AND o.profesor_id = $2
-        \`, [bloqueId, profesorId]);
+        `, [bloqueId, profesorId]);
 
         if (checkOwnership.rows.length === 0) {
             return {
@@ -283,11 +283,11 @@ async function crearTema(profesorId, bloqueId, data) {
         await client.query('BEGIN');
 
         // Verificar permisos
-        const checkOwnership = await client.query(\`
+        const checkOwnership = await client.query(`
             SELECT bt.id FROM bloques_temas bt
             JOIN oposiciones o ON bt.oposicion_id = o.id
             WHERE bt.id = $1 AND o.profesor_id = $2
-        \`, [bloqueId, profesorId]);
+        `, [bloqueId, profesorId]);
 
         if (checkOwnership.rows.length === 0) {
             return {
@@ -303,7 +303,7 @@ async function crearTema(profesorId, bloqueId, data) {
         );
         const orden = data.orden || ordenResult.rows[0].siguiente_orden;
 
-        const insertQuery = \`
+        const insertQuery = `
             INSERT INTO temas (
                 bloque_id,
                 nombre,
@@ -311,7 +311,7 @@ async function crearTema(profesorId, bloqueId, data) {
                 orden
             ) VALUES ($1, $2, $3, $4)
             RETURNING *
-        \`;
+        `;
 
         const values = [
             bloqueId,
@@ -347,12 +347,12 @@ async function actualizarTema(profesorId, temaId, data) {
         await client.query('BEGIN');
 
         // Verificar permisos
-        const checkOwnership = await client.query(\`
+        const checkOwnership = await client.query(`
             SELECT t.id FROM temas t
             JOIN bloques_temas bt ON t.bloque_id = bt.id
             JOIN oposiciones o ON bt.oposicion_id = o.id
             WHERE t.id = $1 AND o.profesor_id = $2
-        \`, [temaId, profesorId]);
+        `, [temaId, profesorId]);
 
         if (checkOwnership.rows.length === 0) {
             return {
@@ -361,7 +361,7 @@ async function actualizarTema(profesorId, temaId, data) {
             };
         }
 
-        const updateQuery = \`
+        const updateQuery = `
             UPDATE temas SET
                 nombre = COALESCE($1, nombre),
                 descripcion = COALESCE($2, descripcion),
@@ -369,7 +369,7 @@ async function actualizarTema(profesorId, temaId, data) {
                 updated_at = NOW()
             WHERE id = $4
             RETURNING *
-        \`;
+        `;
 
         const values = [
             data.nombre || null,
@@ -405,12 +405,12 @@ async function eliminarTema(profesorId, temaId) {
         await client.query('BEGIN');
 
         // Verificar permisos
-        const checkOwnership = await client.query(\`
+        const checkOwnership = await client.query(`
             SELECT t.id FROM temas t
             JOIN bloques_temas bt ON t.bloque_id = bt.id
             JOIN oposiciones o ON bt.oposicion_id = o.id
             WHERE t.id = $1 AND o.profesor_id = $2
-        \`, [temaId, profesorId]);
+        `, [temaId, profesorId]);
 
         if (checkOwnership.rows.length === 0) {
             return {
@@ -447,12 +447,12 @@ async function asignarPreguntaATema(profesorId, preguntaId, temaId) {
         await client.query('BEGIN');
 
         // Verificar permisos sobre el tema
-        const checkOwnership = await client.query(\`
+        const checkOwnership = await client.query(`
             SELECT t.id FROM temas t
             JOIN bloques_temas bt ON t.bloque_id = bt.id
             JOIN oposiciones o ON bt.oposicion_id = o.id
             WHERE t.id = $1 AND o.profesor_id = $2
-        \`, [temaId, profesorId]);
+        `, [temaId, profesorId]);
 
         if (checkOwnership.rows.length === 0) {
             return {
@@ -462,12 +462,12 @@ async function asignarPreguntaATema(profesorId, preguntaId, temaId) {
         }
 
         // Actualizar pregunta
-        const updateQuery = \`
+        const updateQuery = `
             UPDATE questions
             SET tema_id = $1
             WHERE id = $2
             RETURNING *
-        \`;
+        `;
 
         const result = await client.query(updateQuery, [temaId, preguntaId]);
 
