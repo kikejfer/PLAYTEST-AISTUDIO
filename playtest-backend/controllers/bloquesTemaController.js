@@ -1,4 +1,4 @@
-const { pool } = require('../database/connection');
+const { getPool } = require('../database/connection');
 
 /**
  * CONTROLADOR: Bloques y Temas
@@ -9,6 +9,7 @@ const { pool } = require('../database/connection');
  * Crear nuevo bloque de temas
  */
 async function crearBloque(profesorId, oposicionId, data) {
+    const pool = getPool();
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -73,6 +74,7 @@ async function crearBloque(profesorId, oposicionId, data) {
  * Obtener bloques de una oposición
  */
 async function obtenerBloques(profesorId, oposicionId) {
+    const pool = getPool();
     try {
         // Verificar permisos
         const checkOwnership = await pool.query(
@@ -125,6 +127,7 @@ async function obtenerBloques(profesorId, oposicionId) {
  * Obtener detalle de un bloque específico
  */
 async function obtenerDetalleBloque(profesorId, bloqueId) {
+    const pool = getPool();
     try {
         const query = `
             SELECT
@@ -174,16 +177,17 @@ async function obtenerDetalleBloque(profesorId, bloqueId) {
  * Actualizar bloque
  */
 async function actualizarBloque(profesorId, bloqueId, data) {
+    const pool = getPool();
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
         // Verificar permisos
-        const checkOwnership = await client.query(`
+        const checkOwnership = await client.query(\`
             SELECT bt.id FROM bloques_temas bt
             JOIN oposiciones o ON bt.oposicion_id = o.id
             WHERE bt.id = $1 AND o.profesor_id = $2
-        `, [bloqueId, profesorId]);
+        \`, [bloqueId, profesorId]);
 
         if (checkOwnership.rows.length === 0) {
             return {
@@ -192,7 +196,7 @@ async function actualizarBloque(profesorId, bloqueId, data) {
             };
         }
 
-        const updateQuery = `
+        const updateQuery = \`
             UPDATE bloques_temas SET
                 nombre = COALESCE($1, nombre),
                 descripcion = COALESCE($2, descripcion),
@@ -201,7 +205,7 @@ async function actualizarBloque(profesorId, bloqueId, data) {
                 updated_at = NOW()
             WHERE id = $5
             RETURNING *
-        `;
+        \`;
 
         const values = [
             data.nombre || null,
@@ -232,16 +236,17 @@ async function actualizarBloque(profesorId, bloqueId, data) {
  * Eliminar bloque
  */
 async function eliminarBloque(profesorId, bloqueId) {
+    const pool = getPool();
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
         // Verificar permisos
-        const checkOwnership = await client.query(`
+        const checkOwnership = await client.query(\`
             SELECT bt.id FROM bloques_temas bt
             JOIN oposiciones o ON bt.oposicion_id = o.id
             WHERE bt.id = $1 AND o.profesor_id = $2
-        `, [bloqueId, profesorId]);
+        \`, [bloqueId, profesorId]);
 
         if (checkOwnership.rows.length === 0) {
             return {
@@ -272,16 +277,17 @@ async function eliminarBloque(profesorId, bloqueId) {
  * Crear nuevo tema dentro de un bloque
  */
 async function crearTema(profesorId, bloqueId, data) {
+    const pool = getPool();
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
         // Verificar permisos
-        const checkOwnership = await client.query(`
+        const checkOwnership = await client.query(\`
             SELECT bt.id FROM bloques_temas bt
             JOIN oposiciones o ON bt.oposicion_id = o.id
             WHERE bt.id = $1 AND o.profesor_id = $2
-        `, [bloqueId, profesorId]);
+        \`, [bloqueId, profesorId]);
 
         if (checkOwnership.rows.length === 0) {
             return {
@@ -297,7 +303,7 @@ async function crearTema(profesorId, bloqueId, data) {
         );
         const orden = data.orden || ordenResult.rows[0].siguiente_orden;
 
-        const insertQuery = `
+        const insertQuery = \`
             INSERT INTO temas (
                 bloque_id,
                 nombre,
@@ -305,7 +311,7 @@ async function crearTema(profesorId, bloqueId, data) {
                 orden
             ) VALUES ($1, $2, $3, $4)
             RETURNING *
-        `;
+        \`;
 
         const values = [
             bloqueId,
@@ -335,17 +341,18 @@ async function crearTema(profesorId, bloqueId, data) {
  * Actualizar tema
  */
 async function actualizarTema(profesorId, temaId, data) {
+    const pool = getPool();
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
         // Verificar permisos
-        const checkOwnership = await client.query(`
+        const checkOwnership = await client.query(\`
             SELECT t.id FROM temas t
             JOIN bloques_temas bt ON t.bloque_id = bt.id
             JOIN oposiciones o ON bt.oposicion_id = o.id
             WHERE t.id = $1 AND o.profesor_id = $2
-        `, [temaId, profesorId]);
+        \`, [temaId, profesorId]);
 
         if (checkOwnership.rows.length === 0) {
             return {
@@ -354,7 +361,7 @@ async function actualizarTema(profesorId, temaId, data) {
             };
         }
 
-        const updateQuery = `
+        const updateQuery = \`
             UPDATE temas SET
                 nombre = COALESCE($1, nombre),
                 descripcion = COALESCE($2, descripcion),
@@ -362,7 +369,7 @@ async function actualizarTema(profesorId, temaId, data) {
                 updated_at = NOW()
             WHERE id = $4
             RETURNING *
-        `;
+        \`;
 
         const values = [
             data.nombre || null,
@@ -392,17 +399,18 @@ async function actualizarTema(profesorId, temaId, data) {
  * Eliminar tema
  */
 async function eliminarTema(profesorId, temaId) {
+    const pool = getPool();
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
         // Verificar permisos
-        const checkOwnership = await client.query(`
+        const checkOwnership = await client.query(\`
             SELECT t.id FROM temas t
             JOIN bloques_temas bt ON t.bloque_id = bt.id
             JOIN oposiciones o ON bt.oposicion_id = o.id
             WHERE t.id = $1 AND o.profesor_id = $2
-        `, [temaId, profesorId]);
+        \`, [temaId, profesorId]);
 
         if (checkOwnership.rows.length === 0) {
             return {
@@ -433,17 +441,18 @@ async function eliminarTema(profesorId, temaId) {
  * Asignar pregunta a tema
  */
 async function asignarPreguntaATema(profesorId, preguntaId, temaId) {
+    const pool = getPool();
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
         // Verificar permisos sobre el tema
-        const checkOwnership = await client.query(`
+        const checkOwnership = await client.query(\`
             SELECT t.id FROM temas t
             JOIN bloques_temas bt ON t.bloque_id = bt.id
             JOIN oposiciones o ON bt.oposicion_id = o.id
             WHERE t.id = $1 AND o.profesor_id = $2
-        `, [temaId, profesorId]);
+        \`, [temaId, profesorId]);
 
         if (checkOwnership.rows.length === 0) {
             return {
@@ -453,12 +462,12 @@ async function asignarPreguntaATema(profesorId, preguntaId, temaId) {
         }
 
         // Actualizar pregunta
-        const updateQuery = `
+        const updateQuery = \`
             UPDATE questions
             SET tema_id = $1
             WHERE id = $2
             RETURNING *
-        `;
+        \`;
 
         const result = await client.query(updateQuery, [temaId, preguntaId]);
 
@@ -497,6 +506,7 @@ async function asignarPreguntaATema(profesorId, preguntaId, temaId) {
  * Recalcular totales de preguntas de un bloque
  */
 async function recalcularTotalesBloque(bloqueId) {
+    const pool = getPool();
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
