@@ -809,7 +809,7 @@ class BloquesCreados {
 
         try {
             console.log('🔍 Loading created blocks with stats...');
-            this.blocksData = await apiDataService.fetchCreatedBlocksStats();
+            this.blocksData = await apiDataService.fetchCreatedBlocks();
             console.log('✅ Loaded blocks:', this.blocksData);
             console.log('🔍 First block metadata IDs:', this.blocksData[0] ? {
                 tipo_id: this.blocksData[0].tipo_id,
